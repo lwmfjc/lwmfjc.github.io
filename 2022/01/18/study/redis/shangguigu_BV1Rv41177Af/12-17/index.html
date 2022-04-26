@@ -259,12 +259,12 @@ src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img
 <img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1642471413477.png" /><br />
 </li>
-<li>bind <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bind 127.0.0.1 ::1 #listens on loopback IPv4 and IPv6 </span><br></pre></td></tr></table></figure>
+<li>bind <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bind 127.0.0.1 ::1 #listens on loopback IPv4 and IPv6 </span><br></pre></td></tr></table></figure>
 <ul>
 <li>后面这个::1，相当于ipv6版的127.0.0.1。在redis配置文件中，整句表示只允许本地网卡的某个ip连接(但是它并不能指定某个主机连接到redis中。比如本机有两个网卡，两个ip，可以限定只有其中一个ip可以连接)</li>
 <li>如果注释掉了/或者bind 0.0.0.0，表示允许所有主机连接</li>
 </ul></li>
-<li>protected-mode <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">protected-mode yes </span><br></pre></td></tr></table></figure>
+<li>protected-mode <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">protected-mode yes </span><br></pre></td></tr></table></figure>
 <ul>
 <li>设置保护模式为yes，protected是redis本身的一个安全层，这个安全层在同时满足下面三个条件的时候会开启，开启后只有本机可以访问redis
 <ul>
@@ -295,7 +295,7 @@ Redis的发布和订阅</li>
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1642496809416.png" /><br />
 </li>
 <li>操作<br />
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">subscribe channel1 #客户端A订阅频道 </span><br></pre></td></tr></table></figure> <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">publish channel1 helloly #向频道发送消息</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">subscribe channel1 #客户端A订阅频道 </span><br></pre></td></tr></table></figure> <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">publish channel1 helloly #向频道发送消息</span><br></pre></td></tr></table></figure>
 此时订阅channel1频道的客户端就会接收到消息<br />
 <img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1642557791117.png" />
@@ -310,11 +310,11 @@ src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img
 <li><p>bitcount:统计字符串被设置为1的bit数，这里结果是5</p></li>
 <li><p>bitcount u1 0 1 #统计字符串第0个字节到第1个字节1的bit数<br />
 (1,6,11,15,19bit值为1)[也就是统计第0到第15位的1的个数]<br />
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">setbit u1 1 1</span><br><span class="line">setbit u1 2 1</span><br><span class="line">setbit u1 5 1</span><br><span class="line">setbit u1 9 1</span><br></pre></td></tr></table></figure></p>
-<p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">setbit u2 0 1</span><br><span class="line">setbit u2 1 1</span><br><span class="line">setbit u2 4 1</span><br><span class="line">setbit u2 9 1</span><br></pre></td></tr></table></figure></p></li>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">setbit u1 1 1</span><br><span class="line">setbit u1 2 1</span><br><span class="line">setbit u1 5 1</span><br><span class="line">setbit u1 9 1</span><br></pre></td></tr></table></figure></p>
+<p><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">setbit u2 0 1</span><br><span class="line">setbit u2 1 1</span><br><span class="line">setbit u2 4 1</span><br><span class="line">setbit u2 9 1</span><br></pre></td></tr></table></figure></p></li>
 <li><p>获取u1，u2共同位为1的个数，如上1,9都是1，所以返回2，且 bitcount
 u1--u2的值为2（第1和第9位为1），其实就是<strong>u1和u2进行&amp;操作</strong><br />
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bitop and u1-and-u2 u1 u2 </span><br></pre></td></tr></table></figure></p></li>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bitop and u1-and-u2 u1 u2 </span><br></pre></td></tr></table></figure></p></li>
 <li><p>获取u1或u2存在值为1的位的个数，如上结果为8-2=6，结果存在u1-or-u2中，即1，2，5，9，0，4的位
 值为1(的字符串)，其实就是<strong>u1和u2进行或操作</strong><br />
 </p></li>
@@ -330,14 +330,14 @@ src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img
 <li>mysql中可以用distinct count</li>
 <li>redis中可以用hash,set,bitmaps</li>
 </ul></li>
-<li>使用 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">pfadd a 1 2 3 4 3 3 3 2 1 6 7</span><br><span class="line">pfcount a #得到基数 6 </span><br><span class="line">pfadd b 1 10 7 15 #基数4</span><br><span class="line">pfmerge c a b #将a，b合并到c</span><br><span class="line">pfcount c #得到基数8</span><br></pre></td></tr></table></figure> ### GEO类型 (geographic)<br />
+<li>使用 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">pfadd a 1 2 3 4 3 3 3 2 1 6 7</span><br><span class="line">pfcount a #得到基数 6 </span><br><span class="line">pfadd b 1 10 7 15 #基数4</span><br><span class="line">pfmerge c a b #将a，b合并到c</span><br><span class="line">pfcount c #得到基数8</span><br></pre></td></tr></table></figure> ### GEO类型 (geographic)<br />
 </li>
 <li>基本命令<br />
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">geoadd china:city 121.47 31.43 shanghai</span><br><span class="line">geoadd china:city 166.50 29.53 chongqing 114.05 22.52  shenzhen</span><br><span class="line">geoadd china:city 16.38 39.90 beijing </span><br></pre></td></tr></table></figure></li>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">geoadd china:city 121.47 31.43 shanghai</span><br><span class="line">geoadd china:city 166.50 29.53 chongqing 114.05 22.52  shenzhen</span><br><span class="line">geoadd china:city 16.38 39.90 beijing </span><br></pre></td></tr></table></figure></li>
 <li>不支持南北极，所以有效经度在-180到180度，有效纬度从-85.05xxx度到85.05xxx度</li>
-<li>获取坐标值及直线距离 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">geopos china:city beijing #获取beijing经纬度</span><br><span class="line">geodist china:city beijing shenzhen km #获取beijing到shenzhen的直线距离</span><br><span class="line"># 单位有m,km,ft,mi</span><br></pre></td></tr></table></figure></li>
+<li>获取坐标值及直线距离 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">geopos china:city beijing #获取beijing经纬度</span><br><span class="line">geodist china:city beijing shenzhen km #获取beijing到shenzhen的直线距离</span><br><span class="line"># 单位有m,km,ft,mi</span><br></pre></td></tr></table></figure></li>
 <li>以给定的经纬度为中心，找出某一半径内的元素<br />
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">georadius china:city 110 30 1000 km</span><br></pre></td></tr></table></figure> ## End</li>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">georadius china:city 110 30 1000 km</span><br></pre></td></tr></table></figure> ## End</li>
 </ul>
 
     </div>
