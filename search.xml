@@ -1584,6 +1584,55 @@ src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img
       </tags>
   </entry>
   <entry>
+    <title>入门</title>
+    <url>/2022/04/27/study/flowable/offical/01/</url>
+    <content><![CDATA[<h2 id="入门">入门</h2>
+<h3 id="什么是流动性">什么是流动性</h3>
+<blockquote>
+<p>Flowable 是一个用 Java 编写的轻量级业务流程引擎。Flowable
+流程引擎允许您部署 BPMN 2.0 流程定义（用于定义流程的行业 XML
+标准）、创建这些流程定义的流程实例、运行查询、访问活动或历史流程实例和相关数据等等。</p>
+</blockquote>
+<blockquote>
+<p>可以使用 Flowable REST API 通过 HTTP 进行通信。还有几个 Flowable
+应用程序（Flowable Modeler、Flowable Admin、Flowable IDM 和 Flowable
+Task）提供开箱即用的示例 UI，用于处理流程和任务。</p>
+</blockquote>
+<h3 id="flowable和activiti">Flowable和Activiti</h3>
+<p>Flowable是Activiti的一个分支</p>
+<h3 id="构建命令行命令">构建命令行命令</h3>
+<h4 id="创建流程引擎">创建流程引擎</h4>
+<p>请假流程如下</p>
+<ul>
+<li>员工要求休假数次</li>
+<li>经理批准或拒绝请求</li>
+<li>之后将模拟再某个外部系统中注册请求，并向员工发送一封包含结果的邮件</li>
+</ul>
+<p>创建一个空的Mave项目，并添加依赖</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.flowable<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>flowable-engine<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>6.6.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.h2database<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>h2<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.3.176<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span> </span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>mysql<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>mysql-connector-java<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>8.0.29<span class="tag">&lt;/<span class="name">version</span>&gt;</span> <span class="comment">&lt;!--当版本号&gt;=8.0.22时会报date转字符串的错误--&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>添加一个带有Main方法的类</p>
+<p>这里实例化一个<strong>ProcessEngine</strong>实例，一般只需要实例化一次，是通过<strong>ProcessEngineConfiguration</strong>创建的，用来配置和调整流程引擎的配置</p>
+<ul>
+<li><em>ProcessEngineConfiguration</em>也可以使用配置 XML 文件创建</li>
+<li><em>ProcessEngineConfiguration</em>需要的最低配置是与数据库的 JDBC
+连接</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> org.flowable;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.flowable.engine.ProcessEngine;</span><br><span class="line"><span class="keyword">import</span> org.flowable.engine.ProcessEngineConfiguration;</span><br><span class="line"><span class="keyword">import</span> org.flowable.engine.impl.cfg.StandaloneProcessEngineConfiguration;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">HolidayRequest</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//这里改用mysql，注意后面的nullCatalogMeansCurrent=true</span></span><br><span class="line">        <span class="comment">//注意，pom需要添加mysql驱动依赖</span></span><br><span class="line">        <span class="type">ProcessEngineConfiguration</span> <span class="variable">cfg</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">StandaloneProcessEngineConfiguration</span>()</span><br><span class="line">                .setJdbcUrl(<span class="string">&quot;jdbc:mysql://localhost:3306/flowable_official?useUnicode=true&quot;</span> +</span><br><span class="line">                        <span class="string">&quot;&amp;characterEncoding=utf-8&amp;serverTimezone=Asia/Shanghai&amp;allowMultiQueries=true&quot;</span></span><br><span class="line">                        +<span class="string">&quot;&amp;nullCatalogMeansCurrent=true&quot;</span></span><br><span class="line">                )</span><br><span class="line">                .setJdbcUsername(<span class="string">&quot;root&quot;</span>)</span><br><span class="line">                .setJdbcPassword(<span class="string">&quot;123456&quot;</span>)</span><br><span class="line">                .setJdbcDriver(<span class="string">&quot;com.mysql.cj.jdbc.Driver&quot;</span>)</span><br><span class="line">                .setDatabaseSchemaUpdate(ProcessEngineConfiguration.DB_SCHEMA_UPDATE_TRUE);</span><br><span class="line">        <span class="comment">/* //这是官网，用的h2</span></span><br><span class="line"><span class="comment">        ProcessEngineConfiguration cfg = new StandaloneProcessEngineConfiguration()</span></span><br><span class="line"><span class="comment">                .setJdbcUrl(&quot;jdbc:h2:mem:flowable;DB_CLOSE_DELAY=-1&quot;)</span></span><br><span class="line"><span class="comment">                .setJdbcUsername(&quot;sa&quot;)</span></span><br><span class="line"><span class="comment">                .setJdbcPassword(&quot;&quot;)</span></span><br><span class="line"><span class="comment">                .setJdbcDriver(&quot;org.h2.Driver&quot;)</span></span><br><span class="line"><span class="comment">                .setDatabaseSchemaUpdate(ProcessEngineConfiguration.DB_SCHEMA_UPDATE_TRUE);*/</span></span><br><span class="line"></span><br><span class="line">        <span class="type">ProcessEngine</span> <span class="variable">processEngine</span> <span class="operator">=</span> cfg.buildProcessEngine();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>运行后会出现slf4j的警告，添加依赖并编写配置文件即可</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;org.slf4j&lt;/groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;slf4j-api&lt;/artifactId&gt;</span><br><span class="line">    &lt;version&gt;1.7.30&lt;/version&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br><span class="line">&lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;org.slf4j&lt;/groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;slf4j-log4j12&lt;/artifactId&gt;</span><br><span class="line">    &lt;version&gt;1.7.30&lt;/version&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br></pre></td></tr></table></figure>
+<p>配置文件</p>
+<figure class="highlight properties"><table><tr><td class="code"><pre><span class="line"><span class="attr">log4j.rootLogger</span>=<span class="string">DEBUG, CA</span></span><br><span class="line"><span class="attr">log4j.appender.CA</span>=<span class="string">org.apache.log4j.ConsoleAppender</span></span><br><span class="line"><span class="attr">log4j.appender.CA.layout</span>=<span class="string">org.apache.log4j.PatternLayout</span></span><br><span class="line"><span class="attr">log4j.appender.CA.layout.ConversionPattern</span>=<span class="string">%d&#123;hh:mm:ss,SSS&#125; [%t] %-5p %c %x - %m%n</span></span><br></pre></td></tr></table></figure>
+<p>重运行程序无警告</p>
+<p>会自动往mysql添加一些表及数据</p>
+]]></content>
+      <categories>
+        <category>学习</category>
+      </categories>
+      <tags>
+        <tag>flowable</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>linux_韩老师_01-X</title>
     <url>/2022/01/25/study/linux/hanshunping/01-X/</url>
     <content><![CDATA[<h2 id="基础介绍">基础介绍</h2>
