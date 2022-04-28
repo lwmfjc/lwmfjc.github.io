@@ -362,18 +362,65 @@ API 调用</li>
 transactionality)</h4>
 <ul>
 <li>当您进行 Flowable API
-调用时，默认情况下，一切都是同步的，并且是同一事务的一部分。这意味着，当方法调用返回时，将启动并提交事务。</li>
+调用时，默认情况下，一切都是同步<strong>synchronous</strong>的，并且是同一事务的一部分。这意味着，当方法调用返回时，将启动并提交事务。</li>
 <li>当一个流程实例启动时，从流程实例启动到下一个<em>等待状态</em>会有<strong>一个数据库事务</strong>。在本例中，这是第一个用户任务。当引擎到达这个用户任务时，状态被持久化到数据库中并且事务被提交并且API调用返回</li>
 <li>在 Flowable
 中，当继续一个流程实例时，总会有一个数据库事务从前一个<em>等待状态</em>转到下一个<em>等待状态</em>。</li>
 <li></li>
 </ul>
 <h4 id="查询和完成任务">查询和完成任务</h4>
+<ul>
+<li><p>为用户任务配置分配</p>
+<ul>
+<li><p>[第一个任务进入"经理"组]</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">userTask</span> <span class="attr">id</span>=<span class="string">&quot;approveTask&quot;</span> <span class="attr">name</span>=<span class="string">&quot;Approve or reject request&quot;</span> <span class="attr">flowable:candidateGroups</span>=<span class="string">&quot;managers&quot;</span>/&gt;</span></span><br></pre></td></tr></table></figure></li>
+<li><p>第二个任务的<em>受让人assignee</em>属性
+基于我们在流程实例启动时传递的流程变量的动态分配</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">userTask</span> <span class="attr">id</span>=<span class="string">&quot;holidayApprovedTask&quot;</span> <span class="attr">name</span>=<span class="string">&quot;Holiday approved&quot;</span> <span class="attr">flowable:assignee</span>=<span class="string">&quot;$&#123;employee&#125;&quot;</span>/&gt;</span></span><br></pre></td></tr></table></figure></li>
+<li><p>查询并返回"managers"组的任务</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">TaskService</span> <span class="variable">taskService</span> <span class="operator">=</span> processEngine.getTaskService();</span><br><span class="line">List&lt;Task&gt; tasks = taskService.createTaskQuery().taskCandidateGroup(<span class="string">&quot;managers&quot;</span>).list();</span><br><span class="line">System.out.println(<span class="string">&quot;You have &quot;</span> + tasks.size() + <span class="string">&quot; tasks:&quot;</span>);</span><br><span class="line"><span class="keyword">for</span> (<span class="type">int</span> i=<span class="number">0</span>; i&lt;tasks.size(); i++) &#123;</span><br><span class="line">  System.out.println((i+<span class="number">1</span>) + <span class="string">&quot;) &quot;</span> + tasks.get(i).getName());<span class="comment">//</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220428132839571.png"
+alt="image-20220428132839571" />
+<figcaption aria-hidden="true">image-20220428132839571</figcaption>
+</figure>
+<p>有三个是因为启动了三个实例</p></li>
+<li><p>获取特定的流程实例变量，并在屏幕上显示实际请求</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">System.out.println(<span class="string">&quot;Which task would you like to complete?&quot;</span>);</span><br><span class="line"><span class="type">int</span> <span class="variable">taskIndex</span> <span class="operator">=</span> Integer.valueOf(scanner.nextLine());</span><br><span class="line"><span class="type">Task</span> <span class="variable">task</span> <span class="operator">=</span> tasks.get(taskIndex - <span class="number">1</span>);</span><br><span class="line">Map&lt;String, Object&gt; processVariables = taskService.getVariables(task.getId());</span><br><span class="line">System.out.println(processVariables.get(<span class="string">&quot;employee&quot;</span>) + <span class="string">&quot; wants &quot;</span> +</span><br><span class="line">    processVariables.get(<span class="string">&quot;nrOfHolidays&quot;</span>) + <span class="string">&quot; of holidays. Do you approve this?&quot;</span>);</span><br></pre></td></tr></table></figure></li>
+<li><p>设置variables让经理批准</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">boolean</span> <span class="variable">approved</span> <span class="operator">=</span> scanner.nextLine().toLowerCase().equals(<span class="string">&quot;y&quot;</span>);</span><br><span class="line">variables = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;String, Object&gt;();</span><br><span class="line">variables.put(<span class="string">&quot;approved&quot;</span>, approved);</span><br><span class="line"><span class="comment">//经理完成任务</span></span><br><span class="line">taskService.complete(task.getId(), variables);</span><br></pre></td></tr></table></figure>
+<p><span
+class="math inline">\(\color{red}该任务现已完成，并且基于&quot;approved&quot;流程变量选择离开专用网关的两条路径之一\)</span></p>
+<p><img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220428133646782.png" /></p></li>
+</ul></li>
+</ul>
 <h4 id="编写javadelegate">编写JavaDelegate</h4>
+<ul>
+<li><p>实现在请求被批准时将执行的自动逻辑，在BPMN2.0
+XML中，这是一个<strong>服务任务</strong></p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">serviceTask</span> <span class="attr">id</span>=<span class="string">&quot;externalSystemCall&quot;</span> <span class="attr">name</span>=<span class="string">&quot;Enter holidays in external system&quot;</span></span></span><br><span class="line"><span class="tag">    <span class="attr">flowable:class</span>=<span class="string">&quot;org.flowable.CallExternalSystemDelegate&quot;</span>/&gt;</span></span><br></pre></td></tr></table></figure>
+<p>这里指定了具体实现类</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> org.flowable;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.flowable.engine.delegate.DelegateExecution;</span><br><span class="line"><span class="keyword">import</span> org.flowable.engine.delegate.JavaDelegate;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CallExternalSystemDelegate</span> <span class="keyword">implements</span> <span class="title class_">JavaDelegate</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">execute</span><span class="params">(DelegateExecution execution)</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;Calling the external system for employee &quot;</span></span><br><span class="line">            + execution.getVariable(<span class="string">&quot;employee&quot;</span>));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当<strong>执行execution</strong>到达<strong>service
+tast服务任务</strong>时，BPMN 2.0 XML中引用的类被实例化并被调用</p></li>
+<li><p>运行，发现自定义逻辑确实已执行</p></li>
+</ul>
 <h4 id="处理历史数据">处理历史数据</h4>
+<p>Flowable引擎会自动存储所有流程实例的<strong>审计数据audit
+data</strong> 或<strong>历史数据historical data</strong></p>
+<p>下面，显示一直在执行的流程实例的持续时间，从ProcessEngine获取HistoryService并创建历史活动查询。这里添加了过滤--1
+仅针对一个特定流程实例的活动 --2 只有已经完成的活动</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">HistoryService</span> <span class="variable">historyService</span> <span class="operator">=</span> processEngine.getHistoryService();</span><br><span class="line">List&lt;HistoricActivityInstance&gt; activities =</span><br><span class="line">  historyService.createHistoricActivityInstanceQuery()</span><br><span class="line">   .processInstanceId(processInstance.getId())</span><br><span class="line">   .finished()</span><br><span class="line">   .orderByHistoricActivityInstanceEndTime().asc()</span><br><span class="line">   .list();</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> (HistoricActivityInstance activity : activities) &#123;</span><br><span class="line">  System.out.println(activity.getActivityId() + <span class="string">&quot; took &quot;</span></span><br><span class="line">    + activity.getDurationInMillis() + <span class="string">&quot; milliseconds&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <h4 id="结论">结论</h4>
-<h3 id="floable-rest-api入门">Floable REST API入门</h3>
+<p>本教程介绍了各种 Flowable 和 BPMN 2.0
+概念和术语，同时还演示了如何以编程方式使用 Flowable API。</p>
+<h3 id="flowable-rest-api入门">Flowable REST API入门</h3>
 <h4 id="设置rest应用程序">设置REST应用程序</h4>
+<p>使用flowable-rest.war , java -jar flowable-rest.war</p>
+<p>测试是否运行成功</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">curl --user rest-admin:test http://localhost:8080/flowable-rest/service/management/engine</span><br></pre></td></tr></table></figure>
 <h4 id="部署流程定义-1">部署流程定义</h4>
 <h4 id="启动流程实例-1">启动流程实例</h4>
 <h4 id="人物列表和完成任务">人物列表和完成任务</h4>
@@ -465,7 +512,7 @@ transactionality)</h4>
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
           <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%A5%E9%97%A8"><span class="nav-number">1.</span> <span class="nav-text">入门</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E6%B5%81%E5%8A%A8%E6%80%A7"><span class="nav-number">1.1.</span> <span class="nav-text">什么是流动性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#flowable%E5%92%8Cactiviti"><span class="nav-number">1.2.</span> <span class="nav-text">Flowable和Activiti</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9E%84%E5%BB%BA%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%91%BD%E4%BB%A4"><span class="nav-number">1.3.</span> <span class="nav-text">构建命令行命令</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA%E6%B5%81%E7%A8%8B%E5%BC%95%E6%93%8E"><span class="nav-number">1.3.1.</span> <span class="nav-text">创建流程引擎</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%83%A8%E7%BD%B2%E6%B5%81%E7%A8%8B%E5%AE%9A%E4%B9%89"><span class="nav-number">1.3.2.</span> <span class="nav-text">部署流程定义</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B%E5%AE%9E%E4%BE%8B"><span class="nav-number">1.3.3.</span> <span class="nav-text">启动流程实例</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%94%AF%E7%BA%BF%E4%BA%A4%E6%98%93%E6%80%A7-sidetrack-transactionality"><span class="nav-number">1.3.4.</span> <span class="nav-text">支线：交易性 (Sidetrack:
-transactionality)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9F%A5%E8%AF%A2%E5%92%8C%E5%AE%8C%E6%88%90%E4%BB%BB%E5%8A%A1"><span class="nav-number">1.3.5.</span> <span class="nav-text">查询和完成任务</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BC%96%E5%86%99javadelegate"><span class="nav-number">1.3.6.</span> <span class="nav-text">编写JavaDelegate</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A4%84%E7%90%86%E5%8E%86%E5%8F%B2%E6%95%B0%E6%8D%AE"><span class="nav-number">1.3.7.</span> <span class="nav-text">处理历史数据</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BB%93%E8%AE%BA"><span class="nav-number">1.3.8.</span> <span class="nav-text">结论</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#floable-rest-api%E5%85%A5%E9%97%A8"><span class="nav-number">1.4.</span> <span class="nav-text">Floable REST API入门</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AE%BE%E7%BD%AErest%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F"><span class="nav-number">1.4.1.</span> <span class="nav-text">设置REST应用程序</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%83%A8%E7%BD%B2%E6%B5%81%E7%A8%8B%E5%AE%9A%E4%B9%89-1"><span class="nav-number">1.4.2.</span> <span class="nav-text">部署流程定义</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B%E5%AE%9E%E4%BE%8B-1"><span class="nav-number">1.4.3.</span> <span class="nav-text">启动流程实例</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BA%BA%E7%89%A9%E5%88%97%E8%A1%A8%E5%92%8C%E5%AE%8C%E6%88%90%E4%BB%BB%E5%8A%A1"><span class="nav-number">1.4.4.</span> <span class="nav-text">人物列表和完成任务</span></a></li></ol></li></ol></li></ol></div>
+transactionality)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9F%A5%E8%AF%A2%E5%92%8C%E5%AE%8C%E6%88%90%E4%BB%BB%E5%8A%A1"><span class="nav-number">1.3.5.</span> <span class="nav-text">查询和完成任务</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BC%96%E5%86%99javadelegate"><span class="nav-number">1.3.6.</span> <span class="nav-text">编写JavaDelegate</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A4%84%E7%90%86%E5%8E%86%E5%8F%B2%E6%95%B0%E6%8D%AE"><span class="nav-number">1.3.7.</span> <span class="nav-text">处理历史数据</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BB%93%E8%AE%BA"><span class="nav-number">1.3.8.</span> <span class="nav-text">结论</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#flowable-rest-api%E5%85%A5%E9%97%A8"><span class="nav-number">1.4.</span> <span class="nav-text">Flowable REST API入门</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AE%BE%E7%BD%AErest%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F"><span class="nav-number">1.4.1.</span> <span class="nav-text">设置REST应用程序</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%83%A8%E7%BD%B2%E6%B5%81%E7%A8%8B%E5%AE%9A%E4%B9%89-1"><span class="nav-number">1.4.2.</span> <span class="nav-text">部署流程定义</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B%E5%AE%9E%E4%BE%8B-1"><span class="nav-number">1.4.3.</span> <span class="nav-text">启动流程实例</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BA%BA%E7%89%A9%E5%88%97%E8%A1%A8%E5%92%8C%E5%AE%8C%E6%88%90%E4%BB%BB%E5%8A%A1"><span class="nav-number">1.4.4.</span> <span class="nav-text">人物列表和完成任务</span></a></li></ol></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
