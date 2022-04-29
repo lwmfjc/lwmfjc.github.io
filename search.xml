@@ -1975,7 +1975,14 @@ getVariable("someVariable")</em>时，将返回瞬态变量值。</li>
 <li><p>典型示例 <img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/api.transient.variable.example.png"
 alt="api.transient.variable.example" /></p></li>
-<li></li>
+<li><p>瞬态变量传递</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">ProcessInstance</span> <span class="variable">processInstance</span> <span class="operator">=</span> runtimeService.createProcessInstanceBuilder()</span><br><span class="line">       .processDefinitionKey(<span class="string">&quot;someKey&quot;</span>)</span><br><span class="line">       .transientVariable(<span class="string">&quot;configParam01&quot;</span>, <span class="string">&quot;A&quot;</span>)</span><br><span class="line">       .transientVariable(<span class="string">&quot;configParam02&quot;</span>, <span class="string">&quot;B&quot;</span>)</span><br><span class="line">       .transientVariable(<span class="string">&quot;configParam03&quot;</span>, <span class="string">&quot;C&quot;</span>)</span><br><span class="line">       .start();</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>获取数据</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">FetchDataServiceTask</span> <span class="keyword">implements</span> <span class="title class_">JavaDelegate</span> &#123;</span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">execute</span><span class="params">(DelegateExecution execution)</span> &#123;</span><br><span class="line">    <span class="type">String</span> <span class="variable">configParam01</span> <span class="operator">=</span> (String) execution.getVariable(configParam01);</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line">    <span class="type">RestResponse</span> <span class="variable">restResponse</span> <span class="operator">=</span> executeRestCall();</span><br><span class="line">    execution.setTransientVariable(<span class="string">&quot;response&quot;</span>, restResponse.getBody());</span><br><span class="line">    execution.setTransientVariable(<span class="string">&quot;status&quot;</span>, restResponse.getStatus());</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>离开独占网关的序列流的条件不知道使用的是持久变量还是瞬态变量（在本例中为<em>状态</em>瞬态变量）：</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">conditionExpression</span> <span class="attr">xsi:type</span>=<span class="string">&quot;tFormalExpression&quot;</span>&gt;</span>$&#123;status == 200&#125;<span class="tag">&lt;/<span class="name">conditionExpression</span>&gt;</span></span><br></pre></td></tr></table></figure></li>
+</ul></li>
 </ul>
 <h3 id="表达式">表达式</h3>
 <h3 id="表达式函数">表达式函数</h3>
