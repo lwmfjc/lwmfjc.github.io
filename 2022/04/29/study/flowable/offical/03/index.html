@@ -389,10 +389,84 @@ alt="api.transient.variable.example" /></p></li>
 </ul></li>
 </ul>
 <h3 id="表达式">表达式</h3>
+<p>Flowable使用UEL进行表达式解析，UEL代表统一表达式语言，是EE6规范的一部分。两种类型的表达式（值表达式和方法表达式），都可以在需要表达式的地方使用</p>
+<ul>
+<li><p>值表达式，解析为一个值</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">$&#123;myVar&#125;</span><br><span class="line">$&#123;myBean.myProperty&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>方法表达式：调用带或不带参数的方法</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">$&#123;printer.print()&#125;</span><br><span class="line">$&#123;myBean.addNewOrder(&#x27;orderName&#x27;)&#125;</span><br><span class="line">$&#123;myBean.doSomething(myVar, execution)&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
 <h3 id="表达式函数">表达式函数</h3>
+<p>一些开箱即用的函数</p>
+<ul>
+<li><strong>variables:get(varName)</strong>：检索变量的值。与直接在表达式中写变量名的主要区别在于，当变量不存在时，使用这个函数不会抛出异常。例如，如果<em>myVariable</em>不存在，<em><span
+class="math inline">\({myVariable ==
+&quot;hello&quot;}*会抛出异常，但*\)</span>{var:get(myVariable) ==
+'hello'}</em>会正常工作。</li>
+<li><strong>variables:getOrDefault(varName,
+defaultValue)</strong>：类似于<em>get</em>，但可以选择提供默认值，当变量未设置或值为<em>null</em>时返回。</li>
+<li><strong>variables:exists(varName)</strong>
+：如果变量具有非空值，则返回<em>true 。</em></li>
+<li><strong>variables:isEmpty(varName)</strong> (alias <em>:empty</em> )
+: 检查变量值是否不为空。根据变量类型，行为如下：
+<ul>
+<li>对于字符串变量，如果变量是空字符串，则认为该变量为空。</li>
+<li>对于 java.util.Collection 变量，如果集合没有元素，则返回<em>true
+。</em></li>
+<li>对于 ArrayNode 变量，如果没有元素则返回<em>true</em></li>
+<li>如果变量为<em>null</em>，则始终返回<em>true</em></li>
+</ul></li>
+<li><strong>variables:isNotEmpty(varName)</strong> (alias <em>:
+notEmpty) :</em> <em>isEmpty</em>的逆运算。</li>
+<li><strong>variables:equals(varName,
+value)</strong>（别名<em>:eq</em>）：检查变量是否等于给定值。这是表达式的简写函数，否则将被写为<em>${execution.getVariable("varName")
+!= null &amp;&amp; execution.getVariable("varName") == value}</em>。
+<ul>
+<li>如果变量值为 null，则返回 false（除非与 null 比较）。</li>
+</ul></li>
+<li><strong>variables:notEquals(varName, value)</strong>（别名<em>:ne
+）：</em> <em>equals</em>的反向比较。</li>
+<li><strong>variables:contains(varName, value1, value2,
+...)</strong>：检查提供的<strong>所有</strong>值是否包含在变量中。根据变量类型，行为如下：
+<ul>
+<li>对于字符串变量，传递的值用作需要成为变量一部分的子字符串</li>
+<li>对于 java.util.Collection
+变量，所有传递的值都需要是集合的一个元素（正则<em>包含</em>语义）。</li>
+<li>对于 ArrayNode 变量：支持检查 arraynode
+是否包含作为变量类型支持的类型的 JsonNode</li>
+<li>当变量值为 null 时，在所有情况下都返回
+false。当变量值不为null，且实例类型不是上述类型之一时，会返回false。</li>
+</ul></li>
+<li><strong>variables:containsAny(varName, value1, value2,
+...)</strong>：类似于<em>contains</em>函数，但如果<strong>任何</strong>（而非全部）传递的值包含在变量中，则将返回<em>true
+。</em></li>
+<li><strong>variables:base64(varName)</strong>：将二进制或字符串变量转换为
+Base64 字符串</li>
+<li>比较器功能：
+<ul>
+<li><strong>variables:lowerThan(varName, value)</strong>
+(别名<em>:lessThan</em>或<em>:lt</em> ) :
+<em>${execution.getVariable("varName") != null &amp;&amp;
+execution.getVariable("varName") &lt; value}的简写</em></li>
+<li><strong>变量：lowerThanOrEquals(varName,
+value)</strong>（别名<em>:lessThanOrEquals</em>或<em>:lte</em>）：类似，但现在用于<em>&lt;
+=</em></li>
+<li><strong>variables:greaterThan(varName, value)</strong> (alias
+<em>:gt</em> ) : 类似，但现在用于<em>&gt;</em></li>
+<li><strong>variables:greaterThanOrEquals(varName, value)</strong>
+(alias <em>:gte</em> ) : 类似，但现在用于<em>&gt; =</em></li>
+</ul></li>
+<li></li>
+</ul>
 <h3 id="单元测试">单元测试</h3>
+<p>使用自定义资源进行单元测试</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="meta">@FlowableTest</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyBusinessProcessTest</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> ProcessEngine processEngine;</span><br><span class="line">    <span class="keyword">private</span> RuntimeService runtimeService;</span><br><span class="line">    <span class="keyword">private</span> TaskService taskService;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@BeforeEach</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">setUp</span><span class="params">(ProcessEngine processEngine)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.processEngine = processEngine;</span><br><span class="line">        <span class="built_in">this</span>.runtimeService = processEngine.getRuntimeService();</span><br><span class="line">        <span class="built_in">this</span>.taskService = processEngine.getTaskService();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="meta">@Deployment(resources = &quot;holiday-request.bpmn20.xml&quot;)</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">testSimpleProcess</span><span class="params">()</span> &#123;</span><br><span class="line">        HashMap&lt;String, Object&gt; employeeInfo = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">        employeeInfo.put(<span class="string">&quot;employee&quot;</span>, <span class="string">&quot;wangwu1028930&quot;</span>);</span><br><span class="line">        <span class="comment">//employeeInfo.put()</span></span><br><span class="line">        runtimeService.startProcessInstanceByKey(</span><br><span class="line">                <span class="string">&quot;holidayRequest&quot;</span>, employeeInfo</span><br><span class="line">        );</span><br><span class="line">        <span class="type">Task</span> <span class="variable">task</span> <span class="operator">=</span> taskService.createTaskQuery().singleResult();</span><br><span class="line">        assertEquals(<span class="string">&quot;Approve or reject request&quot;</span>, task.getName());</span><br><span class="line">        HashMap&lt;String, Object&gt; hashMap = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">        hashMap.put(<span class="string">&quot;approved&quot;</span>, <span class="literal">true</span>);</span><br><span class="line">        taskService.complete(task.getId(), hashMap);</span><br><span class="line">        assertEquals(<span class="number">1</span>, runtimeService</span><br><span class="line">                .createProcessInstanceQuery().count());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <h3 id="调试单元测试">调试单元测试</h3>
 <h3 id="web应用程序中的流程引擎">Web应用程序中的流程引擎</h3>
+<p>编写一个简单的ServletContextListener来初始化和销毁普通Servlet环境中的流程引擎</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ProcessEnginesServletContextListener</span> <span class="keyword">implements</span> <span class="title class_">ServletContextListener</span> &#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">contextInitialized</span><span class="params">(ServletContextEvent servletContextEvent)</span> &#123;</span><br><span class="line">    ProcessEngines.init();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">contextDestroyed</span><span class="params">(ServletContextEvent servletContextEvent)</span> &#123;</span><br><span class="line">    ProcessEngines.destroy();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其中，ProcessEngines.init()将在类路径中查找flowable.cfg.xml资源文件，并为给定的配置创建一个ProcessEngine，使用下面两种方式来获取他</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">ProcessEngines.getDefaultProcessEngine()</span><br><span class="line"><span class="comment">//或者下面的方式</span></span><br><span class="line">ProcessEngines.getProcessEngine(<span class="string">&quot;myName&quot;</span>);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
     </div>
 
