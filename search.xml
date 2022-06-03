@@ -4597,10 +4597,105 @@ alt="image-20220603103731707" />
     <title>19-28</title>
     <url>/2022/06/03/study/mybatis_plus/bl_sgg/19-28/</url>
     <content><![CDATA[<h2 id="通用service应用">通用Service应用</h2>
+<ul>
+<li><p>这里会出现 publicKey is now allowed
+，在数据库连接语句后面加上这句话即可 allowPublicKeyRetrieval=true</p>
+<figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="attr">spring:</span></span><br><span class="line">  <span class="comment">#配置数据源</span></span><br><span class="line">  <span class="attr">datasource:</span></span><br><span class="line">    <span class="comment">#配置数据源类型</span></span><br><span class="line">    <span class="attr">type:</span> <span class="string">com.zaxxer.hikari.HikariDataSource</span></span><br><span class="line">    <span class="comment">#配置数据源各个信息</span></span><br><span class="line">    <span class="attr">driver-class-name:</span> <span class="string">com.mysql.cj.jdbc.Driver</span></span><br><span class="line">    <span class="attr">url:</span> <span class="string">jdbc:mysql://localhost:3306/mybatis_plus?characterEncoding=utf-8&amp;&amp;useSSL=false&amp;&amp;allowPublicKeyRetrieval=true</span></span><br><span class="line">    <span class="attr">username:</span> <span class="string">root</span></span><br><span class="line">    <span class="attr">password:</span> <span class="number">123456</span></span><br></pre></td></tr></table></figure></li>
+<li><p>查询</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">testList</span><span class="params">()</span>&#123;</span><br><span class="line">    <span class="comment">//List&lt;User&gt; list = userService.list();</span></span><br><span class="line">    <span class="type">long</span> <span class="variable">count</span> <span class="operator">=</span> userService.count();</span><br><span class="line">    System.out.println(<span class="string">&quot;总条数：&quot;</span>+count);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>SQL执行语句</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">==&gt;  Preparing: SELECT COUNT( * ) FROM user</span><br><span class="line">==&gt; Parameters: </span><br><span class="line">&lt;==    Columns: COUNT( * )</span><br><span class="line">&lt;==        Row: 5</span><br><span class="line">&lt;==      Total: 1</span><br></pre></td></tr></table></figure></li>
+<li><p>批量添加</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">batchInsert</span><span class="params">()</span>&#123;</span><br><span class="line">    List&lt;User&gt; users=<span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">0</span>;i&lt;<span class="number">10</span>;i++)&#123;</span><br><span class="line">        User user=<span class="keyword">new</span> <span class="title class_">User</span>();</span><br><span class="line">        user.setName(<span class="string">&quot;name&quot;</span>+i);</span><br><span class="line">        user.setEmail(<span class="string">&quot;email&quot;</span>+i);</span><br><span class="line">        users.add(user);</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    <span class="type">boolean</span> <span class="variable">b</span> <span class="operator">=</span> userService.saveBatch(users);</span><br><span class="line">    System.out.println(<span class="string">&quot;result:&quot;</span>+b);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>sql日志输出</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">==&gt;  Preparing: INSERT INTO <span class="title function_">user</span> <span class="params">( id, name, email )</span> VALUES ( ?, ?, ? )</span><br><span class="line">==&gt; Parameters: <span class="number">1532579686881243138</span>(Long), name0(String), email0(String)</span><br><span class="line">==&gt; Parameters: <span class="number">1532579687124512770</span>(Long), name1(String), email1(String)</span><br><span class="line">==&gt; Parameters: <span class="number">1532579687128707074</span>(Long), name2(String), email2(String)</span><br><span class="line">==&gt; Parameters: <span class="number">1532579687128707075</span>(Long), name3(String), email3(String)</span><br><span class="line">==&gt; Parameters: <span class="number">1532579687132901377</span>(Long), name4(String), email4(String)</span><br><span class="line">==&gt; Parameters: <span class="number">1532579687137095681</span>(Long), name5(String), email5(String)</span><br><span class="line">==&gt; Parameters: <span class="number">1532579687137095682</span>(Long), name6(String), email6(String)</span><br><span class="line">==&gt; Parameters: <span class="number">1532579687141289985</span>(Long), name7(String), email7(String)</span><br><span class="line">==&gt; Parameters: <span class="number">1532579687145484289</span>(Long), name8(String), email8(String)</span><br><span class="line">==&gt; Parameters: <span class="number">1532579687145484290</span>(Long), name9(String), email9(String)</span><br><span class="line">result:<span class="literal">true</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>注意，这里是一个个的insert into
+，而不是一条(单个的sql语句进行循环添加)</p></li>
+</ul>
 <h2 id="mybatis-plus常用注解1">MyBatis-Plus常用注解1</h2>
-<h2 id="table的value属性"><span class="citation"
-data-cites="Table的value属性">@Table的value属性</span></h2>
+<ul>
+<li><p>现在将mysql数据库表user名改为t_user 会提示下面的报错</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Cause: java.sql.BatchUpdateException: Table &#x27;mybatis_plus.user&#x27; doesn&#x27;t exist</span><br></pre></td></tr></table></figure>
+<p>说明mybatis plus查询的时候会去找实体类名一样的表</p></li>
+<li><p>使用@TableName("t_user") 设置实体类对应的表名</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="meta">@TableName(&quot;t_user&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">User</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> Long id;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">    <span class="keyword">private</span> Integer age;</span><br><span class="line">    <span class="keyword">private</span> String email;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>修改后执行成功</li>
+</ul></li>
+<li><p>统一添加</p>
+<figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="attr">mybatis-plus:</span></span><br><span class="line">  <span class="attr">configuration:</span></span><br><span class="line">  <span class="attr">global-config:</span></span><br><span class="line">    <span class="attr">db-config:</span></span><br><span class="line">      <span class="attr">table-prefix:</span> <span class="string">t_</span></span><br></pre></td></tr></table></figure></li>
+<li><p>指定主键名
+假设现在把数据库列名和bean的属性名id改为uid,此时新增一条记录</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Field &#x27;uid&#x27; doesn&#x27;t have a default value</span><br><span class="line">; Field &#x27;uid&#x27; doesn&#x27;t have a default value; nested exception is java.sql.SQLException: Field &#x27;uid&#x27; doesn&#x27;t have a default value</span><br></pre></td></tr></table></figure>
+<ul>
+<li>说明此时没有为uid赋值</li>
+</ul></li>
+<li><p>使用@TableId告诉mybatis-plus那个字段为主键，让mybatis-plus为他赋默认值</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">User</span> &#123;</span><br><span class="line">    <span class="meta">@TableId</span></span><br><span class="line">    <span class="keyword">private</span> Long uid;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">    <span class="keyword">private</span> Integer age;</span><br><span class="line">    <span class="keyword">private</span> String email;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>sql打印</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">==&gt;  Preparing: INSERT INTO t_user ( uid, name, age ) VALUES ( ?, ?, ? )</span><br><span class="line">==&gt; Parameters: 1532582462671618050(Long), 张三(String), 18(Integer)</span><br><span class="line">&lt;==    Updates: 1</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="tableid的value属性"><span class="citation"
+data-cites="TableId的value属性">@TableId的value属性</span></h2>
+<ul>
+<li><p>用于指定绑定的主键的字段
+假设此时将bean的主键属性名为id，数据库主键名是uid</p></li>
+<li><p>此时运行，会提示</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">### SQL: INSERT INTO <span class="title function_">t_user</span>  <span class="params">( id, name, age )</span>  VALUES  ( ?, ?, ? )</span><br><span class="line">### Cause: java.sql.SQLSyntaxErrorException: Unknown column <span class="string">&#x27;id&#x27;</span> in <span class="string">&#x27;field list&#x27;</span></span><br></pre></td></tr></table></figure>
+<p>他会拿bean的属性来生成sql语句</p></li>
+<li><p>加上@TableId(value="uid")后运行正常</p></li>
+</ul>
+<h2 id="tableid的value属性-1"><span class="citation"
+data-cites="TableId的value属性">@TableId的value属性</span></h2>
+<ul>
+<li><p>```java</p>
+<p>/**</p>
+<ul>
+<li><p>生成ID类型枚举类</p></li>
+<li></li>
+<li><p><span class="citation" data-cites="author">@author</span>
+hubin</p></li>
+<li><p><span class="citation" data-cites="since">@since</span>
+2015-11-10 */ <span class="citation" data-cites="Getter">@Getter</span>
+public enum IdType { /**</p>
+<ul>
+<li>数据库ID自增</li>
+<li><p>
+该类型请确保数据库设置了 ID自增 否则无效
+</p>
+*/ AUTO(0), /**</li>
+<li>该类型为未设置主键类型(注解里等于跟随全局,全局里约等于 INPUT) */
+NONE(1), /**</li>
+<li>用户输入ID</li>
+<li><p>
+该类型可以通过自己注册自动填充插件进行填充
+</p>
+*/ INPUT(2),</li>
+</ul>
+<p>/* 以下3种类型、只有当插入对象ID 为空，才自动填充。 */ /**</p>
+<ul>
+<li>分配ID (主键类型为number或string）,</li>
+<li>默认实现类 {<span class="citation" data-cites="link">@link</span>
+com.baomidou.mybatisplus.core.incrementer.DefaultIdentifierGenerator}(雪花算法)</li>
+<li></li>
+<li><span class="citation" data-cites="since">@since</span> 3.3.0 */
+ASSIGN_ID(3), /**</li>
+<li>分配UUID (主键类型为 string)</li>
+<li>默认实现类 {<span class="citation" data-cites="link">@link</span>
+com.baomidou.mybatisplus.core.incrementer.DefaultIdentifierGenerator}(UUID.replace("-",""))
+*/ ASSIGN_UUID(4);</li>
+</ul>
+<p>private final int key;</p>
+<p>IdType(int key) { this.key = key; } } <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">- ```java</span><br><span class="line">  //使用自增</span><br><span class="line">  @TableId(value=&quot;uid&quot;,type = IdType.AUTO )</span><br><span class="line">      private Long id;</span><br><span class="line">     </span><br></pre></td></tr></table></figure></p></li>
+</ul></li>
+<li><p>然后将数据库主键设置为自动递增</p></li>
+<li><p>新增后id为6</p></li>
+</ul>
 <h2 id="通过全局属性设置主键生成策略">通过全局属性设置主键生成策略</h2>
+<ul>
+<li><p>全局配置设置</p>
+<figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="attr">mybatis-plus:</span> </span><br><span class="line">  <span class="attr">global-config:</span></span><br><span class="line">    <span class="attr">db-config:</span> </span><br><span class="line">      <span class="attr">id-type:</span> <span class="string">auto</span></span><br></pre></td></tr></table></figure></li>
+</ul>
 <h2 id="雪花算法">雪花算法</h2>
 <h2 id="mybatis-plus常用注解2">MyBatis-Plus常用注解2</h2>
 <h2 id="条件构造器">条件构造器</h2>
