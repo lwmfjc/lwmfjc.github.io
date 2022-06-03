@@ -2013,9 +2013,18 @@ alt="image-20220531233910990" /></li>
       </tags>
   </entry>
   <entry>
-    <title>2.6</title>
-    <url>/2022/05/31/study/algorithm/algorithhms_4th/2.6/</url>
-    <content><![CDATA[
+    <title>3.1.1-X</title>
+    <url>/2022/05/31/study/algorithm/algorithhms_4th/3.1.1-X/</url>
+    <content><![CDATA[<h1 id="查找">查找</h1>
+<ul>
+<li><h2 id="经典查找算法">经典查找算法</h2>
+<ul>
+<li></li>
+</ul></li>
+<li></li>
+</ul>
+<h2 id="符号表">符号表</h2>
+<h3 id="api">API</h3>
 ]]></content>
       <categories>
         <category>学习</category>
@@ -4713,6 +4722,45 @@ alt="image-20220603182604230" /></li>
 </ul></li>
 </ul>
 <h2 id="mybatis-plus常用注解2">MyBatis-Plus常用注解2</h2>
+<ul>
+<li><p>此时数据库字段名为name，如果现在实体类的名字改为userName，那么会报错</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">INSERT INTO t_user  ( user_name, age )  VALUES  ( ?, ? )</span><br></pre></td></tr></table></figure>
+<p>又一次证明了MyBatis-plus通过实体类属性猜测数据库表的相关字段</p>
+<ul>
+<li><p>使用@TableFiled来指定对应的字段名</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@TableField(value = &quot;name&quot;)</span></span><br><span class="line"><span class="keyword">private</span> String userName;</span><br></pre></td></tr></table></figure></li>
+<li><p>查询</p>
+<ul>
+<li><p>代码</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">selectTest</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="type">User</span> <span class="variable">user</span> <span class="operator">=</span> userService.getById(<span class="number">5L</span>);</span><br><span class="line">    System.out.println(<span class="string">&quot;结果:&quot;</span> + user);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>sql执行语句</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">==&gt;  Preparing: SELECT uid AS id,name AS userName,age,email,is_deleted_ly FROM t_user WHERE uid=? AND is_deleted_ly=0</span><br><span class="line">==&gt; Parameters: 5(Long)</span><br><span class="line">&lt;==    Columns: id, userName, age, email, is_deleted_ly</span><br><span class="line">&lt;==        Row: 5, Billie, 24, email被修改了, 0</span><br><span class="line">&lt;==      Total: 1</span><br><span class="line">Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@5e048149]</span><br><span class="line">结果:User(id=5, userName=Billie, age=24, email=email被修改了, isDeletedLy=0)</span><br></pre></td></tr></table></figure></li>
+</ul></li>
+</ul></li>
+<li><p>逻辑删除(主要是允许数据的恢复)
+这里增加一个isDeletedLy字段（这里为了测试，一般是isDeleted）</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220603234839526.png"
+alt="image-20220603234839526" />
+<figcaption aria-hidden="true">image-20220603234839526</figcaption>
+</figure>
+<ul>
+<li><p>在User类添加下面的字段</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@TableLogic</span></span><br><span class="line"><span class="keyword">private</span> Integer isDeletedLy;</span><br></pre></td></tr></table></figure></li>
+<li><p>逻辑删除</p>
+<ul>
+<li><p>代码</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">deleteLogic</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="type">boolean</span> <span class="variable">save</span> <span class="operator">=</span> userService.removeBatchByIds(Arrays.asList(<span class="number">1L</span>,<span class="number">2L</span>,<span class="number">3L</span>));</span><br><span class="line">    System.out.println(<span class="string">&quot;结果:&quot;</span> + save);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>sql执行语句
+<strong>注意，这里使用了is_deleted_ly=0是因为在下面的步骤加入了逻辑删除注解</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">==&gt;  Preparing: UPDATE t_user SET is_deleted_ly=1 WHERE uid=? AND is_deleted_ly=0</span><br><span class="line">==&gt; Parameters: 1(Long)</span><br><span class="line">==&gt; Parameters: 2(Long)</span><br><span class="line">==&gt; Parameters: 3(Long)</span><br></pre></td></tr></table></figure></li>
+<li><p>结果 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220603235258702.png"
+alt="image-20220603235258702" /></p></li>
+</ul></li>
+</ul></li>
+</ul>
 <h2 id="条件构造器">条件构造器</h2>
 <h2 id="lambdaquerywrapper">LambdaQueryWrapper</h2>
 <h2 id="mybatis分页">MyBatis分页</h2>
