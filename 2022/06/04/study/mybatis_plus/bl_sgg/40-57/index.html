@@ -20,15 +20,15 @@
     var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="LambdaXxxWrapper  LambdaQueryWrapper主要是为了防止字段名写错 @Test public void test11()&amp;#123;       String username&#x3D;&quot;abc&quot;;     Integer ageBegin&#x3D;null;     Integer ageEnd&#x3D;30;     LambdaQueryWrapper&lt;Use">
+  <meta name="description" content="40-57">
 <meta property="og:type" content="article">
 <meta property="og:title" content="40-57">
 <meta property="og:url" content="http://example.com/2022/06/04/study/mybatis_plus/bl_sgg/40-57/index.html">
 <meta property="og:site_name" content="随记">
-<meta property="og:description" content="LambdaXxxWrapper  LambdaQueryWrapper主要是为了防止字段名写错 @Test public void test11()&amp;#123;       String username&#x3D;&quot;abc&quot;;     Integer ageBegin&#x3D;null;     Integer ageEnd&#x3D;30;     LambdaQueryWrapper&lt;Use">
+<meta property="og:description" content="40-57">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2022-06-04T11:49:54.000Z">
-<meta property="article:modified_time" content="2022-06-04T11:49:54.000Z">
+<meta property="article:modified_time" content="2022-06-04T16:49:54.000Z">
 <meta property="article:author" content="刘易">
 <meta property="article:tag" content="算法红皮书(第四版)">
 <meta name="twitter:card" content="summary">
@@ -211,8 +211,9 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
+              
 
-              <time title="创建时间：2022-06-04 11:49:54" itemprop="dateCreated datePublished" datetime="2022-06-04T11:49:54+00:00">2022-06-04</time>
+              <time title="创建时间：2022-06-04 11:49:54 / 修改时间：16:49:54" itemprop="dateCreated datePublished" datetime="2022-06-04T11:49:54+00:00">2022-06-04</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -232,6 +233,7 @@
               <span class="post-meta-item-text">阅读次数：</span>
               <span id="busuanzi_value_page_pv"></span>
             </span>
+            <div class="post-description">40-57</div>
 
         </div>
       </header>
@@ -282,14 +284,153 @@
 </ul></li>
 </ul>
 <h2 id="悲观锁和乐观锁">悲观锁和乐观锁</h2>
+<ul>
+<li><p>场景 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220604141320188.png"
+alt="image-20220604141320188" /></p></li>
+<li><p>乐观锁根据版本号使用 version</p></li>
+<li><p>乐观锁实现流程 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220604141615175.png"
+alt="image-20220604141615175" /></p></li>
+</ul>
 <h2 id="模拟冲突">模拟冲突</h2>
+<ul>
+<li><p>表创建</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">CREATE TABLE t_product (</span><br><span class="line">	id BIGINT ( 20 ) NOT NULL COMMENT &#x27;主键id&#x27;,</span><br><span class="line">	NAME VARCHAR ( 30 ) null DEFAULT NULL COMMENT &#x27;商品名称&#x27;,</span><br><span class="line">	price INT ( 11 ) DEFAULT 0 COMMENT &#x27;价格&#x27;,</span><br><span class="line">	version INT ( 11 ) DEFAULT 0 COMMENT &#x27;乐观锁版本号&#x27;,</span><br><span class="line">    PRIMARY KEY ( id ) </span><br><span class="line">)</span><br></pre></td></tr></table></figure></li>
+<li><p>创建ProductMapper</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Repository</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">ProductMapper</span> <span class="keyword">extends</span> <span class="title class_">BaseMapper</span>&lt;Product&gt; &#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>数据库数据 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220604142342514.png"
+alt="image-20220604142342514" /></p></li>
+<li><p>代码</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">testModel</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">//小李查询商品</span></span><br><span class="line">    <span class="type">Product</span> <span class="variable">productLi</span> <span class="operator">=</span> productMapper.selectById(<span class="number">1L</span>);</span><br><span class="line">    <span class="comment">//小王查询商品</span></span><br><span class="line">    <span class="type">Product</span> <span class="variable">productWang</span> <span class="operator">=</span> productMapper.selectById(<span class="number">1L</span>);</span><br><span class="line">    <span class="comment">//小李将商品加50</span></span><br><span class="line">    productLi.setPrice(productLi.getPrice()+<span class="number">50</span>);</span><br><span class="line">    productMapper.updateById(productLi);</span><br><span class="line">  </span><br><span class="line">    <span class="comment">//小王将价格降低30</span></span><br><span class="line">    productWang.setPrice(productWang.getPrice()-<span class="number">30</span>);</span><br><span class="line">    productMapper.updateById(productWang);</span><br><span class="line">  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>sql日志</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">==&gt;  Preparing: UPDATE t_product SET name=?, price=?, version=? WHERE id=?</span><br><span class="line">==&gt; Parameters: 外星人(String), <span class="number">150</span>(Integer), <span class="number">0</span>(Integer), <span class="number">1</span>(Long)</span><br><span class="line">&lt;==    Updates: <span class="number">1</span></span><br><span class="line">Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@6325f352]</span><br><span class="line">Creating a <span class="keyword">new</span> <span class="title class_">SqlSession</span></span><br><span class="line">SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@70730db] was not registered <span class="keyword">for</span> synchronization because synchronization is not active</span><br><span class="line">JDBC Connection [HikariProxyConnection@<span class="number">91831175</span> wrapping com.mysql.cj.jdbc.ConnectionImpl@74ea46e2] will not be managed <span class="type">by</span> <span class="variable">Spring</span></span><br><span class="line"><span class="operator">=</span>=&gt;  Preparing: UPDATE t_product SET name=?, price=?, version=? WHERE id=?</span><br><span class="line">==&gt; Parameters: 外星人(String), <span class="number">70</span>(Integer), <span class="number">0</span>(Integer), <span class="number">1</span>(Long)</span><br><span class="line">&lt;==    Updates: <span class="number">1</span></span><br></pre></td></tr></table></figure>
+<p>//最终结果为70</p></li>
+</ul>
 <h2 id="乐观锁插件">乐观锁插件</h2>
+<ul>
+<li><p>在实体类中使用@Version注解表示乐观锁版本号</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Version</span></span><br><span class="line"><span class="keyword">private</span> Integer version;</span><br></pre></td></tr></table></figure></li>
+<li><p>配置类</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Bean</span></span><br><span class="line"><span class="keyword">public</span> MybatisPlusInterceptor <span class="title function_">mybatisPlusInterceptor</span><span class="params">()</span>&#123;</span><br><span class="line">    MybatisPlusInterceptor mybatisPlusInterceptor=<span class="keyword">new</span> <span class="title class_">MybatisPlusInterceptor</span>();</span><br><span class="line">    mybatisPlusInterceptor.addInnerInterceptor(<span class="keyword">new</span> <span class="title class_">PaginationInnerInterceptor</span>(DbType.MYSQL));</span><br><span class="line">    <span class="comment">//添加乐观锁插件</span></span><br><span class="line">    mybatisPlusInterceptor.addInnerInterceptor(<span class="keyword">new</span> <span class="title class_">OptimisticLockerInnerInterceptor</span>());</span><br><span class="line">    <span class="keyword">return</span> mybatisPlusInterceptor;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>再次运行代码</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">testModel</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">//小李查询商品</span></span><br><span class="line">    <span class="type">Product</span> <span class="variable">productLi</span> <span class="operator">=</span> productMapper.selectById(<span class="number">1L</span>);</span><br><span class="line">    <span class="comment">//小王查询商品</span></span><br><span class="line">    <span class="type">Product</span> <span class="variable">productWang</span> <span class="operator">=</span> productMapper.selectById(<span class="number">1L</span>);</span><br><span class="line">    <span class="comment">//小李将商品加50</span></span><br><span class="line">    productLi.setPrice(productLi.getPrice()+<span class="number">50</span>);</span><br><span class="line">    productMapper.updateById(productLi);</span><br><span class="line">  </span><br><span class="line">    <span class="comment">//小王将价格降低30</span></span><br><span class="line">    productWang.setPrice(productWang.getPrice()-<span class="number">30</span>);</span><br><span class="line">    productMapper.updateById(productWang);</span><br><span class="line">  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>sql日志查看</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">==&gt;  Preparing: UPDATE t_product SET name=?, price=?, version=? WHERE id=? AND version=?</span><br><span class="line">==&gt; Parameters: 外星人(String), 120(Integer), 1(Integer), 1(Long), 0(Integer)</span><br><span class="line">&lt;==    Updates: 1</span><br><span class="line">Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@2d64160c]</span><br><span class="line">Creating a new SqlSession</span><br><span class="line">SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@33063f5b] was not registered for synchronization because synchronization is not active</span><br><span class="line">JDBC Connection [HikariProxyConnection@356539350 wrapping com.mysql.cj.jdbc.ConnectionImpl@127a7272] will not be managed by Spring</span><br><span class="line">==&gt;  Preparing: UPDATE t_product SET name=?, price=?, version=? WHERE id=? AND version=?</span><br><span class="line">==&gt; Parameters: 外星人(String), 40(Integer), 1(Integer), 1(Long), 0(Integer)</span><br><span class="line">&lt;==    Updates: 0</span><br></pre></td></tr></table></figure></li>
+</ul>
 <h2 id="优化修改流程">优化修改流程</h2>
+<ul>
+<li><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">testModel</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">//小李查询商品</span></span><br><span class="line">    <span class="type">Product</span> <span class="variable">productLi</span> <span class="operator">=</span> productMapper.selectById(<span class="number">1L</span>);</span><br><span class="line">    <span class="comment">//小王查询商品</span></span><br><span class="line">    <span class="type">Product</span> <span class="variable">productWang</span> <span class="operator">=</span> productMapper.selectById(<span class="number">1L</span>);</span><br><span class="line">    <span class="comment">//小李将商品加50</span></span><br><span class="line">    productLi.setPrice(productLi.getPrice() + <span class="number">50</span>);</span><br><span class="line">    productMapper.updateById(productLi);</span><br><span class="line">  </span><br><span class="line">    <span class="comment">//小王将价格降低30</span></span><br><span class="line">    productWang.setPrice(productWang.getPrice() - <span class="number">30</span>);</span><br><span class="line">    <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> productMapper.updateById(productWang);</span><br><span class="line">  </span><br><span class="line">    <span class="comment">//如果小王操作失败,再获取一次</span></span><br><span class="line">    <span class="keyword">if</span> (i == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="type">Product</span> <span class="variable">product</span> <span class="operator">=</span> productMapper.selectById(<span class="number">1L</span>);</span><br><span class="line">        product.setPrice(product.getPrice() - <span class="number">30</span>);</span><br><span class="line">        productMapper.updateById(product);</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>sql日志打印</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">==&gt;  Preparing: UPDATE t_product SET name=?, price=?, version=? WHERE id=? AND version=?</span><br><span class="line">==&gt; Parameters: 外星人(String), 150(Integer), 6(Integer), 1(Long), 5(Integer)</span><br><span class="line">&lt;==    Updates: 1</span><br><span class="line">Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@544e8149]</span><br><span class="line">Creating a new SqlSession</span><br><span class="line">SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@48a0c8aa] was not registered for synchronization because synchronization is not active</span><br><span class="line">JDBC Connection [HikariProxyConnection@1637000661 wrapping com.mysql.cj.jdbc.ConnectionImpl@5f481b73] will not be managed by Spring</span><br><span class="line">==&gt;  Preparing: UPDATE t_product SET name=?, price=?, version=? WHERE id=? AND version=?</span><br><span class="line">==&gt; Parameters: 外星人(String), 70(Integer), 6(Integer), 1(Long), 5(Integer)</span><br><span class="line">&lt;==    Updates: 0</span><br><span class="line">Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@48a0c8aa]</span><br><span class="line">Creating a new SqlSession</span><br><span class="line">SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@4cbc2e3b] was not registered for synchronization because synchronization is not active</span><br><span class="line">JDBC Connection [HikariProxyConnection@43473566 wrapping com.mysql.cj.jdbc.ConnectionImpl@5f481b73] will not be managed by Spring</span><br><span class="line">==&gt;  Preparing: SELECT id,name,price,version FROM t_product WHERE id=?</span><br><span class="line">==&gt; Parameters: 1(Long)</span><br><span class="line">&lt;==    Columns: id, name, price, version</span><br><span class="line">&lt;==        Row: 1, 外星人, 150, 6</span><br><span class="line">&lt;==      Total: 1</span><br><span class="line">Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@4cbc2e3b]</span><br><span class="line">Creating a new SqlSession</span><br><span class="line">SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@57562473] was not registered for synchronization because synchronization is not active</span><br><span class="line">JDBC Connection [HikariProxyConnection@2050360660 wrapping com.mysql.cj.jdbc.ConnectionImpl@5f481b73] will not be managed by Spring</span><br><span class="line">==&gt;  Preparing: UPDATE t_product SET name=?, price=?, version=? WHERE id=? AND version=?</span><br><span class="line">==&gt; Parameters: 外星人(String), 120(Integer), 7(Integer), 1(Long), 6(Integer)</span><br><span class="line">&lt;==    Updates: 1</span><br><span class="line">Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@57562473]</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+</ul>
 <h2 id="通用枚举">通用枚举</h2>
+<ul>
+<li><p>添加一个enum类</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Getter</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">enum</span> <span class="title class_">SexEnum</span> &#123;</span><br><span class="line">    MALE(<span class="number">1</span>, <span class="string">&quot;男&quot;</span>),</span><br><span class="line">    FEMALE(<span class="number">2</span>, <span class="string">&quot;女&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Integer sex;</span><br><span class="line">    <span class="keyword">private</span> String sexName;</span><br><span class="line"></span><br><span class="line">    SexEnum(Integer sex, String sexName) &#123;</span><br><span class="line">        <span class="built_in">this</span>.sex = sex;</span><br><span class="line">        <span class="built_in">this</span>.sexName = sexName;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>数据库增加一个sex 字段，实体类增加一个sex属性 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220604163208649.png"
+alt="image-20220604163208649" /></p>
+<ul>
+<li><p>实体类</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> SexEnum sex;</span><br></pre></td></tr></table></figure></li>
+</ul></li>
+<li><p>进行添加</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">testEnum</span><span class="params">()</span>&#123;</span><br><span class="line">    User user=<span class="keyword">new</span> <span class="title class_">User</span>();</span><br><span class="line">    user.setUserName(<span class="string">&quot;enum - 测试名字&quot;</span>);</span><br><span class="line">    user.setSexEnum(SexEnum.MALE);</span><br><span class="line">    <span class="type">int</span> <span class="variable">insert</span> <span class="operator">=</span> userMapper.insert(user);</span><br><span class="line">    System.out.println(insert);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>注意看sql日志，有报错信息</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">==&gt;  Preparing: INSERT INTO t_user ( name, sex ) VALUES ( ?, ? )</span><br><span class="line">==&gt; Parameters: enum - 测试名字(String), MALE(String)</span><br><span class="line"></span><br><span class="line">### SQL: INSERT INTO t_user  ( name,    sex )  VALUES  ( ?,    ? )</span><br><span class="line">### Cause: java.sql.SQLException: Incorrect integer value: &#x27;MALE&#x27; for column &#x27;sex&#x27; at row 1</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>插入了非数字</p></li>
+<li><p>修正，enum类添加注解</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@EnumValue</span> <span class="comment">//将注解所标识的属性的值设置到数据库</span></span><br><span class="line">    <span class="keyword">private</span> Integer sex;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>扫描通用枚举的包 application.yml中</p>
+<figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="attr">mybatis-plus:</span> </span><br><span class="line">  <span class="attr">type-enums-package:</span> <span class="string">com.ly.mybatisplus.enums</span></span><br></pre></td></tr></table></figure></li>
+</ul></li>
+<li><p>运行测试类并查看日志</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">==&gt;  Preparing: INSERT INTO t_user ( name, sex ) VALUES ( ?, ? )</span><br><span class="line">==&gt; Parameters: enum - 测试名字(String), 1(Integer)</span><br><span class="line">&lt;==    Updates: 1</span><br></pre></td></tr></table></figure></li>
+</ul></li>
+</ul>
 <h2 id="代码生成器">代码生成器</h2>
+<a href="/2022/05/20/study/mybatis_plus/official/hello/" title="在28%进度的地方">在28%进度的地方</a>
+<ul>
+<li><p>mybatis-plus 代码自动生成</p>
+<ul>
+<li><p>maven 依赖</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">      </span><br><span class="line"><span class="comment">&lt;!-- https://mvnrepository.com/artifact/com.baomidou/mybatis-plus-generator --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.baomidou<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>mybatis-plus-generator<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>3.5.2<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!-- https://mvnrepository.com/artifact/org.apache.velocity/velocity-engine-core --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.velocity<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>velocity-engine-core<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.3<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure></li>
+<li><p>在测试类中编写程序让其自动生成</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> com.baomidou.mybatisplus.generator.FastAutoGenerator;</span><br><span class="line"><span class="keyword">import</span> com.baomidou.mybatisplus.generator.config.DataSourceConfig;</span><br><span class="line"><span class="keyword">import</span> org.apache.ibatis.jdbc.ScriptRunner;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.io.InputStream;</span><br><span class="line"><span class="keyword">import</span> java.io.InputStreamReader;</span><br><span class="line"><span class="keyword">import</span> java.sql.Connection;</span><br><span class="line"><span class="keyword">import</span> java.sql.SQLException;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * &lt;p&gt;</span></span><br><span class="line"><span class="comment"> * 快速生成</span></span><br><span class="line"><span class="comment"> * &lt;/p&gt;</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> lanjerry</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@since</span> 2021-09-16</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">FastAutoGeneratorTest</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 执行初始化数据库脚本</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">before</span><span class="params">()</span> <span class="keyword">throws</span> SQLException &#123;</span><br><span class="line">        <span class="type">Connection</span> <span class="variable">conn</span> <span class="operator">=</span> DATA_SOURCE_CONFIG.build().getConn();</span><br><span class="line">        <span class="type">InputStream</span> <span class="variable">inputStream</span> <span class="operator">=</span> FastAutoGeneratorTest.class.getResourceAsStream(<span class="string">&quot;/db/schema-mysql.sql&quot;</span>);</span><br><span class="line">        <span class="type">ScriptRunner</span> <span class="variable">scriptRunner</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ScriptRunner</span>(conn);</span><br><span class="line">        scriptRunner.setAutoCommit(<span class="literal">true</span>);</span><br><span class="line">        scriptRunner.runScript(<span class="keyword">new</span> <span class="title class_">InputStreamReader</span>(inputStream));</span><br><span class="line">        conn.close();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 数据源配置</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> DataSourceConfig.<span class="type">Builder</span> <span class="variable">DATA_SOURCE_CONFIG</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">DataSourceConfig</span></span><br><span class="line">            .Builder(<span class="string">&quot;jdbc:mysql://localhost:3306/mybatis_plus_demo?useUnicode=true&amp;characterEncoding=utf-8&amp;allowMultiQueries=true&amp;nullCatalogMeansCurrent=true&quot;</span>, <span class="string">&quot;root&quot;</span>, <span class="string">&quot;123456&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 执行 run</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> SQLException &#123;</span><br><span class="line">        before();</span><br><span class="line">        FastAutoGenerator.create(DATA_SOURCE_CONFIG)</span><br><span class="line">                <span class="comment">// 全局配置</span></span><br><span class="line">                .globalConfig((scanner, builder) -&gt; builder.author(scanner.apply(<span class="string">&quot;请输入作者名称&quot;</span>)))</span><br><span class="line">                <span class="comment">// 包配置</span></span><br><span class="line">                .packageConfig((scanner, builder) -&gt; builder.parent(scanner.apply(<span class="string">&quot;请输入包名&quot;</span>)))</span><br><span class="line">                <span class="comment">// 策略配置</span></span><br><span class="line">                .strategyConfig((scanner, builder) -&gt; builder.addInclude(scanner.apply(<span class="string">&quot;请输入表名，多个表名用,隔开&quot;</span>)))</span><br><span class="line">                <span class="comment">/*</span></span><br><span class="line"><span class="comment">                    模板引擎配置，默认 Velocity 可选模板引擎 Beetl 或 Freemarker</span></span><br><span class="line"><span class="comment">                   .templateEngine(new BeetlTemplateEngine())</span></span><br><span class="line"><span class="comment">                   .templateEngine(new FreemarkerTemplateEngine())</span></span><br><span class="line"><span class="comment">                 */</span></span><br><span class="line">                .execute();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<ul>
+<li>shang gui gu 配置 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220604165408694.png"
+alt="image-20220604165408694" /></li>
+</ul>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220604165451088.png"
+alt="image-20220604165451088" />
+<figcaption aria-hidden="true">image-20220604165451088</figcaption>
+</figure></li>
+<li></li>
+</ul></li>
+</ul>
 <h2 id="模拟多数据源环境">模拟多数据源环境</h2>
+<ul>
+<li><p>新建一个mybatis-plus数据库和表 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220604170202852.png"
+alt="image-20220604170202852" /></p></li>
+<li><p>maven依赖添加</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="comment">&lt;!-- https://mvnrepository.com/artifact/com.baomidou/dynamic-datasource-spring-boot-starter --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.baomidou<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>dynamic-datasource-spring-boot-starter<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>3.5.1<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+<li><p>前提 使用mybatis_plus中的t_product表
+及mybatis_plus1中的t_product1表</p></li>
+<li><p>yml配置</p>
+<figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="attr">spring:</span></span><br><span class="line">  <span class="attr">datasource:</span></span><br><span class="line">    <span class="attr">dynamic:</span></span><br><span class="line">      <span class="attr">primary:</span> <span class="string">master</span> <span class="comment">#设置默认的数据源或者数据源组,默认值即为master</span></span><br><span class="line">      <span class="attr">strict:</span> <span class="literal">false</span> <span class="comment">#严格匹配数据源,默认false. true未匹配到指定数据源时抛异常,false使用默认数据源</span></span><br><span class="line">      <span class="attr">datasource:</span></span><br><span class="line">        <span class="attr">master:</span></span><br><span class="line">          <span class="attr">url:</span> <span class="string">jdbc:mysql://localhost:3306/mybatis_plus?characterEncoding=utf-8&amp;&amp;useSSL=false&amp;&amp;allowPublicKeyRetrieval=true</span></span><br><span class="line">          <span class="attr">username:</span> <span class="string">root</span></span><br><span class="line">          <span class="attr">password:</span> <span class="number">123456</span></span><br><span class="line">          <span class="attr">driver-class-name:</span> <span class="string">com.mysql.jdbc.Driver</span> <span class="comment"># 3.2.0开始支持SPI可省略此配置</span></span><br><span class="line">        <span class="attr">slave_1:</span></span><br><span class="line">          <span class="attr">url:</span> <span class="string">jdbc:mysql://localhost:3306/mybatis_plus_1?characterEncoding=utf-8&amp;&amp;useSSL=false&amp;&amp;allowPublicKeyRetrieval=true</span></span><br><span class="line">          <span class="attr">username:</span> <span class="string">root</span></span><br><span class="line">          <span class="attr">password:</span> <span class="number">123456</span></span><br><span class="line">          <span class="attr">driver-class-name:</span> <span class="string">com.mysql.jdbc.Driver</span></span><br><span class="line">        <span class="comment">#slave_2:</span></span><br><span class="line">        <span class="comment">#  url: ENC(xxxxx) # 内置加密,使用请查看详细文档</span></span><br><span class="line">        <span class="comment">#  username: ENC(xxxxx)</span></span><br><span class="line">        <span class="comment">#  password: ENC(xxxxx)</span></span><br><span class="line">       <span class="comment">#   driver-class-name: com.mysql.jdbc.Driver</span></span><br><span class="line">        <span class="comment">#......省略</span></span><br><span class="line">        <span class="comment">#以上会配置一个默认库master，一个组slave下有两个子库slave_1,slave_2</span></span><br></pre></td></tr></table></figure></li>
+<li><p>代码</p>
+<ul>
+<li>结构 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220604173324836.png"
+alt="image-20220604173324836" /> <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220604173357652.png"
+alt="image-20220604173357652" /></li>
+</ul></li>
+</ul>
 <h2 id="安装mybatisx插件">安装MyBatisX插件</h2>
+<ul>
+<li>插件市场 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220604173502957.png"
+alt="image-20220604173502957" /></li>
+<li>自动定位 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220604173533155.png"
+alt="image-20220604173533155" /></li>
+</ul>
 <h2 id="mybatis代码快速生成">MyBatis代码快速生成</h2>
+<ul>
+<li><p>配置 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220604173606015.png"
+alt="image-20220604173606015" /></p></li>
+<li><p>url及密码配置 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220604173630815.png"
+alt="image-20220604173630815" /></p></li>
+<li><p>使用 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220604173659189.png"
+alt="image-20220604173659189" /></p></li>
+<li><figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220604173710148.png"
+alt="image-20220604173710148" />
+<figcaption aria-hidden="true">image-20220604173710148</figcaption>
+</figure></li>
+<li><p>自动生成 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220604173748997.png"
+alt="image-20220604173748997" /></p></li>
+<li><figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220604173807772.png"
+alt="image-20220604173807772" />
+<figcaption aria-hidden="true">image-20220604173807772</figcaption>
+</figure></li>
+</ul>
 
     </div>
 
