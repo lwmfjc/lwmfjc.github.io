@@ -5470,6 +5470,9 @@ alt="image-20220615214035941" /></li>
 </ul></li>
 </ul>
 <h1 id="centos环境准备">CentOS环境准备</h1>
+<ul>
+<li>这里主要是做了克隆，并没有讲到CentOS的安装，所以笔记不记录了</li>
+</ul>
 <h1 id="mysql的卸载">MySQL的卸载</h1>
 <ul>
 <li><p>查找当前系统已经装了哪些
@@ -5578,6 +5581,43 @@ alt="image-20220615231707178" /></p></li>
 </ul>
 <h1
 id="sqlyog实现mysql8.0和5.7的远程连接">SQLyog实现MySQL8.0和5.7的远程连接</h1>
+<ul>
+<li><p>sqlyog下载
+https://github.com/webyog/sqlyog-community/wiki/Downloads</p></li>
+<li><p>默认情况下会有连接出错 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220616000229899.png"
+alt="image-20220616000229899" /></p></li>
+<li><p>先测试ip及端口号 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220616000453564.png"
+alt="image-20220616000453564" /></p>
+<ul>
+<li>此时linux端口号并没有开放
+使用<code>systemctl status firewalld</code>发现防火墙开启 （active)
+使用<code>systemctl stop firewalld</code>将防火墙关闭</li>
+<li>开机时关闭防火墙<code>systemctl disable firewalld</code></li>
+<li>此时还是报错 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220616001041497.png"
+alt="image-20220616001041497" /></li>
+</ul></li>
+<li><p>这是由于root不允许被远程连接</p>
+<ul>
+<li><p>查看user表，发现只允许本地登录 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220616001151783.png"
+alt="image-20220616001151783" /></p></li>
+<li><p>修改并更新权限</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">update user set host = &#x27;192.168.1.%&#x27; where user= &#x27;root&#x27;;</span><br><span class="line">#或者</span><br><span class="line">update user set host = &#x27;%&#x27; where user= &#x27;root&#x27;;</span><br><span class="line">#更新权限</span><br><span class="line">flush privileges;</span><br></pre></td></tr></table></figure></li>
+<li><p>之后如果出现下面的问题（视频中有，我没遇到） <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220616001512943.png"
+alt="image-20220616001512943" /></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ALTER USER &#x27;root&#x27;@&#x27;%&#x27; IDENTIFIED WITH mysql_native_password BY &#x27;123456&#x27;;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>然后就可以连接了</li>
+</ul></li>
+<li><p>命令行进行远程连接
+<code>mysql -u root -h 192.168.200.150 -P3306 -p</code></p></li>
+</ul></li>
+<li></li>
+</ul>
 <h1 id="字符集的修改与底层原理说明">字符集的修改与底层原理说明</h1>
 <h1
 id="比较规则_请求到响应过程中的编码与解码过程">比较规则_请求到响应过程中的编码与解码过程</h1>
