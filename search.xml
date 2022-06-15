@@ -5471,7 +5471,111 @@ alt="image-20220615214035941" /></li>
 </ul>
 <h1 id="centos环境准备">CentOS环境准备</h1>
 <h1 id="mysql的卸载">MySQL的卸载</h1>
+<ul>
+<li><p>查找当前系统已经装了哪些
+<code>rpm -qa |grep mysql</code></p></li>
+<li><p>查找mysql服务运行状态
+<code>systemctl status mysql</code></p></li>
+<li><p>停止mysql服务 <code>systemctl stop mysql</code></p></li>
+<li><p>删除</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">yum remove mysql-community-client-plugins-8.0.29-1.el7.x86_64</span><br><span class="line">yum remove mysql-community-common-8.0.29-1.el7.x86_64</span><br></pre></td></tr></table></figure></li>
+<li><p>查找带mysql名字的文件夹 <code>find / -name mysql</code></p></li>
+<li><p>进行删除</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">rm -rf /usr/lib64/mysql</span><br><span class="line">rm -rf /usr/share/mysql</span><br><span class="line">rm -rf /etc/selinux/targeted/active/modules/100/mysql</span><br><span class="line">rm -rf /etc/my.cnf</span><br></pre></td></tr></table></figure></li>
+</ul>
 <h1 id="linux下安装mysql8.0与5.7版本">Linux下安装MySQL8.0与5.7版本</h1>
+<ul>
+<li><p>版本介绍 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220615215503286.png"
+alt="image-20220615215503286" /></p></li>
+<li><p>下载地址 : https://www.mysql.com/downloads/ <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220615215700151.png"
+alt="image-20220615215700151" /></p>
+<ul>
+<li>进入 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220615215748407.png"
+alt="image-20220615215748407" /> 即
+https://dev.mysql.com/downloads/mysql/</li>
+</ul></li>
+<li><p>版本选择 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220615220106821.png"
+alt="image-20220615220106821" /></p>
+<ul>
+<li><p>下载最大的那个，离线版 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220615220208380.png"
+alt="image-20220615220208380" /></p></li>
+<li><p>下载后解压，并将下面六个放进linux中</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220615230622301.png"
+alt="image-20220615230622301" />
+<figcaption aria-hidden="true">image-20220615230622301</figcaption>
+</figure></li>
+</ul></li>
+<li><p>如果是5.7，则需要进入
+https://downloads.mysql.com/archives/community/</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220615220835226.png"
+alt="image-20220615220835226" />
+<figcaption aria-hidden="true">image-20220615220835226</figcaption>
+</figure>
+<ul>
+<li>下载后解压 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220615221052718.png"
+alt="image-20220615221052718" /></li>
+<li>拷贝进linux</li>
+</ul></li>
+<li><p>安装前，给/tmp临时目录权限</p>
+<ul>
+<li><p><code>chmod -R 777 /tmp</code></p></li>
+<li><p>检查依赖</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">rpm -qa |grep libaio</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment">#libaio-0.3.109-13.el7.x86_64</span></span></span><br><span class="line">rpm -qa |grep net-tools</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment">#net-tools-2.0-0.24.20131004git.el7.x86_64</span></span></span><br></pre></td></tr></table></figure></li>
+<li><p>确保目录下已经存在5（4）个文件并<strong>严格</strong>按顺序执行</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">rpm -ivh mysql-community-common-8.0.29-1.el7.x86_64.rpm</span><br><span class="line">rpm -ivh mysql-community-client-plugins-8.0.29-1.el7.x86_64.rpm</span><br><span class="line">rpm -ivh mysql-community-libs-8.0.29-1.el7.x86_64.rpm</span><br><span class="line">rpm -ivh mysql-community-client-8.0.29-1.el7.x86_64.rpm</span><br><span class="line">rpm -ivh mysql-community-icu-data-files-8.0.29-1.el7.x86_64.rpm</span><br><span class="line">rpm -ivh mysql-community-server-8.0.29-1.el7.x86_64.rpm</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>安装libs的时候，会报错</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">error: Failed dependencies:</span><br><span class="line">	mariadb-libs is obsoleted by mysql-community-libs-8.0.29-1.el7.x86_64</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>使用下面命令，视频的方法</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">yum remove mysql-libs</span><br></pre></td></tr></table></figure></li>
+<li><p>使用下面命令，卸载mariadb (这是我自己的方法)</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">rpm -qa | grep mariadb</span><br><span class="line"><span class="meta prompt_">  #</span><span class="language-bash"><span class="comment"># 查找到对应的版本 mariadb-libs-5.5.60-1.el7_5.x86_64</span></span></span><br><span class="line"><span class="meta prompt_">  #</span><span class="language-bash"><span class="comment"># 下面卸载查找出来的版本</span></span></span><br><span class="line"><span class="meta prompt_">  #</span><span class="language-bash"><span class="comment"># yum remove mariadb-libs-5.5.60-1.el7_5.x86_64</span></span></span><br></pre></td></tr></table></figure></li>
+</ul></li>
+<li><p>再次执行后安装成功</p></li>
+</ul></li>
+</ul></li>
+<li><p>服务初始化 <code>mysqld --initialize --user=mysql</code></p></li>
+<li><p>查看默认生成的密码 <code>cat /var/log/mysqld.log</code> <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220615230843532.png"
+alt="image-20220615230843532" /></p></li>
+<li><p>判断mysql是否启动 <code>systemctl status mysqld</code></p></li>
+<li><p>启动服务<code>systemctl start mysqld</code>
+再次判断，发现已经启动 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220615231006026.png"
+alt="image-20220615231006026" /></p></li>
+<li><p>设置为自动启动</p>
+<ul>
+<li>查看当前是否开机自启动
+<code>systemctl list-unit-files|grep mysqld.service</code> <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220615231116185.png"
+alt="image-20220615231116185" /></li>
+<li>如果是disable，则可以使用下面命令开机自启动
+<code>systemctl enable mysqld.service</code></li>
+</ul></li>
+<li><p>进行登录</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mysql -u root -p</span><br></pre></td></tr></table></figure>
+<p>用刚才的密码</p>
+<ul>
+<li><p>使用查询，提示需要重置密码 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220615231707178.png"
+alt="image-20220615231707178" /></p></li>
+<li><p>密码更新</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">alter user &#x27;root&#x27;@&#x27;localhost&#x27; identified by &#x27;123456&#x27;;</span><br><span class="line">quit</span><br><span class="line"># 退出重新登录</span><br></pre></td></tr></table></figure></li>
+</ul></li>
+<li><p>5.7的安装
+赋予权限并检查包，这里发现缺少了libaio，所以<code>yum install libaio</code></p></li>
+</ul>
 <h1
 id="sqlyog实现mysql8.0和5.7的远程连接">SQLyog实现MySQL8.0和5.7的远程连接</h1>
 <h1 id="字符集的修改与底层原理说明">字符集的修改与底层原理说明</h1>
