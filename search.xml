@@ -4693,8 +4693,8 @@ alt="image-20220522220929771" /></p>
       </tags>
   </entry>
   <entry>
-    <title>linux_韩老师_28-X</title>
-    <url>/2022/05/22/study/linux/hanshunping/28-X/</url>
+    <title>linux_韩老师_28-39</title>
+    <url>/2022/05/22/study/linux/hanshunping/28-39/</url>
     <content><![CDATA[<h2 id="文件目录">文件目录</h2>
 <ul>
 <li><p>用来定位绝对路径或相对路径 cd ~ 用来定位家目录 cd .. 返回上一级
@@ -4722,12 +4722,161 @@ cd - 返回上一次目录</p></li>
 <p>会把整个hello2文件夹（包括hello2）移动到AB下</p></li>
 <li><p>同样是上面的指令，如果AB不存在，那么就会将hello2移动到hello1下，并将hello2文件夹，改名为AB</p></li>
 </ul></li>
-<li><p>cat 指令</p></li>
+<li><p>cat 指令</p>
+<ul>
+<li>cat -p /etc/profile 浏览并显示文件</li>
+<li>管道命令 cat -p /etc/profile | more 把前面的结果再交给more处理
+（输入enter查看下一行，空格查看下一页）</li>
+</ul></li>
+<li><p>less指令</p>
+<ul>
+<li><code>less /etc/profile</code></li>
+<li>less指令显示的时候，是按需加载内容，效率较高, q退出</li>
+</ul></li>
+<li><p>echo 输出到控制台</p>
+<ul>
+<li><code>echo $HOSTNAME</code> 输出环境变量</li>
+</ul></li>
+<li><p>head 文件前几行</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">head -3 /etc/profile #查看文件前三行</span><br></pre></td></tr></table></figure></li>
+<li><p>tail 文件后几行</p>
+<ul>
+<li>实时监控 <code>tail -f mydate.txt</code></li>
+<li>覆盖 echo "hello" &gt; mydate.txt</li>
+<li>追加 echo "hi" &gt;&gt; mydate.txt</li>
+<li><code>cal &gt; mydate.txt</code> 将日志添加到文件后</li>
+</ul></li>
+<li><p>ln指令 <code>ln -s /root/ /home/myroot</code>
+在home下创建一个软链接，名为myroot，连接到root <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220625111839310.png"
+alt="image-20220625111839310" /></p>
+<ul>
+<li>此时cd myroot，就会进入root文件夹</li>
+<li>使用rm -f 删除软连接</li>
+<li>动态链接库 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220625112225096.png"
+alt="image-20220625112225096" /></li>
+</ul></li>
+<li><p>history 查看曾经执行过的命令 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220625112304045.png"
+alt="image-20220625112304045" /></p></li>
+<li><p>! + 数字，执行曾经执行过的指令 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220625112404167.png"
+alt="image-20220625112404167" /></p></li>
 </ul>
 <h2 id="时间日期">时间日期</h2>
+<ul>
+<li>date指令-- 显示当前日期
+<ul>
+<li>date <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220625115448968.png"
+alt="image-20220625115448968" /></li>
+<li>date +%Y 年份</li>
+<li>date +%m 月份</li>
+<li>date +%d 哪一天</li>
+<li>date "+%Y-%m-%d %H:%M:%S" 年月日时分秒</li>
+</ul></li>
+<li>cal 2020 #2020年所有日历</li>
+</ul>
 <h2 id="查找指令">查找指令</h2>
+<ul>
+<li><p>find /home -name hello.txt 在/home目录下，按名字查找hello.txt
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220625171329905.png"
+alt="image-20220625171329905" /></p></li>
+<li><p>find /home -user tom 按拥有者查找</p></li>
+<li><p>find / -size -10M | more 查找小于10M的文件 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220625171702139.png"
+alt="image-20220625171702139" /></p></li>
+<li><p>ls -lh (h,以更符合人类查看的的方式显示) <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220625171829876.png"
+alt="image-20220625171829876" /></p></li>
+<li><p>locate 搜索文件 （locate之前要使用updatedb指令创建） (先使用yum
+install -y mlocate 进行安装)</p></li>
+<li><p>进行查找 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220625172105001.png"
+alt="image-20220625172105001" /></p></li>
+<li><p>which ls 查看ls在哪个目录下 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220625172523337.png"
+alt="image-20220625172523337" /></p></li>
+<li><p>grep 过滤查找，管道符，"|"
+表示将前一个命令的处理结果输出传递给后面的命令处理</p>
+<p>cat /etc/profile | grep 22 -n -i <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220625173029491.png"
+alt="image-20220625173029491" /></p></li>
+</ul>
 <h2 id="压缩和解压">压缩和解压</h2>
-<h2 id="实用指令">实用指令</h2>
+<ul>
+<li>使用gzip 和 gunzip <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220625174456544.png"
+alt="image-20220625174456544" /></li>
+<li>tar 用来压缩或者解压 压缩后的格式 .tar.gz</li>
+<li>选项说明
+<ul>
+<li>-c 产生.tar打包文件</li>
+<li>-v 显示详情信息</li>
+<li>-f 指定压缩后的文件名</li>
+<li>-z 打包同时压缩</li>
+<li>-x 解包.tar文件</li>
+</ul></li>
+<li>使用
+<code>tar -zcvf pc.tar.gz /home/pig.txt /home/cat.txt</code></li>
+<li>解压 tar -zxvf pc.tar.gz</li>
+<li>解压到指定的目录 <code>tar -zxvf pc.tar.gz -C tom/</code></li>
+</ul>
+<h2 id="section"></h2>
+]]></content>
+      <categories>
+        <category>学习</category>
+      </categories>
+      <tags>
+        <tag>linux_韩老师</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>linux_韩老师_40-X</title>
+    <url>/2022/06/25/study/linux/hanshunping/40-X/</url>
+    <content><![CDATA[<h2 id="组介绍">组介绍</h2>
+<ul>
+<li>每个用户必定属于某个组</li>
+<li>每个文件有几个概念：所有者、所在组、其他组
+tom创建了hello.txt，则所有者为tom，默认所在组为tom组
+除了所在组，就是其他组</li>
+<li>ls -ahl （h更友好，a隐藏，l列表）</li>
+<li></li>
+</ul>
+<h2 id="所有者">所有者</h2>
+<ul>
+<li>使用chown root helo.java 修改，效果如下 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220625210209090.png"
+alt="image-20220625210209090" /></li>
+</ul>
+<h2 id="所在组修改">所在组修改</h2>
+<ul>
+<li>组的创建 groupadd monster</li>
+<li>创建一个用户并让他属于该组 useradd -g monster fox</li>
+<li>注意逻辑，此时使用fox创建文件 passwd fox 给fox创建密码</li>
+<li>如图，创建一个文件 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220625211309539.png"
+alt="image-20220625211309539" /></li>
+<li>使用chgrp fruit orange.txt 修改文件的所在组 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220625211606756.png"
+alt="image-20220625211606756" /></li>
+<li>改变某个用户所在组 usermod -g fruit fox <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220625211830725.png"
+alt="image-20220625211830725" /></li>
+<li>使用 cat /etc/group 查看所有的组</li>
+<li>当一个用户属于多个组的时候，groups会出现多个组名</li>
+</ul>
+<h2 id="rwx权限">rwx权限</h2>
+<p>rwxrwxrwx 第一列有十位，第0位确认文件类型
+l是链接；d是目录；c是字符设备文件、鼠标、键盘；b块设备
+1-3表示文件所有者拥有的权限；4-6是文件所在组所拥有的权限，7-9
+其他组所拥有的权限</p>
+<h2 id="权限说明案例">权限说明案例</h2>
+<h2 id="修改权限">修改权限</h2>
+<h2 id="修改所有者和所在组">修改所有者和所在组</h2>
+<h2 id="权限管理应用实例">权限管理应用实例</h2>
 ]]></content>
       <categories>
         <category>学习</category>
