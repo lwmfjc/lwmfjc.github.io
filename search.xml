@@ -176,7 +176,7 @@ src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img
   </entry>
   <entry>
     <title>20220604</title>
-    <url>/2022/06/25/work/ztx/hg/</url>
+    <url>/2022/06/26/work/ztx/hg/</url>
     <content><![CDATA[<h2 id="问题">问题</h2>
 ]]></content>
   </entry>
@@ -4834,8 +4834,8 @@ alt="image-20220625174456544" /></li>
       </tags>
   </entry>
   <entry>
-    <title>linux_韩老师_40-X</title>
-    <url>/2022/06/25/study/linux/hanshunping/40-X/</url>
+    <title>linux_韩老师_40-51</title>
+    <url>/2022/06/25/study/linux/hanshunping/40-51/</url>
     <content><![CDATA[<h2 id="组介绍">组介绍</h2>
 <ul>
 <li>每个用户必定属于某个组</li>
@@ -4870,13 +4870,136 @@ alt="image-20220625211830725" /></li>
 </ul>
 <h2 id="rwx权限">rwx权限</h2>
 <p>rwxrwxrwx 第一列有十位，第0位确认文件类型
-l是链接；d是目录；c是字符设备文件、鼠标、键盘；b块设备
+-普通文件，l是链接；d是目录；c是字符设备文件、鼠标、键盘；b块设备
 1-3表示文件所有者拥有的权限；4-6是文件所在组所拥有的权限，7-9
 其他组所拥有的权限</p>
-<h2 id="权限说明案例">权限说明案例</h2>
+<ul>
+<li><p>rwx作用到文件，r代表可读可查看，w代表可修改（如果是删除权限，则必须在该文件所在的目录有写权限，才能删除），x代表可执行</p></li>
+<li><p>rwx作用到目录，r表示可以读取(ls可查看目录内容)，w表示可写（可以在目录内创建、删除、重命名目录），x表示可以进入该目录</p></li>
+<li><p>rwx分别用数字表示，4，2，1。当拥有所有权限，则为7</p></li>
+<li><figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220626113838606.png"
+alt="image-20220626113838606" />
+<figcaption aria-hidden="true">image-20220626113838606</figcaption>
+</figure>
+<ul>
+<li>最后面的数字，代表连接数（或者子目录数）</li>
+<li>1213 文件大小（字节），如果是文件夹则显示4096</li>
+<li>最后abc表示文件名，蓝色表示是目录</li>
+</ul></li>
+</ul>
 <h2 id="修改权限">修改权限</h2>
+<ul>
+<li>chmod 修改权限，u：所有者，g：所有组，o：其他人，a
+所有（ugo总和）</li>
+<li>chmod u=rwx,g=rw,o=x 文件/目录名 这里等号表示直接给权限</li>
+<li>chmod o+w 文件/目录名 这里加表示+权限</li>
+<li>chmod a-x 文件/目录名</li>
+<li>chmod u=rwx,g=rx,o=rx abc 给文件添加执行权限（会变成绿色的）</li>
+<li>使用数字
+<ul>
+<li>将abc.txt文件权限修改成rwxr-xr-x使用数字实现 chmod 755 abc</li>
+<li></li>
+</ul></li>
+</ul>
 <h2 id="修改所有者和所在组">修改所有者和所在组</h2>
+<ul>
+<li>chown tom abc #修改文件所有者为tom</li>
+<li>chown -R tom abc #修改文件夹及其所有子目录所有者为tom</li>
+<li>chgrp -R fruit kkk #修改文件夹所在组为fruit</li>
+</ul>
 <h2 id="权限管理应用实例">权限管理应用实例</h2>
+<ul>
+<li><p>警察和土匪的游戏</p>
+<p>前提，有police和bandit两个组，</p>
+<p>jack，jerry属于警察组</p>
+<p>xh，xq属于土匪组</p>
+<ul>
+<li><pre class="shell"><code>  groupadd police
+  groupadd bandit
+  useradd -g police jack
+  useradd -g police jerry
+  useradd -g bandit xh
+  useradd -g bandit xq</code></pre></li>
+</ul></li>
+<li><p>chmod 640 jack.txt</p></li>
+<li><p>chmod o=r,g=rw jack.txt</p></li>
+<li><p>如果要对目录内操作，那么先有改目录相应权限</p>
+<ul>
+<li>chmod 770 jack 放开jack目录权限</li>
+</ul></li>
+<li></li>
+</ul>
+<p>题目 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220626135938689.png"
+alt="image-20220626135938689" /></p>
+<p>对一个目录不能ls(没有读权限)，但是是可以直接读写目录中的文件的（有权限的情况下）</p>
+<h2 id="section"></h2>
+]]></content>
+      <categories>
+        <category>学习</category>
+      </categories>
+      <tags>
+        <tag>linux_韩老师</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>52-X</title>
+    <url>/2022/06/26/study/linux/hanshunping/52-X/</url>
+    <content><![CDATA[<h2 id="crond快速入门">crond快速入门</h2>
+<ul>
+<li><p>使用命令 crontab -e 创建一个定时任务</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">*/1 * * * * ls -l /etc/ &gt; /tmp/to.txt</span><br></pre></td></tr></table></figure></li>
+<li><p>特殊符号 ，代表不连续 -破折号 表示连续 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220626213003228.png"
+alt="image-20220626213003228" /></p></li>
+<li><p>其他 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220626213032958.png"
+alt="image-20220626213032958" /></p></li>
+<li><p>定时调用脚本</p>
+<ul>
+<li><p>编辑脚本 my.sh</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">date &gt;&gt; /home/mycal</span><br><span class="line">date &gt;&gt; /home/mycal</span><br></pre></td></tr></table></figure></li>
+<li><p>给脚本赋予x权限</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">chmod u+x my.sh</span><br></pre></td></tr></table></figure></li>
+<li><p>crontab -e</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">*/1 * * * * my.sh</span><br></pre></td></tr></table></figure></li>
+<li><p>数据库备份 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220626213947157.png"
+alt="image-20220626213947157" /></p></li>
+<li><p>crontab -r 删除</p></li>
+<li><p>crontab -l 列出</p></li>
+<li><p>crontab -e 编辑任务</p></li>
+</ul></li>
+<li><p>atd 是否在运行 yum install -y atd systemctl start atd</p></li>
+<li><p>job队列 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220626215635347.png"
+alt="image-20220626215635347" /></p></li>
+<li><p>at选项 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220626215716700.png"
+alt="image-20220626215716700" /></p></li>
+<li><p>at指定时间 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220626215801620.png"
+alt="image-20220626215801620" /></p></li>
+<li><p>添加任务 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220626215928419.png"
+alt="image-20220626215928419" /> <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220626220003771.png"
+alt="image-20220626220003771" /></p></li>
+<li><p>at 5pm tomorrow 明天下午5点</p></li>
+<li><p>at now + 2 minutes 2分钟后</p></li>
+<li><p>atrm 5 删除5号</p></li>
+<li><p>两分钟后执行某个脚本 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220626220501514.png"
+alt="image-20220626220501514" /></p></li>
+</ul>
+<h2 id="磁盘分区">磁盘分区</h2>
+<h2 id="网络配置">网络配置</h2>
+<h2 id="进程">进程</h2>
+<h2 id="服务管理">服务管理</h2>
+<h2 id="rpm管理">rpm管理</h2>
+<h2 id="软件包管理">软件包管理</h2>
 ]]></content>
       <categories>
         <category>学习</category>
