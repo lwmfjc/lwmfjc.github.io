@@ -4396,11 +4396,106 @@ head永远都是指向master（当前分支，目前只有master，所以不变�
 </ol>
 <h1 id="分支">分支</h1>
 <ol type="1">
-<li><p>概述和优点</p></li>
-<li><p>查看&amp;创建&amp;切换</p></li>
-<li><p>合并分支（正常合并）</p></li>
-<li><p>合并分支（冲突合并）</p></li>
+<li><p>概述和优点 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724132914166.png"
+alt="image-20220724132914166" /> <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724134235798.png"
+alt="image-20220724134235798" /></p></li>
+<li><p>查看&amp;创建&amp;切换</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git branch 分支名    #创建分支</span><br><span class="line">git branch -v       #查看分支</span><br><span class="line">git checkout 分支名  #切换分支</span><br><span class="line">git merge 分支名     #把指定的分支合并到当前分支上</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>查看分支并显示当前分支指向的版本 git branch -v <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724161017521.png"
+alt="image-20220724161017521" /></p></li>
+<li><p>创建分支 git branch hot-fix git branch #再次查看 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724161127755.png"
+alt="image-20220724161127755" /></p></li>
+<li><p>切换分支</p>
+<p>git branch hot-fix 此时修改一个文件并提交 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724161340416.png"
+alt="image-20220724161340416" /> <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724161444200.png"
+alt="image-20220724161444200" />
+查看.git/head文件，会发现现在它指向hot-fix分支 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724161600603.png"
+alt="image-20220724161600603" /> <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724161757944.png"
+alt="image-20220724161757944" /></p></li>
+</ul></li>
+<li><p>合并分支（正常合并）</p>
+<ul>
+<li><p>切换分支 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724161934736.png"
+alt="image-20220724161934736" /></p></li>
+<li><p>将某分支xx合并到当前分支 git merge 分支名</p>
+<p><img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724162147318.png"
+alt="image-20220724162147318" /> 如图，合并成功
+以后面那个分支的修改为主</p></li>
+</ul></li>
+<li><p>合并分支（冲突合并）</p>
+<ul>
+<li><p>前提，现在master分支倒数第二行修改并添加和提交 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724162554933.png"
+alt="image-20220724162554933" /> <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724162642482.png"
+alt="image-20220724162642482" /></p></li>
+<li><p>此时切换到hot-fix分支 修改倒数第一行 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724162857236.png"
+alt="image-20220724162857236" />
+将文件从工作区添加到暂存区并提交到本地库 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724163014554.png"
+alt="image-20220724163014554" /></p></li>
+<li><p>此时再切回master</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git checkout master</span><br><span class="line">git merge hot-fix</span><br></pre></td></tr></table></figure>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724163154164.png"
+alt="image-20220724163154164" />
+<figcaption aria-hidden="true">image-20220724163154164</figcaption>
+</figure></li>
+<li><p>提示出错了，而且所有有异常的文件，都以下面的形式标注 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724163343835.png"
+alt="image-20220724163343835" /> 按dd进行删除某一行 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724163547658.png"
+alt="image-20220724163547658" /> 改完了之后，保存并提交即可 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724163849114.png"
+alt="image-20220724163849114" />
+切回之后查看hot-fix分支，发现这里的文件是没有变化的 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724164010559.png"
+alt="image-20220724164010559" /></p></li>
+<li><p>原理 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724164111179.png"
+alt="image-20220724164111179" /> <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724164209633.png"
+alt="image-20220724164209633" /></p></li>
+</ul></li>
 </ol>
+]]></content>
+      <categories>
+        <category>学习</category>
+      </categories>
+      <tags>
+        <tag>git_尚硅谷</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>19-26_git_尚硅谷</title>
+    <url>/2022/07/24/study/git/git_sgg/19-26/</url>
+    <content><![CDATA[<h1 id="介绍">介绍</h1>
+<p>使用代码托管中心（远程服务器） <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724170726396.png"
+alt="image-20220724170726396" /></p>
+<ul>
+<li>团队内写作</li>
+<li>跨团队写作</li>
+</ul>
+<h1 id="创建远程库创建别名">创建远程库&amp;创建别名</h1>
+<h1 id="推送本地库到远程库">推送本地库到远程库</h1>
+<h1 id="拉取远程库到本地库">拉取远程库到本地库</h1>
+<h1 id="克隆远程库到本地">克隆远程库到本地</h1>
+<h1 id="团队内写作">团队内写作</h1>
+<h1 id="ssh免密登录">SSH免密登录</h1>
 ]]></content>
       <categories>
         <category>学习</category>
