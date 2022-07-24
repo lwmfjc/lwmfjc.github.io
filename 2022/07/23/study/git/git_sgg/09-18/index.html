@@ -270,19 +270,160 @@ alt="image-20220723221752414" /></p></li>
 <li><code>git status</code> <img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220723221936215.png"
 alt="image-20220723221936215" /> 默认在master分支</li>
-<li>新增一个文件 <code>vim hello.txt</code></li>
+<li>新增一个文件 <code>vim hello.txt</code> <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724094610700.png"
+alt="image-20220724094610700" /></li>
+<li>此时查看本地库的状态 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724094729991.png"
+alt="image-20220724094729991" /> untracketd files
+未被追踪的文件，也就是这个文件还在工作区</li>
 </ul></li>
-<li><p>添加暂存区</p></li>
-<li><p>提交本地库</p></li>
-<li><p>修改命令</p></li>
-<li><p>版本穿梭</p></li>
+<li><p>添加暂存区</p>
+<ul>
+<li><p><code>git add hello.txt</code> <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724095104535.png"
+alt="image-20220724095104535" /> LF 将会被替换成
+CRLF，windows里面是CRLF，也就是说</p>
+<blockquote>
+<p>这个<code>换行符自动转换</code>会把自动把你代码里
+与你当前操作系统不相同的换行的方式
+转换成当前系统的换行方式（即<code>LF</code>和<code>CRLF</code>
+之间的转换）</p>
+</blockquote>
+<p>这是因为这个hello.txt是使用<code>vm hello.txt</code>在git
+bash里面添加的，如果直接在windows文件管理器添加一个文件（hello2.txt)，就会发现没有这个警告，因为他已经是CRLF了
+（为了和视频保持一致，git rm --cached hello2.txt 后删除这个文件） <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724100600978.png"
+alt="image-20220724100600978" /></p></li>
+<li><p>查看当前状态，绿色表示git已经追踪到了这个文件</p>
+<p>文件已经存在于暂存区 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724095955869.png"
+alt="image-20220724095955869" /></p></li>
+<li><p>使用<code>git rm --cached hello.txt</code>可以将文件从暂存区删除
+使用后，文件又出现在工作区了（未添加） <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724100308401.png"
+alt="image-20220724100308401" /></p></li>
+<li></li>
+</ul></li>
+<li><p>提交本地库</p>
+<ul>
+<li><p><code>git commit -m "first commit" hello.txt</code>
+会出现一些警告，以及此时提交的修改和生成的版本号（前七位） <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724100937599.png"
+alt="image-20220724100937599" /> <code>git status</code> <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724101043687.png"
+alt="image-20220724101043687" /></p></li>
+<li><p>使用git reflog查看引用日志信息 git log 查看详细日志信息 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724101139028.png"
+alt="image-20220724101139028" /></p></li>
+</ul></li>
+<li><p>修改命令</p>
+<ul>
+<li><p>前提，修改了文件 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724101329134.png"
+alt="image-20220724101329134" /></p></li>
+<li><p>git status</p>
+<p><img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724101355054.png"
+alt="image-20220724101355054" />红色表示git还没有追踪到这个修改，如果此时commit
+，会提示没有需要commit的 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724101505483.png"
+alt="image-20220724101505483" /></p></li>
+<li><p>使用git add hello.txt 将文件修改添加到暂存区 之后git status <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724102125244.png"
+alt="image-20220724102125244" /></p>
+<ul>
+<li><p>注意，这里如果提交到暂存区之后，使用git
+restore是无法恢复文件的</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724102234835.png"
+alt="image-20220724102234835" />
+<figcaption aria-hidden="true">image-20220724102234835</figcaption>
+</figure></li>
+<li><p>git restore --staged <file>..." to unstage
+使用这个命令丢弃这个文件的commit操作</p>
+<blockquote>
+<p>几个命令的区别：</p>
+<ul>
+<li>git restore file
+的命令是丢弃你在工作区修改的内容,(修改的内容会丢失)</li>
+<li>git restore --staged file 丢弃你在工作区的修改不被<a
+target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=commit&amp;spm=1001.2101.3001.7020">commit</a>
+。但是你的修改依然在工作区。</li>
+<li>git rm --cached file和git restore --staged file
+效果好像一样，这里不做更进一步的分析</li>
+</ul>
+</blockquote></li>
+</ul></li>
+<li><p>回到最初，这里主要是为了看修改，如最上面，将第一行后面添加了22222</p>
+<p>commit 之后的提示，删除了一行，添加了一行（修改的另一种说法） <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724102949971.png"
+alt="image-20220724102949971" /></p></li>
+<li><p>如果，HEAD -&gt; master ，指针指向了第二个版本 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724103127996.png"
+alt="image-20220724103127996" /></p></li>
+<li><p>这里再做第三次修改，并add 及commit <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724103303974.png"
+alt="image-20220724103303974" /></p></li>
+<li><p>查看工作区，永远只有最后那次修改的文件 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724103332836.png"
+alt="image-20220724103332836" /></p></li>
+</ul></li>
+<li><p>版本穿梭</p>
+<ul>
+<li><p>git reflog和git log <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724103443297.png"
+alt="image-20220724103443297" /></p></li>
+<li><p>回顾：hello.txt先是5行，然后第一行加了2，之后第二行加了3</p></li>
+<li><p>使用git reset --hard
+版本号进行穿梭，这里多了一行，是因为我复制的时候复制粗了版本号</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724103935566.png"
+alt="image-20220724103935566" />
+<figcaption aria-hidden="true">image-20220724103935566</figcaption>
+</figure>
+<p>使用cat 查看，发现文件已经在另一个版本 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724104008811.png"
+alt="image-20220724104008811" /></p></li>
+<li><p>查看.git的一些文件 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724104132475.png"
+alt="image-20220724104132475" /> 说明目前是在master这个版本上
+下面这个文件 .git/refs/heads/master 记录了指向master分支的哪个版本号
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724104310287.png"
+alt="image-20220724104310287" /></p></li>
+<li><p>这里将文件指向最初的版本 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724104528829.png"
+alt="image-20220724104528829" /></p>
+<ul>
+<li>此时查看刚才说的那个记录某个分支当前指向版本的文件，已经做了更新
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724104638810.png"
+alt="image-20220724104638810" /></li>
+</ul></li>
+<li><figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724104706066.png"
+alt="image-20220724104706066" />
+<figcaption aria-hidden="true">image-20220724104706066</figcaption>
+</figure></li>
+<li><p>再穿梭为后面的版本 git reset --hard file <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724104819678.png"
+alt="image-20220724104819678" /></p></li>
+<li><p>图片解释 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724104910442.png"
+alt="image-20220724104910442" /> master指针指向first,second,third
+head永远都是指向master（当前分支，目前只有master，所以不变）</p></li>
+</ul></li>
 </ol>
 <h1 id="分支">分支</h1>
 <ol type="1">
-<li>概述和优点</li>
-<li>查看&amp;创建&amp;切换</li>
-<li>合并分支（正常合并）</li>
-<li>合并分支（冲突合并）</li>
+<li><p>概述和优点</p></li>
+<li><p>查看&amp;创建&amp;切换</p></li>
+<li><p>合并分支（正常合并）</p></li>
+<li><p>合并分支（冲突合并）</p></li>
 </ol>
 
     </div>
