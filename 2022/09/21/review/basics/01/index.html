@@ -245,8 +245,7 @@
 
       
         <h2 id="题目">题目</h2>
-<p><img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220921110344396.png" /></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> i=<span class="number">1</span>;</span><br><span class="line">i=i++;</span><br><span class="line"><span class="type">int</span> j=i++;</span><br><span class="line"><span class="type">int</span> <span class="variable">k</span> <span class="operator">=</span> i+ ++i * i++;</span><br><span class="line">System.out.println(<span class="string">&quot;i=&quot;</span>+i);</span><br><span class="line">System.out.println(<span class="string">&quot;j=&quot;</span>+j);</span><br><span class="line">System.out.println(<span class="string">&quot;k=&quot;</span>+k);</span><br></pre></td></tr></table></figure>
 <h2 id="讲解">讲解</h2>
 <h3
 id="对于操作数栈和局部变量表的理解">对于操作数栈和局部变量表的理解</h3>
@@ -258,13 +257,43 @@ id="对于操作数栈和局部变量表的理解">对于操作数栈和局部�
 <p>如下图，这三行代码，是依次把10，9先放到局部变量表的1，2位置。<br />
 之后呢，再把局部变量表中1位置的值，放入操作数栈中<br />
 最后，将操作数栈弹出一个数(10)，将数值赋给局部变量表中的位置2</p>
-<figure>
-<img
+<p><img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220921114316189.png"
-alt="image-20220921114316189" />
-<figcaption aria-hidden="true">image-20220921114316189</figcaption>
-</figure></li>
+alt="image-20220921114316189" /> <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220921122617548.png"
+alt="image-20220921122617548" />
+如上图，当方法为静态方法时，局部变量表0位置存储的是实参第1个数</p>
+<p>(当方法为非静态方法时，局部变量表0位置存储的是this引用)</p></li>
+<li><p>对于下面这段代码</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> i=<span class="number">10</span>;</span><br><span class="line"><span class="type">int</span> j=<span class="number">20</span>;</span><br><span class="line">i=i++;</span><br><span class="line">j=++j;</span><br><span class="line">System.out.println(i);</span><br><span class="line">System.out.println(j);</span><br></pre></td></tr></table></figure>
+<p>编译后的字节码</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"> <span class="number">0</span> bipush <span class="number">10</span></span><br><span class="line"> <span class="number">2</span> istore_1</span><br><span class="line"> <span class="number">3</span> bipush <span class="number">20</span></span><br><span class="line"> <span class="number">5</span> istore_2</span><br><span class="line"> <span class="number">6</span> iload_1</span><br><span class="line"> <span class="number">7</span> iinc <span class="number">1</span> by <span class="number">1</span></span><br><span class="line"><span class="number">10</span> istore_1</span><br><span class="line"><span class="number">11</span> iinc <span class="number">2</span> by <span class="number">1</span></span><br><span class="line"><span class="number">14</span> iload_2</span><br><span class="line"><span class="number">15</span> istore_2</span><br><span class="line"><span class="number">16</span> getstatic #<span class="number">5</span> &lt;java/lang/System.out : Ljava/io/PrintStream;&gt;</span><br><span class="line"><span class="number">19</span> iload_1</span><br><span class="line"><span class="number">20</span> invokevirtual #<span class="number">6</span> &lt;java/io/PrintStream.println : (I)V&gt;</span><br><span class="line"><span class="number">23</span> getstatic #<span class="number">5</span> &lt;java/lang/System.out : Ljava/io/PrintStream;&gt;</span><br><span class="line"><span class="number">26</span> iload_2</span><br><span class="line"><span class="number">27</span> invokevirtual #<span class="number">6</span> &lt;java/io/PrintStream.println : (I)V&gt;</span><br><span class="line"><span class="number">30</span> <span class="keyword">return</span></span><br></pre></td></tr></table></figure>
+<p>如上对于j = ++j ;是</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="number">11</span> iinc <span class="number">2</span> by <span class="number">1</span></span><br><span class="line"><span class="number">14</span> iload_2</span><br><span class="line"><span class="number">15</span> istore_2</span><br></pre></td></tr></table></figure>
+<p>先对局部变量表2中的 值 加1，然后将结果
+放入操作数栈中，之后再将操作数栈弹出一个数并赋值给 位置2</p></li>
 </ul>
+<h3 id="对于题目的解释">对于题目的解释</h3>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> i=<span class="number">1</span>;</span><br><span class="line">i=i++;</span><br><span class="line"><span class="type">int</span> j=i++;</span><br><span class="line"><span class="type">int</span> <span class="variable">k</span> <span class="operator">=</span> i+ ++i * i++;</span><br><span class="line">System.out.println(<span class="string">&quot;i=&quot;</span>+i);</span><br><span class="line">System.out.println(<span class="string">&quot;j=&quot;</span>+j);</span><br><span class="line">System.out.println(<span class="string">&quot;k=&quot;</span>+k);</span><br></pre></td></tr></table></figure>
+<p>编译后的字节码</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"> <span class="number">0</span> iconst_1</span><br><span class="line"> <span class="number">1</span> istore_1</span><br><span class="line"> <span class="number">2</span> iload_1</span><br><span class="line"> <span class="number">3</span> iinc <span class="number">1</span> by <span class="number">1</span></span><br><span class="line"> <span class="number">6</span> istore_1</span><br><span class="line"> <span class="number">7</span> iload_1</span><br><span class="line"> <span class="number">8</span> iinc <span class="number">1</span> by <span class="number">1</span></span><br><span class="line"><span class="number">11</span> istore_2</span><br><span class="line"><span class="number">12</span> iload_1</span><br><span class="line"><span class="number">13</span> iinc <span class="number">1</span> by <span class="number">1</span></span><br><span class="line"><span class="number">16</span> iload_1</span><br><span class="line"><span class="number">17</span> iload_1</span><br><span class="line"><span class="number">18</span> iinc <span class="number">1</span> by <span class="number">1</span></span><br><span class="line"><span class="number">21</span> imul</span><br><span class="line"><span class="number">22</span> iadd</span><br><span class="line"><span class="number">23</span> istore_3</span><br></pre></td></tr></table></figure>
+<p>对于 int j = i++</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"> <span class="number">7</span> iload_1</span><br><span class="line"> <span class="number">8</span> iinc <span class="number">1</span> by <span class="number">1</span></span><br><span class="line"><span class="number">11</span> istore_2</span><br></pre></td></tr></table></figure>
+<p>先将i的值放进栈中，然后将局部变量表中的i + 1，之后将栈中的值赋值给j
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220921135728555.png"
+alt="image-20220921135728555" /></p>
+<p>到这步骤的时候，i = 2 ，j = 1</p>
+<p>最后一步 int k = i+ ++i * i++</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="number">12</span> iload_1</span><br><span class="line"><span class="number">13</span> iinc <span class="number">1</span> by <span class="number">1</span></span><br><span class="line"><span class="number">16</span> iload_1</span><br><span class="line"><span class="number">17</span> iload_1</span><br><span class="line"><span class="number">18</span> iinc <span class="number">1</span> by <span class="number">1</span></span><br><span class="line"><span class="number">21</span> imul</span><br><span class="line"><span class="number">22</span> iadd</span><br><span class="line"><span class="number">23</span> istore_3</span><br></pre></td></tr></table></figure>
+<p>如字节码所示，先将i load进操作数栈中(2)，然后将局部变量表中的i 自增
+(3)，之后将自增后的结果(3)放入操作数栈中，第二次将局部变量表中的i放入操作数栈中。然后此时操作数栈中存在
+3 3 2 (由栈顶到栈底) ，依次进行乘法加法 （3*3+2） =11 ，放入局部变量表3
+中。 所以结果为 2， 1，11</p>
+<h3 id="小结">小结</h3>
+<p><img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220921140923018.png" /></p>
+<p>​</p>
 
     </div>
 
@@ -353,7 +382,7 @@ alt="image-20220921114316189" />
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A2%98%E7%9B%AE"><span class="nav-number">1.</span> <span class="nav-text">题目</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%B2%E8%A7%A3"><span class="nav-number">2.</span> <span class="nav-text">讲解</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%B9%E4%BA%8E%E6%93%8D%E4%BD%9C%E6%95%B0%E6%A0%88%E5%92%8C%E5%B1%80%E9%83%A8%E5%8F%98%E9%87%8F%E8%A1%A8%E7%9A%84%E7%90%86%E8%A7%A3"><span class="nav-number">2.1.</span> <span class="nav-text">对于操作数栈和局部变量表的理解</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A2%98%E7%9B%AE"><span class="nav-number">1.</span> <span class="nav-text">题目</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%B2%E8%A7%A3"><span class="nav-number">2.</span> <span class="nav-text">讲解</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%B9%E4%BA%8E%E6%93%8D%E4%BD%9C%E6%95%B0%E6%A0%88%E5%92%8C%E5%B1%80%E9%83%A8%E5%8F%98%E9%87%8F%E8%A1%A8%E7%9A%84%E7%90%86%E8%A7%A3"><span class="nav-number">2.1.</span> <span class="nav-text">对于操作数栈和局部变量表的理解</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%B9%E4%BA%8E%E9%A2%98%E7%9B%AE%E7%9A%84%E8%A7%A3%E9%87%8A"><span class="nav-number">2.2.</span> <span class="nav-text">对于题目的解释</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B0%8F%E7%BB%93"><span class="nav-number">2.3.</span> <span class="nav-text">小结</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
