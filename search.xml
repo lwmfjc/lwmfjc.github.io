@@ -248,7 +248,100 @@ alt="image-20220921143557083" /></p>
 <ul>
 <li><p>延迟创建对象</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Singleton4</span> &#123;</span><br><span class="line">	<span class="comment">//为了防止重排序，需要添加volatile关键字</span></span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">volatile</span> Singleton4 INSTANCE;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">private</span> <span class="title function_">Singleton4</span><span class="params">()</span> &#123;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/**</span></span><br><span class="line"><span class="comment">	 * double check</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> Singleton4 <span class="title function_">getInstance</span><span class="params">()</span> &#123;</span><br><span class="line">		<span class="comment">//2 先判断一次,对于后面的操作(此时已经创建了对象)能减少加锁次数</span></span><br><span class="line">		<span class="keyword">if</span> (INSTANCE == <span class="literal">null</span>) &#123;</span><br><span class="line">			<span class="comment">//如果这里不加锁会导致线程安全问题，可能刚进了判断语句之后，执行权被剥夺了又创建好了对象，</span></span><br><span class="line">			<span class="comment">//所以判断及创建对象必须是原子操作</span></span><br><span class="line">			<span class="keyword">synchronized</span> (Singleton4.class) &#123;</span><br><span class="line">				<span class="keyword">if</span> (INSTANCE == <span class="literal">null</span>) &#123;</span><br><span class="line">					<span class="comment">//用来模拟多线程被剥夺执行权</span></span><br><span class="line">					<span class="keyword">try</span> &#123;</span><br><span class="line">						Thread.sleep(<span class="number">1000</span>);</span><br><span class="line">					&#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">						e.printStackTrace();</span><br><span class="line">					&#125;</span><br><span class="line">					<span class="comment">//如果这个地方不加volatile,会出现的问题是,指令重排 1,2,3是正常的,</span></span><br><span class="line">					<span class="comment">//会重排成1,3,2 然后别的线程去拿的时候，判断为非空，但是实际上运行的时候，发现里面的数据是空的</span></span><br><span class="line"></span><br><span class="line">					<span class="comment">//1 memory = allocate();//分配对象空间</span></span><br><span class="line">					<span class="comment">//2 instance(memory); //初始化对象</span></span><br><span class="line">					<span class="comment">//3 instance = memory; //设置instance指向刚刚分配的位置</span></span><br><span class="line">					INSTANCE = <span class="keyword">new</span> <span class="title class_">Singleton4</span>();</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> INSTANCE;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-<li></li>
+</ul>
+<h3 id="使用静态内部类">使用静态内部类</h3>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Singleton6</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="title function_">Singleton6</span><span class="params">()</span>&#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">Inner</span>&#123;</span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Singleton6 INSTANCE=<span class="keyword">new</span> <span class="title class_">Singleton6</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Singleton6 <span class="title function_">getInstance</span><span class="params">()</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> Inner.INSTANCE;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>只有当内部类被加载和初始化的时候，才会创建INSTANCE实例对象</li>
+<li>静态内部类不会自动随着外部类的加载和初始化而初始化，他需要单独去加载和初始化</li>
+<li>又由于他是在内部类加载和初始化时，创建的，属于类加载器处理的，所以是线程安全的</li>
+</ul>
+]]></content>
+      <categories>
+        <category>学习</category>
+      </categories>
+      <tags>
+        <tag>复习</tag>
+        <tag>复习-基础</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>类、实例初始化</title>
+    <url>/2022/09/22/review/basics/03/</url>
+    <content><![CDATA[<h2 id="代码">代码</h2>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"> <span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Son</span> <span class="keyword">extends</span> <span class="title class_">Father</span>&#123;</span><br><span class="line">	<span class="keyword">private</span> <span class="type">int</span> i=test();</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="type">int</span> j=method();</span><br><span class="line">	<span class="keyword">static</span> &#123;</span><br><span class="line">		System.out.print(<span class="string">&quot;(6)&quot;</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	Son()&#123;</span><br><span class="line">		System.out.print(<span class="string">&quot;(7)&quot;</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	&#123;</span><br><span class="line">		System.out.print(<span class="string">&quot;(8)&quot;</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">public</span> <span class="type">int</span> <span class="title function_">test</span><span class="params">()</span>&#123;</span><br><span class="line">		System.out.print(<span class="string">&quot;(9)&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="type">int</span> <span class="title function_">method</span><span class="params">()</span>&#123;</span><br><span class="line">		System.out.print(<span class="string">&quot;(10)&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">		Son s1=<span class="keyword">new</span> <span class="title class_">Son</span>();</span><br><span class="line">		System.out.println();</span><br><span class="line">		Son s2=<span class="keyword">new</span> <span class="title class_">Son</span>();</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"> <span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Father</span> &#123;</span><br><span class="line">	<span class="keyword">private</span> <span class="type">int</span> i=test();</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="type">int</span> j=method();</span><br><span class="line">	<span class="keyword">static</span> &#123;</span><br><span class="line">		System.out.print(<span class="string">&quot;(1)&quot;</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	Father()&#123;</span><br><span class="line">		System.out.print(<span class="string">&quot;(2)&quot;</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	&#123;</span><br><span class="line">		System.out.print(<span class="string">&quot;(3)&quot;</span>);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="type">int</span> <span class="title function_">test</span><span class="params">()</span> &#123;</span><br><span class="line">		System.out.print(<span class="string">&quot;(4)&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="type">int</span> <span class="title function_">method</span><span class="params">()</span> &#123;</span><br><span class="line">		System.out.print(<span class="string">&quot;(5)&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>输出：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">(5)(1)(10)(6)(9)(3)(2)(9)(8)(7)</span><br><span class="line">(9)(3)(2)(9)(8)(7)</span><br></pre></td></tr></table></figure>
+<h2 id="分析">分析</h2>
+<ul>
+<li><p>类初始化过程</p>
+<ul>
+<li>当实例化了一个对象/或main所在类会导致类初始化</li>
+<li>子类初始化前会先初始化父类</li>
+<li>类初始化执行的是<clinit >方法，编译查看字节码可得知 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220922091920061.png"
+alt="image-20220922091920061" /></li>
+<li><clinit >由静态类变量显示赋值语句 以及
+静态代码块组成(由上到下顺序)，且只执行一次<br />
+如下<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220922100207544.png"
+alt="image-20220922100207544" /></li>
+</ul></li>
+<li><p>实例初始化过程</p>
+<ul>
+<li>执行的是<init>方法 由非静态实例变量显示赋值语句 以及 非静态代码块
+[从上到下顺序] 以及对应构造器代码[最后执行] 组成
+其中，子类构造器一定会调用super() [最前面] 1） super() 【最前】 2）i =
+test() 3）子类的非静态代码块 【2，3按顺序】
+<ol start="4" type="1">
+<li>子类的无参构造(最后)<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220922100330126.png"
+alt="image-20220922100330126" /></li>
+</ol></li>
+</ul></li>
+<li><p>重写的问题
+如上所示，初始化Son对象的时候，会先调用super()方法，即初始化父类，然后会先调用父类的
+非静态变量赋值以及非静态代码块，最后才是父类的构造器代码块</p>
+<p>调用父类非静态变量赋值的时候，如果调用了非静态方法，就会涉及到重写问题，比如这里的</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Father</span>&#123;</span><br><span class="line"> <span class="keyword">private</span> <span class="type">int</span> i= test();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里会调用子类(当前正在初始化的对象)的test()方法，而不是父类的test()</p>
+<ul>
+<li>哪些方法不可被重写
+final方法、静态方法、父类中的private等修饰使得子类不可见的方法</li>
+</ul></li>
+</ul>
+]]></content>
+      <categories>
+        <category>学习</category>
+      </categories>
+      <tags>
+        <tag>复习</tag>
+        <tag>复习-基础</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>方法的参数传递机制</title>
+    <url>/2022/09/22/review/basics/04/</url>
+    <content><![CDATA[<h2 id="代码">代码</h2>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Exam4</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line">        <span class="type">String</span> <span class="variable">str</span> <span class="operator">=</span> <span class="string">&quot;hello&quot;</span>;</span><br><span class="line">        <span class="type">Integer</span> <span class="variable">num</span> <span class="operator">=</span> <span class="number">2</span>;</span><br><span class="line">        <span class="type">int</span>[] arr = &#123;<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>&#125;;</span><br><span class="line">        <span class="type">MyData</span> <span class="variable">my</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">MyData</span>();</span><br><span class="line"></span><br><span class="line">        change(i, str, num, arr, my);</span><br><span class="line">        System.out.println(<span class="string">&quot;i = &quot;</span> + i);</span><br><span class="line">        System.out.println(<span class="string">&quot;str = &quot;</span> + str);</span><br><span class="line">        System.out.println(<span class="string">&quot;num = &quot;</span> + num);</span><br><span class="line">        System.out.println(<span class="string">&quot;arr = &quot;</span> + Arrays.toString(arr));</span><br><span class="line">        System.out.println(<span class="string">&quot;my.a = &quot;</span> + my.a); </span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">change</span><span class="params">(<span class="type">int</span> j, String s, Integer n, <span class="type">int</span>[] a,</span></span><br><span class="line"><span class="params">                              MyData m)</span> &#123;</span><br><span class="line">        j+=<span class="number">1</span>;</span><br><span class="line">        s+=<span class="string">&quot;world&quot;</span>;</span><br><span class="line">        n+=<span class="number">1</span>;</span><br><span class="line">        a[<span class="number">0</span>]+=<span class="number">1</span>;</span><br><span class="line">        m.a+=<span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>结果</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">i = 1</span><br><span class="line">str = hello</span><br><span class="line">num = 2</span><br><span class="line">arr = [2, 2, 3, 4, 5]</span><br><span class="line">my.a = 11</span><br></pre></td></tr></table></figure>
+<h2 id="知识点">知识点</h2>
+<ul>
+<li>方法的参数传递机制</li>
+<li>String、包装类等对象的不可变性</li>
+</ul>
+<h2 id="分析">分析</h2>
+<ul>
+<li><p>对于包装类，如果是使用new，那么一定是开辟新的空间；如果是直接赋值，那么-128-127之间会有缓存池(堆中)</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//当使用new的时候，一定在堆中新开辟的空间</span></span><br><span class="line">Integer a1= <span class="keyword">new</span> <span class="title class_">Integer</span>(<span class="number">12</span>);</span><br><span class="line">Integer b1= <span class="keyword">new</span> <span class="title class_">Integer</span>(<span class="number">12</span>);</span><br><span class="line">System.out.println(a1 == b1);<span class="comment">//false</span></span><br><span class="line">Integer a2= -<span class="number">128</span>;</span><br><span class="line">Integer b2= -<span class="number">128</span>;</span><br><span class="line">System.out.println(a2 == b2);<span class="comment">//true</span></span><br><span class="line">Integer a21= -<span class="number">129</span>;</span><br><span class="line">Integer b21= -<span class="number">129</span>;</span><br><span class="line">System.out.println(a21 == b21);<span class="comment">//false</span></span><br><span class="line">Integer a3=  <span class="number">127</span>;</span><br><span class="line">Integer b3=  <span class="number">127</span>;</span><br><span class="line">System.out.println(a3 == b3);<span class="comment">//true</span></span><br><span class="line">Integer a4=  <span class="number">22</span>;</span><br><span class="line">Integer b4=  <span class="number">22</span>;</span><br><span class="line">System.out.println(a4 == b4);<span class="comment">//true</span></span><br><span class="line">Integer a31=  <span class="number">128</span>;</span><br><span class="line">Integer b31=  <span class="number">128</span>;</span><br><span class="line">System.out.println(a31 == b31);<span class="comment">//false</span></span><br></pre></td></tr></table></figure></li>
+<li><p>对于String类</p></li>
+<li><p>change方法调用之前，jvm中的结构 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220922113056133.png"
+alt="image-20220922113056133" /></p></li>
 </ul>
 ]]></content>
       <categories>

@@ -277,7 +277,13 @@ alt="image-20220921143557083" /></p>
 <ul>
 <li><p>延迟创建对象</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Singleton4</span> &#123;</span><br><span class="line">	<span class="comment">//为了防止重排序，需要添加volatile关键字</span></span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">volatile</span> Singleton4 INSTANCE;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">private</span> <span class="title function_">Singleton4</span><span class="params">()</span> &#123;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/**</span></span><br><span class="line"><span class="comment">	 * double check</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> Singleton4 <span class="title function_">getInstance</span><span class="params">()</span> &#123;</span><br><span class="line">		<span class="comment">//2 先判断一次,对于后面的操作(此时已经创建了对象)能减少加锁次数</span></span><br><span class="line">		<span class="keyword">if</span> (INSTANCE == <span class="literal">null</span>) &#123;</span><br><span class="line">			<span class="comment">//如果这里不加锁会导致线程安全问题，可能刚进了判断语句之后，执行权被剥夺了又创建好了对象，</span></span><br><span class="line">			<span class="comment">//所以判断及创建对象必须是原子操作</span></span><br><span class="line">			<span class="keyword">synchronized</span> (Singleton4.class) &#123;</span><br><span class="line">				<span class="keyword">if</span> (INSTANCE == <span class="literal">null</span>) &#123;</span><br><span class="line">					<span class="comment">//用来模拟多线程被剥夺执行权</span></span><br><span class="line">					<span class="keyword">try</span> &#123;</span><br><span class="line">						Thread.sleep(<span class="number">1000</span>);</span><br><span class="line">					&#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">						e.printStackTrace();</span><br><span class="line">					&#125;</span><br><span class="line">					<span class="comment">//如果这个地方不加volatile,会出现的问题是,指令重排 1,2,3是正常的,</span></span><br><span class="line">					<span class="comment">//会重排成1,3,2 然后别的线程去拿的时候，判断为非空，但是实际上运行的时候，发现里面的数据是空的</span></span><br><span class="line"></span><br><span class="line">					<span class="comment">//1 memory = allocate();//分配对象空间</span></span><br><span class="line">					<span class="comment">//2 instance(memory); //初始化对象</span></span><br><span class="line">					<span class="comment">//3 instance = memory; //设置instance指向刚刚分配的位置</span></span><br><span class="line">					INSTANCE = <span class="keyword">new</span> <span class="title class_">Singleton4</span>();</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> INSTANCE;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-<li></li>
+</ul>
+<h3 id="使用静态内部类">使用静态内部类</h3>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Singleton6</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="title function_">Singleton6</span><span class="params">()</span>&#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">Inner</span>&#123;</span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Singleton6 INSTANCE=<span class="keyword">new</span> <span class="title class_">Singleton6</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Singleton6 <span class="title function_">getInstance</span><span class="params">()</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> Inner.INSTANCE;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>只有当内部类被加载和初始化的时候，才会创建INSTANCE实例对象</li>
+<li>静态内部类不会自动随着外部类的加载和初始化而初始化，他需要单独去加载和初始化</li>
+<li>又由于他是在内部类加载和初始化时，创建的，属于类加载器处理的，所以是线程安全的</li>
 </ul>
 
     </div>
@@ -301,7 +307,10 @@ alt="image-20220921143557083" /></p>
     <a href="/2022/09/21/review/basics/01/" rel="prev" title="自增变量">
       <i class="fa fa-chevron-left"></i> 自增变量
     </a></div>
-      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2022/09/22/review/basics/03/" rel="next" title="类、实例初始化">
+      类、实例初始化 <i class="fa fa-chevron-right"></i>
+    </a></div>
     </div>
       </footer>
     
@@ -367,7 +376,7 @@ alt="image-20220921143557083" /></p>
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%89%B9%E7%82%B9"><span class="nav-number">1.</span> <span class="nav-text">特点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%87%A0%E5%A4%A7%E6%96%B9%E6%B3%95"><span class="nav-number">2.</span> <span class="nav-text">几大方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%A5%BF%E6%B1%89%E5%BC%8F"><span class="nav-number">2.1.</span> <span class="nav-text">饿汉式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9E%9A%E4%B8%BE"><span class="nav-number">2.2.</span> <span class="nav-text">枚举</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E9%9D%99%E6%80%81%E4%BB%A3%E7%A0%81%E5%9D%97"><span class="nav-number">2.3.</span> <span class="nav-text">使用静态代码块</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%87%92%E6%B1%89%E5%BC%8F"><span class="nav-number">2.4.</span> <span class="nav-text">懒汉式</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%89%B9%E7%82%B9"><span class="nav-number">1.</span> <span class="nav-text">特点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%87%A0%E5%A4%A7%E6%96%B9%E6%B3%95"><span class="nav-number">2.</span> <span class="nav-text">几大方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%A5%BF%E6%B1%89%E5%BC%8F"><span class="nav-number">2.1.</span> <span class="nav-text">饿汉式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9E%9A%E4%B8%BE"><span class="nav-number">2.2.</span> <span class="nav-text">枚举</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E9%9D%99%E6%80%81%E4%BB%A3%E7%A0%81%E5%9D%97"><span class="nav-number">2.3.</span> <span class="nav-text">使用静态代码块</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%87%92%E6%B1%89%E5%BC%8F"><span class="nav-number">2.4.</span> <span class="nav-text">懒汉式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E9%9D%99%E6%80%81%E5%86%85%E9%83%A8%E7%B1%BB"><span class="nav-number">2.5.</span> <span class="nav-text">使用静态内部类</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -383,7 +392,7 @@ alt="image-20220921143557083" /></p>
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">65</span>
+          <span class="site-state-item-count">67</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
