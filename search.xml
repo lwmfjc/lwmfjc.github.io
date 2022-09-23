@@ -151,8 +151,224 @@ src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img
       </tags>
   </entry>
   <entry>
+    <title>类、实例初始化</title>
+    <url>/2022/09/22/review/basics/Class_and_instance_initialization/</url>
+    <content><![CDATA[<h2 id="代码">代码</h2>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"> <span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Son</span> <span class="keyword">extends</span> <span class="title class_">Father</span>&#123;</span><br><span class="line">	<span class="keyword">private</span> <span class="type">int</span> i=test();</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="type">int</span> j=method();</span><br><span class="line">	<span class="keyword">static</span> &#123;</span><br><span class="line">		System.out.print(<span class="string">&quot;(6)&quot;</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	Son()&#123;</span><br><span class="line">		System.out.print(<span class="string">&quot;(7)&quot;</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	&#123;</span><br><span class="line">		System.out.print(<span class="string">&quot;(8)&quot;</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">public</span> <span class="type">int</span> <span class="title function_">test</span><span class="params">()</span>&#123;</span><br><span class="line">		System.out.print(<span class="string">&quot;(9)&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="type">int</span> <span class="title function_">method</span><span class="params">()</span>&#123;</span><br><span class="line">		System.out.print(<span class="string">&quot;(10)&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">		Son s1=<span class="keyword">new</span> <span class="title class_">Son</span>();</span><br><span class="line">		System.out.println();</span><br><span class="line">		Son s2=<span class="keyword">new</span> <span class="title class_">Son</span>();</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"> <span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Father</span> &#123;</span><br><span class="line">	<span class="keyword">private</span> <span class="type">int</span> i=test();</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="type">int</span> j=method();</span><br><span class="line">	<span class="keyword">static</span> &#123;</span><br><span class="line">		System.out.print(<span class="string">&quot;(1)&quot;</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	Father()&#123;</span><br><span class="line">		System.out.print(<span class="string">&quot;(2)&quot;</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	&#123;</span><br><span class="line">		System.out.print(<span class="string">&quot;(3)&quot;</span>);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="type">int</span> <span class="title function_">test</span><span class="params">()</span> &#123;</span><br><span class="line">		System.out.print(<span class="string">&quot;(4)&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="type">int</span> <span class="title function_">method</span><span class="params">()</span> &#123;</span><br><span class="line">		System.out.print(<span class="string">&quot;(5)&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>输出：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">(5)(1)(10)(6)(9)(3)(2)(9)(8)(7)</span><br><span class="line">(9)(3)(2)(9)(8)(7)</span><br></pre></td></tr></table></figure>
+<h2 id="分析">分析</h2>
+<ul>
+<li><p>类初始化过程</p>
+<ul>
+<li>当实例化了一个对象/或main所在类会导致类初始化</li>
+<li>子类初始化前会先初始化父类</li>
+<li>类初始化执行的是<clinit >方法，编译查看字节码可得知 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220922091920061.png"
+alt="image-20220922091920061" /></li>
+<li><clinit >由静态类变量显示赋值语句 以及
+静态代码块组成(由上到下顺序)，且只执行一次<br />
+如下<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220922100207544.png"
+alt="image-20220922100207544" /></li>
+</ul></li>
+<li><p>实例初始化过程</p>
+<ul>
+<li>执行的是<init>方法 由非静态实例变量显示赋值语句 以及 非静态代码块
+[从上到下顺序] 以及对应构造器代码[最后执行] 组成
+其中，子类构造器一定会调用super() [最前面] 1） super() 【最前】 2）i =
+test() 3）子类的非静态代码块 【2，3按顺序】
+<ol start="4" type="1">
+<li>子类的无参构造(最后)<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220922100330126.png"
+alt="image-20220922100330126" /></li>
+</ol></li>
+</ul></li>
+<li><p>重写的问题
+如上所示，初始化Son对象的时候，会先调用super()方法，即初始化父类，然后会先调用父类的
+非静态变量赋值以及非静态代码块，最后才是父类的构造器代码块</p>
+<p>调用父类非静态变量赋值的时候，如果调用了非静态方法，就会涉及到重写问题，比如这里的</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Father</span>&#123;</span><br><span class="line"> <span class="keyword">private</span> <span class="type">int</span> i= test();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里会调用子类(当前正在初始化的对象)的test()方法，而不是父类的test()</p>
+<ul>
+<li>哪些方法不可被重写
+final方法、静态方法、父类中的private等修饰使得子类不可见的方法</li>
+</ul></li>
+</ul>
+]]></content>
+      <categories>
+        <category>学习</category>
+      </categories>
+      <tags>
+        <tag>复习</tag>
+        <tag>复习-基础</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>方法的参数传递机制</title>
+    <url>/2022/09/22/review/basics/Method_parameter_passing_mechanism/</url>
+    <content><![CDATA[<h2 id="代码">代码</h2>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Exam4</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line">        <span class="type">String</span> <span class="variable">str</span> <span class="operator">=</span> <span class="string">&quot;hello&quot;</span>;</span><br><span class="line">        <span class="type">Integer</span> <span class="variable">num</span> <span class="operator">=</span> <span class="number">2</span>;</span><br><span class="line">        <span class="type">int</span>[] arr = &#123;<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>&#125;;</span><br><span class="line">        <span class="type">MyData</span> <span class="variable">my</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">MyData</span>();</span><br><span class="line"></span><br><span class="line">        change(i, str, num, arr, my);</span><br><span class="line">        System.out.println(<span class="string">&quot;i = &quot;</span> + i);</span><br><span class="line">        System.out.println(<span class="string">&quot;str = &quot;</span> + str);</span><br><span class="line">        System.out.println(<span class="string">&quot;num = &quot;</span> + num);</span><br><span class="line">        System.out.println(<span class="string">&quot;arr = &quot;</span> + Arrays.toString(arr));</span><br><span class="line">        System.out.println(<span class="string">&quot;my.a = &quot;</span> + my.a); </span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">change</span><span class="params">(<span class="type">int</span> j, String s, Integer n, <span class="type">int</span>[] a,</span></span><br><span class="line"><span class="params">                              MyData m)</span> &#123;</span><br><span class="line">        j+=<span class="number">1</span>;</span><br><span class="line">        s+=<span class="string">&quot;world&quot;</span>;</span><br><span class="line">        n+=<span class="number">1</span>;</span><br><span class="line">        a[<span class="number">0</span>]+=<span class="number">1</span>;</span><br><span class="line">        m.a+=<span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>结果</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">i = 1</span><br><span class="line">str = hello</span><br><span class="line">num = 2</span><br><span class="line">arr = [2, 2, 3, 4, 5]</span><br><span class="line">my.a = 11</span><br></pre></td></tr></table></figure>
+<h2 id="知识点">知识点</h2>
+<ul>
+<li>方法的参数传递机制</li>
+<li>String、包装类等对象的不可变性</li>
+</ul>
+<h2 id="分析">分析</h2>
+<ul>
+<li><p>对于包装类，如果是使用new，那么一定是开辟新的空间；如果是直接赋值，那么-128-127之间会有缓存池(堆中)</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//当使用new的时候，一定在堆中新开辟的空间</span></span><br><span class="line">Integer a1= <span class="keyword">new</span> <span class="title class_">Integer</span>(<span class="number">12</span>);</span><br><span class="line">Integer b1= <span class="keyword">new</span> <span class="title class_">Integer</span>(<span class="number">12</span>);</span><br><span class="line">System.out.println(a1 == b1);<span class="comment">//false</span></span><br><span class="line">Integer a2= -<span class="number">128</span>;</span><br><span class="line">Integer b2= -<span class="number">128</span>;</span><br><span class="line">System.out.println(a2 == b2);<span class="comment">//true</span></span><br><span class="line">Integer a21= -<span class="number">129</span>;</span><br><span class="line">Integer b21= -<span class="number">129</span>;</span><br><span class="line">System.out.println(a21 == b21);<span class="comment">//false</span></span><br><span class="line">Integer a3=  <span class="number">127</span>;</span><br><span class="line">Integer b3=  <span class="number">127</span>;</span><br><span class="line">System.out.println(a3 == b3);<span class="comment">//true</span></span><br><span class="line">Integer a4=  <span class="number">22</span>;</span><br><span class="line">Integer b4=  <span class="number">22</span>;</span><br><span class="line">System.out.println(a4 == b4);<span class="comment">//true</span></span><br><span class="line">Integer a31=  <span class="number">128</span>;</span><br><span class="line">Integer b31=  <span class="number">128</span>;</span><br><span class="line">System.out.println(a31 == b31);<span class="comment">//false</span></span><br></pre></td></tr></table></figure></li>
+<li><p>对于String类</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//先查找常量池中是否有&quot;abc&quot;，如果有直接返回在常量池中的引用,</span></span><br><span class="line"><span class="comment">//如果没有，则在常量池中创建&quot;abc&quot;,然后返回该引用</span></span><br><span class="line">String a=<span class="string">&quot;abc&quot;</span>;</span><br><span class="line">  </span><br><span class="line"><span class="comment">//先查找常量池中是否有&quot;abc&quot;，如果有则在堆内存中创建对象，然后返回堆内存中的地址</span></span><br><span class="line"><span class="comment">//如果没有，则先在常量池中创建字符串对象，然后再在堆内存中创建对象，最后返回堆内存中的地址</span></span><br><span class="line">String ab=<span class="keyword">new</span> <span class="title class_">String</span>(<span class="string">&quot;abc&quot;</span>);</span><br><span class="line">System.out.println(a==ab);<span class="comment">//true</span></span><br><span class="line">  </span><br><span class="line"><span class="comment">//intern() //判断常量池中是否有ab对象的字符串，如果存在&quot;abc&quot;则返回&quot;abc&quot;在</span></span><br><span class="line"><span class="comment">//常量池中的引用，如果不存在则在常量池中创建,</span></span><br><span class="line"><span class="comment">//并返回&quot;abc&quot;在常量池中的引用</span></span><br><span class="line">System.out.println(a==ab.intern());<span class="comment">//true</span></span><br></pre></td></tr></table></figure></li>
+<li><p>change方法调用之前，jvm中的结构 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220922113056133.png"
+alt="image-20220922113056133" /></p></li>
+<li><p>方法栈帧中的数据 执行change方法后，实参给形参赋值：
+基本数据类型：数据值 引用数据类型：地址值</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220922211437515.png"
+alt="image-20220922211437515" />
+<figcaption aria-hidden="true">image-20220922211437515</figcaption>
+</figure>
+<p>当实参是特殊的类型时：比如String、包装类等对象，不可变，即
+<code>s+="world";</code> 会导致创建两个对象，如图（ Integer也是） <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220922211733044.png"
+alt="image-20220922211733044" /></p></li>
+</ul>
+<p>数组和对象，则是找到堆内存中的地址，直接更改</p>
+]]></content>
+      <categories>
+        <category>学习</category>
+      </categories>
+      <tags>
+        <tag>复习</tag>
+        <tag>复习-基础</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>成员变量与局部变量</title>
+    <url>/2022/09/23/review/basics/member_variables_and_local_variables/</url>
+    <content><![CDATA[<h2 id="代码">代码</h2>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="type">int</span> s;</span><br><span class="line"> <span class="type">int</span> i;</span><br><span class="line"> <span class="type">int</span> j;</span><br><span class="line"></span><br><span class="line"> &#123;</span><br><span class="line">     <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line">     i++;</span><br><span class="line">     j++;</span><br><span class="line">     s++;</span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line"> <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">test</span><span class="params">(<span class="type">int</span> j)</span> &#123;</span><br><span class="line">     j++;</span><br><span class="line">     i++;</span><br><span class="line">     s++;</span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line"> <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">     <span class="type">Exam5</span> <span class="variable">obj1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Exam5</span>();</span><br><span class="line">     <span class="type">Exam5</span> <span class="variable">obj2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Exam5</span>();</span><br><span class="line">     obj1.test(<span class="number">10</span>);</span><br><span class="line">     obj1.test(<span class="number">20</span>);</span><br><span class="line">     obj2.test(<span class="number">30</span>);</span><br><span class="line"></span><br><span class="line">     System.out.println(obj1.i + <span class="string">&quot;,&quot;</span> + obj1.j + <span class="string">&quot;,&quot;</span> + obj1.s);</span><br><span class="line">     System.out.println(obj2.i + <span class="string">&quot;,&quot;</span> + obj2.j + <span class="string">&quot;,&quot;</span> + obj2.s);</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<h2 id="运行结果">运行结果</h2>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">2,1,5</span><br><span class="line">1,1,5</span><br></pre></td></tr></table></figure>
+<h2 id="分析">分析</h2>
+<h3 id="就近原则">就近原则</h3>
+<p>代码中有很多修改变量的语句，下面是用就近原则+作用域分析的图 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220923110928107.png"
+alt="image-20220923110928107" /></p>
+<h3 id="局部变量和类变量">局部变量和类变量</h3>
+<ul>
+<li><p>局部变量包括方法体{}，形参，以及代码块</p>
+<p>带static为类变量，不带的为实例变量<br />
+代码中的变量分类 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220923111604883.png"
+alt="image-20220923111604883" /></p></li>
+<li><p>修饰符 --局部变量只有final -- 实例变量 public , protected ,
+private , final , static , volatile transient</p></li>
+<li><p>存储位置</p>
+<p>局部变量：栈<br />
+实例变量：堆<br />
+类变量：方法区（类信息、常量、静态变量）<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220923111251514.png"
+alt="image-20220923111251514" /></p></li>
+<li><p>作用域 局部变量：从声明处开始，到所属的 } 结束 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220923112828922.png"
+alt="image-20220923112828922" /></p></li>
+<li><p>this <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220923113054686.png"
+alt="image-20220923113054686" /></p></li>
+<li><p>题中的s既可以用成员变量访问，也可以用类名访问</p></li>
+<li><p>生命周期</p>
+<ul>
+<li>局部变量：每一个线程，每一次调用执行都是新的生命周期</li>
+<li>实例变量：随着对象的创建而初始化，随着对象被回收而消亡（垃圾回收器），每一个对象的实例变量是独立的</li>
+<li>类变量：随着类的初始化而初始化，随着类的卸载而消亡，该类的所有对象的类变量是共享的</li>
+</ul></li>
+</ul>
+<h3 id="代码的执行jvm中">代码的执行，jvm中</h3>
+<p>Exam5 obj1=new Exam5();</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220923113659581.png"
+alt="image-20220923113659581" />
+<figcaption aria-hidden="true">image-20220923113659581</figcaption>
+</figure>
+<p>obj1.test(10)</p>
+<p>非静态代码块或者进入方法，都会在栈中开辟空间存储局部变量 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220923113808372.png"
+alt="image-20220923113808372" /></p>
+<p>注意：静态代码块定义的变量，只会存在于静态代码块中。不是类变量，也不属于成员变量</p>
+]]></content>
+      <categories>
+        <category>学习</category>
+      </categories>
+      <tags>
+        <tag>复习</tag>
+        <tag>复习-基础</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>递归与迭代</title>
+    <url>/2022/09/22/review/basics/recursion_and_iteration/</url>
+    <content><![CDATA[<h2 id="编程题">编程题</h2>
+<p>有n步台阶，一次只能上1步或2步，共有多少种走法</p>
+<h3 id="分析">分析</h3>
+<ul>
+<li><p>分析<br />
+n = 1，1步 f(1) = 1<br />
+n = 2, 两个1步,2步 f(2) = 2<br />
+n = 3, 分两种情况： 最后1步是2级台阶/最后1步是1级台阶， 即 f(3) =
+f(1)+f(2) n = 4, 分两种情况： 最后1步是2级台阶/最后1步是1级台阶， 即f(4)
+= f(2)+f(3)</p>
+<p>也就是说，不管有几(n)个台阶，总要分成两种情况：最后1步是2级台阶/最后1步是1级台阶，即
+f(n)= f(n-2) + f(n-1)</p></li>
+</ul>
+<h3 id="递归">递归</h3>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="type">int</span> <span class="title function_">f</span><span class="params">(<span class="type">int</span> n)</span>&#123;</span><br><span class="line">      <span class="keyword">if</span>(n==<span class="number">1</span> || n==<span class="number">2</span>)&#123;</span><br><span class="line">          <span class="keyword">return</span> n;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> f(n-<span class="number">2</span>)+f(n-<span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">      System.out.println(f(<span class="number">1</span>)); <span class="comment">//1</span></span><br><span class="line">      System.out.println(f(<span class="number">2</span>)); <span class="comment">//2</span></span><br><span class="line">      System.out.println(f(<span class="number">3</span>)); <span class="comment">//3</span></span><br><span class="line">      System.out.println(f(<span class="number">4</span>)); <span class="comment">//5</span></span><br><span class="line">      System.out.println(f(<span class="number">5</span>)); <span class="comment">//8</span></span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>debug调试 方法栈 f(4)----&gt;分解成f(2)+f(3) f(2)---返回-
+f(3)---f(2)返回---f(1)返回 【f(3)分解成f(2)和f(1)】 方法栈的个数： <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220923093752921.png"
+alt="image-20220923093752921" /></li>
+</ul>
+<h3 id="使用循环">使用循环</h3>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="type">int</span> <span class="title function_">loop</span><span class="params">(<span class="type">int</span> n)</span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (n &lt; <span class="number">1</span>) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>(n + <span class="string">&quot;不能小于1&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (n == <span class="number">1</span> || n == <span class="number">2</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> n;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="type">int</span> one=<span class="number">2</span>;<span class="comment">//最后只走1步，会有2种走法</span></span><br><span class="line">    <span class="type">int</span> two=<span class="number">1</span>;<span class="comment">//最后走2步，会有1种走法</span></span><br><span class="line">    <span class="type">int</span> sum=<span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">3</span>;i&lt;=n;i++)&#123;</span><br><span class="line">        <span class="comment">//最后跨两级台阶+最后跨一级台阶的走法</span></span><br><span class="line">        sum=two+one;</span><br><span class="line">        two=one;</span><br><span class="line">        one=sum;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> sum;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220923095719037.png"
+alt="image-20220923095719037" />
+<figcaption aria-hidden="true">image-20220923095719037</figcaption>
+</figure>
+<h3 id="小结">小结</h3>
+<ul>
+<li>方法调用自身称为递归，利用变量的原值推出新值称为迭代(while循环)</li>
+<li>递归<br />
+优点：大问题转换为小问题，代码精简<br />
+缺点：浪费空间（栈空间），可能会照成栈的溢出</li>
+<li>迭代<br />
+优点：效率高，时间只受循环次数限制，不受出栈入栈时间<br />
+缺点：不如递归精简，可读性稍差</li>
+</ul>
+]]></content>
+      <categories>
+        <category>学习</category>
+      </categories>
+      <tags>
+        <tag>复习</tag>
+        <tag>复习-基础</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>自增变量</title>
-    <url>/2022/09/21/review/basics/01/</url>
+    <url>/2022/09/21/review/basics/self_incrementing_variable/</url>
     <content><![CDATA[<h2 id="题目">题目</h2>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> i=<span class="number">1</span>;</span><br><span class="line">i=i++;</span><br><span class="line"><span class="type">int</span> j=i++;</span><br><span class="line"><span class="type">int</span> <span class="variable">k</span> <span class="operator">=</span> i+ ++i * i++;</span><br><span class="line">System.out.println(<span class="string">&quot;i=&quot;</span>+i);</span><br><span class="line">System.out.println(<span class="string">&quot;j=&quot;</span>+j);</span><br><span class="line">System.out.println(<span class="string">&quot;k=&quot;</span>+k);</span><br></pre></td></tr></table></figure>
 <h2 id="讲解">讲解</h2>
@@ -214,7 +430,7 @@ src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img
   </entry>
   <entry>
     <title>单例设计模式</title>
-    <url>/2022/09/21/review/basics/02/</url>
+    <url>/2022/09/21/review/basics/singleton_design_pattern/</url>
     <content><![CDATA[<h2 id="特点">特点</h2>
 <ul>
 <li>该类只有一个实例
@@ -256,221 +472,6 @@ alt="image-20220921143557083" /></p>
 <li>静态内部类不会自动随着外部类的加载和初始化而初始化，他需要单独去加载和初始化</li>
 <li>又由于他是在内部类加载和初始化时，创建的，属于类加载器处理的，所以是线程安全的</li>
 </ul>
-]]></content>
-      <categories>
-        <category>学习</category>
-      </categories>
-      <tags>
-        <tag>复习</tag>
-        <tag>复习-基础</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>类、实例初始化</title>
-    <url>/2022/09/22/review/basics/03/</url>
-    <content><![CDATA[<h2 id="代码">代码</h2>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"> <span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Son</span> <span class="keyword">extends</span> <span class="title class_">Father</span>&#123;</span><br><span class="line">	<span class="keyword">private</span> <span class="type">int</span> i=test();</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="type">int</span> j=method();</span><br><span class="line">	<span class="keyword">static</span> &#123;</span><br><span class="line">		System.out.print(<span class="string">&quot;(6)&quot;</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	Son()&#123;</span><br><span class="line">		System.out.print(<span class="string">&quot;(7)&quot;</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	&#123;</span><br><span class="line">		System.out.print(<span class="string">&quot;(8)&quot;</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">public</span> <span class="type">int</span> <span class="title function_">test</span><span class="params">()</span>&#123;</span><br><span class="line">		System.out.print(<span class="string">&quot;(9)&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="type">int</span> <span class="title function_">method</span><span class="params">()</span>&#123;</span><br><span class="line">		System.out.print(<span class="string">&quot;(10)&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">		Son s1=<span class="keyword">new</span> <span class="title class_">Son</span>();</span><br><span class="line">		System.out.println();</span><br><span class="line">		Son s2=<span class="keyword">new</span> <span class="title class_">Son</span>();</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"> <span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Father</span> &#123;</span><br><span class="line">	<span class="keyword">private</span> <span class="type">int</span> i=test();</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="type">int</span> j=method();</span><br><span class="line">	<span class="keyword">static</span> &#123;</span><br><span class="line">		System.out.print(<span class="string">&quot;(1)&quot;</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	Father()&#123;</span><br><span class="line">		System.out.print(<span class="string">&quot;(2)&quot;</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	&#123;</span><br><span class="line">		System.out.print(<span class="string">&quot;(3)&quot;</span>);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="type">int</span> <span class="title function_">test</span><span class="params">()</span> &#123;</span><br><span class="line">		System.out.print(<span class="string">&quot;(4)&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="type">int</span> <span class="title function_">method</span><span class="params">()</span> &#123;</span><br><span class="line">		System.out.print(<span class="string">&quot;(5)&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>输出：</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">(5)(1)(10)(6)(9)(3)(2)(9)(8)(7)</span><br><span class="line">(9)(3)(2)(9)(8)(7)</span><br></pre></td></tr></table></figure>
-<h2 id="分析">分析</h2>
-<ul>
-<li><p>类初始化过程</p>
-<ul>
-<li>当实例化了一个对象/或main所在类会导致类初始化</li>
-<li>子类初始化前会先初始化父类</li>
-<li>类初始化执行的是<clinit >方法，编译查看字节码可得知 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220922091920061.png"
-alt="image-20220922091920061" /></li>
-<li><clinit >由静态类变量显示赋值语句 以及
-静态代码块组成(由上到下顺序)，且只执行一次<br />
-如下<br />
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220922100207544.png"
-alt="image-20220922100207544" /></li>
-</ul></li>
-<li><p>实例初始化过程</p>
-<ul>
-<li>执行的是<init>方法 由非静态实例变量显示赋值语句 以及 非静态代码块
-[从上到下顺序] 以及对应构造器代码[最后执行] 组成
-其中，子类构造器一定会调用super() [最前面] 1） super() 【最前】 2）i =
-test() 3）子类的非静态代码块 【2，3按顺序】
-<ol start="4" type="1">
-<li>子类的无参构造(最后)<br />
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220922100330126.png"
-alt="image-20220922100330126" /></li>
-</ol></li>
-</ul></li>
-<li><p>重写的问题
-如上所示，初始化Son对象的时候，会先调用super()方法，即初始化父类，然后会先调用父类的
-非静态变量赋值以及非静态代码块，最后才是父类的构造器代码块</p>
-<p>调用父类非静态变量赋值的时候，如果调用了非静态方法，就会涉及到重写问题，比如这里的</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Father</span>&#123;</span><br><span class="line"> <span class="keyword">private</span> <span class="type">int</span> i= test();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>这里会调用子类(当前正在初始化的对象)的test()方法，而不是父类的test()</p>
-<ul>
-<li>哪些方法不可被重写
-final方法、静态方法、父类中的private等修饰使得子类不可见的方法</li>
-</ul></li>
-</ul>
-]]></content>
-      <categories>
-        <category>学习</category>
-      </categories>
-      <tags>
-        <tag>复习</tag>
-        <tag>复习-基础</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>方法的参数传递机制</title>
-    <url>/2022/09/22/review/basics/04/</url>
-    <content><![CDATA[<h2 id="代码">代码</h2>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Exam4</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line">        <span class="type">String</span> <span class="variable">str</span> <span class="operator">=</span> <span class="string">&quot;hello&quot;</span>;</span><br><span class="line">        <span class="type">Integer</span> <span class="variable">num</span> <span class="operator">=</span> <span class="number">2</span>;</span><br><span class="line">        <span class="type">int</span>[] arr = &#123;<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>&#125;;</span><br><span class="line">        <span class="type">MyData</span> <span class="variable">my</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">MyData</span>();</span><br><span class="line"></span><br><span class="line">        change(i, str, num, arr, my);</span><br><span class="line">        System.out.println(<span class="string">&quot;i = &quot;</span> + i);</span><br><span class="line">        System.out.println(<span class="string">&quot;str = &quot;</span> + str);</span><br><span class="line">        System.out.println(<span class="string">&quot;num = &quot;</span> + num);</span><br><span class="line">        System.out.println(<span class="string">&quot;arr = &quot;</span> + Arrays.toString(arr));</span><br><span class="line">        System.out.println(<span class="string">&quot;my.a = &quot;</span> + my.a); </span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">change</span><span class="params">(<span class="type">int</span> j, String s, Integer n, <span class="type">int</span>[] a,</span></span><br><span class="line"><span class="params">                              MyData m)</span> &#123;</span><br><span class="line">        j+=<span class="number">1</span>;</span><br><span class="line">        s+=<span class="string">&quot;world&quot;</span>;</span><br><span class="line">        n+=<span class="number">1</span>;</span><br><span class="line">        a[<span class="number">0</span>]+=<span class="number">1</span>;</span><br><span class="line">        m.a+=<span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>结果</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">i = 1</span><br><span class="line">str = hello</span><br><span class="line">num = 2</span><br><span class="line">arr = [2, 2, 3, 4, 5]</span><br><span class="line">my.a = 11</span><br></pre></td></tr></table></figure>
-<h2 id="知识点">知识点</h2>
-<ul>
-<li>方法的参数传递机制</li>
-<li>String、包装类等对象的不可变性</li>
-</ul>
-<h2 id="分析">分析</h2>
-<ul>
-<li><p>对于包装类，如果是使用new，那么一定是开辟新的空间；如果是直接赋值，那么-128-127之间会有缓存池(堆中)</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//当使用new的时候，一定在堆中新开辟的空间</span></span><br><span class="line">Integer a1= <span class="keyword">new</span> <span class="title class_">Integer</span>(<span class="number">12</span>);</span><br><span class="line">Integer b1= <span class="keyword">new</span> <span class="title class_">Integer</span>(<span class="number">12</span>);</span><br><span class="line">System.out.println(a1 == b1);<span class="comment">//false</span></span><br><span class="line">Integer a2= -<span class="number">128</span>;</span><br><span class="line">Integer b2= -<span class="number">128</span>;</span><br><span class="line">System.out.println(a2 == b2);<span class="comment">//true</span></span><br><span class="line">Integer a21= -<span class="number">129</span>;</span><br><span class="line">Integer b21= -<span class="number">129</span>;</span><br><span class="line">System.out.println(a21 == b21);<span class="comment">//false</span></span><br><span class="line">Integer a3=  <span class="number">127</span>;</span><br><span class="line">Integer b3=  <span class="number">127</span>;</span><br><span class="line">System.out.println(a3 == b3);<span class="comment">//true</span></span><br><span class="line">Integer a4=  <span class="number">22</span>;</span><br><span class="line">Integer b4=  <span class="number">22</span>;</span><br><span class="line">System.out.println(a4 == b4);<span class="comment">//true</span></span><br><span class="line">Integer a31=  <span class="number">128</span>;</span><br><span class="line">Integer b31=  <span class="number">128</span>;</span><br><span class="line">System.out.println(a31 == b31);<span class="comment">//false</span></span><br></pre></td></tr></table></figure></li>
-<li><p>对于String类</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//先查找常量池中是否有&quot;abc&quot;，如果有直接返回在常量池中的引用,</span></span><br><span class="line"><span class="comment">//如果没有，则在常量池中创建&quot;abc&quot;,然后返回该引用</span></span><br><span class="line">String a=<span class="string">&quot;abc&quot;</span>;</span><br><span class="line">  </span><br><span class="line"><span class="comment">//先查找常量池中是否有&quot;abc&quot;，如果有则在堆内存中创建对象，然后返回堆内存中的地址</span></span><br><span class="line"><span class="comment">//如果没有，则先在常量池中创建字符串对象，然后再在堆内存中创建对象，最后返回堆内存中的地址</span></span><br><span class="line">String ab=<span class="keyword">new</span> <span class="title class_">String</span>(<span class="string">&quot;abc&quot;</span>);</span><br><span class="line">System.out.println(a==ab);<span class="comment">//true</span></span><br><span class="line">  </span><br><span class="line"><span class="comment">//intern() //判断常量池中是否有ab对象的字符串，如果存在&quot;abc&quot;则返回&quot;abc&quot;在</span></span><br><span class="line"><span class="comment">//常量池中的引用，如果不存在则在常量池中创建,</span></span><br><span class="line"><span class="comment">//并返回&quot;abc&quot;在常量池中的引用</span></span><br><span class="line">System.out.println(a==ab.intern());<span class="comment">//true</span></span><br></pre></td></tr></table></figure></li>
-<li><p>change方法调用之前，jvm中的结构 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220922113056133.png"
-alt="image-20220922113056133" /></p></li>
-<li><p>方法栈帧中的数据 执行change方法后，实参给形参赋值：
-基本数据类型：数据值 引用数据类型：地址值</p>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220922211437515.png"
-alt="image-20220922211437515" />
-<figcaption aria-hidden="true">image-20220922211437515</figcaption>
-</figure>
-<p>当实参是特殊的类型时：比如String、包装类等对象，不可变，即
-<code>s+="world";</code> 会导致创建两个对象，如图（ Integer也是） <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220922211733044.png"
-alt="image-20220922211733044" /></p></li>
-</ul>
-<p>数组和对象，则是找到堆内存中的地址，直接更改</p>
-]]></content>
-      <categories>
-        <category>学习</category>
-      </categories>
-      <tags>
-        <tag>复习</tag>
-        <tag>复习-基础</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>递归与迭代</title>
-    <url>/2022/09/22/review/basics/05/</url>
-    <content><![CDATA[<h2 id="编程题">编程题</h2>
-<p>有n步台阶，一次只能上1步或2步，共有多少种走法</p>
-<h3 id="分析">分析</h3>
-<ul>
-<li><p>分析<br />
-n = 1，1步 f(1) = 1<br />
-n = 2, 两个1步,2步 f(2) = 2<br />
-n = 3, 分两种情况： 最后1步是2级台阶/最后1步是1级台阶， 即 f(3) =
-f(1)+f(2) n = 4, 分两种情况： 最后1步是2级台阶/最后1步是1级台阶， 即f(4)
-= f(2)+f(3)</p>
-<p>也就是说，不管有几(n)个台阶，总要分成两种情况：最后1步是2级台阶/最后1步是1级台阶，即
-f(n)= f(n-2) + f(n-1)</p></li>
-</ul>
-<h3 id="递归">递归</h3>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="type">int</span> <span class="title function_">f</span><span class="params">(<span class="type">int</span> n)</span>&#123;</span><br><span class="line">      <span class="keyword">if</span>(n==<span class="number">1</span> || n==<span class="number">2</span>)&#123;</span><br><span class="line">          <span class="keyword">return</span> n;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> f(n-<span class="number">2</span>)+f(n-<span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">      System.out.println(f(<span class="number">1</span>)); <span class="comment">//1</span></span><br><span class="line">      System.out.println(f(<span class="number">2</span>)); <span class="comment">//2</span></span><br><span class="line">      System.out.println(f(<span class="number">3</span>)); <span class="comment">//3</span></span><br><span class="line">      System.out.println(f(<span class="number">4</span>)); <span class="comment">//5</span></span><br><span class="line">      System.out.println(f(<span class="number">5</span>)); <span class="comment">//8</span></span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>debug调试 方法栈 f(4)----&gt;分解成f(2)+f(3) f(2)---返回-
-f(3)---f(2)返回---f(1)返回 【f(3)分解成f(2)和f(1)】 方法栈的个数： <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220923093752921.png"
-alt="image-20220923093752921" /></li>
-</ul>
-<h3 id="使用循环">使用循环</h3>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="type">int</span> <span class="title function_">loop</span><span class="params">(<span class="type">int</span> n)</span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (n &lt; <span class="number">1</span>) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>(n + <span class="string">&quot;不能小于1&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (n == <span class="number">1</span> || n == <span class="number">2</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> n;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="type">int</span> one=<span class="number">2</span>;<span class="comment">//最后只走1步，会有2种走法</span></span><br><span class="line">    <span class="type">int</span> two=<span class="number">1</span>;<span class="comment">//最后走2步，会有1种走法</span></span><br><span class="line">    <span class="type">int</span> sum=<span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">3</span>;i&lt;=n;i++)&#123;</span><br><span class="line">        <span class="comment">//最后跨两级台阶+最后跨一级台阶的走法</span></span><br><span class="line">        sum=two+one;</span><br><span class="line">        two=one;</span><br><span class="line">        one=sum;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> sum;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220923095719037.png"
-alt="image-20220923095719037" />
-<figcaption aria-hidden="true">image-20220923095719037</figcaption>
-</figure>
-<h3 id="小结">小结</h3>
-<ul>
-<li>方法调用自身称为递归，利用变量的原值推出新值称为迭代(while循环)</li>
-<li>递归<br />
-优点：大问题转换为小问题，代码精简<br />
-缺点：浪费空间（栈空间），可能会照成栈的溢出</li>
-<li>迭代<br />
-优点：效率高，时间只受循环次数限制，不受出栈入栈时间<br />
-缺点：不如递归精简，可读性稍差</li>
-</ul>
-]]></content>
-      <categories>
-        <category>学习</category>
-      </categories>
-      <tags>
-        <tag>复习</tag>
-        <tag>复习-基础</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>成员变量与局部变量</title>
-    <url>/2022/09/23/review/basics/06/</url>
-    <content><![CDATA[<h2 id="代码">代码</h2>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="type">int</span> s;</span><br><span class="line"> <span class="type">int</span> i;</span><br><span class="line"> <span class="type">int</span> j;</span><br><span class="line"></span><br><span class="line"> &#123;</span><br><span class="line">     <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line">     i++;</span><br><span class="line">     j++;</span><br><span class="line">     s++;</span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line"> <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">test</span><span class="params">(<span class="type">int</span> j)</span> &#123;</span><br><span class="line">     j++;</span><br><span class="line">     i++;</span><br><span class="line">     s++;</span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line"> <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">     <span class="type">Exam5</span> <span class="variable">obj1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Exam5</span>();</span><br><span class="line">     <span class="type">Exam5</span> <span class="variable">obj2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Exam5</span>();</span><br><span class="line">     obj1.test(<span class="number">10</span>);</span><br><span class="line">     obj1.test(<span class="number">20</span>);</span><br><span class="line">     obj2.test(<span class="number">30</span>);</span><br><span class="line"></span><br><span class="line">     System.out.println(obj1.i + <span class="string">&quot;,&quot;</span> + obj1.j + <span class="string">&quot;,&quot;</span> + obj1.s);</span><br><span class="line">     System.out.println(obj2.i + <span class="string">&quot;,&quot;</span> + obj2.j + <span class="string">&quot;,&quot;</span> + obj2.s);</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
-<h2 id="运行结果">运行结果</h2>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">2,1,5</span><br><span class="line">1,1,5</span><br></pre></td></tr></table></figure>
-<h2 id="分析">分析</h2>
-<h3 id="就近原则">就近原则</h3>
-<p>代码中有很多修改变量的语句，下面是用就近原则+作用域分析的图 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220923110928107.png"
-alt="image-20220923110928107" /></p>
-<h3 id="局部变量和类变量">局部变量和类变量</h3>
-<ul>
-<li><p>局部变量包括方法体{}，形参，以及代码块</p>
-<p>带static为类变量，不带的为实例变量<br />
-代码中的变量分类 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220923111604883.png"
-alt="image-20220923111604883" /></p></li>
-<li><p>修饰符 --局部变量只有final -- 实例变量 public , protected ,
-private , final , static , volatile transient</p></li>
-<li><p>存储位置</p>
-<p>局部变量：栈<br />
-实例变量：堆<br />
-类变量：方法区（类信息、常量、静态变量）<br />
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220923111251514.png"
-alt="image-20220923111251514" /></p></li>
-<li><p>作用域 局部变量：从声明处开始，到所属的 } 结束 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220923112828922.png"
-alt="image-20220923112828922" /></p></li>
-<li><p>this <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220923113054686.png"
-alt="image-20220923113054686" /></p></li>
-<li><p>题中的s既可以用成员变量访问，也可以用类名访问</p></li>
-<li><p>生命周期</p>
-<ul>
-<li>局部变量：每一个线程，每一次调用执行都是新的生命周期</li>
-<li>实例变量：随着对象的创建而初始化，随着对象被回收而消亡（垃圾回收器），每一个对象的实例变量是独立的</li>
-<li>类变量：随着类的初始化而初始化，随着类的卸载而消亡，该类的所有对象的类变量是共享的</li>
-</ul></li>
-</ul>
-<h3 id="代码的执行jvm中">代码的执行，jvm中</h3>
-<p>Exam5 obj1=new Exam5();</p>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220923113659581.png"
-alt="image-20220923113659581" />
-<figcaption aria-hidden="true">image-20220923113659581</figcaption>
-</figure>
-<p>obj1.test(10)</p>
-<p>非静态代码块或者进入方法，都会在栈中开辟空间存储局部变量 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220923113808372.png"
-alt="image-20220923113808372" /></p>
 ]]></content>
       <categories>
         <category>学习</category>
