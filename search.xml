@@ -418,6 +418,69 @@ alt="image-20220923095719037" />
       </tags>
   </entry>
   <entry>
+    <title>成员变量与局部变量</title>
+    <url>/2022/09/23/review/basics/06/</url>
+    <content><![CDATA[<h2 id="代码">代码</h2>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="type">int</span> s;</span><br><span class="line"> <span class="type">int</span> i;</span><br><span class="line"> <span class="type">int</span> j;</span><br><span class="line"></span><br><span class="line"> &#123;</span><br><span class="line">     <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line">     i++;</span><br><span class="line">     j++;</span><br><span class="line">     s++;</span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line"> <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">test</span><span class="params">(<span class="type">int</span> j)</span> &#123;</span><br><span class="line">     j++;</span><br><span class="line">     i++;</span><br><span class="line">     s++;</span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line"> <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">     <span class="type">Exam5</span> <span class="variable">obj1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Exam5</span>();</span><br><span class="line">     <span class="type">Exam5</span> <span class="variable">obj2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Exam5</span>();</span><br><span class="line">     obj1.test(<span class="number">10</span>);</span><br><span class="line">     obj1.test(<span class="number">20</span>);</span><br><span class="line">     obj2.test(<span class="number">30</span>);</span><br><span class="line"></span><br><span class="line">     System.out.println(obj1.i + <span class="string">&quot;,&quot;</span> + obj1.j + <span class="string">&quot;,&quot;</span> + obj1.s);</span><br><span class="line">     System.out.println(obj2.i + <span class="string">&quot;,&quot;</span> + obj2.j + <span class="string">&quot;,&quot;</span> + obj2.s);</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<h2 id="运行结果">运行结果</h2>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">2,1,5</span><br><span class="line">1,1,5</span><br></pre></td></tr></table></figure>
+<h2 id="分析">分析</h2>
+<h3 id="就近原则">就近原则</h3>
+<p>代码中有很多修改变量的语句，下面是用就近原则+作用域分析的图 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220923110928107.png"
+alt="image-20220923110928107" /></p>
+<h3 id="局部变量和类变量">局部变量和类变量</h3>
+<ul>
+<li><p>局部变量包括方法体{}，形参，以及代码块</p>
+<p>带static为类变量，不带的为实例变量<br />
+代码中的变量分类 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220923111604883.png"
+alt="image-20220923111604883" /></p></li>
+<li><p>修饰符 --局部变量只有final -- 实例变量 public , protected ,
+private , final , static , volatile transient</p></li>
+<li><p>存储位置</p>
+<p>局部变量：栈<br />
+实例变量：堆<br />
+类变量：方法区（类信息、常量、静态变量）<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220923111251514.png"
+alt="image-20220923111251514" /></p></li>
+<li><p>作用域 局部变量：从声明处开始，到所属的 } 结束 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220923112828922.png"
+alt="image-20220923112828922" /></p></li>
+<li><p>this <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220923113054686.png"
+alt="image-20220923113054686" /></p></li>
+<li><p>题中的s既可以用成员变量访问，也可以用类名访问</p></li>
+<li><p>生命周期</p>
+<ul>
+<li>局部变量：每一个线程，每一次调用执行都是新的生命周期</li>
+<li>实例变量：随着对象的创建而初始化，随着对象被回收而消亡（垃圾回收器），每一个对象的实例变量是独立的</li>
+<li>类变量：随着类的初始化而初始化，随着类的卸载而消亡，该类的所有对象的类变量是共享的</li>
+</ul></li>
+</ul>
+<h3 id="代码的执行jvm中">代码的执行，jvm中</h3>
+<p>Exam5 obj1=new Exam5();</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220923113659581.png"
+alt="image-20220923113659581" />
+<figcaption aria-hidden="true">image-20220923113659581</figcaption>
+</figure>
+<p>obj1.test(10)</p>
+<p>非静态代码块或者进入方法，都会在栈中开辟空间存储局部变量 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220923113808372.png"
+alt="image-20220923113808372" /></p>
+]]></content>
+      <categories>
+        <category>学习</category>
+      </categories>
+      <tags>
+        <tag>复习</tag>
+        <tag>复习-基础</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>测试</title>
     <url>/2022/05/20/work/ztx/hg/</url>
     <content><![CDATA[<h2 id="问题">问题</h2>
