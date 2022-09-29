@@ -23,7 +23,7 @@
   <meta name="description" content="javaGuide基础">
 <meta property="og:type" content="article">
 <meta property="og:title" content="javaGuide基础">
-<meta property="og:url" content="http://example.com/2022/09/28/review/basics/java_guide_basic/index.html">
+<meta property="og:url" content="http://example.com/2022/09/28/review/basics/java_guide_basic_1/index.html">
 <meta property="og:site_name" content="随记">
 <meta property="og:description" content="javaGuide基础">
 <meta property="og:locale" content="zh_CN">
@@ -34,7 +34,7 @@
 <meta property="article:tag" content="复习-基础">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="http://example.com/2022/09/28/review/basics/java_guide_basic/">
+<link rel="canonical" href="http://example.com/2022/09/28/review/basics/java_guide_basic_1/">
 
 
 <script id="page-configurations">
@@ -190,7 +190,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/09/28/review/basics/java_guide_basic/">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/09/28/review/basics/java_guide_basic_1/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/avatar.png">
@@ -387,7 +387,53 @@ b)，再自增（自己增加 1）</p></li>
 </ul></li>
 <li><p>包装类型的缓存机制
 Byte，Short，Integer，Long这4中包装类默认创建了数值[-128,127]的相应类型的缓存数据，Character创建了数值在[0,127]范围的缓存数据，Boolean直接返回True
-or False</p></li>
+or False</p>
+<ul>
+<li><p>Integer缓存代码</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> Integer <span class="title function_">valueOf</span><span class="params">(<span class="type">int</span> i)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (i &gt;= IntegerCache.low &amp;&amp; i &lt;= IntegerCache.high)</span><br><span class="line">        <span class="keyword">return</span> IntegerCache.cache[i + (-IntegerCache.low)];</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Integer</span>(i);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">IntegerCache</span> &#123;</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">low</span> <span class="operator">=</span> -<span class="number">128</span>;</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> high;</span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        <span class="comment">// high value may be configured by property</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">h</span> <span class="operator">=</span> <span class="number">127</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>Character缓存代码</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> Character <span class="title function_">valueOf</span><span class="params">(<span class="type">char</span> c)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (c &lt;= <span class="number">127</span>) &#123; <span class="comment">// must cache</span></span><br><span class="line">      <span class="keyword">return</span> CharacterCache.cache[(<span class="type">int</span>)c];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Character</span>(c);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">CharacterCache</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="title function_">CharacterCache</span><span class="params">()</span>&#123;&#125;</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> Character cache[] = <span class="keyword">new</span> <span class="title class_">Character</span>[<span class="number">127</span> + <span class="number">1</span>];</span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; cache.length; i++)</span><br><span class="line">            cache[i] = <span class="keyword">new</span> <span class="title class_">Character</span>((<span class="type">char</span>)i);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>Boolean缓存代码</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> Boolean <span class="title function_">valueOf</span><span class="params">(<span class="type">boolean</span> b)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> (b ? TRUE : FALSE);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>注意Float和Double没有使用缓存机制，且
+只有调用valueOf才会使用缓存，当使用new的时候是直接创建新对象</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="title function_">Integer</span><span class="params">(<span class="type">int</span> value)</span> &#123;</span><br><span class="line">    <span class="built_in">this</span>.value = value;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>举例</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">      Boolean t=<span class="keyword">new</span> <span class="title class_">Boolean</span>(<span class="literal">true</span>);</span><br><span class="line">      Boolean f=<span class="keyword">new</span> <span class="title class_">Boolean</span>(<span class="literal">true</span>);</span><br><span class="line">      System.out.println(t==f); <span class="comment">//false</span></span><br><span class="line">      System.out.println(t.equals(f)); <span class="comment">//true</span></span><br><span class="line">    </span><br><span class="line">      Boolean t1=Boolean.valueOf(<span class="literal">true</span>);</span><br><span class="line">      Boolean f1=Boolean.valueOf(<span class="literal">true</span>);</span><br><span class="line">      System.out.println(t1==f1); <span class="comment">//true</span></span><br><span class="line">    </span><br><span class="line">      System.out.println(Boolean.TRUE==Boolean.TRUE); <span class="comment">//true</span></span><br><span class="line">      <span class="comment">//============================================//</span></span><br><span class="line"><span class="type">Integer</span> <span class="variable">i1</span> <span class="operator">=</span> <span class="number">33</span>; <span class="comment">//这里发生了自动装箱，相当于Integer.valueOf(30)</span></span><br><span class="line">      <span class="type">Integer</span> <span class="variable">i2</span> <span class="operator">=</span> <span class="number">33</span>;</span><br><span class="line">      System.out.println(i1 == i2);<span class="comment">// 输出 true</span></span><br><span class="line">    </span><br><span class="line">      <span class="type">Float</span> <span class="variable">i11</span> <span class="operator">=</span> <span class="number">333f</span>;</span><br><span class="line">      <span class="type">Float</span> <span class="variable">i22</span> <span class="operator">=</span> <span class="number">333f</span>;</span><br><span class="line">      System.out.println(i11 == i22);<span class="comment">// 输出 false</span></span><br><span class="line">    </span><br><span class="line">      <span class="type">Double</span> <span class="variable">i3</span> <span class="operator">=</span> <span class="number">1.2</span>;</span><br><span class="line">      <span class="type">Double</span> <span class="variable">i4</span> <span class="operator">=</span> <span class="number">1.2</span>;</span><br><span class="line">      System.out.println(i3 == i4);<span class="comment">// 输出 false</span></span><br><span class="line">    </span><br><span class="line">      <span class="comment">//===========================================//</span></span><br><span class="line"><span class="type">Integer</span> <span class="variable">i1</span> <span class="operator">=</span> <span class="number">40</span>;</span><br><span class="line">      <span class="type">Integer</span> <span class="variable">i2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Integer</span>(<span class="number">40</span>);</span><br><span class="line">      System.out.println(i1==i2);</span><br></pre></td></tr></table></figure></li>
+<li><p>如上，所有整型包装类对象之间值的比较，应该全部使用equals方法比较
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220929092643596.png"
+alt="image-20220929092643596" /></p></li>
+<li><p>什么是自动装箱和拆箱</p>
+<ul>
+<li><strong>装箱</strong>：将基本类型用它们对应的引用类型包装起来；</li>
+<li><strong>拆箱</strong>：将包装类型转换为基本数据类型；</li>
+</ul></li>
+<li><p>举例说明</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">Integer</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">10</span> ;<span class="comment">//装箱</span></span><br><span class="line"><span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span> i ;<span class="comment">//拆箱</span></span><br></pre></td></tr></table></figure>
+<p>对应的字节码</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">L1</span><br><span class="line">    </span><br><span class="line"> LINENUMBER 8 L1</span><br><span class="line">    </span><br><span class="line"> ALOAD 0</span><br><span class="line">    </span><br><span class="line"> BIPUSH 10</span><br><span class="line">    </span><br><span class="line"> INVOKESTATIC java/lang/Integer.valueOf (I)Ljava/lang/Integer;</span><br><span class="line">    </span><br><span class="line"> PUTFIELD AutoBoxTest.i : Ljava/lang/Integer;</span><br><span class="line">    </span><br><span class="line">L2</span><br><span class="line">    </span><br><span class="line"> LINENUMBER 9 L2</span><br><span class="line">    </span><br><span class="line"> ALOAD 0</span><br><span class="line">    </span><br><span class="line"> ALOAD 0</span><br><span class="line">    </span><br><span class="line"> GETFIELD AutoBoxTest.i : Ljava/lang/Integer;</span><br><span class="line">    </span><br><span class="line"> INVOKEVIRTUAL java/lang/Integer.intValue ()I</span><br><span class="line">    </span><br><span class="line"> PUTFIELD AutoBoxTest.n : I</span><br><span class="line">    </span><br><span class="line"> RETURN</span><br></pre></td></tr></table></figure>
+<p>如图，Integer i = 10 等价于Integer i = Integer.valueOf(10)</p>
+<p>int n= i 等价于 int n= i.intValue();</p>
+<p>频繁拆装箱会严重影响系统行呢个</p></li>
+<li><p>浮点数运算的时候会有精度丢失的风险</p>
+<blockquote>
+<p>这个和计算机保存浮点数的机制有很大关系。我们知道计算机是二进制的，而且计算机在表示一个数字时，宽度是有限的，无限循环的小数存储在计算机时，只能被截断，所以就会导致小数精度发生损失的情况。这也就是解释了为什么浮点数没有办法用二进制精确表示。</p>
+</blockquote>
+<p>十进制下的0.2无法精确转换成二进制小数</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">// 0.2 转换为二进制数的过程为，不断乘以 2，直到不存在小数为止，</span><br><span class="line">// 在这个计算过程中，得到的整数部分从上到下排列就是二进制的结果。</span><br><span class="line">0.2 * 2 = 0.4 -&gt; 0</span><br><span class="line">0.4 * 2 = 0.8 -&gt; 0</span><br><span class="line">0.8 * 2 = 1.6 -&gt; 1</span><br><span class="line">0.6 * 2 = 1.2 -&gt; 1</span><br><span class="line">0.2 * 2 = 0.4 -&gt; 0（发生循环）</span><br></pre></td></tr></table></figure></li>
+<li><p>使用BigDecimal解决上面的问题</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">BigDecimal</span> <span class="variable">a</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BigDecimal</span>(<span class="string">&quot;1.0&quot;</span>);</span><br><span class="line"><span class="type">BigDecimal</span> <span class="variable">b</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BigDecimal</span>(<span class="string">&quot;0.9&quot;</span>);</span><br><span class="line"><span class="type">BigDecimal</span> <span class="variable">c</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BigDecimal</span>(<span class="string">&quot;0.8&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="type">BigDecimal</span> <span class="variable">x</span> <span class="operator">=</span> a.subtract(b);</span><br><span class="line"><span class="type">BigDecimal</span> <span class="variable">y</span> <span class="operator">=</span> b.subtract(c);</span><br><span class="line"></span><br><span class="line">System.out.println(x); <span class="comment">/* 0.1 */</span></span><br><span class="line">System.out.println(y); <span class="comment">/* 0.1 */</span></span><br><span class="line">System.out.println(Objects.equals(x, y)); <span class="comment">/* true */</span></span><br></pre></td></tr></table></figure></li>
+<li><p>超过long整形的数据，使用BigInteger</p>
+<p>Java中，64位long整型是最大的整数类型</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">long</span> <span class="variable">l</span> <span class="operator">=</span> Long.MAX_VALUE;</span><br><span class="line">System.out.println(l + <span class="number">1</span>); <span class="comment">// -9223372036854775808</span></span><br><span class="line">System.out.println(l + <span class="number">1</span> == Long.MIN_VALUE); <span class="comment">// true</span></span><br><span class="line"><span class="comment">//BigInteger内部使用int[] 数组来存储任意大小的整型数据</span></span><br><span class="line"><span class="comment">//对于常规整数类型，使用BigInteger运算的效率会降低</span></span><br></pre></td></tr></table></figure>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220929093558353.png"
+alt="image-20220929093558353" />
+<figcaption aria-hidden="true">image-20220929093558353</figcaption>
+</figure></li>
+</ul></li>
 </ul>
 
     </div>
