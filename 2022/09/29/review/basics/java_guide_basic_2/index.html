@@ -373,7 +373,33 @@ Latin-1 可表示范围内的字符，那就会使用 Latin-1 作为编码方案
 <p>对应的字节码：<br />
 <img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221008114449075.png"
-alt="image-20221008114449075" /></p></li>
+alt="image-20221008114449075" /></p>
+<p>字符串对象通过“+”的字符串拼接方式，实际上是通过
+<code>StringBuilder</code> 调用 <code>append()</code>
+方法实现的，拼接完成之后调用 <code>toString()</code> 得到一个
+<code>String</code>
+对象。因此这里就会产生问题，如下代码，会产生过多的StringBuilder对象</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">String[] arr = &#123;<span class="string">&quot;he&quot;</span>, <span class="string">&quot;llo&quot;</span>, <span class="string">&quot;world&quot;</span>&#125;;</span><br><span class="line"><span class="type">String</span> <span class="variable">s</span> <span class="operator">=</span> <span class="string">&quot;&quot;</span>;</span><br><span class="line"><span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; arr.length; i++) &#123;</span><br><span class="line">    s += arr[i];</span><br><span class="line">&#125;</span><br><span class="line">System.out.println(s);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>会循环创建StringBuilder对象，建议自己创建一个新的StringBuilder并使用：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">String[] arr = &#123;<span class="string">&quot;he&quot;</span>, <span class="string">&quot;llo&quot;</span>, <span class="string">&quot;world&quot;</span>&#125;;</span><br><span class="line"><span class="type">StringBuilder</span> <span class="variable">s</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">StringBuilder</span>();</span><br><span class="line"><span class="keyword">for</span> (String value : arr) &#123;</span><br><span class="line">    s.append(value);</span><br><span class="line">&#125;</span><br><span class="line">System.out.println(s);</span><br></pre></td></tr></table></figure></li>
+<li><p>String#equals()和Object#equals()有何区别
+String的equals被重写过，比较的是字符串的值是否相等，而Object的equals比较的是对象的内存地址</p></li>
+<li><p>字符串常量池<br />
+是JVM为了提升性能和减少内存消耗针对字符串（String类）专门开辟的一块区域，主要目的是为了避免字符串的重复创建</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 在堆中创建字符串对象”ab“ (这里也可以说是在常量池中创建对象)</span></span><br><span class="line"><span class="comment">// 将字符串对象”ab“的引用(常量池中的饮用)保存在字符串常量池中</span></span><br><span class="line"><span class="type">String</span> <span class="variable">aa</span> <span class="operator">=</span> <span class="string">&quot;ab&quot;</span>;</span><br><span class="line"><span class="comment">// 直接返回字符串常量池中字符串对象”ab“的引用</span></span><br><span class="line"><span class="type">String</span> <span class="variable">bb</span> <span class="operator">=</span> <span class="string">&quot;ab&quot;</span>;</span><br><span class="line">System.out.println(aa==bb);<span class="comment">// true</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li><h4 id="string-s1-new-stringabc这句话创建了几个字符串对象">String s1
+= new String("abc");这句话创建了几个字符串对象？</h4>
+<p>会创建 1 或 2 个字符串对象。
+如果常量池中存在值为"abc"的对象，则直接在堆中创建一个对象，并且返回该对象的引用；如果不存在，则先在常量池中创建该对象，然后再在堆中创建该对象，并且返回该对象（堆中）的引用</p>
+<p>下面这个解释，说明常量池存储的是引用（堆中某一块区域的）<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221008144055351.png"
+alt="image-20221008144055351" /></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 字符串常量池中已存在字符串对象“abc”的引用</span></span><br><span class="line"><span class="type">String</span> <span class="variable">s1</span> <span class="operator">=</span> <span class="string">&quot;abc&quot;</span>;</span><br><span class="line"><span class="comment">// 下面这段代码只会在堆中创建 1 个字符串对象“abc”</span></span><br><span class="line"><span class="type">String</span> <span class="variable">s2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">String</span>(<span class="string">&quot;abc&quot;</span>);</span><br></pre></td></tr></table></figure></li>
+<li><p>intern方法的作用，是一个native方法，作用是将指定的字符串对象的引用保存在字符串常量池中</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 在堆中创建字符串对象”Java“</span></span><br><span class="line"><span class="comment">// 将字符串对象”Java“的引用保存在字符串常量池中</span></span><br><span class="line"><span class="type">String</span> <span class="variable">s1</span> <span class="operator">=</span> <span class="string">&quot;Java&quot;</span>;</span><br><span class="line"><span class="comment">// 直接返回字符串常量池中字符串对象”Java“对应的引用</span></span><br><span class="line"><span class="type">String</span> <span class="variable">s2</span> <span class="operator">=</span> s1.intern();</span><br><span class="line"><span class="comment">// 会在堆中在单独创建一个字符串对象</span></span><br><span class="line"><span class="type">String</span> <span class="variable">s3</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">String</span>(<span class="string">&quot;Java&quot;</span>);</span><br><span class="line"><span class="comment">// 直接返回字符串常量池中字符串对象”Java“对应的引用</span></span><br><span class="line"><span class="type">String</span> <span class="variable">s4</span> <span class="operator">=</span> s3.intern();</span><br><span class="line"><span class="comment">// s1 和 s2 指向的是堆中的同一个对象</span></span><br><span class="line">System.out.println(s1 == s2); <span class="comment">// true</span></span><br><span class="line"><span class="comment">// s3 和 s4 指向的是堆中不同的对象</span></span><br><span class="line">System.out.println(s3 == s4); <span class="comment">// false</span></span><br><span class="line"><span class="comment">// s1 和 s4 指向的是堆中的同一个对象</span></span><br><span class="line">System.out.println(s1 == s4); <span class="comment">//true</span></span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+</ul></li>
+<li><p>问题：String 类型的变量和常量做“+”运算时发生了什么</p></li>
 </ul>
 
     </div>
@@ -463,7 +489,8 @@ alt="image-20221008114449075" /></p></li>
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E5%9F%BA%E7%A1%80"><span class="nav-number">1.</span> <span class="nav-text">面向对象基础</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#java%E5%B8%B8%E8%A7%81%E7%B1%BB"><span class="nav-number">2.</span> <span class="nav-text">Java常见类</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#object"><span class="nav-number">2.1.</span> <span class="nav-text">Object</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#string"><span class="nav-number">2.2.</span> <span class="nav-text">String</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E5%9F%BA%E7%A1%80"><span class="nav-number">1.</span> <span class="nav-text">面向对象基础</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#java%E5%B8%B8%E8%A7%81%E7%B1%BB"><span class="nav-number">2.</span> <span class="nav-text">Java常见类</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#object"><span class="nav-number">2.1.</span> <span class="nav-text">Object</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#string"><span class="nav-number">2.2.</span> <span class="nav-text">String</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#string-s1-new-stringabc%E8%BF%99%E5%8F%A5%E8%AF%9D%E5%88%9B%E5%BB%BA%E4%BA%86%E5%87%A0%E4%B8%AA%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%AF%B9%E8%B1%A1"><span class="nav-number">2.2.1.</span> <span class="nav-text">String s1
+&#x3D; new String(&quot;abc&quot;);这句话创建了几个字符串对象？</span></a></li></ol></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
