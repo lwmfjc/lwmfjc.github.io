@@ -348,9 +348,32 @@ String是不可变的，StringBuffer和StringBuilder都继承自AbstractStringBu
 <li><p>String 为什么是不可变的</p>
 <ul>
 <li><p>代码</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">String</span> <span class="keyword">implements</span> <span class="title class_">java</span>.io.Serializable, Comparable&lt;String&gt;, CharSequence &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">char</span> value[];</span><br><span class="line">	<span class="comment">//...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-<li></li>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">String</span> <span class="keyword">implements</span> <span class="title class_">java</span>.io.Serializable, Comparable&lt;String&gt;, CharSequence &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">char</span> value[];</span><br><span class="line">	<span class="comment">//...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>如上，保存字符串的数组被final修饰且为私有，并且String类没有提供暴露修改该字符串的方法</li>
+<li>String类被修饰为final修饰呆滞不能被继承，避免子类破坏</li>
 </ul></li>
+<li><p>Java9</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">String</span> <span class="keyword">implements</span> <span class="title class_">java</span>.io.Serializable,Comparable&lt;String&gt;, CharSequence &#123;</span><br><span class="line">    <span class="comment">// @Stable 注解表示变量最多被修改一次，称为“稳定的”。</span></span><br><span class="line">    <span class="meta">@Stable</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">byte</span>[] value;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">AbstractStringBuilder</span> <span class="keyword">implements</span> <span class="title class_">Appendable</span>, CharSequence &#123;</span><br><span class="line">    <span class="type">byte</span>[] value;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><blockquote>
+<p>Java9为何String底层实现由char[] 改成了 byte[] 新版的 String
+其实支持两个编码方案： Latin-1 和 UTF-16。如果字符串中包含的汉字没有超过
+Latin-1 可表示范围内的字符，那就会使用 Latin-1 作为编码方案。Latin-1
+编码方案下，<code>byte</code> 占一个字节(8 位)，<code>char</code> 占用 2
+个字节（16），<code>byte</code> 相较 <code>char</code>
+节省一半的内存空间。</p>
+<p>JDK 官方就说了绝大部分字符串对象只包含 Latin-1 可表示的字符。</p>
+</blockquote></li>
+</ul></li>
+</ul></li>
+<li><p>字符串使用“+” 还是 Stringbuilder Java本身不支持运算符重载，但 “ +
+” 和 “+=” 是专门为String重载过的运算符，Java中仅有的两个</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">str1</span> <span class="operator">=</span> <span class="string">&quot;he&quot;</span>;</span><br><span class="line"><span class="type">String</span> <span class="variable">str2</span> <span class="operator">=</span> <span class="string">&quot;llo&quot;</span>;</span><br><span class="line"><span class="type">String</span> <span class="variable">str3</span> <span class="operator">=</span> <span class="string">&quot;world&quot;</span>;</span><br><span class="line"><span class="type">String</span> <span class="variable">str4</span> <span class="operator">=</span> str1 + str2 + str3;</span><br></pre></td></tr></table></figure>
+<p>对应的字节码：<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221008114449075.png"
+alt="image-20221008114449075" /></p></li>
 </ul>
 
     </div>
