@@ -1204,10 +1204,9 @@ JVM。如果你去看<code>com.sun.tools.javac.main.JavaCompiler</code>的源码
       </tags>
   </entry>
   <entry>
-    <title>mainPoint</title>
-    <url>/2022/10/09/review/java_guide/basic/mainPoint/</url>
-    <content><![CDATA[<h2 id="为什么java中只有值传递">为什么Java中只有值传递</h2>
-<ul>
+    <title>为什么Java中只有值传递</title>
+    <url>/2022/10/09/review/java_guide/basic/passByValue/</url>
+    <content><![CDATA[<ul>
 <li><p>形参&amp;&amp;实参</p>
 <ul>
 <li><p>形参(形式参数)，用于传递给函数/方法的参数，必须有确定的值</p></li>
@@ -1215,9 +1214,54 @@ JVM。如果你去看<code>com.sun.tools.javac.main.JavaCompiler</code>的源码
 <li><p>```java String hello = "Hello!"; // hello 为实参 sayHello(hello);
 // str 为形参 void sayHello(String str) { System.out.println(str); }
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">- 值传递&amp;&amp;引用传递</span><br><span class="line"></span><br><span class="line">  - 程序设计将实参传递给方法的方式分为两种，值传递：方法接收实参值的拷贝，会创建副本；引用传递：方法接受的是实参所引用的对象在堆中的地址，不会创建副本，对形参的修改将影响到实参</span><br><span class="line"></span><br><span class="line">- Java中只有值传递，原因：</span><br><span class="line"></span><br><span class="line">  - 传递基本类型参数</span><br><span class="line"></span><br><span class="line">    ```java</span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        int num1 = 10;</span><br><span class="line">        int num2 = 20;</span><br><span class="line">        swap(num1, num2);</span><br><span class="line">        System.out.println(&quot;num1 = &quot; + num1);</span><br><span class="line">        System.out.println(&quot;num2 = &quot; + num2);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    public static void swap(int a, int b) &#123;</span><br><span class="line">        int temp = a;</span><br><span class="line">        a = b;</span><br><span class="line">        b = temp;</span><br><span class="line">        System.out.println(&quot;a = &quot; + a);</span><br><span class="line">        System.out.println(&quot;b = &quot; + b);</span><br><span class="line">    &#125;</span><br><span class="line">    //输出</span><br><span class="line">    a = 20</span><br><span class="line">    b = 10</span><br><span class="line">    num1 = 10</span><br><span class="line">    num2 = 20</span><br></pre></td></tr></table></figure></p></li>
-<li></li>
+<li><p>传递引用类型参数 1</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">      <span class="type">int</span>[] arr = &#123; <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span> &#125;;</span><br><span class="line">      System.out.println(arr[<span class="number">0</span>]); <span class="comment">//1</span></span><br><span class="line">      change(arr);</span><br><span class="line">      System.out.println(arr[<span class="number">0</span>]);<span class="comment">//0</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">change</span><span class="params">(<span class="type">int</span>[] array)</span> &#123;</span><br><span class="line">    <span class="comment">// 将数组的第一个元素变为0</span></span><br><span class="line">    array[<span class="number">0</span>] = <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>change方法的参数，拷贝的是arr(实参)的地址，所以array和arr指向的是同一个数组对象
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221010103143086.png"
+alt="image-20221010103143086" /></p></li>
+<li><p>传递引用类型参数2</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Person</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">   <span class="comment">// 省略构造函数、Getter&amp;Setter方法</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">    <span class="type">Person</span> <span class="variable">xiaoZhang</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Person</span>(<span class="string">&quot;小张&quot;</span>);</span><br><span class="line">    <span class="type">Person</span> <span class="variable">xiaoLi</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Person</span>(<span class="string">&quot;小李&quot;</span>);</span><br><span class="line">    swap(xiaoZhang, xiaoLi);</span><br><span class="line">    System.out.println(<span class="string">&quot;xiaoZhang:&quot;</span> + xiaoZhang.getName());</span><br><span class="line">    System.out.println(<span class="string">&quot;xiaoLi:&quot;</span> + xiaoLi.getName());</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">swap</span><span class="params">(Person person1, Person person2)</span> &#123;</span><br><span class="line">    <span class="type">Person</span> <span class="variable">temp</span> <span class="operator">=</span> person1;</span><br><span class="line">    person1 = person2;</span><br><span class="line">    person2 = temp;</span><br><span class="line">    System.out.println(<span class="string">&quot;person1:&quot;</span> + person1.getName());</span><br><span class="line">    System.out.println(<span class="string">&quot;person2:&quot;</span> + person2.getName());</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//结果</span></span><br><span class="line">person1:小李</span><br><span class="line">person2:小张</span><br><span class="line">xiaoZhang:小张</span><br><span class="line">xiaoLi:小李</span><br></pre></td></tr></table></figure>
+<p>这里并不会交换xiaoZhang和xiaoLi，只会交换swap方法栈里的person1和person2</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221010103522823.png"
+alt="image-20221010103522823" />
+<figcaption aria-hidden="true">image-20221010103522823</figcaption>
+</figure></li>
+</ul></li>
+<li><p>小结 Java 中将实参传递给方法（或函数）的方式是
+<strong>值传递</strong> ：</p>
+<ul>
+<li>如果参数是基本类型的话，很简单，传递的就是基本类型的字面量值的拷贝，会创建副本。</li>
+<li>如果参数是引用类型，传递的就是实参所引用的对象在堆中地址值的拷贝，同样也会创建副本。</li>
 </ul></li>
 </ul>
+]]></content>
+      <categories>
+        <category>学习</category>
+      </categories>
+      <tags>
+        <tag>复习</tag>
+        <tag>复习-javaGuide</tag>
+        <tag>复习-javaGuide-基础</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Java序列化详解</title>
+    <url>/2022/10/10/review/java_guide/basic/serialize/</url>
+    <content><![CDATA[<h2 id="什么是序列化什么是反序列化">什么是序列化？什么是反序列化</h2>
+<p>当需要持久化Java对象，比如将Java对象保存在文件中、或者在网络中传输Java对象，这些场景都需要用到序列化</p>
+<p>即：</p>
+<ul>
+<li>序列化：将数据结构/对象，转换成二进制字节流</li>
+<li>反序列化：将在序列化过程中所生成的二进制字节流的过程，转换成数据结构或者对象的过程</li>
+</ul>
+<p>对于Java，序列化的是对象(Object)，也就是实例化后的类(Class)</p>
+<p>序列化的目的，是通过网络传输对象，或者说是将对象存储到文件系统、数据库、内存中，如图：
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221010105218691.png"
+alt="image-20221010105218691" /></p>
 ]]></content>
       <categories>
         <category>学习</category>
