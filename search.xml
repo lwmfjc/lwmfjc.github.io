@@ -1835,16 +1835,23 @@ alt="image-20221011184828760" /></p></li>
 方法实现的，调用 <code>park</code>
 方法后，线程将一直阻塞直到超时或者中断等条件出现；<code>unpark</code>
 可以终止一个挂起的线程，使其恢复正常。</p>
-<p>Unsafe源码中monitor相关的方法被标记为deprecated</p>
+<p>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD 此外，<code>Unsafe</code>
+源码中<code>monitor</code>相关的三个方法已经被标记为<code>deprecated</code>，不建议被使用：
+======= Unsafe源码中monitor相关的方法被标记为deprecated
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+01db5084445cfa1dd668fb907ec8e453c9136e03</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//获得对象锁</span></span><br><span class="line"><span class="meta">@Deprecated</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title function_">monitorEnter</span><span class="params">(Object var1)</span>;</span><br><span class="line"><span class="comment">//释放对象锁</span></span><br><span class="line"><span class="meta">@Deprecated</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title function_">monitorExit</span><span class="params">(Object var1)</span>;</span><br><span class="line"><span class="comment">//尝试获得对象锁</span></span><br><span class="line"><span class="meta">@Deprecated</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">native</span> <span class="type">boolean</span> <span class="title function_">tryMonitorEnter</span><span class="params">(Object var1)</span>;</span><br></pre></td></tr></table></figure>
-<p><code>monitorEnter</code>方法用于获得对象锁，<code>monitorExit</code>用于释放对象锁，如果对一个没有被<code>monitorEnter</code>加锁的对象执行此方法，会抛出<code>IllegalMonitorStateException</code>异常。<code>tryMonitorEnter</code>方法尝试获取对象锁，如果成功则返回<code>true</code>，反之返回<code>false</code>。</p>
+<p><code>monitorEnter</code>方法用于获得对象锁，<code>monitorExit</code>用于释放对象锁，如果对一个没有被<code>monitorEnter</code>加锁的对象执行此方法，会抛出<code>IllegalMonitorStateException</code>异常。<code>tryMonitorEnter</code>方法尝试获取对象锁，如果成功则返回<code>true</code>，反之返回<code>false</code>。
+&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</p>
+<h4 id="class操作">Class操作</h4>
+<p>=======</p>
 <p>代码应用：</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">    <span class="type">Thread</span> <span class="variable">mainThread</span> <span class="operator">=</span> Thread.currentThread();</span><br><span class="line">    <span class="keyword">new</span> <span class="title class_">Thread</span>(()-&gt;&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            TimeUnit.SECONDS.sleep(<span class="number">5</span>);</span><br><span class="line">            System.out.println(<span class="string">&quot;subThread try to unpark mainThread&quot;</span>);</span><br><span class="line">            unsafe.unpark(mainThread);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;).start();</span><br><span class="line"></span><br><span class="line">    System.out.println(<span class="string">&quot;park main mainThread&quot;</span>);</span><br><span class="line">    unsafe.park(<span class="literal">false</span>,<span class="number">0L</span>);</span><br><span class="line">    System.out.println(<span class="string">&quot;unpark mainThread success&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//输出</span></span><br><span class="line">park main mainThread</span><br><span class="line">subThread <span class="keyword">try</span> to unpark mainThread</span><br><span class="line">unpark mainThread success</span><br></pre></td></tr></table></figure>
 <p>流程图如下：<br />
 <img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221012090743240.png"
 alt="image-20221012090743240" /></p>
-<h4 id="class操作">Class操作</h4>
+<h4 id="class操作-1">Class操作</h4>
 <p>Unsafe对class的相关操作主要包括类加载和静态变量的操作方法</p>
 <ul>
 <li><p>静态属性读取相关的方法</p>
@@ -1860,8 +1867,23 @@ User 对象的语句，运行结果会变为：<code>truenull</code></p></li>
 <p>利用class类字节码文件，动态创建一个类</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">defineTest</span><span class="params">()</span> &#123;</span><br><span class="line">    String fileName=<span class="string">&quot;F:\\workspace\\unsafe-test\\target\\classes\\com\\cn\\model\\User.class&quot;</span>;</span><br><span class="line">    <span class="type">File</span> <span class="variable">file</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">File</span>(fileName);</span><br><span class="line">    <span class="keyword">try</span>(<span class="type">FileInputStream</span> <span class="variable">fis</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileInputStream</span>(file)) &#123;</span><br><span class="line">        <span class="type">byte</span>[] content=<span class="keyword">new</span> <span class="title class_">byte</span>[(<span class="type">int</span>)file.length()];</span><br><span class="line">        fis.read(content);</span><br><span class="line">        <span class="type">Class</span> <span class="variable">clazz</span> <span class="operator">=</span> unsafe.defineClass(<span class="literal">null</span>, content, <span class="number">0</span>, content.length, <span class="literal">null</span>, <span class="literal">null</span>);</span><br><span class="line">        <span class="type">Object</span> <span class="variable">o</span> <span class="operator">=</span> clazz.newInstance();</span><br><span class="line">        <span class="type">Object</span> <span class="variable">age</span> <span class="operator">=</span> clazz.getMethod(<span class="string">&quot;getAge&quot;</span>).invoke(o, <span class="literal">null</span>);</span><br><span class="line">        System.out.println(age);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
 </ul>
+<blockquote>
+<blockquote>
+<blockquote>
+<blockquote>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>01db5084445cfa1dd668fb907ec8e453c9136e03</p>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
 <h4 id="系统信息">系统信息</h4>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//获取系统相关信息</span></span><br><span class="line"><span class="comment">//返回系统指针的大小。返回值为4（32位系统）或 8（64位系统）。</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">native</span> <span class="type">int</span> <span class="title function_">addressSize</span><span class="params">()</span>;</span><br><span class="line"><span class="comment">//内存页的大小，此值为2的幂次方。</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">native</span> <span class="type">int</span> <span class="title function_">pageSize</span><span class="params">()</span>;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//获取系统相关信息 </span></span><br><span class="line"><span class="comment">//返回系统指针的大小。返回值为4（32位系统）或 8（64位系统）。</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">native</span> <span class="type">int</span> <span class="title function_">addressSize</span><span class="params">()</span>;</span><br><span class="line"><span class="comment">//内存页的大小，此值为2的幂次方。</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">native</span> <span class="type">int</span> <span class="title function_">pageSize</span><span class="params">()</span>;</span><br></pre></td></tr></table></figure>
 ]]></content>
       <categories>
         <category>学习</category>
