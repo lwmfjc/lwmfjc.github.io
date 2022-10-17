@@ -484,12 +484,16 @@ alt="image-20220921143557083" /></p>
   <entry>
     <title>集合</title>
     <url>/2022/10/17/review/knowledge_point/collection/</url>
-    <content><![CDATA[<ul>
-<li>集合包括<code>Collection</code>和<code>Map</code>，Collection
-存放单一元素。Map 存放键值对 <img
+    <content><![CDATA[<h2
+id="集合包括collection和mapcollection-存放单一元素map-存放键值对">集合包括<code>Collection</code>和<code>Map</code>，Collection
+存放单一元素。Map 存放键值对</h2>
+<figure>
+<img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221017103340847.png"
-alt="image-20221017103340847" /></li>
-<li>List，Set，Queue，Map区别
+alt="image-20221017103340847" />
+<figcaption aria-hidden="true">image-20221017103340847</figcaption>
+</figure>
+<h2 id="listsetqueuemap区别">List，Set，Queue，Map区别</h2>
 <ul>
 <li><code>List</code>(对付顺序的好帮手):
 存储的元素是有序的、可重复的。</li>
@@ -500,9 +504,8 @@ alt="image-20221017103340847" /></li>
 <li><code>Map</code>(用 key 来搜索的专家):
 使用键值对（key-value）存储，类似于数学上的函数 y=f(x)，"x" 代表
 key，"y" 代表 value，key 是无序的、不可重复的，value
-是无序的、可重复的，每个键最多映射到一个值。</li>
-</ul></li>
-<li>各种集合框架--底层数据结构
+是无序的、可重复的，每个键最多映射到一个值。 ##
+各种集合框架--底层数据结构
 <ul>
 <li>List
 <ul>
@@ -537,7 +540,8 @@ key，"y" 代表 value，key 是无序的、不可重复的，value
 <li><code>TreeMap</code>： 红黑树（自平衡的排序二叉树）</li>
 </ul></li>
 </ul></li>
-<li>如何选用集合
+</ul>
+<h2 id="如何选用集合">如何选用集合</h2>
 <ul>
 <li>当我们只需要存放元素值时，就选择实现<code>Collection</code>
 接口的集合，需要保证元素唯一时选择实现 <code>Set</code> 接口的集合比如
@@ -548,13 +552,59 @@ key，"y" 代表 value，key 是无序的、不可重复的，value
 接口下的集合，需要排序时选择 <code>TreeMap</code>,不需要排序时就选择
 <code>HashMap</code>,需要保证线程安全就选用
 <code>ConcurrentHashMap</code>。</li>
-</ul></li>
-<li>为什么需要集合
+</ul>
+<h2 id="为什么需要集合">为什么需要集合</h2>
 <ul>
 <li>当需要保存一组类型相同的数据时，需要容器来保存，即数组，但实际中存储的类型多样，数组一旦声明则不可变长，且数组数据类型也确定、数组有序可重复</li>
 <li>集合可以存储不同类型不同数量的对象，还可以保存具有映射关系的数据</li>
+</ul>
+<h2 id="collection-子接口">Collection 子接口</h2>
+<h3 id="list">List</h3>
+<ul>
+<li><p>ArrayList和Vector区别：ArrayList是List主要实现类，底层使用Object[]存储线程不安全（synchronized关键字）；Vector是List古老实现类，底层使用Object[]存储，线程安全</p></li>
+<li><p>ArrayList与LinkedList：</p>
+<ul>
+<li>都是线程不安全</li>
+<li>ArrayList底层使用Object数组，LinkedList底层使用双向链表结构（JDK7以后非循环链表）</li>
+<li>ArrayList采用数组存储，所以插入和删除元素的时间复杂度受位置印象；LinkedList采用链表，所以在头尾插入或者删除元素不受元素位置影响，而如果需要插入或者删除中间指定位置，则时间复杂度为O(n)
+[主要是因为要遍历]</li>
+<li>LinkedList不支持高效的随机元素访问，而ArrayList支持（即通过元素的序号快速获取元素对象）</li>
+<li>内存空间占用：ArrayList的空间浪费主要体现在List结尾会预留一定的容量空间，而LinkedList的空间花费则体现在它的每一个元素都需要消耗比ArrayList更多的空间（存放直接后继、直接前驱及数据）</li>
+</ul></li>
+<li><p>实际项目中不怎么使用LinkedList，因为ArrayList性能通常会更好，LinkedList仅仅在头尾插入或者删除元素的时间时间复杂度近似O(1)</p></li>
+<li><p>双向链表与双向循环链表</p>
+<ul>
+<li>双向链表，首尾相连 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221017145140450.png"
+alt="image-20221017145140450" /></li>
+<li>双向循环链表，首尾相连（头节点的前驱=尾结点，尾结点的后继=头节点）</li>
+</ul></li>
+<li><p>补充：RandomAccess接口，这个接口只是用来<strong>标识</strong>：<strong>实现这个接口的类，具有随机访问功能</strong>，但并不是说因为实现了该接口才具有的快速随机访问机制</p>
+<ul>
+<li><p>Collections里面有这样一段代码</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> &lt;T&gt;</span><br><span class="line"><span class="type">int</span> <span class="title function_">binarySearch</span><span class="params">(List&lt;? extends Comparable&lt;? <span class="built_in">super</span> T&gt;&gt; list, T key)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (list <span class="keyword">instanceof</span> RandomAccess || list.size()&lt;BINARYSEARCH_THRESHOLD)</span><br><span class="line">        <span class="keyword">return</span> Collections.indexedBinarySearch(list, key);</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        <span class="keyword">return</span> Collections.iteratorBinarySearch(list, key);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>ArrayList实现了RandomAccess方法，而LinkedList没有。是由于ArrayList底层是数组，支持快速随机访问，时间复杂度为O(1)，而LinkedList底层是链表，不支持快速随机访问，时间复杂度为O(n)</p></li>
 </ul></li>
 </ul>
+<h3 id="set">Set</h3>
+<ul>
+<li><p>Coparable和Comparator的区别</p>
+<ul>
+<li>Comparable实际出自<code>java.lang</code>包，有一个compareTo(Object
+obj)方法用来排序</li>
+<li>Comparator实际出自<code>java.util</code>包，有一个compare(Object
+obj1,Object obj2)方法用来排序</li>
+</ul></li>
+<li><p><code>Collections.sort(List&lt;T&gt; list, Comparator&lt;? super T&gt; c)</code>默认是正序，T必须实现了Comparable，且<code>Arrays.sort()</code>方法中的部分代码如下：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//使用插入排序</span></span><br><span class="line">        <span class="keyword">if</span> (length &lt; INSERTIONSORT_THRESHOLD) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> i=low; i&lt;high; i++)</span><br><span class="line">                <span class="keyword">for</span> (<span class="type">int</span> j=i; j&gt;low &amp;&amp; c.compare(dest[j-<span class="number">1</span>], dest[j])&gt;<span class="number">0</span>; j--) <span class="comment">//如果前一个数跟后面的数相比大于零，则进行交换，即大的排后面</span></span><br><span class="line">                    swap(dest, j, j-<span class="number">1</span>);</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line"><span class="comment">//当比较结果&gt;0时，调换数组前后两个元素的值，也就是后面的一定要比前面的大，即</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">compareTo</span><span class="params">(Person o)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">this</span>.age &gt; o.getAge()) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">this</span>.age &lt; o.getAge()) &#123;</span><br><span class="line">            <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="comment">//下面这段代码，按照年龄降序（默认是升序）</span></span><br><span class="line">        Collections.sort(arrayList, <span class="keyword">new</span> <span class="title class_">Comparator</span>&lt;Integer&gt;() &#123;</span><br><span class="line"></span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">compare</span><span class="params">(Integer o1, Integer o2)</span> &#123;</span><br><span class="line">                <span class="comment">//如果结果大于0，则两个数对调 </span></span><br><span class="line">                <span class="comment">//如果返回o2.compareTo(o1)，就是当o2&gt;01时，两个结果对换，也就是降序</span></span><br><span class="line">                <span class="comment">//如果返回o1.compareTo(o2)，就是当o1&gt;o2时，两个结果对换，也就是升序   也就是当和参数顺序一致时，是升序；反之，则是降序</span></span><br><span class="line">                <span class="keyword">return</span> o2.compareTo(o1); </span><br><span class="line">                </span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line"><span class="comment">//上面这段代码，标识</span></span><br></pre></td></tr></table></figure></li>
+<li><p>无序性和不可重复性</p>
+<ul>
+<li>无序性，指存储的数据，在底层数据结构中，并非按照数组索引的书顺序添加（而是根据数据的哈希值决定）</li>
+<li>不可重复性：指添加的元素按照equals()判断时，返回false。需同时填写equals()方法和hashCode()
+方法</li>
+</ul></li>
+</ul>
+<h3 id="queue">Queue</h3>
 ]]></content>
       <categories>
         <category>学习</category>
