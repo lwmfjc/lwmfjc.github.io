@@ -357,10 +357,46 @@ alt="image-20221019163009141" /> JDK1.8
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">root 维护红黑树根节点；waiter维护当前使用这颗红黑树的线程，防止其他线程进入</span></span><br><span class="line"><span class="comment">**/</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">TreeBin</span>&lt;K,V&gt; <span class="keyword">extends</span> <span class="title class_">Node</span>&lt;K,V&gt; &#123;</span><br><span class="line">        TreeNode&lt;K,V&gt; root;</span><br><span class="line">        <span class="keyword">volatile</span> TreeNode&lt;K,V&gt; first;</span><br><span class="line">        <span class="keyword">volatile</span> Thread waiter;</span><br><span class="line">        <span class="keyword">volatile</span> <span class="type">int</span> lockState;</span><br><span class="line">        <span class="comment">// values for lockState</span></span><br><span class="line">        <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">WRITER</span> <span class="operator">=</span> <span class="number">1</span>; <span class="comment">// set while holding write lock</span></span><br><span class="line">        <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">WAITER</span> <span class="operator">=</span> <span class="number">2</span>; <span class="comment">// set when waiting for write lock</span></span><br><span class="line">        <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">READER</span> <span class="operator">=</span> <span class="number">4</span>; <span class="comment">// increment value for setting read lock</span></span><br><span class="line">...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
 </ul></li>
 </ul></li>
-<li><p>ConcurrentHashMap线程安全的<strong>具体实现方式/底层具体实现</strong></p></li>
+<li><p>ConcurrentHashMap线程安全的<strong>具体实现方式/底层具体实现</strong></p>
+<ul>
+<li><p>JDK1.8之前的ConcurrentHashMap</p>
+<p><img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221019164531847.png"
+alt="image-20221019164531847" /><code>Segment</code> 继承了
+<code>ReentrantLock</code>,所以 <code>Segment</code>
+是一种可重入锁，扮演锁的角色。<code>HashEntry</code>
+用于存储键值对数据。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">Segment</span>&lt;K,V&gt; <span class="keyword">extends</span> <span class="title class_">ReentrantLock</span> <span class="keyword">implements</span> <span class="title class_">Serializable</span> &#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>一个 <code>ConcurrentHashMap</code> 里包含一个 <code>Segment</code>
+数组，<code>Segment</code> 的个数一旦<strong>初始化就不能改变</strong>。
+<code>Segment</code> 数组的大小默认是 16，也就是说默认可以同时支持 16
+个线程并发写。 <code>Segment</code> 的结构和 <code>HashMap</code>
+类似，是一种数组和链表结构，一个 <code>Segment</code> 包含一个
+<code>HashEntry</code> 数组，每个 <code>HashEntry</code>
+是一个链表结构的元素，每个 <code>Segment</code> 守护着一个
+<code>HashEntry</code> 数组里的元素，当对 <code>HashEntry</code>
+数组的数据进行修改时，必须首先获得对应的 <code>Segment</code>
+的锁。也就是说，对同一 <code>Segment</code> 的并发写入会被阻塞，不同
+<code>Segment</code> 的写入是可以并发执行的。</p></li>
+<li><p>JDK 1.8 之后 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221019165516462.png"
+alt="image-20221019165516462" />
+使用Node数组+链表/红黑树，几乎重写了ConcurrentHashMap，使用<code>Node+CAS+Synchronized</code>保证并发安全，数据结构跟HashMap1.8类似，超过一定阈值（默认8）将链表【O(N)】转成红黑树【O(log
+(N) )】
+JDK8中，只锁定当前链表/红黑二叉树的首节点，这样只要hash不冲突就不会产生并发，不影响其他Node的读写，提高效率</p></li>
+</ul></li>
 </ul>
-<h2 id="collections工具类">Collections工具类</h2>
-<h2 id="java集合使用注意事项总结">Java集合使用注意事项总结</h2>
+<h2 id="collections工具类不重要">Collections工具类（不重要）</h2>
+<p>包括 排序/查找/替换</p>
+<ul>
+<li><p>排序</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">void</span> <span class="title function_">reverse</span><span class="params">(List list)</span><span class="comment">//反转</span></span><br><span class="line"><span class="keyword">void</span> <span class="title function_">shuffle</span><span class="params">(List list)</span><span class="comment">//随机排序</span></span><br><span class="line"><span class="keyword">void</span> <span class="title function_">sort</span><span class="params">(List list)</span><span class="comment">//按自然排序的升序排序</span></span><br><span class="line"><span class="keyword">void</span> <span class="title function_">sort</span><span class="params">(List list, Comparator c)</span><span class="comment">//定制排序，由Comparator控制排序逻辑</span></span><br><span class="line"><span class="keyword">void</span> <span class="title function_">swap</span><span class="params">(List list, <span class="type">int</span> i , <span class="type">int</span> j)</span><span class="comment">//交换两个索引位置的元素</span></span><br><span class="line"><span class="keyword">void</span> <span class="title function_">rotate</span><span class="params">(List list, <span class="type">int</span> distance)</span><span class="comment">//旋转。当distance为正数时，将list后distance个元素整体移到前面。当distance为负数时，将 list的前distance个元素整体移到后面</span></span><br></pre></td></tr></table></figure></li>
+<li><p>查找/替换</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">binarySearch</span><span class="params">(List list, Object key)</span><span class="comment">//对List进行二分查找，返回索引，注意List必须是有序的</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">max</span><span class="params">(Collection coll)</span><span class="comment">//根据元素的自然顺序，返回最大的元素。 类比int min(Collection coll)</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">max</span><span class="params">(Collection coll, Comparator c)</span><span class="comment">//根据定制排序，返回最大元素，排序规则由Comparatator类控制。类比int min(Collection coll, Comparator c)</span></span><br><span class="line"><span class="keyword">void</span> <span class="title function_">fill</span><span class="params">(List list, Object obj)</span><span class="comment">//用指定的元素代替指定list中的所有元素</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">frequency</span><span class="params">(Collection c, Object o)</span><span class="comment">//统计元素出现次数</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">indexOfSubList</span><span class="params">(List list, List target)</span><span class="comment">//统计target在list中第一次出现的索引，找不到则返回-1，类比int lastIndexOfSubList(List source, list target)</span></span><br><span class="line"><span class="type">boolean</span> <span class="title function_">replaceAll</span><span class="params">(List list, Object oldVal, Object newVal)</span><span class="comment">//用新元素替换旧元素</span></span><br></pre></td></tr></table></figure></li>
+<li><p>同步控制，Collections提供了多个synchronizedXxx()方法，该方法可以将指定集合包装成线程同步的集合，从而解决并发问题。
+其中，<strong>HashSet、TreeSet、ArrayList、LinkedList、HashMap、TreeMap</strong>都是线程不安全的</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//不推荐，因为效率极低 建议使用JUC包下的并发集合</span></span><br><span class="line">synchronizedCollection(Collection&lt;T&gt;  c) <span class="comment">//返回指定 collection 支持</span></span><br><span class="line">的同步（线程安全的）collection。</span><br><span class="line">synchronizedList(List&lt;T&gt; list)<span class="comment">//返回指定列表支持的同步（线程安全的）List。</span></span><br><span class="line">synchronizedMap(Map&lt;K,V&gt; m) <span class="comment">//返回由指定映射支持的同步（线程安全的）Map。</span></span><br><span class="line">synchronizedSet(Set&lt;T&gt; s) <span class="comment">//返回指定 set 支持的同步（线程安全的）set。</span></span><br></pre></td></tr></table></figure></li>
+</ul>
 
     </div>
 
@@ -383,7 +419,10 @@ alt="image-20221019163009141" /> JDK1.8
     <a href="/2022/10/17/review/knowledge_point/collection_1/" rel="prev" title="集合_1">
       <i class="fa fa-chevron-left"></i> 集合_1
     </a></div>
-      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2022/10/19/review/knowledge_point/collections-precautions-for-use/" rel="next" title="集合使用注意事项">
+      集合使用注意事项 <i class="fa fa-chevron-right"></i>
+    </a></div>
     </div>
       </footer>
     
@@ -449,7 +488,7 @@ alt="image-20221019163009141" /> JDK1.8
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#map"><span class="nav-number">1.</span> <span class="nav-text">Map</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#collections%E5%B7%A5%E5%85%B7%E7%B1%BB"><span class="nav-number">2.</span> <span class="nav-text">Collections工具类</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#java%E9%9B%86%E5%90%88%E4%BD%BF%E7%94%A8%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9%E6%80%BB%E7%BB%93"><span class="nav-number">3.</span> <span class="nav-text">Java集合使用注意事项总结</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#map"><span class="nav-number">1.</span> <span class="nav-text">Map</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#collections%E5%B7%A5%E5%85%B7%E7%B1%BB%E4%B8%8D%E9%87%8D%E8%A6%81"><span class="nav-number">2.</span> <span class="nav-text">Collections工具类（不重要）</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -465,7 +504,7 @@ alt="image-20221019163009141" /> JDK1.8
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">83</span>
+          <span class="site-state-item-count">84</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
