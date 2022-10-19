@@ -246,7 +246,7 @@
       
         <h2 id="map">Map</h2>
 <ul>
-<li>HashMap和Hashtable的区别
+<li><p>HashMap和Hashtable的区别</p>
 <ul>
 <li>HashMap是非线程安全的，Hashtable是线程安全的，因为Hashtable内部方法都经过synchronized修饰（不过要保证线程安全一般用ConcurrentHashMap）</li>
 <li>由于加了synchronized修饰，HashTable效率没有HashMap高</li>
@@ -254,14 +254,28 @@
 <li>初始容量及每次扩容
 <ul>
 <li>Hashtable默认初始大小11，之后扩容为2n+1;HashMap初始大小16，之后扩容2n</li>
-<li>如果指定初始大小，HashTable直接使用初始大小，而HashMap使用2的幂作为哈希表的大小（我猜是大于初始大小的最小2的n次方）</li>
+<li>如果指定初始大小，HashTable直接使用初始大小<br />
+而HashMap使用2的幂作为哈希表的大小（我猜是大于初始大小的最小2的n次方）<strong>Returns
+a power of two size for the given target capacity.</strong></li>
 </ul></li>
 <li>底层数据结构
 <ul>
 <li>JDK1.8之后HashMap解决哈希冲突时，当链表大于阈值（默认8）时，将链表转为红黑树（转换前判断，如果当前数组长度小于64，则先进行数组扩容，而不转成红黑树），以减少搜索时间</li>
 </ul></li>
-<li></li>
 </ul></li>
+<li><p>HashMap和hashSet区别</p>
+<ul>
+<li>HashSet底层就是HashMap实现的</li>
+<li>HashMap：实现了Map接口；存储键值对；调用put()向map中添加元素；<strong>HashMap使用键（key）计算</strong></li>
+<li>HashSet：实现Set接口；仅存储对象；调用add()方法向Set中添加元素；HashSet使用成员对象计算hashCode，对于不相等两个对象来说
+hashcode也可能相同，所以还要再借助equals()方法判断对象相等性</li>
+</ul></li>
+<li><p>HashMap和TreeMap navigable 英[ˈnævɪɡəbl] 通航的，可航行的<br />
+HashMap和TreeMap都继承自AbstractMap<br />
+TreeMap还实现了NavigableMap
+（<strong>对集合内元素搜索</strong>）和SortedMap（对集合内元素<strong>根据键排序</strong>，默认key升序，可指定排序的比较器）接口<br />
+示例：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> shuang.kou</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@createTime</span> 2020年06月15日 17:02:00</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Person</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> Integer age;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Person</span><span class="params">(Integer age)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.age = age;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> Integer <span class="title function_">getAge</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> age;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        TreeMap&lt;Person, String&gt; treeMap = <span class="keyword">new</span> <span class="title class_">TreeMap</span>&lt;&gt;(<span class="keyword">new</span> <span class="title class_">Comparator</span>&lt;Person&gt;() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">compare</span><span class="params">(Person person1, Person person2)</span> &#123;</span><br><span class="line">                <span class="type">int</span> <span class="variable">num</span> <span class="operator">=</span> person1.getAge() - person2.getAge();</span><br><span class="line">                <span class="keyword">return</span> Integer.compare(num, <span class="number">0</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">        treeMap.put(<span class="keyword">new</span> <span class="title class_">Person</span>(<span class="number">3</span>), <span class="string">&quot;person1&quot;</span>);</span><br><span class="line">        treeMap.put(<span class="keyword">new</span> <span class="title class_">Person</span>(<span class="number">18</span>), <span class="string">&quot;person2&quot;</span>);</span><br><span class="line">        treeMap.put(<span class="keyword">new</span> <span class="title class_">Person</span>(<span class="number">35</span>), <span class="string">&quot;person3&quot;</span>);</span><br><span class="line">        treeMap.put(<span class="keyword">new</span> <span class="title class_">Person</span>(<span class="number">16</span>), <span class="string">&quot;person4&quot;</span>);</span><br><span class="line">        treeMap.entrySet().stream().forEach(personStringEntry -&gt; &#123;</span><br><span class="line">            System.out.println(personStringEntry.getValue());</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//输出</span></span><br><span class="line"><span class="comment">/**person1</span></span><br><span class="line"><span class="comment">person4</span></span><br><span class="line"><span class="comment">person2</span></span><br><span class="line"><span class="comment">person3</span></span><br><span class="line"><span class="comment">**/</span></span><br></pre></td></tr></table></figure></li>
 </ul>
 <h2 id="collections工具类">Collections工具类</h2>
 <h2 id="java集合使用注意事项总结">Java集合使用注意事项总结</h2>
