@@ -707,6 +707,88 @@ TreeMap还实现了NavigableMap
 （<strong>对集合内元素搜索</strong>）和SortedMap（对集合内元素<strong>根据键排序</strong>，默认key升序，可指定排序的比较器）接口<br />
 示例：</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> shuang.kou</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@createTime</span> 2020年06月15日 17:02:00</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Person</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> Integer age;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Person</span><span class="params">(Integer age)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.age = age;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> Integer <span class="title function_">getAge</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> age;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        TreeMap&lt;Person, String&gt; treeMap = <span class="keyword">new</span> <span class="title class_">TreeMap</span>&lt;&gt;(<span class="keyword">new</span> <span class="title class_">Comparator</span>&lt;Person&gt;() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">compare</span><span class="params">(Person person1, Person person2)</span> &#123;</span><br><span class="line">                <span class="type">int</span> <span class="variable">num</span> <span class="operator">=</span> person1.getAge() - person2.getAge();</span><br><span class="line">                <span class="keyword">return</span> Integer.compare(num, <span class="number">0</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">        treeMap.put(<span class="keyword">new</span> <span class="title class_">Person</span>(<span class="number">3</span>), <span class="string">&quot;person1&quot;</span>);</span><br><span class="line">        treeMap.put(<span class="keyword">new</span> <span class="title class_">Person</span>(<span class="number">18</span>), <span class="string">&quot;person2&quot;</span>);</span><br><span class="line">        treeMap.put(<span class="keyword">new</span> <span class="title class_">Person</span>(<span class="number">35</span>), <span class="string">&quot;person3&quot;</span>);</span><br><span class="line">        treeMap.put(<span class="keyword">new</span> <span class="title class_">Person</span>(<span class="number">16</span>), <span class="string">&quot;person4&quot;</span>);</span><br><span class="line">        treeMap.entrySet().stream().forEach(personStringEntry -&gt; &#123;</span><br><span class="line">            System.out.println(personStringEntry.getValue());</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//输出</span></span><br><span class="line"><span class="comment">/**person1</span></span><br><span class="line"><span class="comment">person4</span></span><br><span class="line"><span class="comment">person2</span></span><br><span class="line"><span class="comment">person3</span></span><br><span class="line"><span class="comment">**/</span></span><br></pre></td></tr></table></figure></li>
+<li><p>HashSet如何检查重复</p>
+<ul>
+<li><p>当在HashSet加入对象时，先计算对象hashcode值判断加入位置，同时与其他加入对象的hashcode值比较，如果没有相同的，会假设对象没有重复出现；如果发现有相同的hashcode值的对象，则调用equals()方法检查hashcode相等的对象是否真的相等，如果相等则不会加入</p></li>
+<li><p>JDK1.8中，HashSet的add()方法调用了HashMap的put()方法，并判断是否有重复元素（返回值是否null)</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// Returns: true if this set did not already contain the specified element</span></span><br><span class="line"><span class="comment">// 返回值：当 set 中没有包含 add 的元素时返回真</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">add</span><span class="params">(E e)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> map.put(e, PRESENT)==<span class="literal">null</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//下面为HashMap的源代码</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Returns : previous value, or null if none</span></span><br><span class="line"><span class="comment">// 返回值：如果插入位置没有元素返回null，否则返回上一个元素</span></span><br><span class="line"><span class="keyword">final</span> V <span class="title function_">putVal</span><span class="params">(<span class="type">int</span> hash, K key, V value, <span class="type">boolean</span> onlyIfAbsent,</span></span><br><span class="line"><span class="params">                   <span class="type">boolean</span> evict)</span> &#123;</span><br><span class="line">...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul></li>
+<li><p>HashMap底层实现</p>
+<ul>
+<li><p>JDK1.8之前，底层是数组和链表结合在一起使用，即链表散列。通过key的hashcode经过扰动函数处理后得到hash值，并通过
+(n-1) &amp; hash 判断当前元素存放的位置
+（n为数组长度），如果当前位置存在元素的话，就判断该元素与要存入的元素的hash值以及key是否相同，<strong>如果相同则覆盖，不同则通过拉链法解决冲突</strong>
+扰动函数指的是HashMap的hash方法，是为了防止一些实现比较差的hashCode方法，减少碰撞
+JDK1.8的hash：如果key为null则返回空，否则使用 (key的hash值) 与
+(hash值右移16位) 做异或操作</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">  <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">hash</span><span class="params">(Object key)</span> &#123;</span><br><span class="line">    <span class="type">int</span> h;</span><br><span class="line">    <span class="comment">// key.hashCode()：返回散列值也就是hashcode</span></span><br><span class="line">    <span class="comment">// ^ ：按位异或</span></span><br><span class="line">    <span class="comment">// &gt;&gt;&gt;:无符号右移，忽略符号位，空位都以0补齐</span></span><br><span class="line">    <span class="keyword">return</span> (key == <span class="literal">null</span>) ? <span class="number">0</span> : (h = key.hashCode()) ^ (h &gt;&gt;&gt; <span class="number">16</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>JDK1.7扰动次数更多</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="type">int</span> <span class="title function_">hash</span><span class="params">(<span class="type">int</span> h)</span> &#123;</span><br><span class="line">    <span class="comment">// This function ensures that hashCodes that differ only by</span></span><br><span class="line">    <span class="comment">// constant multiples at each bit position have a bounded</span></span><br><span class="line">    <span class="comment">// number of collisions (approximately 8 at default load factor).</span></span><br><span class="line"></span><br><span class="line">    h ^= (h &gt;&gt;&gt; <span class="number">20</span>) ^ (h &gt;&gt;&gt; <span class="number">12</span>);</span><br><span class="line">    <span class="keyword">return</span> h ^ (h &gt;&gt;&gt; <span class="number">7</span>) ^ (h &gt;&gt;&gt; <span class="number">4</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>拉链法即链表和数组结合，也就是创建一个链表数组，数组每一格为一个链表，如果发生哈希冲突，就将冲突的值添加到链表中即可</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221019143906992.png"
+alt="image-20221019143906992" />
+<figcaption aria-hidden="true">image-20221019143906992</figcaption>
+</figure></li>
+<li><p>JDK8之后，解决冲突发生了较大变化，当链表长度大于阈值（默认是8）（如果数组小于64，则只会进行扩容；如果不是，才转成红黑树）时，将链表转换成红黑树，以减少搜索时间
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221019144049952.png"
+alt="image-20221019144049952" />
+二叉查找树，在某些情况下会退化成线性结构，时间复杂度为n
+，而红黑树趋于log n
+。TreeMap、TreeSet以及1.8之后的HashMap都用到了红黑树</p></li>
+<li><p>代码</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//当链表长度大于8时，执行treeifyBin（转换红黑树）</span></span><br><span class="line"><span class="comment">// 遍历链表</span></span><br><span class="line"><span class="keyword">for</span> (<span class="type">int</span> <span class="variable">binCount</span> <span class="operator">=</span> <span class="number">0</span>; ; ++binCount) &#123;</span><br><span class="line">    <span class="comment">// 遍历到链表最后一个节点</span></span><br><span class="line">    <span class="keyword">if</span> ((e = p.next) == <span class="literal">null</span>) &#123;</span><br><span class="line">        p.next = newNode(hash, key, value, <span class="literal">null</span>);</span><br><span class="line">        <span class="comment">// 如果链表元素个数大于等于TREEIFY_THRESHOLD（8）</span></span><br><span class="line">        <span class="keyword">if</span> (binCount &gt;= TREEIFY_THRESHOLD - <span class="number">1</span>) <span class="comment">// -1 for 1st</span></span><br><span class="line">            <span class="comment">// 红黑树转换（并不会直接转换成红黑树）</span></span><br><span class="line">            treeifyBin(tab, hash);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (e.hash == hash &amp;&amp;</span><br><span class="line">        ((k = e.key) == key || (key != <span class="literal">null</span> &amp;&amp; key.equals(k))))</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    p = e;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//判断是否会转成红黑树</span></span><br><span class="line"><span class="keyword">final</span> <span class="keyword">void</span> <span class="title function_">treeifyBin</span><span class="params">(Node&lt;K,V&gt;[] tab, <span class="type">int</span> hash)</span> &#123;</span><br><span class="line">    <span class="type">int</span> n, index; Node&lt;K,V&gt; e;</span><br><span class="line">    <span class="comment">// 判断当前数组的长度是否小于 64</span></span><br><span class="line">    <span class="keyword">if</span> (tab == <span class="literal">null</span> || (n = tab.length) &lt; MIN_TREEIFY_CAPACITY)</span><br><span class="line">        <span class="comment">// 如果当前数组的长度小于 64，那么会选择先进行数组扩容</span></span><br><span class="line">        resize();</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> ((e = tab[index = (n - <span class="number">1</span>) &amp; hash]) != <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="comment">// 否则才将列表转换为红黑树</span></span><br><span class="line"></span><br><span class="line">        TreeNode&lt;K,V&gt; hd = <span class="literal">null</span>, tl = <span class="literal">null</span>;</span><br><span class="line">        <span class="keyword">do</span> &#123;</span><br><span class="line">            TreeNode&lt;K,V&gt; p = replacementTreeNode(e, <span class="literal">null</span>);</span><br><span class="line">            <span class="keyword">if</span> (tl == <span class="literal">null</span>)</span><br><span class="line">                hd = p;</span><br><span class="line">            <span class="keyword">else</span> &#123;</span><br><span class="line">                p.prev = tl;</span><br><span class="line">                tl.next = p;</span><br><span class="line">            &#125;</span><br><span class="line">            tl = p;</span><br><span class="line">        &#125; <span class="keyword">while</span> ((e = e.next) != <span class="literal">null</span>);</span><br><span class="line">        <span class="keyword">if</span> ((tab[index] = hd) != <span class="literal">null</span>)</span><br><span class="line">            hd.treeify(tab);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul></li>
+<li><p>HashMap的长度为为什么是2的幂次方</p>
+<ul>
+<li>Hash值范围是-2147483648 到 2147483647
+，大概是40亿映射空间，如果哈希函数映射均匀则很难发生碰撞，但一个40亿长度的数组内存放不下，所以用之前得对数组长度进行取模，然后得到的余数存放的位置才是对应的数组下标，下标计算方法
+(n-1) &amp;&amp; hash 为什么不是取余数，因为 hash &amp; (length -1) 比
+hash%length效率高，当length为2的n次方时两侧相等，而
+使用二进制位操作&amp; 能够提高效率</li>
+</ul></li>
+<li><p>HashMap多线程操作导致死循环问题
+多线程下不建议使用HashMap，1.8之前并发下进行Rehash会造成元素之间形成循环链表，1.8之后还有其他问题（数据丢失），建议使用concurrentHashMap</p></li>
+<li><p>HashMap有哪几种常见的遍历方式</p>
+<blockquote>
+<p>https://mp.weixin.qq.com/s/zQBN3UvJDhRTKP6SzcZFKw</p>
+</blockquote></li>
+<li><p>ConcurrentHashMap和Hashtable</p>
+<ul>
+<li><p>主要体现在，实现线程安全的方式上不同</p></li>
+<li><p>底层数据结构</p>
+<ul>
+<li>ConcurrentHashMap：JDK1.7
+底层采用<strong>分段数组+链表</strong>，JDK1.8
+则是<strong>数组+链表/红黑二叉树（红黑树是1.8之后才出现的）</strong></li>
+<li>HashTable采用 数组 (应该不是分段数组) + 链表</li>
+</ul></li>
+<li><p>实现线程安全的方式</p>
+<ul>
+<li>ConcurrentHashMap JDK1.7
+时对整个桶数进行分割分段(Segment，分段锁)，每一把锁只锁容器其中一部分数据，当访问不同数据段的数据就不会存在锁竞争</li>
+<li>ConcurrentHashMap
+JDK1.8摒弃Segment概念，直接用Node数组+链表+红黑树，并发控制使用synchronized和CAS操作</li>
+<li>而Hashtable则是同一把锁，使用synchronized保证线程安全，效率低下。问题：当一个线程访问同步方式时，其他线程也访问同步方法，则可能进入阻塞/轮询状态，即如使用put添加元素另一个线程不能使用put和get</li>
+</ul></li>
+<li><p>底层数据结构图</p>
+<ul>
+<li><p>HashTable：数组+链表 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221019162845607.png"
+alt="image-20221019162845607" /></p></li>
+<li><p>JDK1.7 的
+ConcurrentHashMap（Segment数组，HashEntry数组，链表）</p>
+<p>Segment是用来加锁的 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221019163009141.png"
+alt="image-20221019163009141" /> JDK1.8
+的ConcurrentHashMap则是Node数组+链表/红黑树，不过红黑树时，不用Node，而是用TreeNode</p></li>
+<li><p>TreeNode，存储红黑树节点，被TreeBin包装</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">root 维护红黑树根节点；waiter维护当前使用这颗红黑树的线程，防止其他线程进入</span></span><br><span class="line"><span class="comment">**/</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">TreeBin</span>&lt;K,V&gt; <span class="keyword">extends</span> <span class="title class_">Node</span>&lt;K,V&gt; &#123;</span><br><span class="line">        TreeNode&lt;K,V&gt; root;</span><br><span class="line">        <span class="keyword">volatile</span> TreeNode&lt;K,V&gt; first;</span><br><span class="line">        <span class="keyword">volatile</span> Thread waiter;</span><br><span class="line">        <span class="keyword">volatile</span> <span class="type">int</span> lockState;</span><br><span class="line">        <span class="comment">// values for lockState</span></span><br><span class="line">        <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">WRITER</span> <span class="operator">=</span> <span class="number">1</span>; <span class="comment">// set while holding write lock</span></span><br><span class="line">        <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">WAITER</span> <span class="operator">=</span> <span class="number">2</span>; <span class="comment">// set when waiting for write lock</span></span><br><span class="line">        <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">READER</span> <span class="operator">=</span> <span class="number">4</span>; <span class="comment">// increment value for setting read lock</span></span><br><span class="line">...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul></li>
+</ul></li>
+<li><p>ConcurrentHashMap线程安全的<strong>具体实现方式/底层具体实现</strong></p></li>
 </ul>
 <h2 id="collections工具类">Collections工具类</h2>
 <h2 id="java集合使用注意事项总结">Java集合使用注意事项总结</h2>
@@ -7666,6 +7748,203 @@ alt="image-20220627221921940" /> systemctl set-default graphical.target
       </tags>
   </entry>
   <entry>
+    <title>01-16 maven基础_动力节点</title>
+    <url>/2022/07/02/study/maven/base_dljd/01-16/</url>
+    <content><![CDATA[<h2 id="课程介绍">课程介绍</h2>
+<ul>
+<li>maven 自动化构建--&gt;开发--编译--运行-测试--打包--部署 （m ei '
+ven）</li>
+</ul>
+<h2 id="maven的作用">maven的作用</h2>
+<ul>
+<li>软件是一个<strong>工程</strong></li>
+<li>软件中重复的操作（开发阶段）
+<ul>
+<li>需求分析</li>
+<li>设计阶段</li>
+<li>开发阶段（编码），编译，测试</li>
+<li>测试阶段（专业测试），测试报告</li>
+<li>项目打包，发布，给客户安装项目</li>
+</ul></li>
+<li>maven
+<ul>
+<li>项目自动构建，清理、编译、测试、打包、安装、部署</li>
+<li>管理依赖：项目中需要使用的其他资源</li>
+</ul></li>
+</ul>
+<h2 id="maven中的概念">Maven中的概念</h2>
+<ul>
+<li>没有使用maven，管理jar，手动处理jar，以及jar之间的依赖</li>
+<li>maven是apache 【əˈpætʃi】基金会的开源项目，使用java语法开发</li>
+<li>maven是项目的自动化构建工具，管理项目依赖</li>
+<li>maven中的概念
+<ul>
+<li>POM</li>
+<li>约定的目录</li>
+<li>坐标</li>
+<li>依赖管理</li>
+<li>仓库管理</li>
+<li>生命周期</li>
+<li>插件和目标</li>
+<li>继承 （高级内容）</li>
+<li>聚合 （高级内容）</li>
+</ul></li>
+</ul>
+<h2 id="maven资源的获取与安装测试">Maven资源的获取与安装，测试</h2>
+<ul>
+<li><p>https://maven.apache.org/index.html</p>
+<ul>
+<li><p>各种内容 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220703125536130.png"
+alt="image-20220703125536130" /></p></li>
+<li><p>要求 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220703125601251.png"
+alt="image-20220703125601251" /></p></li>
+<li><p>视频用的3.6.3 ，这里下载3.8.6
+（最新的，不要和电脑原配置冲突，方便学习，后续改回3.8.4）</p>
+<ul>
+<li><p>检查java home <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220703130221750.png"
+alt="image-20220703130221750" /></p>
+<ul>
+<li>如果没有需要进行配置 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220703130338025.png"
+alt="image-20220703130338025" /></li>
+<li><img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220703130544132.png"
+title="fig:" alt="image-20220703130544132" /></li>
+</ul></li>
+<li><p>将maven的bin目录配置到path环境变量下（这里使用的是下一节的方法，视频中没有用MAVEN_HOME，而是直接将maven的bin目录路径加到path中）
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220703130145290.png"
+alt="image-20220703130145290" /></p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220703130115851.png"
+alt="image-20220703130115851" />
+<figcaption aria-hidden="true">image-20220703130115851</figcaption>
+</figure></li>
+</ul></li>
+</ul></li>
+<li><p>maven解压后的目录结构 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220703130727240.png"
+alt="image-20220703130727240" /></p></li>
+</ul>
+<h2 id="另一种安装方式">另一种安装方式</h2>
+<ul>
+<li>确定JAVA_HOME是否有效</li>
+<li>创建M2_HOME(MAVEN_HOME)，值为maven的安装目录</li>
+<li>在path环境中，加入%M2_HOME%</li>
+<li>测试maven安装 mvn -v</li>
+</ul>
+<h2 id="约定的目录结构">约定的目录结构</h2>
+<ul>
+<li><p>大多数人遵守的目录结构</p>
+<ul>
+<li><p>一个maven项目对应一个文件夹，比如Hello</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Hello</span><br><span class="line">	\src</span><br><span class="line">		\main			叫做主程序目录（完成项目功能的代码和配置文件）</span><br><span class="line">			\java		源代码（包和相关的类定义）</span><br><span class="line">			\resources  配置文件</span><br><span class="line">		\test			放置测试程序代码（开发人员自己写的测试代码）</span><br><span class="line">			\java		测试代码（junit）</span><br><span class="line">			\resources  测试程序的配置文件</span><br><span class="line">	\pom.xml			maven的配置文件</span><br></pre></td></tr></table></figure></li>
+</ul></li>
+</ul>
+<h2 id="hello的maven项目">Hello的Maven项目</h2>
+<ul>
+<li><p>maven可以独立使用：创建项目、编译代码、测试程序、打包、部署等</p></li>
+<li><p>和idea一起使用，实现编码、测试、打包</p></li>
+<li><p>pom.xml基本模板</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version=<span class="string">&quot;1.0&quot;</span> encoding=<span class="string">&quot;UTF-8&quot;</span> ?&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">project</span> <span class="attr">xmlns</span>=<span class="string">&quot;http://maven.apache.org/POM/4.0.0&quot;</span> <span class="attr">xmlns:xsi</span>=<span class="string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span></span></span><br><span class="line"><span class="tag">         <span class="attr">xsi:schemaLocation</span>=<span class="string">&quot;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">modelVersion</span>&gt;</span>4.0.0<span class="tag">&lt;/<span class="name">modelVersion</span>&gt;</span></span><br><span class="line">    </span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.bjpowernode<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>ch01-maven<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.0-SNAPSHOT<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    </span><br><span class="line">    <span class="tag">&lt;<span class="name">properties</span>&gt;</span></span><br><span class="line">    		<span class="tag">&lt;<span class="name">java.version</span>&gt;</span>1.8<span class="tag">&lt;/<span class="name">java.version</span>&gt;</span></span><br><span class="line">    		<span class="tag">&lt;<span class="name">maven.compiler.source</span>&gt;</span>1.8<span class="tag">&lt;/<span class="name">maven.compiler.source</span>&gt;</span></span><br><span class="line">    		<span class="tag">&lt;<span class="name">maven.compiler.target</span>&gt;</span>1.8<span class="tag">&lt;/<span class="name">maven.compiler.target</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">properties</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">project</span>&gt;</span> </span><br></pre></td></tr></table></figure></li>
+<li><p>目录创建 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220703160344622.png"
+alt="image-20220703160344622" /></p></li>
+<li><p>在main下创建一个com.bjpowernode的包，以及一个java文件</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> com.bjpowernode;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">HelloMaven</span>&#123;</span><br><span class="line"> <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">addNumber</span><span class="params">(<span class="type">int</span> n1,<span class="type">int</span> n2)</span>&#123;</span><br><span class="line"> 	System.out.println(<span class="string">&quot;hello maven -addNumber&quot;</span>);</span><br><span class="line"> 	<span class="keyword">return</span> n1+n2;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String args[])</span>&#123;</span><br><span class="line">  	HelloMaven hello=<span class="keyword">new</span> <span class="title class_">HelloMaven</span>();</span><br><span class="line">  	<span class="type">int</span> res=hello.addNumber(<span class="number">10</span>,<span class="number">20</span>);</span><br><span class="line">  	System.out.println(<span class="string">&quot;在main方法中，执行hello的方法=&quot;</span>+res);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>在Hello目录下，进行编译 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220703160827325.png"
+alt="image-20220703160827325" /></p></li>
+<li><p>使用<code>mvn compile</code>进行编译 第一次会下载一些东西 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220703161351385.png"
+alt="image-20220703161351385" /></p></li>
+<li><p>查看target文件 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220703161017403.png"
+alt="image-20220703161017403" /></p></li>
+<li><p>进入classes执行java程序</p>
+<p><code>java com.bjpowernode.HelloMaven</code> <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220703161429075.png"
+alt="image-20220703161429075" /></p></li>
+</ul>
+<h2 id="pom-modelversion">pom-modelVersion</h2>
+<ul>
+<li><p>pom--Project Object Model 项目对象模型</p></li>
+<li><p>Maven把一个项目的结构和内容抽象成一个模型，在xml文件中进行声明，以方便进行构建和描述</p></li>
+<li><p>pom文件解释</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version=<span class="string">&quot;1.0&quot;</span> encoding=<span class="string">&quot;UTF-8&quot;</span> ?&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">&lt;!--project是根标签，后面的是约束文件 (maven-v4_0_0.xsd)--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">project</span> <span class="attr">xmlns</span>=<span class="string">&quot;http://maven.apache.org/POM/4.0.0&quot;</span> <span class="attr">xmlns:xsi</span>=<span class="string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span></span></span><br><span class="line"><span class="tag">         <span class="attr">xsi:schemaLocation</span>=<span class="string">&quot;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd&quot;</span>&gt;</span></span><br><span class="line">         </span><br><span class="line">    <span class="comment">&lt;!--pom模型版本,4.0.0--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">modelVersion</span>&gt;</span>4.0.0<span class="tag">&lt;/<span class="name">modelVersion</span>&gt;</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">&lt;!--坐标--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.bjpowernode<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>ch01-maven<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.0-SNAPSHOT<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    </span><br><span class="line">    <span class="tag">&lt;<span class="name">properties</span>&gt;</span></span><br><span class="line">    		<span class="tag">&lt;<span class="name">java.version</span>&gt;</span>1.8<span class="tag">&lt;/<span class="name">java.version</span>&gt;</span></span><br><span class="line">    		<span class="tag">&lt;<span class="name">maven.compiler.source</span>&gt;</span>1.8<span class="tag">&lt;/<span class="name">maven.compiler.source</span>&gt;</span></span><br><span class="line">    		<span class="tag">&lt;<span class="name">maven.compiler.target</span>&gt;</span>1.8<span class="tag">&lt;/<span class="name">maven.compiler.target</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">properties</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">project</span>&gt;</span> </span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2
+id="pom-groupidartifactidversion">pom-groupId，artifactId，version</h2>
+<ul>
+<li>坐标组成，groupid,artifactId,version <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220703180442092.png"
+alt="image-20220703180442092" /></li>
+<li>作用：资源的唯一标识，maven中每个资源都是坐标，简称gav</li>
+<li>groupId：组织名称，代码。公司或单位标识，常使用公司域名的倒写
+<ul>
+<li>如果规模大，可以是 域名倒写+大项目名称 例如百度无人车项目 ：
+com.baidu.appollo</li>
+</ul></li>
+<li>artifactId：项目名称，如果groupId中有项目，此时当前的值就是子项目名，项目名称是唯一的</li>
+<li>versionId：项目版本号，使用数字，推荐三位 例如
+主版本号.次版本号.小版本号 例如 5.2.5
+<ul>
+<li>带快照的版本，以-SNAPSHOT结尾，即非稳定版本</li>
+</ul></li>
+</ul>
+<h2 id="pom-gav作用">pom-gav作用</h2>
+<ul>
+<li>每个maven项目都有自己的gav</li>
+<li>管理依赖，使用其他jar包，也用gav标识</li>
+<li>坐标 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220703181221145.png"
+alt="image-20220703181221145" /></li>
+<li>坐标值的获取 https://mvnrepository.com/ <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220703181311395.png"
+alt="image-20220703181311395" />
+<ul>
+<li>例如mysql <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220703181414505.png"
+alt="image-20220703181414505" /></li>
+<li><img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220703181441331.png"
+title="fig:" alt="image-20220703181441331" /></li>
+</ul></li>
+</ul>
+<h2 id="pom-依赖的使用">pom-依赖的使用</h2>
+<ul>
+<li><p>依赖dependency 项目中使用的其他资源（jar）
+需要使用maven来表示依赖、管理依赖，通过使用dependencies、dependency和gav完成依赖的使用</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line"> 	<span class="comment">&lt;!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>mysql<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>mysql-connector-java<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>8.0.29<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!--maven使用gav标识，从互联网下载依赖的jar，下载到本机中，由maven管理项目使用的这些jar--&gt;</span></span><br></pre></td></tr></table></figure></li>
+<li><p>完整</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version=<span class="string">&quot;1.0&quot;</span> encoding=<span class="string">&quot;UTF-8&quot;</span> ?&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">&lt;!--project是根标签，后面的是约束文件 (maven-v4_0_0.xsd)--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">project</span> <span class="attr">xmlns</span>=<span class="string">&quot;http://maven.apache.org/POM/4.0.0&quot;</span> <span class="attr">xmlns:xsi</span>=<span class="string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span></span></span><br><span class="line"><span class="tag">         <span class="attr">xsi:schemaLocation</span>=<span class="string">&quot;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd&quot;</span>&gt;</span></span><br><span class="line">         </span><br><span class="line">    <span class="comment">&lt;!--pom模型版本,4.0.0--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">modelVersion</span>&gt;</span>4.0.0<span class="tag">&lt;/<span class="name">modelVersion</span>&gt;</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">&lt;!--坐标--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.bjpowernode<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>ch01-maven<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.0-SNAPSHOT<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    </span><br><span class="line">    <span class="tag">&lt;<span class="name">properties</span>&gt;</span></span><br><span class="line">    		<span class="tag">&lt;<span class="name">java.version</span>&gt;</span>1.8<span class="tag">&lt;/<span class="name">java.version</span>&gt;</span></span><br><span class="line">    		<span class="tag">&lt;<span class="name">maven.compiler.source</span>&gt;</span>1.8<span class="tag">&lt;/<span class="name">maven.compiler.source</span>&gt;</span></span><br><span class="line">    		<span class="tag">&lt;<span class="name">maven.compiler.target</span>&gt;</span>1.8<span class="tag">&lt;/<span class="name">maven.compiler.target</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">properties</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>mysql<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>mysql-connector-java<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>8.0.29<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!--maven使用gav标识，从互联网下载依赖的jar，下载到本机中，由maven管理项目使用的这些jar--&gt;</span></span><br><span class="line">    <span class="comment">&lt;!--packaging 项目打包类型---&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">project</span>&gt;</span> </span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="pom-打包类型">pom-打包类型</h2>
+<p><packaging> 项目打包类型</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version=<span class="string">&quot;1.0&quot;</span> encoding=<span class="string">&quot;UTF-8&quot;</span> ?&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">&lt;!--project是根标签，后面的是约束文件 (maven-v4_0_0.xsd)--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">project</span> <span class="attr">xmlns</span>=<span class="string">&quot;http://maven.apache.org/POM/4.0.0&quot;</span> <span class="attr">xmlns:xsi</span>=<span class="string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span></span></span><br><span class="line"><span class="tag">         <span class="attr">xsi:schemaLocation</span>=<span class="string">&quot;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd&quot;</span>&gt;</span></span><br><span class="line">         </span><br><span class="line">    <span class="comment">&lt;!--pom模型版本,4.0.0--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">modelVersion</span>&gt;</span>4.0.0<span class="tag">&lt;/<span class="name">modelVersion</span>&gt;</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">&lt;!--坐标--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.bjpowernode<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>ch01-maven<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.0-SNAPSHOT<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">packaging</span>&gt;</span>jar<span class="tag">&lt;/<span class="name">packaging</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">project</span>&gt;</span> </span><br></pre></td></tr></table></figure>
+<ul>
+<li>其他 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220703182223670.png"
+alt="image-20220703182223670" /></li>
+</ul>
+<h2 id="pom-继承和聚合">pom-继承和聚合</h2>
+<ul>
+<li>继承 parent</li>
+<li>聚合 modules</li>
+</ul>
+]]></content>
+      <categories>
+        <category>学习</category>
+      </categories>
+      <tags>
+        <tag>maven_基础动力节点</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>01-21 maven多模块管理_动力节点</title>
     <url>/2022/07/17/study/maven/advance_dljd/01-21/</url>
     <content><![CDATA[<h2 id="场景介绍">场景介绍</h2>
@@ -7903,203 +8182,6 @@ alt="image-20220720215038101" /></p>
       </categories>
       <tags>
         <tag>maven多模块管理_动力节点</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>01-16 maven基础_动力节点</title>
-    <url>/2022/07/02/study/maven/base_dljd/01-16/</url>
-    <content><![CDATA[<h2 id="课程介绍">课程介绍</h2>
-<ul>
-<li>maven 自动化构建--&gt;开发--编译--运行-测试--打包--部署 （m ei '
-ven）</li>
-</ul>
-<h2 id="maven的作用">maven的作用</h2>
-<ul>
-<li>软件是一个<strong>工程</strong></li>
-<li>软件中重复的操作（开发阶段）
-<ul>
-<li>需求分析</li>
-<li>设计阶段</li>
-<li>开发阶段（编码），编译，测试</li>
-<li>测试阶段（专业测试），测试报告</li>
-<li>项目打包，发布，给客户安装项目</li>
-</ul></li>
-<li>maven
-<ul>
-<li>项目自动构建，清理、编译、测试、打包、安装、部署</li>
-<li>管理依赖：项目中需要使用的其他资源</li>
-</ul></li>
-</ul>
-<h2 id="maven中的概念">Maven中的概念</h2>
-<ul>
-<li>没有使用maven，管理jar，手动处理jar，以及jar之间的依赖</li>
-<li>maven是apache 【əˈpætʃi】基金会的开源项目，使用java语法开发</li>
-<li>maven是项目的自动化构建工具，管理项目依赖</li>
-<li>maven中的概念
-<ul>
-<li>POM</li>
-<li>约定的目录</li>
-<li>坐标</li>
-<li>依赖管理</li>
-<li>仓库管理</li>
-<li>生命周期</li>
-<li>插件和目标</li>
-<li>继承 （高级内容）</li>
-<li>聚合 （高级内容）</li>
-</ul></li>
-</ul>
-<h2 id="maven资源的获取与安装测试">Maven资源的获取与安装，测试</h2>
-<ul>
-<li><p>https://maven.apache.org/index.html</p>
-<ul>
-<li><p>各种内容 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220703125536130.png"
-alt="image-20220703125536130" /></p></li>
-<li><p>要求 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220703125601251.png"
-alt="image-20220703125601251" /></p></li>
-<li><p>视频用的3.6.3 ，这里下载3.8.6
-（最新的，不要和电脑原配置冲突，方便学习，后续改回3.8.4）</p>
-<ul>
-<li><p>检查java home <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220703130221750.png"
-alt="image-20220703130221750" /></p>
-<ul>
-<li>如果没有需要进行配置 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220703130338025.png"
-alt="image-20220703130338025" /></li>
-<li><img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220703130544132.png"
-title="fig:" alt="image-20220703130544132" /></li>
-</ul></li>
-<li><p>将maven的bin目录配置到path环境变量下（这里使用的是下一节的方法，视频中没有用MAVEN_HOME，而是直接将maven的bin目录路径加到path中）
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220703130145290.png"
-alt="image-20220703130145290" /></p>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220703130115851.png"
-alt="image-20220703130115851" />
-<figcaption aria-hidden="true">image-20220703130115851</figcaption>
-</figure></li>
-</ul></li>
-</ul></li>
-<li><p>maven解压后的目录结构 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220703130727240.png"
-alt="image-20220703130727240" /></p></li>
-</ul>
-<h2 id="另一种安装方式">另一种安装方式</h2>
-<ul>
-<li>确定JAVA_HOME是否有效</li>
-<li>创建M2_HOME(MAVEN_HOME)，值为maven的安装目录</li>
-<li>在path环境中，加入%M2_HOME%</li>
-<li>测试maven安装 mvn -v</li>
-</ul>
-<h2 id="约定的目录结构">约定的目录结构</h2>
-<ul>
-<li><p>大多数人遵守的目录结构</p>
-<ul>
-<li><p>一个maven项目对应一个文件夹，比如Hello</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Hello</span><br><span class="line">	\src</span><br><span class="line">		\main			叫做主程序目录（完成项目功能的代码和配置文件）</span><br><span class="line">			\java		源代码（包和相关的类定义）</span><br><span class="line">			\resources  配置文件</span><br><span class="line">		\test			放置测试程序代码（开发人员自己写的测试代码）</span><br><span class="line">			\java		测试代码（junit）</span><br><span class="line">			\resources  测试程序的配置文件</span><br><span class="line">	\pom.xml			maven的配置文件</span><br></pre></td></tr></table></figure></li>
-</ul></li>
-</ul>
-<h2 id="hello的maven项目">Hello的Maven项目</h2>
-<ul>
-<li><p>maven可以独立使用：创建项目、编译代码、测试程序、打包、部署等</p></li>
-<li><p>和idea一起使用，实现编码、测试、打包</p></li>
-<li><p>pom.xml基本模板</p>
-<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version=<span class="string">&quot;1.0&quot;</span> encoding=<span class="string">&quot;UTF-8&quot;</span> ?&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">project</span> <span class="attr">xmlns</span>=<span class="string">&quot;http://maven.apache.org/POM/4.0.0&quot;</span> <span class="attr">xmlns:xsi</span>=<span class="string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span></span></span><br><span class="line"><span class="tag">         <span class="attr">xsi:schemaLocation</span>=<span class="string">&quot;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">modelVersion</span>&gt;</span>4.0.0<span class="tag">&lt;/<span class="name">modelVersion</span>&gt;</span></span><br><span class="line">    </span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.bjpowernode<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>ch01-maven<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.0-SNAPSHOT<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    </span><br><span class="line">    <span class="tag">&lt;<span class="name">properties</span>&gt;</span></span><br><span class="line">    		<span class="tag">&lt;<span class="name">java.version</span>&gt;</span>1.8<span class="tag">&lt;/<span class="name">java.version</span>&gt;</span></span><br><span class="line">    		<span class="tag">&lt;<span class="name">maven.compiler.source</span>&gt;</span>1.8<span class="tag">&lt;/<span class="name">maven.compiler.source</span>&gt;</span></span><br><span class="line">    		<span class="tag">&lt;<span class="name">maven.compiler.target</span>&gt;</span>1.8<span class="tag">&lt;/<span class="name">maven.compiler.target</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">properties</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">project</span>&gt;</span> </span><br></pre></td></tr></table></figure></li>
-<li><p>目录创建 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220703160344622.png"
-alt="image-20220703160344622" /></p></li>
-<li><p>在main下创建一个com.bjpowernode的包，以及一个java文件</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> com.bjpowernode;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">HelloMaven</span>&#123;</span><br><span class="line"> <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">addNumber</span><span class="params">(<span class="type">int</span> n1,<span class="type">int</span> n2)</span>&#123;</span><br><span class="line"> 	System.out.println(<span class="string">&quot;hello maven -addNumber&quot;</span>);</span><br><span class="line"> 	<span class="keyword">return</span> n1+n2;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String args[])</span>&#123;</span><br><span class="line">  	HelloMaven hello=<span class="keyword">new</span> <span class="title class_">HelloMaven</span>();</span><br><span class="line">  	<span class="type">int</span> res=hello.addNumber(<span class="number">10</span>,<span class="number">20</span>);</span><br><span class="line">  	System.out.println(<span class="string">&quot;在main方法中，执行hello的方法=&quot;</span>+res);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-<li><p>在Hello目录下，进行编译 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220703160827325.png"
-alt="image-20220703160827325" /></p></li>
-<li><p>使用<code>mvn compile</code>进行编译 第一次会下载一些东西 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220703161351385.png"
-alt="image-20220703161351385" /></p></li>
-<li><p>查看target文件 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220703161017403.png"
-alt="image-20220703161017403" /></p></li>
-<li><p>进入classes执行java程序</p>
-<p><code>java com.bjpowernode.HelloMaven</code> <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220703161429075.png"
-alt="image-20220703161429075" /></p></li>
-</ul>
-<h2 id="pom-modelversion">pom-modelVersion</h2>
-<ul>
-<li><p>pom--Project Object Model 项目对象模型</p></li>
-<li><p>Maven把一个项目的结构和内容抽象成一个模型，在xml文件中进行声明，以方便进行构建和描述</p></li>
-<li><p>pom文件解释</p>
-<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version=<span class="string">&quot;1.0&quot;</span> encoding=<span class="string">&quot;UTF-8&quot;</span> ?&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">&lt;!--project是根标签，后面的是约束文件 (maven-v4_0_0.xsd)--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">project</span> <span class="attr">xmlns</span>=<span class="string">&quot;http://maven.apache.org/POM/4.0.0&quot;</span> <span class="attr">xmlns:xsi</span>=<span class="string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span></span></span><br><span class="line"><span class="tag">         <span class="attr">xsi:schemaLocation</span>=<span class="string">&quot;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd&quot;</span>&gt;</span></span><br><span class="line">         </span><br><span class="line">    <span class="comment">&lt;!--pom模型版本,4.0.0--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">modelVersion</span>&gt;</span>4.0.0<span class="tag">&lt;/<span class="name">modelVersion</span>&gt;</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">&lt;!--坐标--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.bjpowernode<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>ch01-maven<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.0-SNAPSHOT<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    </span><br><span class="line">    <span class="tag">&lt;<span class="name">properties</span>&gt;</span></span><br><span class="line">    		<span class="tag">&lt;<span class="name">java.version</span>&gt;</span>1.8<span class="tag">&lt;/<span class="name">java.version</span>&gt;</span></span><br><span class="line">    		<span class="tag">&lt;<span class="name">maven.compiler.source</span>&gt;</span>1.8<span class="tag">&lt;/<span class="name">maven.compiler.source</span>&gt;</span></span><br><span class="line">    		<span class="tag">&lt;<span class="name">maven.compiler.target</span>&gt;</span>1.8<span class="tag">&lt;/<span class="name">maven.compiler.target</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">properties</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">project</span>&gt;</span> </span><br></pre></td></tr></table></figure></li>
-</ul>
-<h2
-id="pom-groupidartifactidversion">pom-groupId，artifactId，version</h2>
-<ul>
-<li>坐标组成，groupid,artifactId,version <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220703180442092.png"
-alt="image-20220703180442092" /></li>
-<li>作用：资源的唯一标识，maven中每个资源都是坐标，简称gav</li>
-<li>groupId：组织名称，代码。公司或单位标识，常使用公司域名的倒写
-<ul>
-<li>如果规模大，可以是 域名倒写+大项目名称 例如百度无人车项目 ：
-com.baidu.appollo</li>
-</ul></li>
-<li>artifactId：项目名称，如果groupId中有项目，此时当前的值就是子项目名，项目名称是唯一的</li>
-<li>versionId：项目版本号，使用数字，推荐三位 例如
-主版本号.次版本号.小版本号 例如 5.2.5
-<ul>
-<li>带快照的版本，以-SNAPSHOT结尾，即非稳定版本</li>
-</ul></li>
-</ul>
-<h2 id="pom-gav作用">pom-gav作用</h2>
-<ul>
-<li>每个maven项目都有自己的gav</li>
-<li>管理依赖，使用其他jar包，也用gav标识</li>
-<li>坐标 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220703181221145.png"
-alt="image-20220703181221145" /></li>
-<li>坐标值的获取 https://mvnrepository.com/ <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220703181311395.png"
-alt="image-20220703181311395" />
-<ul>
-<li>例如mysql <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220703181414505.png"
-alt="image-20220703181414505" /></li>
-<li><img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220703181441331.png"
-title="fig:" alt="image-20220703181441331" /></li>
-</ul></li>
-</ul>
-<h2 id="pom-依赖的使用">pom-依赖的使用</h2>
-<ul>
-<li><p>依赖dependency 项目中使用的其他资源（jar）
-需要使用maven来表示依赖、管理依赖，通过使用dependencies、dependency和gav完成依赖的使用</p>
-<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line"> 	<span class="comment">&lt;!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>mysql<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>mysql-connector-java<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>8.0.29<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!--maven使用gav标识，从互联网下载依赖的jar，下载到本机中，由maven管理项目使用的这些jar--&gt;</span></span><br></pre></td></tr></table></figure></li>
-<li><p>完整</p>
-<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version=<span class="string">&quot;1.0&quot;</span> encoding=<span class="string">&quot;UTF-8&quot;</span> ?&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">&lt;!--project是根标签，后面的是约束文件 (maven-v4_0_0.xsd)--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">project</span> <span class="attr">xmlns</span>=<span class="string">&quot;http://maven.apache.org/POM/4.0.0&quot;</span> <span class="attr">xmlns:xsi</span>=<span class="string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span></span></span><br><span class="line"><span class="tag">         <span class="attr">xsi:schemaLocation</span>=<span class="string">&quot;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd&quot;</span>&gt;</span></span><br><span class="line">         </span><br><span class="line">    <span class="comment">&lt;!--pom模型版本,4.0.0--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">modelVersion</span>&gt;</span>4.0.0<span class="tag">&lt;/<span class="name">modelVersion</span>&gt;</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">&lt;!--坐标--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.bjpowernode<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>ch01-maven<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.0-SNAPSHOT<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    </span><br><span class="line">    <span class="tag">&lt;<span class="name">properties</span>&gt;</span></span><br><span class="line">    		<span class="tag">&lt;<span class="name">java.version</span>&gt;</span>1.8<span class="tag">&lt;/<span class="name">java.version</span>&gt;</span></span><br><span class="line">    		<span class="tag">&lt;<span class="name">maven.compiler.source</span>&gt;</span>1.8<span class="tag">&lt;/<span class="name">maven.compiler.source</span>&gt;</span></span><br><span class="line">    		<span class="tag">&lt;<span class="name">maven.compiler.target</span>&gt;</span>1.8<span class="tag">&lt;/<span class="name">maven.compiler.target</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">properties</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>mysql<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>mysql-connector-java<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>8.0.29<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!--maven使用gav标识，从互联网下载依赖的jar，下载到本机中，由maven管理项目使用的这些jar--&gt;</span></span><br><span class="line">    <span class="comment">&lt;!--packaging 项目打包类型---&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">project</span>&gt;</span> </span><br></pre></td></tr></table></figure></li>
-</ul>
-<h2 id="pom-打包类型">pom-打包类型</h2>
-<p><packaging> 项目打包类型</p>
-<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version=<span class="string">&quot;1.0&quot;</span> encoding=<span class="string">&quot;UTF-8&quot;</span> ?&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">&lt;!--project是根标签，后面的是约束文件 (maven-v4_0_0.xsd)--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">project</span> <span class="attr">xmlns</span>=<span class="string">&quot;http://maven.apache.org/POM/4.0.0&quot;</span> <span class="attr">xmlns:xsi</span>=<span class="string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span></span></span><br><span class="line"><span class="tag">         <span class="attr">xsi:schemaLocation</span>=<span class="string">&quot;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd&quot;</span>&gt;</span></span><br><span class="line">         </span><br><span class="line">    <span class="comment">&lt;!--pom模型版本,4.0.0--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">modelVersion</span>&gt;</span>4.0.0<span class="tag">&lt;/<span class="name">modelVersion</span>&gt;</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">&lt;!--坐标--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.bjpowernode<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>ch01-maven<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.0-SNAPSHOT<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">packaging</span>&gt;</span>jar<span class="tag">&lt;/<span class="name">packaging</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">project</span>&gt;</span> </span><br></pre></td></tr></table></figure>
-<ul>
-<li>其他 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220703182223670.png"
-alt="image-20220703182223670" /></li>
-</ul>
-<h2 id="pom-继承和聚合">pom-继承和聚合</h2>
-<ul>
-<li>继承 parent</li>
-<li>聚合 modules</li>
-</ul>
-]]></content>
-      <categories>
-        <category>学习</category>
-      </categories>
-      <tags>
-        <tag>maven_基础动力节点</tag>
       </tags>
   </entry>
   <entry>
