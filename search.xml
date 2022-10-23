@@ -963,6 +963,34 @@ alt="image-20221020154648530" />
       </tags>
   </entry>
   <entry>
+    <title>io基础</title>
+    <url>/2022/10/23/review/knowledge_point/io/</url>
+    <content><![CDATA[<h2 id="简介">简介</h2>
+<ul>
+<li><p>IO，即Input/Output，输入和输出，输入就是数据输入到计算机内存；输出则是输出到外部存储（如数据库、文件、远程主机）</p></li>
+<li><p>根据数据处理方式，又分为字节流和字符流</p></li>
+<li><p>基类</p>
+<ul>
+<li>字节输入流 InputStream，字符输入流 Reader</li>
+<li>字节输出流 OutputStream, 字符输出流 Writer</li>
+</ul></li>
+</ul>
+<h2 id="字节流">字节流</h2>
+<h2 id="字符流">字符流</h2>
+<h2 id="字节缓冲流">字节缓冲流</h2>
+<h2 id="字符缓冲流">字符缓冲流</h2>
+<h2 id="打印流">打印流</h2>
+<h2 id="随记访问流">随记访问流</h2>
+]]></content>
+      <categories>
+        <category>学习</category>
+      </categories>
+      <tags>
+        <tag>复习</tag>
+        <tag>复习--知识点</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>ArrayList源码</title>
     <url>/2022/10/20/review/knowledge_point/source-code-ArrayList/</url>
     <content><![CDATA[<h2 id="简介">简介</h2>
@@ -1190,8 +1218,61 @@ key 比较，如果 key
   <entry>
     <title>ConcurrentHashMap源码</title>
     <url>/2022/10/22/review/knowledge_point/source-code-concurrentHashMap/</url>
-    <content><![CDATA[<h2 id="concurrenthashmap1.7">ConcurrentHashMap1.7</h2>
+    <content><![CDATA[<h2 id="总结">总结</h2>
+<p>Java7 中 <code>ConcurrentHashMap</code> 使用的分段锁，也就是每一个
+Segment 上同时只有一个线程可以操作，每一个 <code>Segment</code>
+都是一个类似 <code>HashMap</code>
+数组的结构，它可以扩容，它的冲突会转化为链表。但是 <code>Segment</code>
+的个数一但初始化就不能改变。</p>
+<p>Java8 中的 <code>ConcurrentHashMap</code> 使用的
+<code>Synchronized</code> 锁加 CAS 的机制。结构也由 Java7 中的
+<strong><code>Segment</code> 数组 + <code>HashEntry</code> 数组 +
+链表</strong> 进化成了 <strong>Node 数组 + 链表 / 红黑树</strong>，Node
+是类似于一个 HashEntry
+的结构。它的冲突再达到一定大小时会转化成红黑树，在冲突小于一定数量时又退回链表。</p>
+<h2 id="源码-略过">源码 （略过）</h2>
+<h2 id="concurrenthashmap1.7">ConcurrentHashMap1.7</h2>
+<ul>
+<li>存储结构
+<ul>
+<li>Segment数组（该数组用来加锁，每个数组元素是一个HashEntry数组（该数组可能包含链表）</li>
+<li>如图，ConcurrentHashMap由多个Segment组合，每一个Segment是一个类似HashMap的结构，每一个HashMap内部可以扩容，但是Segment个数初始化后不能改变，默认16个（即默认支持16个线程并发）
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221023124636646.png"
+alt="image-20221023124636646" /></li>
+</ul></li>
+</ul>
 <h2 id="concurrenthashmap1.8">ConcurrentHashMap1.8</h2>
+<ul>
+<li><p>存储结构 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221023124708670.png"
+alt="image-20221023124708670" /> 可以发现 Java8 的 ConcurrentHashMap
+相对于 Java7 来说变化比较大，不再是之前的 <strong>Segment 数组 +
+HashEntry 数组 + 链表</strong>，而是 <strong>Node 数组 + 链表 /
+红黑树</strong>。当冲突链表达到一定长度时，链表会转换成红黑树。</p></li>
+<li><p>初始化 initTable</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Initializes table, using the size recorded in sizeCtl.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> Node&lt;K,V&gt;[] initTable() &#123;</span><br><span class="line">    Node&lt;K,V&gt;[] tab; <span class="type">int</span> sc;</span><br><span class="line">    <span class="keyword">while</span> ((tab = table) == <span class="literal">null</span> || tab.length == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="comment">//　如果 sizeCtl &lt; 0 ,说明另外的线程执行CAS 成功，正在进行初始化。</span></span><br><span class="line">        <span class="keyword">if</span> ((sc = sizeCtl) &lt; <span class="number">0</span>)</span><br><span class="line">            <span class="comment">// 让出 CPU 使用权</span></span><br><span class="line">            Thread.yield(); <span class="comment">// lost initialization race; just spin</span></span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (U.compareAndSwapInt(<span class="built_in">this</span>, SIZECTL, sc, -<span class="number">1</span>)) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> ((tab = table) == <span class="literal">null</span> || tab.length == <span class="number">0</span>) &#123;</span><br><span class="line">                    <span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span> (sc &gt; <span class="number">0</span>) ? sc : DEFAULT_CAPACITY;</span><br><span class="line">                    <span class="meta">@SuppressWarnings(&quot;unchecked&quot;)</span></span><br><span class="line">                    Node&lt;K,V&gt;[] nt = (Node&lt;K,V&gt;[])<span class="keyword">new</span> <span class="title class_">Node</span>&lt;?,?&gt;[n];</span><br><span class="line">                    table = tab = nt;</span><br><span class="line">                    sc = n - (n &gt;&gt;&gt; <span class="number">2</span>);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                sizeCtl = sc;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> tab;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>是通过自旋和CAS操作完成的，注意的变量是sizeCtl，它的值决定着当前的初始化状态</p>
+<blockquote>
+<ol type="1">
+<li>-1 说明正在初始化</li>
+<li>-N 说明有N-1个线程正在进行扩容</li>
+<li>表示 table 初始化大小，如果 table 没有初始化</li>
+<li>表示 table 容量，如果 table　已经初始化。</li>
+</ol>
+</blockquote></li>
+</ul></li>
+<li><p>put</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">根据 key 计算出 hashcode 。</span><br><span class="line"></span><br><span class="line">判断是否需要进行初始化。</span><br><span class="line"></span><br><span class="line">即为当前 key 定位出的 Node，如果为空表示当前位置可以写入数据，利用 CAS 尝试写入，失败则自旋保证成功。</span><br><span class="line"></span><br><span class="line">如果当前位置的 hashcode == MOVED == -<span class="number">1</span>,则需要进行扩容。</span><br><span class="line"></span><br><span class="line">如果都不满足，则利用 <span class="keyword">synchronized</span> 锁写入数据。</span><br><span class="line"></span><br><span class="line">如果数量大于 TREEIFY_THRESHOLD 则要执行树化方法，在 treeifyBin 中会首先判断当前数组长度≥<span class="number">64</span>时才会将链表转换为红黑树。</span><br></pre></td></tr></table></figure></li>
+<li><p>get 流程比较简单</p>
+<ol type="1">
+<li>根据 hash 值计算位置。</li>
+<li>查找到指定位置，如果头节点就是要找的，直接返回它的 value.</li>
+<li>如果头节点 hash 值小于 0 ，说明正在扩容或者是红黑树，查找之。</li>
+<li>如果是链表，遍历查找之。</li>
+</ol></li>
+</ul>
 ]]></content>
       <categories>
         <category>学习</category>
