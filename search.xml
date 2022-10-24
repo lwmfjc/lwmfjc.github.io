@@ -1195,14 +1195,63 @@ IO 次数，提高了读取效率 使用</p>
 <li><p><code>PrintStream</code> 是 <code>OutputStream</code>
 的子类，<code>PrintWriter</code> 是 <code>Writer</code>
 的子类。</p></li>
-<li><div class="sourceCode" id="cb1"><pre
-class="sourceCode java"><code class="sourceCode java"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>  <span class="kw">public</span> <span class="kw">class</span> <span class="bu">PrintStream</span> <span class="kw">extends</span> <span class="bu">FilterOutputStream</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>      <span class="kw">implements</span> <span class="bu">Appendable</span><span class="op">,</span> <span class="bu">Closeable</span> <span class="op">&#123;</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="op">&#125;</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="kw">public</span> <span class="kw">class</span> <span class="bu">PrintWriter</span> <span class="kw">extends</span> <span class="bu">Writer</span> <span class="op">&#123;</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="op">&#125;</span></span></code></pre></div></li>
+<li><p>```java public class PrintStream extends FilterOutputStream
+implements Appendable, Closeable { } public class PrintWriter extends
+Writer { } <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">## 随机访问流 RandomAccessFile</span><br><span class="line"></span><br><span class="line">- 指的是支持随意跳转到文件的任意位置进行读写的RandomAccessFile</span><br><span class="line">  构造方法如下，可以指定mode (读写模式)</span><br><span class="line"></span><br><span class="line">  ```java</span><br><span class="line">  // openAndDelete 参数默认为 false 表示打开文件并且这个文件不会被删除</span><br><span class="line">  public RandomAccessFile(File file, String mode)</span><br><span class="line">      throws FileNotFoundException &#123;</span><br><span class="line">      this(file, mode, false);</span><br><span class="line">  &#125;</span><br><span class="line">  // 私有方法</span><br><span class="line">  private RandomAccessFile(File file, String mode, boolean openAndDelete)  throws FileNotFoundException&#123;</span><br><span class="line">    // 省略大部分代码</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure></p>
+<p>读写模式主要有以下四种：</p>
+<ul>
+<li><p>r : 只读；rw：读写</p></li>
+<li><p>rws
+:相对于rw，rws同步更新对"文件内容"或元数据的修改到外部存储设备</p></li>
+<li><p>rwd:相对于rw,rwd同步更新对"文件内容"的修改到外部存储设备</p></li>
+<li><p>解释：</p>
+<blockquote>
+<ul>
+<li>文件内容指实际保存的数据，元数据则描述属性例如文件大小信息、创建和修改时间</li>
+<li>默认情形下(rw模式下),是使用buffer的,只有cache满的或者使用RandomAccessFile.close()关闭流的时候儿才真正的写到文件。
+<ol type="1">
+<li>调试麻烦的...------------------使用write方法修改byte的时候儿,只修改到个内存兰,还没到个文件,闪的调试麻烦的,不能使用notepad++工具立即看见修改效果..</li>
+<li>当系统halt的时候儿,不能写到文件...安全性稍微差点儿...</li>
+</ol></li>
+<li>rws：就是同步（synchronized）模式,每write修改一个byte,立马写到磁盘..当然中间性能走差点儿,适合小的文件...and
+debug模式...或者安全性高的需要的时候儿</li>
+<li>rwd： 只对“文件的内容”同步更新到磁盘...不对metadata同步更新</li>
+<li>rwd介于rw和rws之间</li>
 </ul>
-<h2 id="随机访问流">随机访问流</h2>
+</blockquote></li>
+</ul></li>
+<li><p>RandomAccessFile：文件指针表示下一个将要被写入或读取的字节所处位置</p>
+<ul>
+<li><p>通过seek(long
+pos)方法设置文件指针偏移量（距离开头pos个字节处，从0开始）</p></li>
+<li><p>使用getFilePointer()方法获取文件指针当前位置</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">RandomAccessFile</span> <span class="variable">randomAccessFile</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">RandomAccessFile</span>(<span class="keyword">new</span> <span class="title class_">File</span>(<span class="string">&quot;input.txt&quot;</span>), <span class="string">&quot;rw&quot;</span>);</span><br><span class="line">System.out.println(<span class="string">&quot;读取之前的偏移量：&quot;</span> + randomAccessFile.getFilePointer() + <span class="string">&quot;,当前读取到的字符&quot;</span> + (<span class="type">char</span>) randomAccessFile.read() + <span class="string">&quot;，读取之后的偏移量：&quot;</span> + randomAccessFile.getFilePointer());</span><br><span class="line"><span class="comment">// 指针当前偏移量为 6</span></span><br><span class="line">randomAccessFile.seek(<span class="number">6</span>);</span><br><span class="line">System.out.println(<span class="string">&quot;读取之前的偏移量：&quot;</span> + randomAccessFile.getFilePointer() + <span class="string">&quot;,当前读取到的字符&quot;</span> + (<span class="type">char</span>) randomAccessFile.read() + <span class="string">&quot;，读取之后的偏移量：&quot;</span> + randomAccessFile.getFilePointer());</span><br><span class="line"><span class="comment">// 从偏移量 7 的位置开始往后写入字节数据</span></span><br><span class="line">randomAccessFile.write(<span class="keyword">new</span> <span class="title class_">byte</span>[]&#123;<span class="string">&#x27;H&#x27;</span>, <span class="string">&#x27;I&#x27;</span>, <span class="string">&#x27;J&#x27;</span>, <span class="string">&#x27;K&#x27;</span>&#125;);</span><br><span class="line"><span class="comment">// 指针当前偏移量为 0，回到起始位置</span></span><br><span class="line">randomAccessFile.seek(<span class="number">0</span>);</span><br><span class="line">System.out.println(<span class="string">&quot;读取之前的偏移量：&quot;</span> + randomAccessFile.getFilePointer() + <span class="string">&quot;,当前读取到的字符&quot;</span> + (<span class="type">char</span>) randomAccessFile.read() + <span class="string">&quot;，读取之后的偏移量：&quot;</span> + randomAccessFile.getFilePointer());</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>input.txt文件内容： ABCDEFG</p></li>
+<li><p>输出</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">读取之前的偏移量：0,当前读取到的字符A，读取之后的偏移量：1</span><br><span class="line">读取之前的偏移量：6,当前读取到的字符G，读取之后的偏移量：7</span><br><span class="line">读取之前的偏移量：0,当前读取到的字符A，读取之后的偏移量：1</span><br></pre></td></tr></table></figure>
+<p>文件内容： ABCDEFGHIJK</p></li>
+</ul></li>
+<li><p>write方法在写入对象时如果对应位置已有数据，会将其覆盖</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">RandomAccessFile</span> <span class="variable">randomAccessFile</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">RandomAccessFile</span>(<span class="keyword">new</span> <span class="title class_">File</span>(<span class="string">&quot;input.txt&quot;</span>), <span class="string">&quot;rw&quot;</span>);</span><br><span class="line">randomAccessFile.write(<span class="keyword">new</span> <span class="title class_">byte</span>[]&#123;<span class="string">&#x27;H&#x27;</span>, <span class="string">&#x27;I&#x27;</span>, <span class="string">&#x27;J&#x27;</span>, <span class="string">&#x27;K&#x27;</span>&#125;);</span><br><span class="line"><span class="comment">//如果程序之前input.txt内容为ABCD，则运行后变为HIJK</span></span><br></pre></td></tr></table></figure></li>
+<li><p>常见应用：解决断点续传：上传文件中途暂停或失败（网络问题），之后不需要重新上传，只需上传未成功上传的文件分片即可
+分片（先将文件切分成多个文件分片）上传是断点续传的基础。
+使用RandomAccessFile帮助我们合并文件分片（但是下面代码好像不是必须的，因为他是单线程连续写入？？，这里附上另一篇文章的另一段话：）</p>
+<blockquote>
+<p>但是由于 RandomAccessFile
+可以自由访问文件的任意位置，<strong>所以如果需要访问文件的部分内容，而不是把文件从头读到尾，因此
+RandomAccessFile
+的一个重要使用场景就是网络请求中的多线程下载及断点续传。</strong>
+https://blog.csdn.net/li1669852599/article/details/122214104</p>
+</blockquote>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221024233326047.png"
+alt="image-20221024233326047" />
+<figcaption aria-hidden="true">image-20221024233326047</figcaption>
+</figure></li>
+</ul></li>
+</ul>
 ]]></content>
       <categories>
         <category>学习</category>
