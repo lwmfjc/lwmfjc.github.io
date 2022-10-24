@@ -978,7 +978,7 @@ alt="image-20221020154648530" />
 <h2 id="字节流">字节流</h2>
 <ul>
 <li><p>字节输入流 InputStream
-InputStream用于从源头（通常是文件）读取数据（字节信息）到内存中，java.io.InputStream抽象类是所有字节输入流的父类</p>
+InputStream用于从源头（通常是文件）读取数据（字节信息）到内存中，java.io.InputStream抽象类是<strong>所有字节输入流的父类</strong></p>
 <ul>
 <li><p>常用方法</p>
 <blockquote>
@@ -1029,7 +1029,7 @@ input.txt中的字符为LLJavaGuide</p>
 </ul></li>
 <li><p>字节输出流 OutputStream</p>
 <ul>
-<li><p>OutputStream用于将字节数据（字节信息）写入到目的地（通常是文件），java.io.OutputStream抽象类是所有字节输出流的父类</p>
+<li><p>OutputStream用于将字节数据（字节信息）写入到目的地（通常是文件），java.io.OutputStream抽象类是<strong>所有字节输出流的父类</strong></p>
 <blockquote>
 <p>//常用方法</p>
 <ul>
@@ -1057,6 +1057,53 @@ input.txt中的字符为LLJavaGuide</p>
 </ul></li>
 </ul>
 <h2 id="字符流">字符流</h2>
+<ul>
+<li><p>简介
+文件读写或者网络发送接收，信息的最小存储单元都是字节，为什么I/O流操作要分为字节流操作和字符流操作呢</p>
+<ul>
+<li><p>字符流是由Java虚拟机将字节转换得到的，过程相对耗时</p></li>
+<li><p>如果不知道编码类型，容易出现乱码 如上面的代码，将文件内容改为 ：
+你好，我是Guide</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">try</span> (<span class="type">InputStream</span> <span class="variable">fis</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;input.txt&quot;</span>)) &#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;Number of remaining bytes:&quot;</span></span><br><span class="line">            + fis.available());</span><br><span class="line">    <span class="type">int</span> content;</span><br><span class="line">    <span class="type">long</span> <span class="variable">skip</span> <span class="operator">=</span> fis.skip(<span class="number">2</span>);</span><br><span class="line">    System.out.println(<span class="string">&quot;The actual number of bytes skipped:&quot;</span> + skip);</span><br><span class="line">    System.out.print(<span class="string">&quot;The content read from file:&quot;</span>);</span><br><span class="line">    <span class="keyword">while</span> ((content = fis.read()) != -<span class="number">1</span>) &#123;</span><br><span class="line">        System.out.print((<span class="type">char</span>) content);</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//输出</span></span><br><span class="line"><span class="comment">/**Number of remaining bytes:9</span></span><br><span class="line"><span class="comment">The actual number of bytes skipped:2</span></span><br><span class="line"><span class="comment">The content read from file:§å®¶å¥½</span></span><br><span class="line"><span class="comment">**/</span></span><br></pre></td></tr></table></figure>
+<p>为了解决乱码问题，I/O流提供了一个直接操作字符的接口，方便对字符进行流操作；但如果音频文件、图片等媒体文件用字节流比较好，涉及字符的话使用字符流</p>
+<blockquote>
+<p>★ 重要：</p>
+<p>字符流默认采用的是 <code>Unicode</code>
+编码，我们可以通过构造方法自定义编码。顺便分享一下之前遇到的笔试题：常用字符编码所占字节数？<code>utf8</code>
+:英文占 1 字节，中文占 3 字节，<code>unicode</code>：任何字符都占 2
+个字节，<code>gbk</code>：英文占 1 字节，中文占 2 字节。</p>
+</blockquote></li>
+</ul></li>
+<li><p>Reader（字符输入流）</p>
+<ul>
+<li><p>用于从源头（通常是文件）读取数据（字符信息）到内存中，java.io.Reader抽象类是<strong>所有字符输入流的父类</strong></p>
+<p>注意：InputStream和Reader都是类，再往上就是接口了；Reader用于读取文本，InputStream用于读取原始字节
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221024095605757.png"
+alt="image-20221024095605757" /></p>
+<blockquote>
+<p>常用方法：</p>
+<ul>
+<li><code>read()</code> : 从输入流读取一个字符。</li>
+<li><code>read(char[] cbuf)</code> :
+从输入流中读取一些字符，并将它们存储到字符数组
+<code>cbuf</code>中，等价于 <code>read(cbuf, 0, cbuf.length)</code>
+。</li>
+<li><code>read(char[] cbuf, int off, int len)</code>
+：在<code>read(char[] cbuf)</code> 方法的基础上增加了 <code>off</code>
+参数（偏移量）和 <code>len</code> 参数（要读取的最大字节数）。</li>
+<li><code>skip(long n)</code> ：忽略输入流中的 n 个字符
+,返回实际忽略的字符数。</li>
+<li><code>close()</code> : 关闭输入流并释放相关的系统资源。</li>
+</ul>
+</blockquote></li>
+<li><p>InputStreamReader是字节流转换为字符流的桥梁，子类FileReader基于该基础上的封装，可以<strong>直接操作</strong>字符文件</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 字节流转换为字符流的桥梁</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">InputStreamReader</span> <span class="keyword">extends</span> <span class="title class_">Reader</span> &#123;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 用于读取字符文件</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">FileReader</span> <span class="keyword">extends</span> <span class="title class_">InputStreamReader</span> &#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>示例：input.txt中内容为"你好，我是Guide"</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">try</span> (<span class="type">FileReader</span> <span class="variable">fileReader</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileReader</span>(<span class="string">&quot;input.txt&quot;</span>);) &#123;</span><br><span class="line">    <span class="type">int</span> content;</span><br><span class="line">    <span class="type">long</span> <span class="variable">skip</span> <span class="operator">=</span> fileReader.skip(<span class="number">3</span>);</span><br><span class="line">    System.out.println(<span class="string">&quot;The actual number of bytes skipped:&quot;</span> + skip);</span><br><span class="line">    System.out.print(<span class="string">&quot;The content read from file:&quot;</span>);</span><br><span class="line">    <span class="keyword">while</span> ((content = fileReader.read()) != -<span class="number">1</span>) &#123;</span><br><span class="line">        System.out.print((<span class="type">char</span>) content);</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*输出</span></span><br><span class="line"><span class="comment">The actual number of bytes skipped:3</span></span><br><span class="line"><span class="comment">The content read from file:我是Guide。</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure></li>
+</ul></li>
+<li><p>Write（字符输出流）</p></li>
+</ul>
 <h2 id="字节缓冲流">字节缓冲流</h2>
 <h2 id="字符缓冲流">字符缓冲流</h2>
 <h2 id="打印流">打印流</h2>
