@@ -376,12 +376,46 @@ alt="image-20221024095605757" /></p>
 <li><code>close()</code> : 关闭输入流并释放相关的系统资源。</li>
 </ul>
 </blockquote></li>
-<li><p>InputStreamReader是字节流转换为字符流的桥梁，子类FileReader基于该基础上的封装，可以<strong>直接操作</strong>字符文件</p>
+<li><p>InputStreamReader是<strong>字节流转换为字符流</strong>的桥梁，子类FileReader基于该基础上的封装，可以<strong>直接操作</strong>字符文件</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 字节流转换为字符流的桥梁</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">InputStreamReader</span> <span class="keyword">extends</span> <span class="title class_">Reader</span> &#123;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 用于读取字符文件</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">FileReader</span> <span class="keyword">extends</span> <span class="title class_">InputStreamReader</span> &#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>示例：input.txt中内容为"你好，我是Guide"</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">try</span> (<span class="type">FileReader</span> <span class="variable">fileReader</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileReader</span>(<span class="string">&quot;input.txt&quot;</span>);) &#123;</span><br><span class="line">    <span class="type">int</span> content;</span><br><span class="line">    <span class="type">long</span> <span class="variable">skip</span> <span class="operator">=</span> fileReader.skip(<span class="number">3</span>);</span><br><span class="line">    System.out.println(<span class="string">&quot;The actual number of bytes skipped:&quot;</span> + skip);</span><br><span class="line">    System.out.print(<span class="string">&quot;The content read from file:&quot;</span>);</span><br><span class="line">    <span class="keyword">while</span> ((content = fileReader.read()) != -<span class="number">1</span>) &#123;</span><br><span class="line">        System.out.print((<span class="type">char</span>) content);</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*输出</span></span><br><span class="line"><span class="comment">The actual number of bytes skipped:3</span></span><br><span class="line"><span class="comment">The content read from file:我是Guide。</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure></li>
 </ul></li>
-<li><p>Write（字符输出流）</p></li>
+<li><p>Write（字符输出流）
+用于将数据（字符信息）写到目的地（通常是文件），java.io.Writer抽象类是<strong>所有字节输出流</strong>的父类</p>
+<blockquote>
+<ul>
+<li><code>write(int c)</code> : 写入单个字符。</li>
+<li><code>write(char[] cbuf)</code> ：写入字符数组
+<code>cbuf</code>，等价于<code>write(cbuf, 0, cbuf.length)</code>。</li>
+<li><code>write(char[] cbuf, int off, int len)</code>
+：在<code>write(char[] cbuf)</code> 方法的基础上增加了 <code>off</code>
+参数（偏移量）和 <code>len</code> 参数（要读取的最大字节数）。</li>
+<li><code>write(String str)</code> ：写入字符串，等价于
+<code>write(str, 0, str.length())</code> 。</li>
+<li><code>write(String str, int off, int len)</code>
+：在<code>write(String str)</code> 方法的基础上增加了 <code>off</code>
+参数（偏移量）和 <code>len</code> 参数（要读取的最大字节数）。</li>
+<li><code>append(CharSequence csq)</code> ：将指定的字符序列附加到指定的
+<code>Writer</code> 对象并返回该 <code>Writer</code> 对象。</li>
+<li><code>append(char c)</code> ：将指定的字符附加到指定的
+<code>Writer</code> 对象并返回该 <code>Writer</code> 对象。</li>
+<li><code>flush()</code>
+：刷新此输出流并强制写出所有缓冲的输出字符。//相对于Reader增加的</li>
+<li><code>close()</code>:关闭输出流释放相关的系统资源。</li>
+</ul>
+</blockquote>
+<ul>
+<li><p>OutputStreamWriter是<strong>字符流转换为字节流</strong>的桥梁（注意，这里没有错），其子类FileWriter是基于该基础上的封装，可以直接将字符写入到文件</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 字符流转换为字节流的桥梁</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">OutputStreamWriter</span> <span class="keyword">extends</span> <span class="title class_">Writer</span> &#123;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 用于写入字符到文件</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">FileWriter</span> <span class="keyword">extends</span> <span class="title class_">OutputStreamWriter</span> &#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>FileWriter代码示例：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">try</span> (<span class="type">Writer</span> <span class="variable">output</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileWriter</span>(<span class="string">&quot;output.txt&quot;</span>)) &#123;</span><br><span class="line">    output.write(<span class="string">&quot;你好，我是Guide。&quot;</span>); <span class="comment">//字符流，转为字节流</span></span><br><span class="line">&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*结果：output.txt中</span></span><br><span class="line"><span class="comment">你好，我是Guide</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure></li>
+</ul></li>
+<li><p>InputStreamWriter和OutputStreamWriter 比较</p>
+<ul>
+<li>前者InputStreamWriter，是需要从文件中读数据出来，而文件是通过二进制（字节）保存的，所以InputStreamWriter是将（看不懂的）字节流转换为（看得懂的）字符流</li>
+<li>后者OutputStreamWriter，是需要将（看得懂的）字符流转换为（看不懂的）字节流并保存到介质中</li>
+</ul></li>
 </ul>
 <h2 id="字节缓冲流">字节缓冲流</h2>
 <h2 id="字符缓冲流">字符缓冲流</h2>
