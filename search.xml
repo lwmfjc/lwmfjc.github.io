@@ -976,6 +976,86 @@ alt="image-20221020154648530" />
 </ul></li>
 </ul>
 <h2 id="字节流">字节流</h2>
+<ul>
+<li><p>字节输入流 InputStream
+InputStream用于从源头（通常是文件）读取数据（字节信息）到内存中，java.io.InputStream抽象类是所有字节输入流的父类</p>
+<ul>
+<li><p>常用方法</p>
+<blockquote>
+<ul>
+<li><code>read()</code> ：返回输入流中下一个字节的数据。返回的值介于 0
+到 255 之间。如果未读取任何字节，则代码返回 <code>-1</code>
+，表示文件结束。</li>
+<li><code>read(byte b[ ])</code> : 从输入流中读取一些字节存储到数组
+<code>b</code> 中。如果数组 <code>b</code>
+的长度为零，则不读取。如果没有可用字节读取，返回
+<code>-1</code>。如果有可用字节读取，则最多读取的字节数最多等于
+<code>b.length</code> ， 返回读取的字节数。这个方法等价于
+<code>read(b, 0, b.length)</code>。</li>
+<li><code>read(byte b[], int off, int len)</code>
+：在<code>read(byte b[ ])</code> 方法的基础上增加了 <code>off</code>
+参数（偏移量）和 <code>len</code> 参数（要读取的最大字节数）。</li>
+<li><code>skip(long n)</code> ：忽略输入流中的 n 个字节
+,返回实际忽略的字节数。</li>
+<li><code>available()</code> ：返回输入流中可以读取的字节数。</li>
+<li><code>close()</code> ：关闭输入流释放相关的系统资源。</li>
+</ul>
+</blockquote></li>
+<li><p>Java9 新增了多个实用方法</p>
+<blockquote>
+<ul>
+<li><code>readAllBytes()</code>
+：读取输入流中的所有字节，返回字节数组。</li>
+<li><code>readNBytes(byte[] b, int off, int len)</code> ：阻塞直到读取
+<code>len</code> 个字节。</li>
+<li><code>transferTo(OutputStream out)</code> ：
+将所有字节从一个输入流传递到一个输出流。</li>
+</ul>
+</blockquote></li>
+<li><p>FileInputStream --&gt;
+字节输入流对象，可直接指定文件路径：用来读取单字节数据/或读取至字节数组中，示例如下：<br />
+input.txt中的字符为LLJavaGuide</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">try</span> (<span class="type">InputStream</span> <span class="variable">fis</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;input.txt&quot;</span>)) &#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;Number of remaining bytes:&quot;</span></span><br><span class="line">            + fis.available());</span><br><span class="line">    <span class="type">int</span> content;</span><br><span class="line">    <span class="type">long</span> <span class="variable">skip</span> <span class="operator">=</span> fis.skip(<span class="number">2</span>);</span><br><span class="line">    System.out.println(<span class="string">&quot;The actual number of bytes skipped:&quot;</span> + skip);</span><br><span class="line">    System.out.print(<span class="string">&quot;The content read from file:&quot;</span>);</span><br><span class="line">    <span class="keyword">while</span> ((content = fis.read()) != -<span class="number">1</span>) &#123;</span><br><span class="line">        System.out.print((<span class="type">char</span>) content);</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//输出</span></span><br><span class="line"><span class="comment">/**Number of remaining bytes:11</span></span><br><span class="line"><span class="comment">The actual number of bytes skipped:2</span></span><br><span class="line"><span class="comment">The content read from file:JavaGuide</span></span><br><span class="line"><span class="comment">**/</span></span><br></pre></td></tr></table></figure>
+<p>一般不会单独使用FileInputStream，而是配合BufferdInputStream(字节缓冲输入流)，下面代码转为String
+较为常见：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 新建一个 BufferedInputStream 对象</span></span><br><span class="line"><span class="type">BufferedInputStream</span> <span class="variable">bufferedInputStream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedInputStream</span>(<span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;input.txt&quot;</span>));</span><br><span class="line"><span class="comment">// 读取文件的内容并复制到 String 对象中</span></span><br><span class="line"><span class="type">String</span> <span class="variable">result</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">String</span>(bufferedInputStream.readAllBytes());</span><br><span class="line">System.out.println(result);</span><br></pre></td></tr></table></figure></li>
+<li><p>DataInputStream
+用于读取指定类型数据，不能单独使用，必须结合FileInputStream</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">FileInputStream</span> <span class="variable">fileInputStream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;input.txt&quot;</span>);</span><br><span class="line"><span class="comment">//必须将fileInputStream作为构造参数才能使用</span></span><br><span class="line"><span class="type">DataInputStream</span> <span class="variable">dataInputStream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">DataInputStream</span>(fileInputStream);</span><br><span class="line"><span class="comment">//可以读取任意具体的类型数据</span></span><br><span class="line">dataInputStream.readBoolean();</span><br><span class="line">dataInputStream.readInt();</span><br><span class="line">dataInputStream.readUTF();</span><br></pre></td></tr></table></figure></li>
+<li><p>ObjectInputStream
+用于从输入流读取Java对象（一般是被反序列化到文件中，或者其他介质的数据），ObjectOutputStream用于将对象写入到输出流（[将对象]序列化）</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">ObjectInputStream</span> <span class="variable">input</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectInputStream</span>(<span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;object.data&quot;</span>));</span><br><span class="line"><span class="type">MyClass</span> <span class="variable">object</span> <span class="operator">=</span> (MyClass) input.readObject();</span><br><span class="line">input.close();</span><br></pre></td></tr></table></figure>
+<p>用于序列化和反序列化的类必须实现Serializable接口，不想被序列化的属性用<code>transizent</code>修饰</p></li>
+</ul></li>
+<li><p>字节输出流 OutputStream</p>
+<ul>
+<li><p>OutputStream用于将字节数据（字节信息）写入到目的地（通常是文件），java.io.OutputStream抽象类是所有字节输出流的父类</p>
+<blockquote>
+<p>//常用方法</p>
+<ul>
+<li><code>write(int b)</code> ：将特定字节写入输出流。</li>
+<li><code>write(byte b[ ])</code> : 将数组<code>b</code>
+写入到输出流，等价于 <code>write(b, 0, b.length)</code> 。</li>
+<li><code>write(byte[] b, int off, int len)</code> :
+在<code>write(byte b[ ])</code> 方法的基础上增加了 <code>off</code>
+参数（偏移量）和 <code>len</code> 参数（要读取的最大字节数）。</li>
+<li><code>flush()</code> ：刷新此输出流并强制写出所有缓冲的输出字节。
+//相比输入流多出的方法</li>
+<li><code>close()</code> ：关闭输出流释放相关的系统资源。</li>
+</ul>
+</blockquote></li>
+</ul></li>
+<li><p>示例代码：<br />
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">try</span> (<span class="type">FileOutputStream</span> <span class="variable">output</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(<span class="string">&quot;output.txt&quot;</span>)) &#123;</span><br><span class="line">    <span class="type">byte</span>[] array = <span class="string">&quot;JavaGuide&quot;</span>.getBytes();</span><br><span class="line">    output.write(array);</span><br><span class="line">&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//结果</span></span><br><span class="line"><span class="comment">/**output.txt文件中内容为:</span></span><br><span class="line"><span class="comment">JavaGuide</span></span><br><span class="line"><span class="comment">**/</span></span><br></pre></td></tr></table></figure> FileOutputStream一般也是配合BufferedOutputStream
+（字节缓冲输出流）：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">FileOutputStream</span> <span class="variable">fileOutputStream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(<span class="string">&quot;output.txt&quot;</span>);</span><br><span class="line">  <span class="type">BufferedOutputStream</span> <span class="variable">bos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedOutputStream</span>(fileOutputStream)</span><br></pre></td></tr></table></figure></li>
+<li><p>DataOutputStream用于写入指定类型数据，不能单独使用，必须结合FileOutputStream</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 输出流</span></span><br><span class="line"><span class="type">FileOutputStream</span> <span class="variable">fileOutputStream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(<span class="string">&quot;out.txt&quot;</span>);</span><br><span class="line"><span class="type">DataOutputStream</span> <span class="variable">dataOutputStream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">DataOutputStream</span>(fileOutputStream);</span><br><span class="line"><span class="comment">// 输出任意数据类型</span></span><br><span class="line">dataOutputStream.writeBoolean(<span class="literal">true</span>);</span><br><span class="line">dataOutputStream.writeByte(<span class="number">1</span>);</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>ObjectInputStream用于从输入流中读取<strong>Java对象</strong>（ObjectInputStream，反序列化）；ObjectOutputStream用于将对象写入到输出流（ObjectOutputStream，序列化）</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">ObjectOutputStream</span> <span class="variable">output</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectOutputStream</span>(<span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(<span class="string">&quot;file.txt&quot;</span>)</span><br><span class="line"><span class="type">Person</span> <span class="variable">person</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Person</span>(<span class="string">&quot;Guide哥&quot;</span>, <span class="string">&quot;JavaGuide作者&quot;</span>);</span><br><span class="line">output.writeObject(person);</span><br></pre></td></tr></table></figure></li>
+</ul></li>
+</ul>
 <h2 id="字符流">字符流</h2>
 <h2 id="字节缓冲流">字节缓冲流</h2>
 <h2 id="字符缓冲流">字符缓冲流</h2>
