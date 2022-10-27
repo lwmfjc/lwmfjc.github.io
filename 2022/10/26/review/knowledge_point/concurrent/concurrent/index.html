@@ -344,8 +344,26 @@ alt="image-20221027095421280" /></li>
 <li><p><strong>TIMED_WAITING(超时等待)</strong>状态，在<strong>等待状态的基础上</strong>增加<strong>超时限制</strong>，通过sleep(long
 millis)或wait(long millis)
 方法可以将线程置于<strong>TIMED_WAITING</strong>状态，超时结束后返回到<strong>RUNNABLE</strong>状态（注意，不是RUNNING）</p></li>
-<li></li>
+<li><p>当线程进入<strong>synchronized</strong>方法/块或者调用wait后(被notify)重新进入<strong>synchronized</strong>方法/块，但是锁被其他线程占有，这个时候线程就会进入BLOCKED（阻塞）状态</p></li>
+<li><p>线程在执行完了<strong>run()</strong>方法之后就会进入到<strong>TERMINATED（终止）</strong>状态</p></li>
+<li><p>注意上述，阻塞和等待的区别</p></li>
 </ol></li>
+</ul></li>
+<li><p>什么是上下文切换</p>
+<ul>
+<li><p>线程在执行过程中会有自己的运行条件和状态（也称上下文），比如上文提到的<strong>程序计数器</strong>，<strong>栈信息</strong>等。当出现下面情况时，线程从<strong>占用CPU状态中退出</strong>：</p>
+<ol type="1">
+<li>主动让出CPU，如sleep(),wait()等</li>
+<li>时间片用完了</li>
+<li>调用了阻塞类型的系统中断（请求IO，线程被阻塞）</li>
+<li>被终止或结束运行</li>
+</ol>
+<p>前3种会发生<strong>线程切换</strong>：需要保存当前线程上下文，留待线程下次占用CPU的时候恢复，并加载下一个将要占用CPU的线程上下文，即所谓的上下文切换</p></li>
+<li><p>是现代系统基本功能，每次都要<strong>保存信息恢复信息</strong>，将会<strong>占用CPU</strong>，<strong>内存</strong>等系统资源，即<strong>效率有一定损耗</strong>，频繁切换会造成<strong>整体效率低下</strong></p></li>
+</ul></li>
+<li><p>线程死锁是什么？如何避免?</p>
+<ul>
+<li></li>
 </ul></li>
 </ul>
 <blockquote>
