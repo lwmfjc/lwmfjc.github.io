@@ -20,12 +20,12 @@
     var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="并发">
+  <meta name="description" content="并发02">
 <meta property="og:type" content="article">
-<meta property="og:title" content="并发">
+<meta property="og:title" content="并发02">
 <meta property="og:url" content="http://example.com/2022/10/28/review/java_guide/concurrent/concurrent-02/index.html">
 <meta property="og:site_name" content="随记">
-<meta property="og:description" content="并发">
+<meta property="og:description" content="并发02">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2022-10-28T14:15:06.000Z">
 <meta property="article:modified_time" content="2022-10-28T14:15:06.000Z">
@@ -48,7 +48,7 @@
   };
 </script>
 
-  <title>并发 | 随记</title>
+  <title>并发02 | 随记</title>
   
 
 
@@ -204,7 +204,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          并发
+          并发02
         </h1>
 
         <div class="post-meta">
@@ -234,7 +234,7 @@
               <span class="post-meta-item-text">阅读次数：</span>
               <span id="busuanzi_value_page_pv"></span>
             </span>
-            <div class="post-description">并发</div>
+            <div class="post-description">并发02</div>
 
         </div>
       </header>
@@ -246,7 +246,42 @@
 
       
         <h2 id="jmmjavamemorymodel">JMM（JavaMemoryModel)</h2>
+<p>详见-知识点</p>
 <h2 id="volatile关键字">volatile关键字</h2>
+<ul>
+<li><p>保证变量可见性</p>
+<ul>
+<li>使用volatile关键字保证变量可见性，如果将变量声明为volatile则<strong>指示JVM该变量是共享且不稳定</strong>的，每次使用它都到<strong>主存</strong>中读取
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221028150859646.png"
+alt="image-20221028150859646" /> 原始意义即金庸CPU缓存</li>
+<li>volatile关键字只能保证数据可见性，不能保证数据原子性。synchronized关键字两者都能保证</li>
+</ul></li>
+<li><p>如何禁止指令重排
+使用<strong>volatile</strong>关键字，能<strong>防止JVM指令重排</strong>。当我们对这个变量进行读写操作的时候，-会通过插入特定的<strong>内存屏障</strong>来禁止指令重排</p>
+<ul>
+<li><p>Java中，提供了三个关于<strong>内存屏障</strong>相关的方法，屏蔽了操作系统底层的差异，可以用来实现和volatile禁止重排序的效果</p>
+<p><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title function_">loadFence</span><span class="params">()</span>; <span class="comment">//读指令屏障</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title function_">storeFence</span><span class="params">()</span>; <span class="comment">//写指令屏障</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title function_">fullFence</span><span class="params">()</span>; <span class="comment">//读写指令屏障</span></span><br></pre></td></tr></table></figure></p></li>
+<li><p>例子（通过双重校验锁实现对象单例），保证线程安全</p>
+<p><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Singleton</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="keyword">static</span> Singleton uniqueInstance;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="title function_">Singleton</span><span class="params">()</span> &#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span>  <span class="keyword">static</span> Singleton <span class="title function_">getUniqueInstance</span><span class="params">()</span> &#123;</span><br><span class="line">       <span class="comment">//先判断对象是否已经实例过，没有实例化过才进入加锁代码</span></span><br><span class="line">        <span class="keyword">if</span> (uniqueInstance == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="comment">//类对象加锁</span></span><br><span class="line">            <span class="keyword">synchronized</span> (Singleton.class) &#123;</span><br><span class="line">                <span class="keyword">if</span> (uniqueInstance == <span class="literal">null</span>) &#123;</span><br><span class="line">                    uniqueInstance = <span class="keyword">new</span> <span class="title class_">Singleton</span>();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> uniqueInstance;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这里，uniqueInstance采用volatile的必要性：主要分析<code>uniqueInstance  = new Singleton();</code>分三步</p>
+<ol type="1">
+<li>为uniqueInstance分配内存空间</li>
+<li>初始化 uniqueInstance</li>
+<li>将uniqueInstance指向被分配的空间</li>
+</ol>
+<p>由于指令重拍的关系，可能会编程1-&gt;3-&gt;2
+，指令重排在单线程情况下不会出现问题，而多线程，</p>
+<ul>
+<li>就会导致可能指针非空的时候，实际该指针所指向的对象（实例）并还没有初始化</li>
+<li>例如，线程 T1 执行了 1 和 3，此时 T2 调用
+<code>getUniqueInstance</code>() 后发现 <code>uniqueInstance</code>
+不为空，因此返回 <code>uniqueInstance</code>，但此时
+<code>uniqueInstance</code> 还未被初始化</li>
+</ul></li>
+</ul></li>
+<li></li>
+</ul>
 <h2 id="synchronized关键字">synchronized关键字</h2>
 <h2 id="threadlocal">ThreadLocal</h2>
 
