@@ -270,7 +270,7 @@ alt="image-20221028150859646" /> 原始意义即金庸CPU缓存</li>
 <li>初始化 uniqueInstance</li>
 <li>将uniqueInstance指向被分配的空间</li>
 </ol>
-<p>由于指令重拍的关系，可能会编程1-&gt;3-&gt;2
+<p>由于指令重排的关系，可能会编程1-&gt;3-&gt;2
 ，指令重排在单线程情况下不会出现问题，而多线程，</p>
 <ul>
 <li>就会导致可能指针非空的时候，实际该指针所指向的对象（实例）并还没有初始化</li>
@@ -280,7 +280,25 @@ alt="image-20221028150859646" /> 原始意义即金庸CPU缓存</li>
 <code>uniqueInstance</code> 还未被初始化</li>
 </ul></li>
 </ul></li>
-<li></li>
+<li><p>volatile不能保证原子性</p>
+<ul>
+<li><p>下面的代码，输出结果小于2500</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">VolatoleAtomicityDemo</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">volatile</span> <span class="keyword">static</span> <span class="type">int</span> <span class="variable">inc</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">increase</span><span class="params">()</span> &#123;</span><br><span class="line">        inc++;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">        <span class="type">ExecutorService</span> <span class="variable">threadPool</span> <span class="operator">=</span> Executors.newFixedThreadPool(<span class="number">5</span>);</span><br><span class="line">        <span class="type">VolatoleAtomicityDemo</span> <span class="variable">volatoleAtomicityDemo</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">VolatoleAtomicityDemo</span>();</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; <span class="number">5</span>; i++) &#123;</span><br><span class="line">            threadPool.execute(() -&gt; &#123;</span><br><span class="line">                <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>; j &lt; <span class="number">500</span>; j++) &#123;</span><br><span class="line">                    volatoleAtomicityDemo.increase();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 等待1.5秒，保证上面程序执行完成</span></span><br><span class="line">        Thread.sleep(<span class="number">1500</span>);</span><br><span class="line">        System.out.println(inc);</span><br><span class="line">        threadPool.shutdown();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>对于上面例子, inc++ 是原子性的，实际上inc ++ 是一个符合操作，即</p>
+<ol type="1">
+<li>读取inc的值</li>
+<li>对inc加1</li>
+<li>将加1后的值写回内存</li>
+</ol>
+<p>这三部操作并不是原子性的，有可能出现：</p>
+<ol type="1">
+<li>线程1对inc读取后，尚未修改</li>
+<li>线程2又读取了，并对他进行+1，然后将+1后的值写回主存</li>
+<li>此时线程2操作完毕后，线程1在之前读取的基础上进行一次自增，这将覆盖第2步操作的值，导致inc只增加了1</li>
+</ol>
+<p>如果要保证上面代码运行正确，可以使用synchronized、Lock或者AtomicInteger，如</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//synchronized</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title function_">increase</span><span class="params">()</span> &#123;</span><br><span class="line">    inc++;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//或者AtomicInteger</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">AtomicInteger</span> <span class="variable">inc</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">AtomicInteger</span>();</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">increase</span><span class="params">()</span> &#123;</span><br><span class="line">    inc.getAndIncrement();</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//或者ReentrantLock改进</span></span><br><span class="line"><span class="type">Lock</span> <span class="variable">lock</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ReentrantLock</span>();</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">increase</span><span class="params">()</span> &#123;</span><br><span class="line">    lock.lock();</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        inc++;</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        lock.unlock();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul></li>
 </ul>
 <h2 id="synchronized关键字">synchronized关键字</h2>
 <h2 id="threadlocal">ThreadLocal</h2>

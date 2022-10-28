@@ -2926,7 +2926,7 @@ alt="image-20221028150859646" /> 原始意义即金庸CPU缓存</li>
 <li>初始化 uniqueInstance</li>
 <li>将uniqueInstance指向被分配的空间</li>
 </ol>
-<p>由于指令重拍的关系，可能会编程1-&gt;3-&gt;2
+<p>由于指令重排的关系，可能会编程1-&gt;3-&gt;2
 ，指令重排在单线程情况下不会出现问题，而多线程，</p>
 <ul>
 <li>就会导致可能指针非空的时候，实际该指针所指向的对象（实例）并还没有初始化</li>
@@ -2936,7 +2936,25 @@ alt="image-20221028150859646" /> 原始意义即金庸CPU缓存</li>
 <code>uniqueInstance</code> 还未被初始化</li>
 </ul></li>
 </ul></li>
-<li></li>
+<li><p>volatile不能保证原子性</p>
+<ul>
+<li><p>下面的代码，输出结果小于2500</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">VolatoleAtomicityDemo</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">volatile</span> <span class="keyword">static</span> <span class="type">int</span> <span class="variable">inc</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">increase</span><span class="params">()</span> &#123;</span><br><span class="line">        inc++;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">        <span class="type">ExecutorService</span> <span class="variable">threadPool</span> <span class="operator">=</span> Executors.newFixedThreadPool(<span class="number">5</span>);</span><br><span class="line">        <span class="type">VolatoleAtomicityDemo</span> <span class="variable">volatoleAtomicityDemo</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">VolatoleAtomicityDemo</span>();</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; <span class="number">5</span>; i++) &#123;</span><br><span class="line">            threadPool.execute(() -&gt; &#123;</span><br><span class="line">                <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>; j &lt; <span class="number">500</span>; j++) &#123;</span><br><span class="line">                    volatoleAtomicityDemo.increase();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 等待1.5秒，保证上面程序执行完成</span></span><br><span class="line">        Thread.sleep(<span class="number">1500</span>);</span><br><span class="line">        System.out.println(inc);</span><br><span class="line">        threadPool.shutdown();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>对于上面例子, inc++ 是原子性的，实际上inc ++ 是一个符合操作，即</p>
+<ol type="1">
+<li>读取inc的值</li>
+<li>对inc加1</li>
+<li>将加1后的值写回内存</li>
+</ol>
+<p>这三部操作并不是原子性的，有可能出现：</p>
+<ol type="1">
+<li>线程1对inc读取后，尚未修改</li>
+<li>线程2又读取了，并对他进行+1，然后将+1后的值写回主存</li>
+<li>此时线程2操作完毕后，线程1在之前读取的基础上进行一次自增，这将覆盖第2步操作的值，导致inc只增加了1</li>
+</ol>
+<p>如果要保证上面代码运行正确，可以使用synchronized、Lock或者AtomicInteger，如</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//synchronized</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title function_">increase</span><span class="params">()</span> &#123;</span><br><span class="line">    inc++;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//或者AtomicInteger</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">AtomicInteger</span> <span class="variable">inc</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">AtomicInteger</span>();</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">increase</span><span class="params">()</span> &#123;</span><br><span class="line">    inc.getAndIncrement();</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//或者ReentrantLock改进</span></span><br><span class="line"><span class="type">Lock</span> <span class="variable">lock</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ReentrantLock</span>();</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">increase</span><span class="params">()</span> &#123;</span><br><span class="line">    lock.lock();</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        inc++;</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        lock.unlock();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul></li>
 </ul>
 <h2 id="synchronized关键字">synchronized关键字</h2>
 <h2 id="threadlocal">ThreadLocal</h2>
@@ -4603,63 +4621,6 @@ alt="image-20220408151726265" /></li>
       </tags>
   </entry>
   <entry>
-    <title>算法红皮书 2.1.1</title>
-    <url>/2022/04/13/study/algorithm/algorithhms_4th/2.1.1/</url>
-    <content><![CDATA[<h1 id="排序">排序</h1>
-<p>排序就是将一组对象按照某种逻辑顺序重新排序的过程</p>
-<ul>
-<li>对排序算法的分析有助于理解本书中比较算法性能的方法</li>
-<li>类似技术能解决其他类型问题</li>
-<li>排序算法常常是我们解决其他问题的第一步</li>
-</ul>
-<h2 id="初级排序算法">初级排序算法</h2>
-<ul>
-<li>熟悉术语及技巧</li>
-<li>某些情况下初级算法更有效</li>
-<li>有助于改进复杂算法的效率</li>
-</ul>
-<h3 id="游戏规则">游戏规则</h3>
-<ul>
-<li><p>主要关注重新排序<strong>数组元素</strong>的算法，每个元素都会有一个<strong>主键</strong></p></li>
-<li><p>排序后索引较大的主键大于索引较小的主键</p></li>
-<li><p>一般情况下排序算法通过两个方法操作数据，less()进行比较，exch()进行交换</p></li>
-<li><p>排序算法类的模板</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Example</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">sort</span><span class="params">(Comparable[] a)</span></span><br><span class="line">	&#123;</span><br><span class="line">		<span class="comment">/* 请见算法2.1、算法2.2、算法2.3、算法2.4、算法2.5或算法2.7*/</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> Boolean <span class="title function_">less</span><span class="params">(Comparable v, Comparable w)</span></span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">return</span> v.compareTo(w) &lt; <span class="number">0</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">exch</span><span class="params">(Comparable[] a, <span class="type">int</span> i, <span class="type">int</span> j)</span></span><br><span class="line">	&#123;</span><br><span class="line">		<span class="type">Comparable</span> <span class="variable">t</span> <span class="operator">=</span> a[i];</span><br><span class="line">		a[i] = a[j];</span><br><span class="line">		a[j] = t;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">show</span><span class="params">(Comparable[] a)</span></span><br><span class="line">	&#123;</span><br><span class="line">		<span class="comment">// 在单行中打印数组</span></span><br><span class="line">		<span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; a.length; i++)</span><br><span class="line">		StdOut.print(a[i] + <span class="string">&quot; &quot;</span>);</span><br><span class="line">		StdOut.println();</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> Boolean <span class="title function_">isSorted</span><span class="params">(Comparable[] a)</span></span><br><span class="line">	&#123;</span><br><span class="line">		<span class="comment">// 测试数组元素是否有序</span></span><br><span class="line">		<span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt; a.length; i++)</span><br><span class="line">		<span class="keyword">if</span> (less(a[i], a[i-<span class="number">1</span>])) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[]</span></span><br><span class="line"><span class="params">	args)</span></span><br><span class="line">	&#123;</span><br><span class="line">		<span class="comment">// 从标准输入读取字符串，将它们排序并输出</span></span><br><span class="line">		String[] a = In.readStrings();</span><br><span class="line">		sort(a);</span><br><span class="line">		<span class="keyword">assert</span> <span class="title function_">isSorted</span><span class="params">(a)</span>;</span><br><span class="line">		show(a);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li><p>使用</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">% </span><span class="language-bash">more tiny.txt</span></span><br><span class="line">S O R T E X A M P L E</span><br><span class="line"><span class="meta prompt_">% </span><span class="language-bash">java Example &lt; tiny.txt</span></span><br><span class="line">A E E L M O P R S T X</span><br><span class="line"><span class="meta prompt_">% </span><span class="language-bash">more words3.txt</span></span><br><span class="line">bed bug dad yes zoo ... all bad yet</span><br><span class="line"><span class="meta prompt_">% </span><span class="language-bash">java Example &lt; words.txt</span></span><br><span class="line">all bad bed bug dad ... yes yet zoo</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
-</ul></li>
-<li><p>使用assert验证</p></li>
-<li><p>排序成本模型：在研究排序算法时，我们需要计算比较和交换的数量。对于不交换元素的算法，我们会比较访问数组的次数</p></li>
-<li><p>额外内存开销和运行时间同等重要，排序算法分为</p>
-<ul>
-<li>除了函数调用需要的栈和固定数目的实例变量之外，无需额外内存的<strong>原地排序算法</strong></li>
-<li>需要额外内存空间来存储另一份数组副本的<strong>其他排序算法</strong></li>
-</ul></li>
-<li><p>数据类型</p>
-<ul>
-<li><p>排序模板适用于任何实现了Comparable接口的数据类型</p></li>
-<li><p>对于自己的数据类型，实现Comparable接口即可</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Date</span> <span class="keyword">implements</span> <span class="title class_">Comparable</span>&lt;Date&gt;</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> day;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> month;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> year;</span><br><span class="line">	<span class="keyword">public</span> <span class="title function_">Date</span><span class="params">(<span class="type">int</span> d, <span class="type">int</span> m, <span class="type">int</span> y)</span></span><br><span class="line">	&#123;</span><br><span class="line">		day = d;</span><br><span class="line">		month = m;</span><br><span class="line">		year = y;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">public</span> <span class="type">int</span> <span class="title function_">day</span><span class="params">()</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> day;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">public</span> <span class="type">int</span> <span class="title function_">month</span><span class="params">()</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> month;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">public</span> <span class="type">int</span> <span class="title function_">year</span><span class="params">()</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> year;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">public</span> <span class="type">int</span> <span class="title function_">compareTo</span><span class="params">(Date that)</span></span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">if</span> (<span class="built_in">this</span>.year &gt; that.year ) <span class="keyword">return</span> +<span class="number">1</span>;</span><br><span class="line">		<span class="keyword">if</span> (<span class="built_in">this</span>.year &lt; that.year ) <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">		<span class="keyword">if</span> (<span class="built_in">this</span>.month &gt; that.month) <span class="keyword">return</span> +<span class="number">1</span>;</span><br><span class="line">		<span class="keyword">if</span> (<span class="built_in">this</span>.month &lt; that.month) <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">		<span class="keyword">if</span> (<span class="built_in">this</span>.day &gt; that.day ) <span class="keyword">return</span> +<span class="number">1</span>;</span><br><span class="line">		<span class="keyword">if</span> (<span class="built_in">this</span>.day &lt; that.day ) <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">		<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">public</span> String <span class="title function_">toString</span><span class="params">()</span></span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">return</span> month + <span class="string">&quot;/&quot;</span> + day + <span class="string">&quot;/&quot;</span> + year;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>compareTo()必须实现<strong>全序关系</strong>
-<ul>
-<li>自反性，反对称性及传递性</li>
-</ul></li>
-</ul></li>
-</ul></li>
-<li><p>经典算法，包括选择排序、插入排序、希尔排序、归并排序、快速排序和堆排序</p></li>
-<li></li>
-</ul>
-]]></content>
-      <categories>
-        <category>学习</category>
-      </categories>
-      <tags>
-        <tag>算法红皮书(第四版)</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>算法红皮书 1.5.1-1.5.3</title>
     <url>/2022/04/09/study/algorithm/algorithhms_4th/1.5.1-1.5.3/</url>
     <content><![CDATA[<h2 id="案例研究union-find-算法">案例研究：union-find 算法</h2>
@@ -4744,6 +4705,63 @@ API。</li>
 <li>用更高层次的抽象表示数据结构或算法来设计更高级的改进版本。</li>
 <li>如果可能尽量为最坏情况下的性能提供保证，但在处理普通数据时也要有良好的性能。</li>
 <li>在适当的时候将更细致的深入研究留给有经验的研究者并继续解决下一个问题。</li>
+</ul>
+]]></content>
+      <categories>
+        <category>学习</category>
+      </categories>
+      <tags>
+        <tag>算法红皮书(第四版)</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>算法红皮书 2.1.1</title>
+    <url>/2022/04/13/study/algorithm/algorithhms_4th/2.1.1/</url>
+    <content><![CDATA[<h1 id="排序">排序</h1>
+<p>排序就是将一组对象按照某种逻辑顺序重新排序的过程</p>
+<ul>
+<li>对排序算法的分析有助于理解本书中比较算法性能的方法</li>
+<li>类似技术能解决其他类型问题</li>
+<li>排序算法常常是我们解决其他问题的第一步</li>
+</ul>
+<h2 id="初级排序算法">初级排序算法</h2>
+<ul>
+<li>熟悉术语及技巧</li>
+<li>某些情况下初级算法更有效</li>
+<li>有助于改进复杂算法的效率</li>
+</ul>
+<h3 id="游戏规则">游戏规则</h3>
+<ul>
+<li><p>主要关注重新排序<strong>数组元素</strong>的算法，每个元素都会有一个<strong>主键</strong></p></li>
+<li><p>排序后索引较大的主键大于索引较小的主键</p></li>
+<li><p>一般情况下排序算法通过两个方法操作数据，less()进行比较，exch()进行交换</p></li>
+<li><p>排序算法类的模板</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Example</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">sort</span><span class="params">(Comparable[] a)</span></span><br><span class="line">	&#123;</span><br><span class="line">		<span class="comment">/* 请见算法2.1、算法2.2、算法2.3、算法2.4、算法2.5或算法2.7*/</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> Boolean <span class="title function_">less</span><span class="params">(Comparable v, Comparable w)</span></span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">return</span> v.compareTo(w) &lt; <span class="number">0</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">exch</span><span class="params">(Comparable[] a, <span class="type">int</span> i, <span class="type">int</span> j)</span></span><br><span class="line">	&#123;</span><br><span class="line">		<span class="type">Comparable</span> <span class="variable">t</span> <span class="operator">=</span> a[i];</span><br><span class="line">		a[i] = a[j];</span><br><span class="line">		a[j] = t;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">show</span><span class="params">(Comparable[] a)</span></span><br><span class="line">	&#123;</span><br><span class="line">		<span class="comment">// 在单行中打印数组</span></span><br><span class="line">		<span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; a.length; i++)</span><br><span class="line">		StdOut.print(a[i] + <span class="string">&quot; &quot;</span>);</span><br><span class="line">		StdOut.println();</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> Boolean <span class="title function_">isSorted</span><span class="params">(Comparable[] a)</span></span><br><span class="line">	&#123;</span><br><span class="line">		<span class="comment">// 测试数组元素是否有序</span></span><br><span class="line">		<span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt; a.length; i++)</span><br><span class="line">		<span class="keyword">if</span> (less(a[i], a[i-<span class="number">1</span>])) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[]</span></span><br><span class="line"><span class="params">	args)</span></span><br><span class="line">	&#123;</span><br><span class="line">		<span class="comment">// 从标准输入读取字符串，将它们排序并输出</span></span><br><span class="line">		String[] a = In.readStrings();</span><br><span class="line">		sort(a);</span><br><span class="line">		<span class="keyword">assert</span> <span class="title function_">isSorted</span><span class="params">(a)</span>;</span><br><span class="line">		show(a);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>使用</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">% </span><span class="language-bash">more tiny.txt</span></span><br><span class="line">S O R T E X A M P L E</span><br><span class="line"><span class="meta prompt_">% </span><span class="language-bash">java Example &lt; tiny.txt</span></span><br><span class="line">A E E L M O P R S T X</span><br><span class="line"><span class="meta prompt_">% </span><span class="language-bash">more words3.txt</span></span><br><span class="line">bed bug dad yes zoo ... all bad yet</span><br><span class="line"><span class="meta prompt_">% </span><span class="language-bash">java Example &lt; words.txt</span></span><br><span class="line">all bad bed bug dad ... yes yet zoo</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+</ul></li>
+<li><p>使用assert验证</p></li>
+<li><p>排序成本模型：在研究排序算法时，我们需要计算比较和交换的数量。对于不交换元素的算法，我们会比较访问数组的次数</p></li>
+<li><p>额外内存开销和运行时间同等重要，排序算法分为</p>
+<ul>
+<li>除了函数调用需要的栈和固定数目的实例变量之外，无需额外内存的<strong>原地排序算法</strong></li>
+<li>需要额外内存空间来存储另一份数组副本的<strong>其他排序算法</strong></li>
+</ul></li>
+<li><p>数据类型</p>
+<ul>
+<li><p>排序模板适用于任何实现了Comparable接口的数据类型</p></li>
+<li><p>对于自己的数据类型，实现Comparable接口即可</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Date</span> <span class="keyword">implements</span> <span class="title class_">Comparable</span>&lt;Date&gt;</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> day;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> month;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> year;</span><br><span class="line">	<span class="keyword">public</span> <span class="title function_">Date</span><span class="params">(<span class="type">int</span> d, <span class="type">int</span> m, <span class="type">int</span> y)</span></span><br><span class="line">	&#123;</span><br><span class="line">		day = d;</span><br><span class="line">		month = m;</span><br><span class="line">		year = y;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">public</span> <span class="type">int</span> <span class="title function_">day</span><span class="params">()</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> day;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">public</span> <span class="type">int</span> <span class="title function_">month</span><span class="params">()</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> month;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">public</span> <span class="type">int</span> <span class="title function_">year</span><span class="params">()</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> year;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">public</span> <span class="type">int</span> <span class="title function_">compareTo</span><span class="params">(Date that)</span></span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">if</span> (<span class="built_in">this</span>.year &gt; that.year ) <span class="keyword">return</span> +<span class="number">1</span>;</span><br><span class="line">		<span class="keyword">if</span> (<span class="built_in">this</span>.year &lt; that.year ) <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">		<span class="keyword">if</span> (<span class="built_in">this</span>.month &gt; that.month) <span class="keyword">return</span> +<span class="number">1</span>;</span><br><span class="line">		<span class="keyword">if</span> (<span class="built_in">this</span>.month &lt; that.month) <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">		<span class="keyword">if</span> (<span class="built_in">this</span>.day &gt; that.day ) <span class="keyword">return</span> +<span class="number">1</span>;</span><br><span class="line">		<span class="keyword">if</span> (<span class="built_in">this</span>.day &lt; that.day ) <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">		<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">public</span> String <span class="title function_">toString</span><span class="params">()</span></span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">return</span> month + <span class="string">&quot;/&quot;</span> + day + <span class="string">&quot;/&quot;</span> + year;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>compareTo()必须实现<strong>全序关系</strong>
+<ul>
+<li>自反性，反对称性及传递性</li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li><p>经典算法，包括选择排序、插入排序、希尔排序、归并排序、快速排序和堆排序</p></li>
+<li></li>
 </ul>
 ]]></content>
       <categories>
