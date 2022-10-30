@@ -208,50 +208,6 @@ final方法、静态方法、父类中的private等修饰使得子类不可见�
       </tags>
   </entry>
   <entry>
-    <title>方法的参数传递机制</title>
-    <url>/2022/09/22/review/basics/Method_parameter_passing_mechanism/</url>
-    <content><![CDATA[<h2 id="代码">代码</h2>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Exam4</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line">        <span class="type">String</span> <span class="variable">str</span> <span class="operator">=</span> <span class="string">&quot;hello&quot;</span>;</span><br><span class="line">        <span class="type">Integer</span> <span class="variable">num</span> <span class="operator">=</span> <span class="number">2</span>;</span><br><span class="line">        <span class="type">int</span>[] arr = &#123;<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>&#125;;</span><br><span class="line">        <span class="type">MyData</span> <span class="variable">my</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">MyData</span>();</span><br><span class="line"></span><br><span class="line">        change(i, str, num, arr, my);</span><br><span class="line">        System.out.println(<span class="string">&quot;i = &quot;</span> + i);</span><br><span class="line">        System.out.println(<span class="string">&quot;str = &quot;</span> + str);</span><br><span class="line">        System.out.println(<span class="string">&quot;num = &quot;</span> + num);</span><br><span class="line">        System.out.println(<span class="string">&quot;arr = &quot;</span> + Arrays.toString(arr));</span><br><span class="line">        System.out.println(<span class="string">&quot;my.a = &quot;</span> + my.a); </span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">change</span><span class="params">(<span class="type">int</span> j, String s, Integer n, <span class="type">int</span>[] a,</span></span><br><span class="line"><span class="params">                              MyData m)</span> &#123;</span><br><span class="line">        j+=<span class="number">1</span>;</span><br><span class="line">        s+=<span class="string">&quot;world&quot;</span>;</span><br><span class="line">        n+=<span class="number">1</span>;</span><br><span class="line">        a[<span class="number">0</span>]+=<span class="number">1</span>;</span><br><span class="line">        m.a+=<span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>结果</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">i = 1</span><br><span class="line">str = hello</span><br><span class="line">num = 2</span><br><span class="line">arr = [2, 2, 3, 4, 5]</span><br><span class="line">my.a = 11</span><br></pre></td></tr></table></figure>
-<h2 id="知识点">知识点</h2>
-<ul>
-<li>方法的参数传递机制</li>
-<li>String、包装类等对象的不可变性</li>
-</ul>
-<h2 id="分析">分析</h2>
-<ul>
-<li><p>对于包装类，如果是使用new，那么一定是开辟新的空间；如果是直接赋值，那么-128-127之间会有缓存池(堆中)</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//当使用new的时候，一定在堆中新开辟的空间</span></span><br><span class="line">Integer a1= <span class="keyword">new</span> <span class="title class_">Integer</span>(<span class="number">12</span>);</span><br><span class="line">Integer b1= <span class="keyword">new</span> <span class="title class_">Integer</span>(<span class="number">12</span>);</span><br><span class="line">System.out.println(a1 == b1);<span class="comment">//false</span></span><br><span class="line">Integer a2= -<span class="number">128</span>;</span><br><span class="line">Integer b2= -<span class="number">128</span>;</span><br><span class="line">System.out.println(a2 == b2);<span class="comment">//true</span></span><br><span class="line">Integer a21= -<span class="number">129</span>;</span><br><span class="line">Integer b21= -<span class="number">129</span>;</span><br><span class="line">System.out.println(a21 == b21);<span class="comment">//false</span></span><br><span class="line">Integer a3=  <span class="number">127</span>;</span><br><span class="line">Integer b3=  <span class="number">127</span>;</span><br><span class="line">System.out.println(a3 == b3);<span class="comment">//true</span></span><br><span class="line">Integer a4=  <span class="number">22</span>;</span><br><span class="line">Integer b4=  <span class="number">22</span>;</span><br><span class="line">System.out.println(a4 == b4);<span class="comment">//true</span></span><br><span class="line">Integer a31=  <span class="number">128</span>;</span><br><span class="line">Integer b31=  <span class="number">128</span>;</span><br><span class="line">System.out.println(a31 == b31);<span class="comment">//false</span></span><br></pre></td></tr></table></figure></li>
-<li><p>对于String类</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//先查找常量池中是否有&quot;abc&quot;，如果有直接返回在常量池中的引用,</span></span><br><span class="line"><span class="comment">//如果没有，则在常量池中创建&quot;abc&quot;,然后返回该引用</span></span><br><span class="line">String a=<span class="string">&quot;abc&quot;</span>;</span><br><span class="line">  </span><br><span class="line"><span class="comment">//先查找常量池中是否有&quot;abc&quot;，如果有则在堆内存中创建对象，然后返回堆内存中的地址</span></span><br><span class="line"><span class="comment">//如果没有，则先在常量池中创建字符串对象，然后再在堆内存中创建对象，最后返回堆内存中的地址</span></span><br><span class="line">String ab=<span class="keyword">new</span> <span class="title class_">String</span>(<span class="string">&quot;abc&quot;</span>);</span><br><span class="line">System.out.println(a==ab);<span class="comment">//true</span></span><br><span class="line">  </span><br><span class="line"><span class="comment">//intern() //判断常量池中是否有ab对象的字符串，如果存在&quot;abc&quot;则返回&quot;abc&quot;在</span></span><br><span class="line"><span class="comment">//常量池中的引用，如果不存在则在常量池中创建,</span></span><br><span class="line"><span class="comment">//并返回&quot;abc&quot;在常量池中的引用</span></span><br><span class="line">System.out.println(a==ab.intern());<span class="comment">//true</span></span><br></pre></td></tr></table></figure></li>
-<li><p>change方法调用之前，jvm中的结构 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220922113056133.png"
-alt="image-20220922113056133" /></p></li>
-<li><p>方法栈帧中的数据 执行change方法后，实参给形参赋值：
-基本数据类型：数据值 引用数据类型：地址值</p>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220922211437515.png"
-alt="image-20220922211437515" />
-<figcaption aria-hidden="true">image-20220922211437515</figcaption>
-</figure>
-<p>当实参是特殊的类型时：比如String、包装类等对象，不可变，即
-<code>s+="world";</code> 会导致创建两个对象，如图（ Integer也是） <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220922211733044.png"
-alt="image-20220922211733044" /></p></li>
-</ul>
-<p>数组和对象，则是找到堆内存中的地址，直接更改</p>
-]]></content>
-      <categories>
-        <category>学习</category>
-      </categories>
-      <tags>
-        <tag>复习</tag>
-        <tag>复习-基础</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>成员变量与局部变量</title>
     <url>/2022/09/23/review/basics/member_variables_and_local_variables/</url>
     <content><![CDATA[<h2 id="代码">代码</h2>
@@ -357,6 +313,50 @@ alt="image-20220923095719037" />
 优点：效率高，时间只受循环次数限制，不受出栈入栈时间<br />
 缺点：不如递归精简，可读性稍差</li>
 </ul>
+]]></content>
+      <categories>
+        <category>学习</category>
+      </categories>
+      <tags>
+        <tag>复习</tag>
+        <tag>复习-基础</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>方法的参数传递机制</title>
+    <url>/2022/09/22/review/basics/Method_parameter_passing_mechanism/</url>
+    <content><![CDATA[<h2 id="代码">代码</h2>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Exam4</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line">        <span class="type">String</span> <span class="variable">str</span> <span class="operator">=</span> <span class="string">&quot;hello&quot;</span>;</span><br><span class="line">        <span class="type">Integer</span> <span class="variable">num</span> <span class="operator">=</span> <span class="number">2</span>;</span><br><span class="line">        <span class="type">int</span>[] arr = &#123;<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>&#125;;</span><br><span class="line">        <span class="type">MyData</span> <span class="variable">my</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">MyData</span>();</span><br><span class="line"></span><br><span class="line">        change(i, str, num, arr, my);</span><br><span class="line">        System.out.println(<span class="string">&quot;i = &quot;</span> + i);</span><br><span class="line">        System.out.println(<span class="string">&quot;str = &quot;</span> + str);</span><br><span class="line">        System.out.println(<span class="string">&quot;num = &quot;</span> + num);</span><br><span class="line">        System.out.println(<span class="string">&quot;arr = &quot;</span> + Arrays.toString(arr));</span><br><span class="line">        System.out.println(<span class="string">&quot;my.a = &quot;</span> + my.a); </span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">change</span><span class="params">(<span class="type">int</span> j, String s, Integer n, <span class="type">int</span>[] a,</span></span><br><span class="line"><span class="params">                              MyData m)</span> &#123;</span><br><span class="line">        j+=<span class="number">1</span>;</span><br><span class="line">        s+=<span class="string">&quot;world&quot;</span>;</span><br><span class="line">        n+=<span class="number">1</span>;</span><br><span class="line">        a[<span class="number">0</span>]+=<span class="number">1</span>;</span><br><span class="line">        m.a+=<span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>结果</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">i = 1</span><br><span class="line">str = hello</span><br><span class="line">num = 2</span><br><span class="line">arr = [2, 2, 3, 4, 5]</span><br><span class="line">my.a = 11</span><br></pre></td></tr></table></figure>
+<h2 id="知识点">知识点</h2>
+<ul>
+<li>方法的参数传递机制</li>
+<li>String、包装类等对象的不可变性</li>
+</ul>
+<h2 id="分析">分析</h2>
+<ul>
+<li><p>对于包装类，如果是使用new，那么一定是开辟新的空间；如果是直接赋值，那么-128-127之间会有缓存池(堆中)</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//当使用new的时候，一定在堆中新开辟的空间</span></span><br><span class="line">Integer a1= <span class="keyword">new</span> <span class="title class_">Integer</span>(<span class="number">12</span>);</span><br><span class="line">Integer b1= <span class="keyword">new</span> <span class="title class_">Integer</span>(<span class="number">12</span>);</span><br><span class="line">System.out.println(a1 == b1);<span class="comment">//false</span></span><br><span class="line">Integer a2= -<span class="number">128</span>;</span><br><span class="line">Integer b2= -<span class="number">128</span>;</span><br><span class="line">System.out.println(a2 == b2);<span class="comment">//true</span></span><br><span class="line">Integer a21= -<span class="number">129</span>;</span><br><span class="line">Integer b21= -<span class="number">129</span>;</span><br><span class="line">System.out.println(a21 == b21);<span class="comment">//false</span></span><br><span class="line">Integer a3=  <span class="number">127</span>;</span><br><span class="line">Integer b3=  <span class="number">127</span>;</span><br><span class="line">System.out.println(a3 == b3);<span class="comment">//true</span></span><br><span class="line">Integer a4=  <span class="number">22</span>;</span><br><span class="line">Integer b4=  <span class="number">22</span>;</span><br><span class="line">System.out.println(a4 == b4);<span class="comment">//true</span></span><br><span class="line">Integer a31=  <span class="number">128</span>;</span><br><span class="line">Integer b31=  <span class="number">128</span>;</span><br><span class="line">System.out.println(a31 == b31);<span class="comment">//false</span></span><br></pre></td></tr></table></figure></li>
+<li><p>对于String类</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//先查找常量池中是否有&quot;abc&quot;，如果有直接返回在常量池中的引用,</span></span><br><span class="line"><span class="comment">//如果没有，则在常量池中创建&quot;abc&quot;,然后返回该引用</span></span><br><span class="line">String a=<span class="string">&quot;abc&quot;</span>;</span><br><span class="line">  </span><br><span class="line"><span class="comment">//先查找常量池中是否有&quot;abc&quot;，如果有则在堆内存中创建对象，然后返回堆内存中的地址</span></span><br><span class="line"><span class="comment">//如果没有，则先在常量池中创建字符串对象，然后再在堆内存中创建对象，最后返回堆内存中的地址</span></span><br><span class="line">String ab=<span class="keyword">new</span> <span class="title class_">String</span>(<span class="string">&quot;abc&quot;</span>);</span><br><span class="line">System.out.println(a==ab);<span class="comment">//true</span></span><br><span class="line">  </span><br><span class="line"><span class="comment">//intern() //判断常量池中是否有ab对象的字符串，如果存在&quot;abc&quot;则返回&quot;abc&quot;在</span></span><br><span class="line"><span class="comment">//常量池中的引用，如果不存在则在常量池中创建,</span></span><br><span class="line"><span class="comment">//并返回&quot;abc&quot;在常量池中的引用</span></span><br><span class="line">System.out.println(a==ab.intern());<span class="comment">//true</span></span><br></pre></td></tr></table></figure></li>
+<li><p>change方法调用之前，jvm中的结构 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220922113056133.png"
+alt="image-20220922113056133" /></p></li>
+<li><p>方法栈帧中的数据 执行change方法后，实参给形参赋值：
+基本数据类型：数据值 引用数据类型：地址值</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220922211437515.png"
+alt="image-20220922211437515" />
+<figcaption aria-hidden="true">image-20220922211437515</figcaption>
+</figure>
+<p>当实参是特殊的类型时：比如String、包装类等对象，不可变，即
+<code>s+="world";</code> 会导致创建两个对象，如图（ Integer也是） <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220922211733044.png"
+alt="image-20220922211733044" /></p></li>
+</ul>
+<p>数组和对象，则是找到堆内存中的地址，直接更改</p>
 ]]></content>
       <categories>
         <category>学习</category>
