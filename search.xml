@@ -3075,7 +3075,44 @@ alt="image-20221029192437491" /></p>
   <entry>
     <title>锁升级</title>
     <url>/2022/10/31/review/java_guide/concurrent/lock_escalation/</url>
-    <content><![CDATA[
+    <content><![CDATA[<h2 id="简介">简介</h2>
+<p>无锁 =&gt; 偏向锁 =&gt; 轻量锁 =&gt; 重量锁</p>
+<p>复习Class类锁和实例对象锁，说明Class类锁和实例对象锁不是同一把锁，互相不影响</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException &#123; </span><br><span class="line">        Object object=<span class="keyword">new</span> <span class="title class_">Object</span>();</span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">Thread</span>(()-&gt;&#123;</span><br><span class="line">           <span class="keyword">synchronized</span> (Customer.class)&#123;</span><br><span class="line">               System.out.println(Thread.currentThread().getName()+<span class="string">&quot;Object.class类锁&quot;</span>);</span><br><span class="line">               <span class="keyword">try</span> &#123;</span><br><span class="line">                   TimeUnit.SECONDS.sleep(<span class="number">5</span>);</span><br><span class="line">               &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                   e.printStackTrace();</span><br><span class="line">               &#125;</span><br><span class="line">           &#125;</span><br><span class="line">            System.out.println(Thread.currentThread().getName()+<span class="string">&quot;结束并释放锁&quot;</span>);</span><br><span class="line">        &#125;,<span class="string">&quot;线程1&quot;</span>).start();</span><br><span class="line">        <span class="comment">//保证线程1已经获得类锁</span></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            TimeUnit.SECONDS.sleep(<span class="number">2</span>);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">Thread</span>(()-&gt;&#123;</span><br><span class="line">            <span class="keyword">synchronized</span> (object)&#123;</span><br><span class="line">                System.out.println(Thread.currentThread().getName()+<span class="string">&quot;获得object实例对象锁&quot;</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            System.out.println(Thread.currentThread().getName()+<span class="string">&quot;结束并释放锁&quot;</span>);</span><br><span class="line">        &#125;,<span class="string">&quot;线程2&quot;</span>).start();</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 输出</span></span><br><span class="line"><span class="comment">线程1Object.class类锁</span></span><br><span class="line"><span class="comment">线程2获得object实例对象锁</span></span><br><span class="line"><span class="comment">线程2结束并释放锁</span></span><br><span class="line"><span class="comment">线程1结束并释放锁</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+<p>总结图 , 00 , 01 , 10 ，没有11</p>
+<p>001（无锁）和101（偏向锁），00（轻量级锁），10（重量级锁）</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221031112225665.png"
+alt="image-20221031112225665" />
+<figcaption aria-hidden="true">image-20221031112225665</figcaption>
+</figure>
+<h2 id="背景">背景</h2>
+<p>下面这部分，其实在io模块有提到过</p>
+<blockquote>
+<ul>
+<li>为了保证系统稳定性和安全性，一个进程的地址空间划分为<strong>用户空间User
+space</strong>和<strong>内核空间Kernel space</strong></li>
+<li>平常运行的应用程序都运行在用户空间，只有内核空间才能进行系统态级别的资源有关操作---文件管理、进程通信、内存管理</li>
+</ul>
+</blockquote>
+<p>如果直接synchronized加锁，会有下面图的流程出现，频繁进行用户态和内核态的切换(阻塞和唤醒线程[线程通信]，需要频繁切换cpu的状态)<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221031112946966.png"
+alt="image-20221031112946966" /></p>
+<ul>
+<li>为什么每一个对象都可以成为一个锁 markOop.hpp （对应对象标识）
+每一个java对象里面，有一个Monitor对象（ObjectMonitor.cpp)关联
+如图，_owner指向持有ObjectMonitor对象的线程 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221031114235312.png"
+alt="image-20221031114235312" />
+Monitor本质依赖于底层操作系统的MutexLock实现，操作系统实现线程之间的切换，需要从用户态到内核态的切换，成本极高</li>
+<li>★★ 重点：Monitor与Java对象以及线程是如何关联
+<ul>
+<li>如果一个java对象被某个线程锁住，则该对象的MarkWord字段中，LockWord指向monitor的起始地址</li>
+<li>Monitor的Owner字段会存放拥有相关</li>
+</ul></li>
+</ul>
 ]]></content>
       <categories>
         <category>学习</category>
@@ -3331,7 +3368,7 @@ alt="image-20221026153939710" /> 其中，输入设备：键盘；输出设备�
 <ul>
 <li>为了保证系统稳定性和安全性，一个进程的地址空间划分为<strong>用户空间User
 space</strong>和<strong>内核空间Kernel space</strong></li>
-<li>平常运行的应用程序都运行在用户空间，只有内核空间才能进行系统态级别的资源有关操作---文件管理、进程通信、内存管理</li>
+<li>平常运行的应用程序都运行在用户空间，只有内核空间才能进行系统态级别的资源有关操作---<strong>文件管理、进程通信、内存管理</strong></li>
 <li>如果要进行IO操作，就得依赖<strong>内核空间</strong>的能力，<strong>用户空间的程序</strong>不能直接访问<strong>内核空间</strong></li>
 <li>用户进程要想执行IO操作，必须通过<strong>系统调用</strong>来间接访问内核空间</li>
 </ul></li>
