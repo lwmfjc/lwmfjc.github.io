@@ -3110,8 +3110,54 @@ Monitor本质依赖于底层操作系统的MutexLock实现，操作系统实现�
 <li>★★ 重点：Monitor与Java对象以及线程是如何关联
 <ul>
 <li>如果一个java对象被某个线程锁住，则该对象的MarkWord字段中，LockWord指向monitor的起始地址</li>
-<li>Monitor的Owner字段会存放拥有相关</li>
+<li>Monitor的Owner字段会存放拥有相关联对象锁的线程id</li>
+<li>图 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221031132702183.png"
+alt="image-20221031132702183" /></li>
 </ul></li>
+</ul>
+<h2 id="锁升级">锁升级</h2>
+<ul>
+<li><p>synchronized用的锁，存在Java对象头里的MarkWord中，锁升级功能主要依赖MarkWord中<strong>锁标志位(后2位)</strong>和<strong>释放偏向锁标志位(无锁和偏向锁，倒数第3位)</strong></p></li>
+<li><p>对于锁的指向</p>
+<ol type="1">
+<li>无锁情况：（放hashcode(调用了Object.hashcode才有))</li>
+<li>偏向锁：MarkWord存储的是偏向的线程ID</li>
+<li>轻量锁：MarkWord存储的是指向线程栈中LockRecord的指针</li>
+<li>重量锁：MarkWord存储的是指向堆中的monitor对象的指针</li>
+</ol></li>
+<li><p>无锁状态
+初始状态，一个对象被实例化后，如果还没有任何线程竞争锁，那么它就为无锁状态（001）</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">Object</span> <span class="variable">o</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Object</span>();</span><br><span class="line">        System.out.println(ClassLayout.parseInstance(o).toPrintable()); <span class="comment">//16字节</span></span><br><span class="line">    &#125;</span><br><span class="line"><span class="comment">/* 输出( 这里的mark,VALUE为0x0000000000000001，没有hashCode的值):</span></span><br><span class="line"><span class="comment">java.lang.Object object internals:</span></span><br><span class="line"><span class="comment">OFF  SZ   TYPE DESCRIPTION               VALUE</span></span><br><span class="line"><span class="comment">  0   8        (object header: mark)     0x0000000000000001 (non-biasable; age: 0)</span></span><br><span class="line"><span class="comment">  8   4        (object header: class)    0xf80001e5</span></span><br><span class="line"><span class="comment"> 12   4        (object alignment gap)    </span></span><br><span class="line"><span class="comment">Instance size: 16 bytes</span></span><br><span class="line"><span class="comment">Space losses: 0 bytes internal + 4 bytes external = 4 bytes total</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+<p>下面是调用了hashCode()这个方法的情形:</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">Object</span> <span class="variable">o</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Object</span>();</span><br><span class="line">        System.out.println(Integer.toHexString(o.hashCode()));</span><br><span class="line">        System.out.println(ClassLayout.parseInstance(o).toPrintable()); <span class="comment">//16字节</span></span><br><span class="line">    &#125;</span><br><span class="line"><span class="comment">/**输出:</span></span><br><span class="line"><span class="comment">74a14482</span></span><br><span class="line"><span class="comment">java.lang.Object object internals:</span></span><br><span class="line"><span class="comment">OFF  SZ   TYPE DESCRIPTION               VALUE</span></span><br><span class="line"><span class="comment">  0   8        (object header: mark)     0x00000074a1448201 (hash: 0x74a14482; age: 0)</span></span><br><span class="line"><span class="comment">  8   4        (object header: class)    0xf80001e5</span></span><br><span class="line"><span class="comment"> 12   4        (object alignment gap)    </span></span><br><span class="line"><span class="comment">Instance size: 16 bytes</span></span><br><span class="line"><span class="comment">Space losses: 0 bytes internal + 4 bytes external = 4 bytes total</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure></li>
+<li><p>偏向锁：单线程竞争</p>
+<ul>
+<li>当线程A第一次竞争到锁时，通过操作修改MarkWord中的偏向线程ID、偏向模式。如果不存在其他线程竞争，那么持有偏向锁的线程将永远不需要同步</li>
+<li>如果没有偏向锁，那么就会频繁出现<strong>用户态</strong>到<strong>内核态</strong>的切换</li>
+<li>意义：当一段同步代码，一直<strong>被同一个线程</strong>多次访问，由于<strong>只有一个线程</strong>那么该线程在后续访问时便会<strong>自动获得锁</strong>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221031172548988.png"
+alt="image-20221031172548988" /></li>
+<li>锁在<strong>第一次被拥有</strong>的时候，记录下<strong>偏向线程ID</strong>（后续这个线程进入和退出这段加了同步锁的代码块时，不需要再次加锁和释放锁，只需要<strong>直接检查锁的MarkWord</strong>是不是放的<strong>自己的线程ID</strong>）
+<ul>
+<li>如果相等，表示<strong>偏向锁是偏向于当前线程</strong>的，不需要再尝试获得锁，<strong>直到竞争才会释放锁</strong>；以后每次同步，检查<strong>锁的偏向线程ID与当前线程ID</strong>是否一致，若一致则进入同步，无需每次都加锁解锁去CAS更新对象头；如果自始至终使用锁的线程只有一个，很明显偏向锁几乎没有额外开销</li>
+<li>如果不等，表示<strong>发生了竞争</strong>，锁已经<strong>不偏向于同一个线程</strong>，此时会尝试<strong>使用CAS来替换MarkWord里面的线程ID</strong>为新线程的ID
+<ul>
+<li><strong>竞争成功</strong>，说明之前线程不存在了，MarkWord里的线程ID为新线程ID，所不会升级，<strong>仍然为偏向锁</strong></li>
+<li><strong>竞争失败</strong>，需要升级为<strong>轻量级锁</strong>，才能保证线程间公平竞争锁</li>
+</ul></li>
+</ul></li>
+<li>偏向锁只有遇到<strong>其他线程尝试竞争偏向锁</strong>时，持有偏向锁的线程才会释放锁，<strong>线程是不会主动释放锁的</strong>（尽量不会涉及用户到内核态转换）</li>
+<li>一个<strong>synchronized方法被一个线程抢到锁</strong>时，这个方法所在的对象，就会在<strong>其所在的MarkWord</strong>中**将偏向锁修改状态位</li>
+<li>如图<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221031174605461.png"
+alt="image-20221031174605461" /></li>
+<li>JVM不用和操作系统协商设置Mutex（争取内核），不需要操作系统介入</li>
+</ul></li>
+<li><p>偏向锁相关参数</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">java -XX:+PrintFlagsInitial | grep BiasedLock*</span><br><span class="line">     intx BiasedLockingBulkRebiasThreshold          = 20</span><br><span class="line">    &#123;product&#125;</span><br><span class="line">     intx BiasedLockingBulkRevokeThreshold          = 40</span><br><span class="line">    &#123;product&#125;</span><br><span class="line">     intx BiasedLockingDecayTime                    = 25000</span><br><span class="line">    &#123;product&#125;</span><br><span class="line">     intx BiasedLockingStartupDelay                 = 4000 #偏向锁启动延迟 4s</span><br><span class="line">    &#123;product&#125;</span><br><span class="line">     bool TraceBiasedLocking                        = false</span><br><span class="line">    &#123;product&#125;</span><br><span class="line">     bool UseBiasedLocking                          = true #默认开启偏向锁</span><br><span class="line">    &#123;product&#125;</span><br></pre></td></tr></table></figure></li>
 </ul>
 ]]></content>
       <categories>
