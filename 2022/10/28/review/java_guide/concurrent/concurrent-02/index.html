@@ -28,7 +28,7 @@
 <meta property="og:description" content="并发02">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2022-10-28T14:15:06.000Z">
-<meta property="article:modified_time" content="2022-10-28T14:15:06.000Z">
+<meta property="article:modified_time" content="2022-11-07T16:00:06.000Z">
 <meta property="article:author" content="刘易">
 <meta property="article:tag" content="复习">
 <meta property="article:tag" content="复习-javaGuide">
@@ -216,6 +216,13 @@
 
               <time title="创建时间：2022-10-28 14:15:06" itemprop="dateCreated datePublished" datetime="2022-10-28T14:15:06+00:00">2022-10-28</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-11-07 16:00:06" itemprop="dateModified" datetime="2022-11-07T16:00:06+00:00">2022-11-07</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -456,11 +463,73 @@ JVM
 </ul>
 <h2 id="threadlocal">ThreadLocal</h2>
 <ul>
-<li>ThreadLocal有什么用
+<li><p>ThreadLocal有什么用</p>
 <ol type="1">
 <li>通常情况下，创建的变量是可以被<strong>任何一个线程访问并修改</strong>的</li>
-<li>JDK自带的ThreadLocal类，该类主要解决的就是让每个线程绑定自己的值，可以将ThreadLocal</li>
+<li>JDK自带的ThreadLocal类，该类主要解决的就是让<strong>每个线程绑定自己的值</strong>，可以将ThreadLocal类形象的比喻成存放数据的盒子，盒子中可以存储每个线程的私有数据</li>
+<li>对于ThreadLocal变量，访问这个变量的每个线程都会有这个变量的本地副本。使用get()和set()来获取默认值或将其值更改为当前线程所存的副本的值</li>
 </ol></li>
+<li><p>如何使用ThreadLocal Demo演示实际中如何使用ThreadLocal</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> java.text.SimpleDateFormat;</span><br><span class="line"><span class="keyword">import</span> java.util.Random;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ThreadLocalExample</span> <span class="keyword">implements</span> <span class="title class_">Runnable</span>&#123;</span><br><span class="line"></span><br><span class="line">     <span class="comment">// SimpleDateFormat 不是线程安全的，所以每个线程都要有自己独立的副本</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> ThreadLocal&lt;SimpleDateFormat&gt; formatter = ThreadLocal.withInitial(() -&gt; <span class="keyword">new</span> <span class="title class_">SimpleDateFormat</span>(<span class="string">&quot;yyyyMMdd HHmm&quot;</span>));</span><br><span class="line">    <span class="comment">/* 非lambda写法</span></span><br><span class="line"><span class="comment">      private static final ThreadLocal&lt;SimpleDateFormat&gt; formatter = new ThreadLocal&lt;SimpleDateFormat&gt;()&#123;</span></span><br><span class="line"><span class="comment">    @Override</span></span><br><span class="line"><span class="comment">    protected SimpleDateFormat initialValue()&#123;</span></span><br><span class="line"><span class="comment">        return new SimpleDateFormat(&quot;yyyyMMdd HHmm&quot;);</span></span><br><span class="line"><span class="comment">    &#125;</span></span><br><span class="line"><span class="comment">&#125;;</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">        <span class="type">ThreadLocalExample</span> <span class="variable">obj</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ThreadLocalExample</span>();</span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">0</span> ; i&lt;<span class="number">10</span>; i++)&#123;</span><br><span class="line">            <span class="type">Thread</span> <span class="variable">t</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Thread</span>(obj, <span class="string">&quot;&quot;</span>+i);</span><br><span class="line">            Thread.sleep(<span class="keyword">new</span> <span class="title class_">Random</span>().nextInt(<span class="number">1000</span>));</span><br><span class="line">            t.start();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//formatter.get().toPattern() 同一个对象的线程变量formatter(里面封装了一个simpleDateFormate对象，具有初始值)</span></span><br><span class="line">    <span class="comment">//每个线程访问时，先打印它的初始值，然后休眠1s（1s内的随机数），反正每个线程随机数不同，然后修改它</span></span><br><span class="line">    <span class="comment">//结果：虽然前面执行的线程，修改值，但是后面执行的线程打印的值还是一样的 没有修改</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;Thread Name= &quot;</span>+Thread.currentThread().getName()+<span class="string">&quot; default Formatter = &quot;</span>+formatter.get().toPattern());</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            Thread.sleep(<span class="keyword">new</span> <span class="title class_">Random</span>().nextInt(<span class="number">1000</span>));</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//formatter pattern is changed here by thread, but it won&#x27;t reflect to other threads</span></span><br><span class="line">        formatter.set(<span class="keyword">new</span> <span class="title class_">SimpleDateFormat</span>());</span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">&quot;Thread Name= &quot;</span>+Thread.currentThread().getName()+<span class="string">&quot; formatter = &quot;</span>+formatter.get().toPattern());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*虽然前面执行的线程，修改值，但是后面执行的线程打印的值还是一样的 没有修改 , 结果如下：</span></span><br><span class="line"><span class="comment"> Thread Name= 0 default Formatter = yyyyMMdd HHmm</span></span><br><span class="line"><span class="comment">Thread Name= 0 formatter = yy-M-d ah:mm</span></span><br><span class="line"><span class="comment">Thread Name= 1 default Formatter = yyyyMMdd HHmm</span></span><br><span class="line"><span class="comment">Thread Name= 2 default Formatter = yyyyMMdd HHmm</span></span><br><span class="line"><span class="comment">Thread Name= 1 formatter = yy-M-d ah:mm</span></span><br><span class="line"><span class="comment">Thread Name= 3 default Formatter = yyyyMMdd HHmm</span></span><br><span class="line"><span class="comment">Thread Name= 2 formatter = yy-M-d ah:mm</span></span><br><span class="line"><span class="comment">Thread Name= 4 default Formatter = yyyyMMdd HHmm</span></span><br><span class="line"><span class="comment">Thread Name= 3 formatter = yy-M-d ah:mm</span></span><br><span class="line"><span class="comment">Thread Name= 4 formatter = yy-M-d ah:mm</span></span><br><span class="line"><span class="comment">Thread Name= 5 default Formatter = yyyyMMdd HHmm</span></span><br><span class="line"><span class="comment">Thread Name= 5 formatter = yy-M-d ah:mm</span></span><br><span class="line"><span class="comment">Thread Name= 6 default Formatter = yyyyMMdd HHmm</span></span><br><span class="line"><span class="comment">Thread Name= 6 formatter = yy-M-d ah:mm</span></span><br><span class="line"><span class="comment">Thread Name= 7 default Formatter = yyyyMMdd HHmm</span></span><br><span class="line"><span class="comment">Thread Name= 7 formatter = yy-M-d ah:mm</span></span><br><span class="line"><span class="comment">Thread Name= 8 default Formatter = yyyyMMdd HHmm</span></span><br><span class="line"><span class="comment">Thread Name= 9 default Formatter = yyyyMMdd HHmm</span></span><br><span class="line"><span class="comment">Thread Name= 8 formatter = yy-M-d ah:mm</span></span><br><span class="line"><span class="comment">Thread Name= 9 formatter = yy-M-d ah:mm</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure></li>
+<li><p>ThreadLocal原理了解吗</p>
+<ul>
+<li><p>从Thread类源代码入手</p>
+<p><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Thread</span> <span class="keyword">implements</span> <span class="title class_">Runnable</span> &#123;</span><br><span class="line">    <span class="comment">//......</span></span><br><span class="line">    <span class="comment">//与此线程有关的ThreadLocal值。由ThreadLocal类维护</span></span><br><span class="line">    ThreadLocal.<span class="type">ThreadLocalMap</span> <span class="variable">threadLocals</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//与此线程有关的InheritableThreadLocal值。由InheritableThreadLocal类维护</span></span><br><span class="line">    ThreadLocal.<span class="type">ThreadLocalMap</span> <span class="variable">inheritableThreadLocals</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">    <span class="comment">//......</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<ol type="1">
+<li><p>Thread类中有一个<strong>threadLocals</strong>和一个<strong>inheritableThreadLocals</strong>变量，它们都是ThreadLocalMap类型的变量，ThreadLocalMap可以理解为ThreadLocal类实现的定制化HashMap
+( key为threadLocal , value 为值)
+默认两个变量都是null，当调用set或get时会创建，实际调用的是ThreadLocalMap类对应的get()、set()方法</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">set</span><span class="params">(T value)</span> &#123;</span><br><span class="line">    <span class="comment">//获取当前请求的线程    </span></span><br><span class="line">    <span class="type">Thread</span> <span class="variable">t</span> <span class="operator">=</span> Thread.currentThread();</span><br><span class="line">    <span class="comment">//取出 Thread 类内部的 threadLocals 变量(哈希表结构)</span></span><br><span class="line">    <span class="type">ThreadLocalMap</span> <span class="variable">map</span> <span class="operator">=</span> getMap(t);</span><br><span class="line">    <span class="keyword">if</span> (map != <span class="literal">null</span>)</span><br><span class="line">        <span class="comment">// 将需要存储的值放入到这个哈希表中</span></span><br><span class="line">        <span class="comment">//★★实际使用的方法</span></span><br><span class="line">        map.set(<span class="built_in">this</span>, value);</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        <span class="comment">//★★实际使用的方法</span></span><br><span class="line">        createMap(t, value);</span><br><span class="line">&#125;</span><br><span class="line">ThreadLocalMap <span class="title function_">getMap</span><span class="params">(Thread t)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> t.threadLocals;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>如上，实际存取都是从Thread的threadLocals
+（ThreadLocalMap类）中，并不是存在ThreadLocal上，ThreadLocal用来传递了<strong>变量值</strong>，只是ThreadLocalMap的封装</p></li>
+<li><p>ThreadLocal类中通过Thread.currentThread()获取到当前线程对象后，直接通过getMap(Thread
+t) 可以访问到该线程的ThreadLocalMap对象</p></li>
+<li><p><strong>每个Thread中具备一个ThreadLocalMap，而ThreadLocalMap可以存储以ThreadLocal为key，Object对象为value的键值对</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">ThreadLocalMap(ThreadLocal&lt;?&gt; firstKey, Object firstValue) &#123;</span><br><span class="line">    <span class="comment">//......</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>比如我们在同一个线程中声明了两个 <code>ThreadLocal</code> 对象的话，
+<code>Thread</code>内部都是使用仅有的那个<code>ThreadLocalMap</code>
+存放数据的，<code>ThreadLocalMap</code>的 key 就是
+<code>ThreadLocal</code>对象，value 就是 <code>ThreadLocal</code>
+对象调用<code>set</code>方法设置的值</p></li>
+</ul></li>
+<li><p>ThreadLocal数据结构如下图所示 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221107150751048.png"
+alt="image-20221107150751048" /></p>
+<p><strong><code>ThreadLocalMap</code>是<code>ThreadLocal</code>的静态内部类。</strong>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221107151155140.png"
+alt="image-20221107151155140" /></p></li>
+</ol></li>
+</ul></li>
+<li><p>ThreadLocal内存泄露问题时怎么导致的</p>
+<ul>
+<li><p>前提知识：强引用、软引用、弱引用和虚引用的区别</p>
+<ol type="1">
+<li><p>强引用StrongReference<br />
+是最普遍的一种引用方式，只要强引用存在，则垃圾回收器就不会回收这个对象</p></li>
+<li><p>软引用 SoftReference<br />
+如果内存足够不回收，如果内存不足则回收</p></li>
+<li><p>弱引用WeakReference
+如果一个对象只具有弱引用，那就类似于<strong>可有可无的生活用品</strong>。弱引用与软引用的区别在于：只具有弱引用的对象拥有更短暂的生命周期。在垃圾回收器线程扫描它
+所管辖的内存区域的过程中，一旦发现了只具有弱引用的对象，<strong>不管当前内存空间足够与否，都会回收它的内存</strong>。不过，由于垃圾回收器是一个优先级很低的线程，
+因此不一定会很快发现那些只具有弱引用的对象。</p>
+<p>弱引用可以和一个引用队列（ReferenceQueue）联合使用，如果弱引用所引用的对象被垃圾回收，Java
+虚拟机就会把这个弱引用加入到与之关联的引用队列中。</p></li>
+<li><p>虚引用PhantomReference</p>
+<ul>
+<li>如果一个对象仅持有虚引用，那么它就和没有任何引用一样，在任何时候都可能被垃圾回收器回收。<strong>虚引用主要用来跟踪对象被垃圾回收器回收的活动</strong></li>
+<li>虚引用与软引用和弱引用的一个区别在于：<strong>虚引用必须和引用队列
+（ReferenceQueue）联合使用</strong>。当垃圾回收器准备回收一个对象时，如果发现它还有虚引，就会在回收对象的内存之前，把这个虚引用加入到与之关联的引用队列中。</li>
+</ul></li>
+</ol></li>
+<li><p>ThreadLocalMap中，使用的key为ThreadLocal的弱引用（源码中，即Entry），而value是强引用
+所以，ThreadLocal没有被外部强引用的情况下，垃圾回收的时候
+key会被清理掉，而value不会</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">Entry</span> <span class="keyword">extends</span> <span class="title class_">WeakReference</span>&lt;ThreadLocal&lt;?&gt;&gt; &#123;</span><br><span class="line">    <span class="comment">/** The value associated with this ThreadLocal. */</span></span><br><span class="line">    Object value;</span><br><span class="line"></span><br><span class="line">    Entry(ThreadLocal&lt;?&gt; k, Object v) &#123;</span><br><span class="line">        <span class="built_in">super</span>(k);</span><br><span class="line">        value = v;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>此时，ThreadLocalMap中就会出现key为null的Entry，如果不做任何措施，value永远无法被GC回收，此时会产生内存泄漏。ThreadLocaMap实现中已经考虑了这种情况，在调用set()、get()、remove()方法时，清理掉key为null的记录
+所以使用完ThreadLocal的方法后，最好手动调用remove()方法</p></li>
+</ul></li>
 </ul>
 
     </div>
@@ -570,7 +639,7 @@ JVM
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">98</span>
+          <span class="site-state-item-count">99</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
