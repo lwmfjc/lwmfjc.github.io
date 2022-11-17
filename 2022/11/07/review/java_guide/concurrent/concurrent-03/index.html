@@ -373,6 +373,40 @@ alt="image-20221117140008973" /> 分析上面的例子，</p>
 </blockquote></li>
 </ul>
 <h2 id="atomic原子类">Atomic原子类</h2>
+<p>Atomic <code>英[əˈtɒmɪk]</code>原子，即不可分割</p>
+<p>线程中，Atomic，指一个操作是不可中断的，即使在多线程一起执行时，一个操作一旦开始，就不会被其他线程干扰</p>
+<p>原子类，即具有<strong>原子/原子操作特性</strong>的类。并发包<code>java.util.concurrent</code>原子类都放在<code>java.util.concurrent.atomit</code>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221117152847851.png"
+alt="image-20221117152847851" /></p>
+<p>Java中存在四种原子类（基本、数组、引用、对象属性）</p>
+<ol type="1">
+<li>基本类型：AtomicInteger，AtomicLong，AtomicBoolean</li>
+<li>数组类型：AtomicIntegerArray，AtomicLongArray，AtomicReferenceArray</li>
+<li>引用类型：AtomicReference，AtomicStampedReference（原子更新带有版本号的引用类型。该类将整数值与引用关联，解决原子的更新数据和数据的版本号，解决使用CAS进行原子更新可能出现的ABA问题），AtomicMarkableReference（原子更新带有标记位的引用类型）</li>
+<li>对象属性修改类型：AtomicIntegerFiledUpdater原子更新整型字段的更新器；AtomicLongFiledUpdater；AtomicReferenceFieldUpdater</li>
+</ol>
+<h3 id="atomicinteger的使用">AtomicInteger的使用</h3>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//AtomicInteger类常用方法(下面的自增，都使用了CAS，是同步安全的)</span></span><br><span class="line">ublic <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">get</span><span class="params">()</span> <span class="comment">//获取当前的值</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">getAndSet</span><span class="params">(<span class="type">int</span> newValue)</span><span class="comment">//获取当前的值，并设置新的值</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">getAndIncrement</span><span class="params">()</span><span class="comment">//获取当前的值，并自增</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">getAndDecrement</span><span class="params">()</span> <span class="comment">//获取当前的值，并自减</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">getAndAdd</span><span class="params">(<span class="type">int</span> delta)</span> <span class="comment">//获取当前的值，并加上预期的值</span></span><br><span class="line"><span class="type">boolean</span> <span class="title function_">compareAndSet</span><span class="params">(<span class="type">int</span> expect, <span class="type">int</span> update)</span> <span class="comment">//如果输入的数值等于预期值，则以原子方式将该值设置为输入值（update）</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title function_">lazySet</span><span class="params">(<span class="type">int</span> newValue)</span><span class="comment">//最终设置为newValue,使用 lazySet 设置之后可能导致其他线程在之后的一小段时间内还是可以读到旧的值。</span></span><br><span class="line">------</span><br><span class="line"><span class="comment">//使用如下</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">AtomicIntegerTest</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">AtomicInteger</span> <span class="variable">count</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">AtomicInteger</span>();</span><br><span class="line">    <span class="comment">//使用AtomicInteger之后，不需要对该方法加锁，也可以实现线程安全。</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">increment</span><span class="params">()</span> &#123;</span><br><span class="line">        count.incrementAndGet();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">getCount</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> count.get();</span><br><span class="line">    &#125;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+<h3 id="浅谈atomicinteger实现原理">浅谈AtomicInteger实现原理</h3>
+<ol type="1">
+<li>位于Java.util.concurrent.atomic包下，对int封装，提供<strong>原子性的访问和更新</strong>操作，其原子性操作的实现基于CAS（CompareAndSet）
+<ul>
+<li>CAS，比较并交换，Java并发中lock-free机制的基础，调用Sun的Unsafe的CompareAndSwapInt完成，为native方法，<strong>基于CPU的CAS</strong>指令来实现的，即无阻塞；且为CAS原语</li>
+<li>CAS：三个参数，1. 当前内存值V 2.旧的预期值
+3.即将更新的值，当且仅当预期值A和内存值相同时，将内存值改为 8
+并返回true；否则返回false
+<code>在JAVA中,CAS通过调用C++库实现，由C++库再去调用CPU指令集。</code></li>
+<li>CAS确定
+<ul>
+<li>ABA　问题 如果期间发生了 A -&gt; B -&gt; A 的更新，仅仅判断数值是
+A，可能导致不合理的修改操作；为此，提供了AtomicStampedReference
+工具类，为引用建立类似版本号ｓｔａｍｐ的方式</li>
+<li>循环时间长，开销大。CAS适用于</li>
+</ul></li>
+</ul></li>
+</ol>
+<h3 id="java实现cas的原理">Java实现CAS的原理</h3>
 <h2 id="aqs">AQS</h2>
 <h2 id="参考">参考</h2>
 
@@ -464,7 +498,7 @@ alt="image-20221117140008973" /> 分析上面的例子，</p>
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BA%BF%E7%A8%8B%E6%B1%A0"><span class="nav-number">1.</span> <span class="nav-text">线程池</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#atomic%E5%8E%9F%E5%AD%90%E7%B1%BB"><span class="nav-number">2.</span> <span class="nav-text">Atomic原子类</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#aqs"><span class="nav-number">3.</span> <span class="nav-text">AQS</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">4.</span> <span class="nav-text">参考</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BA%BF%E7%A8%8B%E6%B1%A0"><span class="nav-number">1.</span> <span class="nav-text">线程池</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#atomic%E5%8E%9F%E5%AD%90%E7%B1%BB"><span class="nav-number">2.</span> <span class="nav-text">Atomic原子类</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#atomicinteger%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="nav-number">2.1.</span> <span class="nav-text">AtomicInteger的使用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B5%85%E8%B0%88atomicinteger%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86"><span class="nav-number">2.2.</span> <span class="nav-text">浅谈AtomicInteger实现原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#java%E5%AE%9E%E7%8E%B0cas%E7%9A%84%E5%8E%9F%E7%90%86"><span class="nav-number">2.3.</span> <span class="nav-text">Java实现CAS的原理</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#aqs"><span class="nav-number">3.</span> <span class="nav-text">AQS</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">4.</span> <span class="nav-text">参考</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
