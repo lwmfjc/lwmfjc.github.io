@@ -3413,7 +3413,7 @@ alt="image-20221117152847851" /></p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//AtomicInteger类常用方法(下面的自增，都使用了CAS，是同步安全的)</span></span><br><span class="line">ublic <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">get</span><span class="params">()</span> <span class="comment">//获取当前的值</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">getAndSet</span><span class="params">(<span class="type">int</span> newValue)</span><span class="comment">//获取当前的值，并设置新的值</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">getAndIncrement</span><span class="params">()</span><span class="comment">//获取当前的值，并自增</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">getAndDecrement</span><span class="params">()</span> <span class="comment">//获取当前的值，并自减</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">getAndAdd</span><span class="params">(<span class="type">int</span> delta)</span> <span class="comment">//获取当前的值，并加上预期的值</span></span><br><span class="line"><span class="type">boolean</span> <span class="title function_">compareAndSet</span><span class="params">(<span class="type">int</span> expect, <span class="type">int</span> update)</span> <span class="comment">//如果输入的数值等于预期值，则以原子方式将该值设置为输入值（update）</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title function_">lazySet</span><span class="params">(<span class="type">int</span> newValue)</span><span class="comment">//最终设置为newValue,使用 lazySet 设置之后可能导致其他线程在之后的一小段时间内还是可以读到旧的值。</span></span><br><span class="line">------</span><br><span class="line"><span class="comment">//使用如下</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">AtomicIntegerTest</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">AtomicInteger</span> <span class="variable">count</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">AtomicInteger</span>();</span><br><span class="line">    <span class="comment">//使用AtomicInteger之后，不需要对该方法加锁，也可以实现线程安全。</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">increment</span><span class="params">()</span> &#123;</span><br><span class="line">        count.incrementAndGet();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">getCount</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> count.get();</span><br><span class="line">    &#125;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
 <h3 id="浅谈atomicinteger实现原理">浅谈AtomicInteger实现原理</h3>
 <ol type="1">
-<li>位于Java.util.concurrent.atomic包下，对int封装，提供<strong>原子性的访问和更新</strong>操作，其原子性操作的实现基于CAS（CompareAndSet）
+<li><p>位于Java.util.concurrent.atomic包下，对int封装，提供<strong>原子性的访问和更新</strong>操作，其原子性操作的实现基于CAS（CompareAndSet）</p>
 <ul>
 <li>CAS，比较并交换，Java并发中lock-free机制的基础，调用Sun的Unsafe的CompareAndSwapInt完成，为native方法，<strong>基于CPU的CAS</strong>指令来实现的，即无阻塞；且为CAS原语</li>
 <li>CAS：三个参数，1. 当前内存值V 2.旧的预期值
@@ -3422,15 +3422,24 @@ alt="image-20221117152847851" /></p>
 <code>在JAVA中,CAS通过调用C++库实现，由C++库再去调用CPU指令集。</code></li>
 <li>CAS确定
 <ul>
-<li>ABA　问题 如果期间发生了 A -&gt; B -&gt; A 的更新，仅仅判断数值是
+<li><p>ABA　问题 如果期间发生了 A -&gt; B -&gt; A 的更新，仅仅判断数值是
 A，可能导致不合理的修改操作；为此，提供了AtomicStampedReference
-工具类，为引用建立类似版本号ｓｔａｍｐ的方式</li>
-<li>循环时间长，开销大。CAS适用于<strong>竞争情况短暂</strong>的情况，有需要的时候要限制自旋次数，以免过度消耗CPU</li>
-<li>只能保证一个共享变量的原子操作
+工具类，为引用建立类似版本号ｓｔａｍｐ的方式</p></li>
+<li><p>循环时间长，开销大。CAS适用于<strong>竞争情况短暂</strong>的情况，有需要的时候要限制自旋次数，以免过度消耗CPU</p></li>
+<li><p>只能保证一个共享变量的原子操作
 对多个共享变量操作时，循环CAS就无法保证操作的原子性，这个时候就可以用锁；或者取巧一下，比如
-i = 2 , j = a ，合并后为 ij = 2a ，然后cas操作2a</li>
+i = 2 , j = a ，合并后为 ij = 2a ，然后cas操作2a</p>
+<blockquote>
+<p>Java1.5开始JDK提供了<strong>AtomicReference</strong>类来保证引用对象之间的原子性，你可以把<strong>多个变量放在一个对象</strong>里来进行CAS操作，例子如下：
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221118113655799.png"
+alt="image-20221118113655799" />
+如图，它是同时更新了两个变量，而这两个变量都在新的对象上，所以就能解决多个共享变量的问题，即“将问题转换成，如果变量更新了，则更换一个对象”</p>
+</blockquote></li>
 </ul></li>
 </ul></li>
+<li><p>AtomicInteger原理浅析</p></li>
+<li><p>原子操作的实现原理</p></li>
 </ol>
 <h3 id="java实现cas的原理">Java实现CAS的原理</h3>
 <h2 id="aqs">AQS</h2>
