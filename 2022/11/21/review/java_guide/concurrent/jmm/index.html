@@ -289,6 +289,29 @@ CPU
 </blockquote></li>
 </ul>
 <h2 id="jmmjavamemorymode">JMM（JavaMemoryMode）</h2>
+<h3 id="什么是-jmm为什么需要-jmm">什么是 JMM？为什么需要 JMM？</h3>
+<blockquote>
+<p>一般来说，编程语言也可以直接复用操作系统层面的内存模型。不过，不同的操作系统内存模型不同。如果直接复用操作系统层面的内存模型，就可能会导致同样一套代码换了一个操作系统就无法执行了。<strong>Java
+语言是跨平台的，它需要自己提供一套内存模型以屏蔽系统差异。</strong></p>
+</blockquote>
+<p>实际上，对于Java来说，可以<strong>把JMM看作是Java定义的并发编程相关的一组规范</strong>，除了抽象了线程和主内存之间的关系之外，还规定了<strong>从Java源代码到CPU可执行指令的转化过程</strong>要遵守哪些和并发相关的原则和规范，主要目的是为了<strong>简化多线程编程</strong>，<strong>增强程序可移植性</strong>。</p>
+<blockquote>
+<p>JMM
+说白了就是定义了一些规范来解决这些问题，开发者可以利用这些规范更方便地开发多线程程序。对于
+Java
+开发者说，你不需要了解底层原理，直接使用并发相关的一些关键字和类（比如
+<code>volatile</code>、<code>synchronized</code>、各种
+<code>Lock</code>）即可开发出并发安全的程序。</p>
+</blockquote>
+<h3 id="jmm-是如何抽象线程和主内存之间的关系">JMM
+是如何抽象线程和主内存之间的关系？</h3>
+<h3 id="java-内存区域和-jmm-有何区别">Java 内存区域和 JMM
+有何区别？</h3>
+<h3 id="happens-before-原则是什么">happens-before 原则是什么？</h3>
+<h3 id="happens-before-常见规则有哪些谈谈你的理解">happens-before
+常见规则有哪些？谈谈你的理解？</h3>
+<h3 id="happens-before-常见规则有哪些谈谈你的理解-1">happens-before
+常见规则有哪些？谈谈你的理解？</h3>
 <h2 id="再看并发编程三个重要特性">再看并发编程三个重要特性</h2>
 <h2 id="总结">总结</h2>
 
@@ -380,7 +403,11 @@ CPU
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8Ecpu%E7%BC%93%E5%AD%98%E6%A8%A1%E5%9E%8B%E8%AF%B4%E8%B5%B7"><span class="nav-number">1.</span> <span class="nav-text">从CPU缓存模型说起</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8C%87%E4%BB%A4%E9%87%8D%E6%8E%92%E5%BA%8F"><span class="nav-number">2.</span> <span class="nav-text">指令重排序</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#jmmjavamemorymode"><span class="nav-number">3.</span> <span class="nav-text">JMM（JavaMemoryMode）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%8D%E7%9C%8B%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E4%B8%89%E4%B8%AA%E9%87%8D%E8%A6%81%E7%89%B9%E6%80%A7"><span class="nav-number">4.</span> <span class="nav-text">再看并发编程三个重要特性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8Ecpu%E7%BC%93%E5%AD%98%E6%A8%A1%E5%9E%8B%E8%AF%B4%E8%B5%B7"><span class="nav-number">1.</span> <span class="nav-text">从CPU缓存模型说起</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8C%87%E4%BB%A4%E9%87%8D%E6%8E%92%E5%BA%8F"><span class="nav-number">2.</span> <span class="nav-text">指令重排序</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#jmmjavamemorymode"><span class="nav-number">3.</span> <span class="nav-text">JMM（JavaMemoryMode）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF-jmm%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81-jmm"><span class="nav-number">3.1.</span> <span class="nav-text">什么是 JMM？为什么需要 JMM？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#jmm-%E6%98%AF%E5%A6%82%E4%BD%95%E6%8A%BD%E8%B1%A1%E7%BA%BF%E7%A8%8B%E5%92%8C%E4%B8%BB%E5%86%85%E5%AD%98%E4%B9%8B%E9%97%B4%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="nav-number">3.2.</span> <span class="nav-text">JMM
+是如何抽象线程和主内存之间的关系？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#java-%E5%86%85%E5%AD%98%E5%8C%BA%E5%9F%9F%E5%92%8C-jmm-%E6%9C%89%E4%BD%95%E5%8C%BA%E5%88%AB"><span class="nav-number">3.3.</span> <span class="nav-text">Java 内存区域和 JMM
+有何区别？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#happens-before-%E5%8E%9F%E5%88%99%E6%98%AF%E4%BB%80%E4%B9%88"><span class="nav-number">3.4.</span> <span class="nav-text">happens-before 原则是什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#happens-before-%E5%B8%B8%E8%A7%81%E8%A7%84%E5%88%99%E6%9C%89%E5%93%AA%E4%BA%9B%E8%B0%88%E8%B0%88%E4%BD%A0%E7%9A%84%E7%90%86%E8%A7%A3"><span class="nav-number">3.5.</span> <span class="nav-text">happens-before
+常见规则有哪些？谈谈你的理解？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#happens-before-%E5%B8%B8%E8%A7%81%E8%A7%84%E5%88%99%E6%9C%89%E5%93%AA%E4%BA%9B%E8%B0%88%E8%B0%88%E4%BD%A0%E7%9A%84%E7%90%86%E8%A7%A3-1"><span class="nav-number">3.6.</span> <span class="nav-text">happens-before
+常见规则有哪些？谈谈你的理解？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%8D%E7%9C%8B%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E4%B8%89%E4%B8%AA%E9%87%8D%E8%A6%81%E7%89%B9%E6%80%A7"><span class="nav-number">4.</span> <span class="nav-text">再看并发编程三个重要特性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
