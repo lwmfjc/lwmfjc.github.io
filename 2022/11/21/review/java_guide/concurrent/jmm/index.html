@@ -357,7 +357,9 @@ assign）的变量，换句话说就是对一个变量实施 use 和 store
 unlock 操作，变量才会被解锁。</p></li>
 <li><p>如果对一个变量执行 lock
 操作，将会清空工作内存中此变量的值，在执行引擎使用这个变量前，需要重新执行
-load 或 assign 操作初始化变量的值。</p></li>
+load 或 <a
+href="..........\themes\next\source\css\main.styl">main.styl</a> assign
+操作初始化变量的值。</p></li>
 <li><p>如果一个变量事先没有被 lock 操作锁定，则不允许对它执行 unlock
 操作，也不允许去 unlock 一个被其他线程锁定住的变量。</p>
 <p>......</p></li>
@@ -378,7 +380,7 @@ JVM
 <ul>
 <li><p>逻辑时钟：对分布式系统中的事件的先后关系进行判断</p></li>
 <li><p>JSR
-133引入happens-before这个概念来描述两个操作之间的内存可见性</p></li>
+133引入happens-before这个概念来描述<strong>两个操作之间的内存可见性</strong></p></li>
 <li><p><strong>为什么需要 happens-before 原则？</strong> happens-before
 原则的诞生是为了程序员和编译器、处理器之间的平衡。<strong>程序员</strong>追求的是<strong>易于理解和编程的强内存模型</strong>，遵守既定规则编码即可。<strong>编译器和处理器</strong>追求的是<strong>较少约束的弱内存模型</strong>，让它们尽己所能地去优化性能，让性能最大化。</p></li>
 <li><p>happens-before原则的<strong>设计思想</strong></p>
@@ -418,8 +420,20 @@ happens-before 关系来执行的结果一致，那么 JMM
 </ul>
 <h3 id="happens-before-常见规则有哪些谈谈你的理解">happens-before
 常见规则有哪些？谈谈你的理解？</h3>
-<h3 id="happens-before-常见规则有哪些谈谈你的理解-1">happens-before
-常见规则有哪些？谈谈你的理解？</h3>
+<ol type="1">
+<li>程序顺序规则：一个线程内，按照代码顺序，书写在前面的操作happens-before于书写在后面的操作</li>
+<li>解锁规则：解锁happens-before于加锁</li>
+<li>volatile变量规则：<strong>对一个 volatile 变量的写操作
+happens-before 于后面对这个 volatile 变量的读操作</strong>。说白了就是对
+volatile
+变量的<strong>写操作的结果</strong>对于<strong>发生于其后的任何操作都是可见</strong>的。</li>
+<li>传递规则：如果A happens-before B，且B happens-before C ，那么A
+happens-before C</li>
+<li>线程启动规则：Thread对象的start() 方法 happens-before
+于此线程的每一个操作</li>
+</ol>
+<p>如果两个操作，不满足于上述任何一个happens-before规则，那么这两个操作就没有顺序的保障，JVM可以对这两个操作进行重排序</p>
+<h3 id="happens-before-和jmm什么关系">happens-before 和JMM什么关系</h3>
 <h2 id="再看并发编程三个重要特性">再看并发编程三个重要特性</h2>
 <h2 id="总结">总结</h2>
 
@@ -514,8 +528,7 @@ happens-before 关系来执行的结果一致，那么 JMM
           <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8Ecpu%E7%BC%93%E5%AD%98%E6%A8%A1%E5%9E%8B%E8%AF%B4%E8%B5%B7"><span class="nav-number">1.</span> <span class="nav-text">从CPU缓存模型说起</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8C%87%E4%BB%A4%E9%87%8D%E6%8E%92%E5%BA%8F"><span class="nav-number">2.</span> <span class="nav-text">指令重排序</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#jmmjavamemorymode"><span class="nav-number">3.</span> <span class="nav-text">JMM（JavaMemoryMode）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF-jmm%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81-jmm"><span class="nav-number">3.1.</span> <span class="nav-text">什么是 JMM？为什么需要 JMM？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#jmm-%E6%98%AF%E5%A6%82%E4%BD%95%E6%8A%BD%E8%B1%A1%E7%BA%BF%E7%A8%8B%E5%92%8C%E4%B8%BB%E5%86%85%E5%AD%98%E4%B9%8B%E9%97%B4%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="nav-number">3.2.</span> <span class="nav-text">JMM
 是如何抽象线程和主内存之间的关系？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#java-%E5%86%85%E5%AD%98%E5%8C%BA%E5%9F%9F%E5%92%8C-jmm-%E6%9C%89%E4%BD%95%E5%8C%BA%E5%88%AB"><span class="nav-number">3.3.</span> <span class="nav-text">Java 内存区域和 JMM
 有何区别？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#happens-before-%E5%8E%9F%E5%88%99%E6%98%AF%E4%BB%80%E4%B9%88"><span class="nav-number">3.4.</span> <span class="nav-text">happens-before 原则是什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#happens-before-%E5%B8%B8%E8%A7%81%E8%A7%84%E5%88%99%E6%9C%89%E5%93%AA%E4%BA%9B%E8%B0%88%E8%B0%88%E4%BD%A0%E7%9A%84%E7%90%86%E8%A7%A3"><span class="nav-number">3.5.</span> <span class="nav-text">happens-before
-常见规则有哪些？谈谈你的理解？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#happens-before-%E5%B8%B8%E8%A7%81%E8%A7%84%E5%88%99%E6%9C%89%E5%93%AA%E4%BA%9B%E8%B0%88%E8%B0%88%E4%BD%A0%E7%9A%84%E7%90%86%E8%A7%A3-1"><span class="nav-number">3.6.</span> <span class="nav-text">happens-before
-常见规则有哪些？谈谈你的理解？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%8D%E7%9C%8B%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E4%B8%89%E4%B8%AA%E9%87%8D%E8%A6%81%E7%89%B9%E6%80%A7"><span class="nav-number">4.</span> <span class="nav-text">再看并发编程三个重要特性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li></ol></div>
+常见规则有哪些？谈谈你的理解？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#happens-before-%E5%92%8Cjmm%E4%BB%80%E4%B9%88%E5%85%B3%E7%B3%BB"><span class="nav-number">3.6.</span> <span class="nav-text">happens-before 和JMM什么关系</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%8D%E7%9C%8B%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E4%B8%89%E4%B8%AA%E9%87%8D%E8%A6%81%E7%89%B9%E6%80%A7"><span class="nav-number">4.</span> <span class="nav-text">再看并发编程三个重要特性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
