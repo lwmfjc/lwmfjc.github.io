@@ -248,7 +248,7 @@
         <blockquote>
 <p>转载自https://github.com/Snailclimb/JavaGuide</p>
 </blockquote>
-<h2 id="使用线程池的好处">使用线程池的好处</h2>
+<h2 id="一-使用线程池的好处">一 使用线程池的好处</h2>
 <ul>
 <li>池化技术：减少每次获取资源的消耗，提高对资源的利用率</li>
 <li>线程池提供一种<strong>限制</strong>和<strong>管理资源（包括执行一个任务）</strong>的方式，每个线程池还维护一些基本统计信息，例如<strong>已完成任务</strong>的数量</li>
@@ -259,7 +259,7 @@
 <li>提高线程可管理性（避免无休止创建，使用线程池同一分配、调优、监控）</li>
 </ul></li>
 </ul>
-<h2 id="executor框架">Executor框架</h2>
+<h2 id="二-executor框架">二 Executor框架</h2>
 <p>Java5之后，通过Executor启动线程，比使用Thread的start方法更好，更易于管理，效率高，还能有助于避免this逃逸的问题</p>
 <blockquote>
 <p>this逃逸，指的是构造函数返回之前，其他线程就持有该对象的引用，会导致调用尚未构造完全的对象</p>
@@ -281,10 +281,45 @@ alt="image-20221123163721335" />
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line">      <span class="type">ExecutorService</span> <span class="variable">executorService</span> <span class="operator">=</span> Executors.newCachedThreadPool();</span><br><span class="line">        Callable&lt;MyClass&gt; myClassCallable = <span class="keyword">new</span> <span class="title class_">Callable</span>&lt;MyClass&gt;() &#123;</span><br><span class="line">            </span><br><span class="line">            <span class="keyword">public</span> MyClass <span class="title function_">call</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">                <span class="type">MyClass</span> <span class="variable">myClass1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">MyClass</span>();</span><br><span class="line">                myClass1.setName(<span class="string">&quot;ly-callable-测试&quot;</span>);</span><br><span class="line">                TimeUnit.SECONDS.sleep(<span class="number">2</span>);</span><br><span class="line">                <span class="keyword">return</span> myClass1;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line">        Future&lt;?&gt; submit = executorService.submit(myClassCallable);</span><br><span class="line">        <span class="comment">//这里会阻塞</span></span><br><span class="line">        <span class="type">Object</span> <span class="variable">o</span> <span class="operator">=</span> submit.get();</span><br><span class="line">        log.info(<span class="string">&quot;ly-callable-打印结果1:&quot;</span> + o);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        FutureTask&lt;MyClass&gt; futureTask = <span class="keyword">new</span> <span class="title class_">FutureTask</span>&lt;&gt;(() -&gt; &#123;</span><br><span class="line">            <span class="type">MyClass</span> <span class="variable">myClass1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">MyClass</span>();</span><br><span class="line">            myClass1.setName(<span class="string">&quot;ly-FutureTask-测试&quot;</span>);</span><br><span class="line">            TimeUnit.SECONDS.sleep(<span class="number">2</span>);</span><br><span class="line">            <span class="keyword">return</span> myClass1;</span><br><span class="line">        &#125;);</span><br><span class="line">        Future&lt;?&gt; submit2 = executorService.submit(futureTask);</span><br><span class="line">        <span class="comment">//这里会阻塞</span></span><br><span class="line">        <span class="type">Object</span> <span class="variable">o2</span> <span class="operator">=</span> submit2.get();</span><br><span class="line">        log.info(<span class="string">&quot;ly-callable-打印结果2:&quot;</span> + o2);</span><br><span class="line">        executorService.shutdown();</span><br><span class="line"></span><br><span class="line"><span class="comment">/*结果</span></span><br><span class="line"><span class="comment">2022-11-09 10:19:10 上午 [Thread: main] </span></span><br><span class="line"><span class="comment">INFO:ly-callable-打印结果1:MyClass(name=ly-callable-测试)</span></span><br><span class="line"><span class="comment">2022-11-09 10:19:12 上午 [Thread: main] </span></span><br><span class="line"><span class="comment">INFO:ly-callable-打印结果2:null</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure></li>
 </ol>
 <h3 id="executor框架的使用示意图">Executor框架的使用示意图</h3>
-<h2
-id="重要threadpoolexecutor类简单介绍">(重要)ThreadPoolExecutor类简单介绍</h2>
-<h2
-id="threadpoolexecutor使用原理分析">ThreadPoolExecutor使用+原理分析</h2>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221123173130638.png"
+alt="image-20221123173130638" />
+<figcaption aria-hidden="true">image-20221123173130638</figcaption>
+</figure>
+<ol type="1">
+<li><strong>主线程首先要创建实现 <code>Runnable</code> 或者
+<code>Callable</code> 接口的任务对象。</strong></li>
+<li><strong>把创建完成的实现
+<code>Runnable</code>/<code>Callable</code>接口的 对象直接交给
+<code>ExecutorService</code> 执行</strong>:
+<code>ExecutorService.execute（Runnable command）</code>）或者也可以把
+<code>Runnable</code> 对象或<code>Callable</code> 对象提交给
+<code>ExecutorService</code>
+执行（<code>ExecutorService.submit（Runnable task）</code>或
+<code>ExecutorService.submit（Callable &lt;T&gt; task）</code>）。</li>
+<li><strong>如果执行
+<code>ExecutorService.submit（…）</code>，<code>ExecutorService</code>
+将返回一个实现<code>Future</code>接口的对象</strong>（我们刚刚也提到过了执行
+<code>execute()</code>方法和
+<code>submit()</code>方法的区别，<code>submit()</code>会返回一个
+<code>FutureTask 对象）。由于 FutureTask</code> 实现了
+<code>Runnable</code>，我们也可以创建
+<code>FutureTask</code>，然后直接交给 <code>ExecutorService</code>
+执行。</li>
+<li><strong>最后，主线程可以执行
+<code>FutureTask.get()</code>方法来等待任务执行完成。主线程也可以执行
+<code>FutureTask.cancel（boolean mayInterruptIfRunning）</code>来取消此任务的执行。</strong></li>
+</ol>
+<h2 id="三-重要threadpoolexecutor类简单介绍">三
+(重要)ThreadPoolExecutor类简单介绍</h2>
+<p><strong>线程池实现类 <code>ThreadPoolExecutor</code> 是
+<code>Executor</code> 框架最核心的类。</strong></p>
+<h3 id="threadpoolexecutor类分析">ThreadPoolExecutor类分析</h3>
+<h3 id="推荐使用-threadpoolexecutor-构造函数创建线程池">推荐使用
+<code>ThreadPoolExecutor</code> 构造函数创建线程池</h3>
+<h2 id="四-threadpoolexecutor使用原理分析">四
+ThreadPoolExecutor使用+原理分析</h2>
 <h2 id="几种常见的线程池详解">几种常见的线程池详解</h2>
 <h2
 id="scheduledthreadpoolexecutor详解">ScheduledThreadPoolExecutor详解</h2>
@@ -379,7 +414,10 @@ id="scheduledthreadpoolexecutor详解">ScheduledThreadPoolExecutor详解</h2>
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E7%BA%BF%E7%A8%8B%E6%B1%A0%E7%9A%84%E5%A5%BD%E5%A4%84"><span class="nav-number">1.</span> <span class="nav-text">使用线程池的好处</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#executor%E6%A1%86%E6%9E%B6"><span class="nav-number">2.</span> <span class="nav-text">Executor框架</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#executor%E6%A1%86%E6%9E%B6%E7%BB%93%E6%9E%84"><span class="nav-number">2.1.</span> <span class="nav-text">Executor框架结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#executor%E6%A1%86%E6%9E%B6%E7%9A%84%E4%BD%BF%E7%94%A8%E7%A4%BA%E6%84%8F%E5%9B%BE"><span class="nav-number">2.2.</span> <span class="nav-text">Executor框架的使用示意图</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%87%8D%E8%A6%81threadpoolexecutor%E7%B1%BB%E7%AE%80%E5%8D%95%E4%BB%8B%E7%BB%8D"><span class="nav-number">3.</span> <span class="nav-text">(重要)ThreadPoolExecutor类简单介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#threadpoolexecutor%E4%BD%BF%E7%94%A8%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90"><span class="nav-number">4.</span> <span class="nav-text">ThreadPoolExecutor使用+原理分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81%E7%9A%84%E7%BA%BF%E7%A8%8B%E6%B1%A0%E8%AF%A6%E8%A7%A3"><span class="nav-number">5.</span> <span class="nav-text">几种常见的线程池详解</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#scheduledthreadpoolexecutor%E8%AF%A6%E8%A7%A3"><span class="nav-number">6.</span> <span class="nav-text">ScheduledThreadPoolExecutor详解</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BA%BF%E7%A8%8B%E6%B1%A0%E5%A4%A7%E5%B0%8F%E7%A1%AE%E5%AE%9A"><span class="nav-number">7.</span> <span class="nav-text">线程池大小确定</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">8.</span> <span class="nav-text">参考</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80-%E4%BD%BF%E7%94%A8%E7%BA%BF%E7%A8%8B%E6%B1%A0%E7%9A%84%E5%A5%BD%E5%A4%84"><span class="nav-number">1.</span> <span class="nav-text">一 使用线程池的好处</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C-executor%E6%A1%86%E6%9E%B6"><span class="nav-number">2.</span> <span class="nav-text">二 Executor框架</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#executor%E6%A1%86%E6%9E%B6%E7%BB%93%E6%9E%84"><span class="nav-number">2.1.</span> <span class="nav-text">Executor框架结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#executor%E6%A1%86%E6%9E%B6%E7%9A%84%E4%BD%BF%E7%94%A8%E7%A4%BA%E6%84%8F%E5%9B%BE"><span class="nav-number">2.2.</span> <span class="nav-text">Executor框架的使用示意图</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89-%E9%87%8D%E8%A6%81threadpoolexecutor%E7%B1%BB%E7%AE%80%E5%8D%95%E4%BB%8B%E7%BB%8D"><span class="nav-number">3.</span> <span class="nav-text">三
+(重要)ThreadPoolExecutor类简单介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#threadpoolexecutor%E7%B1%BB%E5%88%86%E6%9E%90"><span class="nav-number">3.1.</span> <span class="nav-text">ThreadPoolExecutor类分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8E%A8%E8%8D%90%E4%BD%BF%E7%94%A8-threadpoolexecutor-%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%E5%88%9B%E5%BB%BA%E7%BA%BF%E7%A8%8B%E6%B1%A0"><span class="nav-number">3.2.</span> <span class="nav-text">推荐使用
+ThreadPoolExecutor 构造函数创建线程池</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B-threadpoolexecutor%E4%BD%BF%E7%94%A8%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90"><span class="nav-number">4.</span> <span class="nav-text">四
+ThreadPoolExecutor使用+原理分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81%E7%9A%84%E7%BA%BF%E7%A8%8B%E6%B1%A0%E8%AF%A6%E8%A7%A3"><span class="nav-number">5.</span> <span class="nav-text">几种常见的线程池详解</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#scheduledthreadpoolexecutor%E8%AF%A6%E8%A7%A3"><span class="nav-number">6.</span> <span class="nav-text">ScheduledThreadPoolExecutor详解</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BA%BF%E7%A8%8B%E6%B1%A0%E5%A4%A7%E5%B0%8F%E7%A1%AE%E5%AE%9A"><span class="nav-number">7.</span> <span class="nav-text">线程池大小确定</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">8.</span> <span class="nav-text">参考</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
