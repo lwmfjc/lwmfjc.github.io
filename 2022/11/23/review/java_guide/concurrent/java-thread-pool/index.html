@@ -316,6 +316,20 @@ alt="image-20221123173130638" />
 <p><strong>线程池实现类 <code>ThreadPoolExecutor</code> 是
 <code>Executor</code> 框架最核心的类。</strong></p>
 <h3 id="threadpoolexecutor类分析">ThreadPoolExecutor类分析</h3>
+<ul>
+<li><p>这里看最长的那个，其余三个都是在该构造方法的基础上产生，即<strong>给定某些默认参数</strong>的构造方法，比如<strong>默认的拒绝策略</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">   * 用给定的初始参数创建一个新的ThreadPoolExecutor。</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">ThreadPoolExecutor</span><span class="params">(<span class="type">int</span> corePoolSize,//线程池的核心线程数量</span></span><br><span class="line"><span class="params">                            <span class="type">int</span> maximumPoolSize,//线程池的最大线程数</span></span><br><span class="line"><span class="params">                            <span class="type">long</span> keepAliveTime,//当线程数大于核心线程数时，多余的空闲线程存活的最长时间</span></span><br><span class="line"><span class="params">                            TimeUnit unit,//时间单位</span></span><br><span class="line"><span class="params">                            BlockingQueue&lt;Runnable&gt; workQueue,//任务队列，用来储存等待执行任务的队列</span></span><br><span class="line"><span class="params">                            ThreadFactory threadFactory,//线程工厂，用来创建线程，一般默认即可</span></span><br><span class="line"><span class="params">                            RejectedExecutionHandler handler//拒绝策略，当提交的任务过多而不能及时处理时，我们可以定制策略来处理任务</span></span><br><span class="line"><span class="params">                             )</span> &#123;</span><br><span class="line">      <span class="keyword">if</span> (corePoolSize &lt; <span class="number">0</span> ||</span><br><span class="line">          maximumPoolSize &lt;= <span class="number">0</span> ||</span><br><span class="line">          maximumPoolSize &lt; corePoolSize ||</span><br><span class="line">          keepAliveTime &lt; <span class="number">0</span>)</span><br><span class="line">          <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>();</span><br><span class="line">      <span class="keyword">if</span> (workQueue == <span class="literal">null</span> || threadFactory == <span class="literal">null</span> || handler == <span class="literal">null</span>)</span><br><span class="line">          <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">NullPointerException</span>();</span><br><span class="line">      <span class="built_in">this</span>.corePoolSize = corePoolSize;</span><br><span class="line">      <span class="built_in">this</span>.maximumPoolSize = maximumPoolSize;</span><br><span class="line">      <span class="built_in">this</span>.workQueue = workQueue;</span><br><span class="line">      <span class="built_in">this</span>.keepAliveTime = unit.toNanos(keepAliveTime);</span><br><span class="line">      <span class="built_in">this</span>.threadFactory = threadFactory;</span><br><span class="line">      <span class="built_in">this</span>.handler = handler;</span><br><span class="line">  &#125; </span><br></pre></td></tr></table></figure></li>
+<li><p>ThreadPoolExecutor中，3个最重要的参数</p>
+<ol type="1">
+<li><strong>corePoolSize</strong>：<strong>核心线程数</strong>，定义了最小可以同时运行的线程数量</li>
+<li><strong>maximumPoolSize</strong>：<strong>当队列中存放的任务达到队列容量</strong>时，当前<strong>可以同时运行的线程数量变为最大线程数</strong></li>
+<li><strong>workQueue</strong>：当新任务来的时候，会先判断当前运行的线程数量<strong>是否达到核心线程数</strong>，如果<strong>达到</strong>的话，新任务就会被存放在<strong>队列</strong>中</li>
+</ol></li>
+<li><p>ThreadPoolExecutor其他常见参数</p>
+<ol type="1">
+<li></li>
+</ol></li>
+</ul>
 <h3 id="推荐使用-threadpoolexecutor-构造函数创建线程池">推荐使用
 <code>ThreadPoolExecutor</code> 构造函数创建线程池</h3>
 <h2 id="四-threadpoolexecutor使用原理分析">四
