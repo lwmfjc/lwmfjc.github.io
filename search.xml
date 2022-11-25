@@ -3924,7 +3924,18 @@ alt="image-20221124155404087" /> 上图分析
 Of Memory）</li>
 </ol></li>
 </ul></li>
-<li><p>SingleThreadExecutor</p></li>
+<li><p>SingleThreadExecutor</p>
+<ul>
+<li><p>SingleThreadExecutor是只有一个线程的线程池，源码：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"> <span class="comment">/**</span></span><br><span class="line"><span class="comment">     *返回只有一个线程的线程池</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> ExecutorService <span class="title function_">newSingleThreadExecutor</span><span class="params">(ThreadFactory threadFactory)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">FinalizableDelegatedExecutorService</span></span><br><span class="line">            (<span class="keyword">new</span> <span class="title class_">ThreadPoolExecutor</span>(<span class="number">1</span>, <span class="number">1</span>,</span><br><span class="line">                                    <span class="number">0L</span>, TimeUnit.MILLISECONDS,</span><br><span class="line">                                    <span class="keyword">new</span> <span class="title class_">LinkedBlockingQueue</span>&lt;Runnable&gt;(),</span><br><span class="line">                                    threadFactory));</span><br><span class="line">    &#125;</span><br><span class="line"><span class="comment">//另一种构造函数</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">static</span> ExecutorService <span class="title function_">newSingleThreadExecutor</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">FinalizableDelegatedExecutorService</span></span><br><span class="line">            (<span class="keyword">new</span> <span class="title class_">ThreadPoolExecutor</span>(<span class="number">1</span>, <span class="number">1</span>,</span><br><span class="line">                                    <span class="number">0L</span>, TimeUnit.MILLISECONDS,</span><br><span class="line">                                    <span class="keyword">new</span> <span class="title class_">LinkedBlockingQueue</span>&lt;Runnable&gt;()));</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>新创建的 <code>SingleThreadExecutor</code> 的
+<code>corePoolSize</code> 和 <code>maximumPoolSize</code> 都被设置为
+1.其他参数和 <code>FixedThreadPool</code> 相同</p></li>
+<li><p>执行过程 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221124173110534.png"
+alt="image-20221124173110534" />
+如果当前运行线程数少于corePoolSize（1），则创建一个新的线程执行任务；当前线程池有一个运行的线程后，将任务加入LinkedBlockingQueue；线程执行完当前的任务后，会在循环中反复从LinkedBlockingQueue中获取任务执行</p></li>
+</ul></li>
 <li><p>CachedThreadPool</p></li>
 </ol>
 <h2
