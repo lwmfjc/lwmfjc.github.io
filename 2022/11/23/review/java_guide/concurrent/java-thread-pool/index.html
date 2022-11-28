@@ -510,11 +510,50 @@ Of Memory）</li>
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221124173110534.png"
 alt="image-20221124173110534" />
 如果当前运行线程数少于corePoolSize（1），则创建一个新的线程执行任务；当前线程池有一个运行的线程后，将任务加入LinkedBlockingQueue；线程执行完当前的任务后，会在循环中反复从LinkedBlockingQueue中获取任务执行</p></li>
+<li><p>为什么不推荐使用SingleThreadExecutor
+SingleThreadExecutor使用无界队列LinkedBlockingQueue作为线程池的工作队列（容量为Integer.MAX_VALUE)
+。SingleThreadExecutor使用无界队列作为线程池的工作队列会对线程池带来的影响与FixedThreadPoll相同，即导致OOM</p></li>
 </ul></li>
-<li><p>CachedThreadPool</p></li>
+<li><p>CachedThreadPool
+CachedThreadPool是一个会根据需要创建新线程的线程池，源码：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 创建一个线程池，根据需要创建新线程，但会在先前构建的线程可用时重用它。</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> ExecutorService <span class="title function_">newCachedThreadPool</span><span class="params">(ThreadFactory threadFactory)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">ThreadPoolExecutor</span>(<span class="number">0</span>, Integer.MAX_VALUE,</span><br><span class="line">                                      <span class="number">60L</span>, TimeUnit.SECONDS,</span><br><span class="line">                                      <span class="keyword">new</span> <span class="title class_">SynchronousQueue</span>&lt;Runnable&gt;(),</span><br><span class="line">                                      threadFactory);</span><br><span class="line">    &#125;</span><br><span class="line"><span class="comment">//其他构造函数</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> ExecutorService <span class="title function_">newCachedThreadPool</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">ThreadPoolExecutor</span>(<span class="number">0</span>, Integer.MAX_VALUE,</span><br><span class="line">                                      <span class="number">60L</span>, TimeUnit.SECONDS,</span><br><span class="line">                                      <span class="keyword">new</span> <span class="title class_">SynchronousQueue</span>&lt;Runnable&gt;());</span><br><span class="line">    &#125; </span><br></pre></td></tr></table></figure>
+<p><code>CachedThreadPool</code> 的<code>corePoolSize</code>
+被设置为空（0），<code>maximumPoolSize</code>被设置为
+<code>Integer.MAX.VALUE</code>，即它是无界的，这也就意味着如果主线程提交任务的速度高于
+<code>maximumPool</code>
+中线程处理任务的速度时，<code>CachedThreadPool</code>
+会不断创建新的线程。极端情况下，这样会导致耗尽 cpu 和内存资源</p>
+<p>★：SynchronousQueue队列只能容纳单个元素
+执行过程（execute()示意图）</p>
+<p><img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221128163237634.png"
+alt="image-20221128163237634" /> 上图说明：</p>
+<ol type="1">
+<li>首先执行 <code>SynchronousQueue.offer(Runnable task)</code>
+提交任务到任务队列。如果当前 <code>maximumPool</code> 中有闲线程正在执行
+<code>SynchronousQueue.poll(keepAliveTime,TimeUnit.NANOSECONDS)</code>，那么主线程执行
+offer 操作与空闲线程执行的 <code>poll</code>
+操作配对成功，主线程把任务交给空闲线程执行，<code>execute()</code>方法执行完成，否则执行下面的步骤
+2；</li>
+<li>当初始 <code>maximumPool</code> 为空，或者 <code>maximumPool</code>
+中没有空闲线程时，将没有线程执行
+<code>SynchronousQueue.poll(keepAliveTime,TimeUnit.NANOSECONDS)</code>。这种情况下，步骤
+1 将失败，此时 <code>CachedThreadPool</code>
+会创建新线程执行任务，execute 方法执行完成；</li>
+</ol>
+<p>不推荐使用CachedThreadPool?
+因为它允许创建的线程数量为Integer.MAX_VALUE,可能创建大量线程，从而导致OOM</p></li>
 </ol>
 <h2
 id="scheduledthreadpoolexecutor详解">ScheduledThreadPoolExecutor详解</h2>
+<p>项目中基本不会用到，主要用来在给定的延迟后运行任务，或者定期执行任务
+它使用的任务队列DelayQueue封装了一个PriorityQueue，PriorityQueue会对队列中的任务进行排序，执行<strong>所需时间短</strong>的放在前面先被执行(<strong>ScheduledFutureTask的time</strong>变量小的先执行)，如果一致则先提交的先执行(<strong>ScheduleFutureTask的sequenceNumber变量</strong>)</p>
+<ul>
+<li><p>代码，TimerTask</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Slf4j</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">MyTimerTask</span> <span class="keyword">extends</span> <span class="title class_">TimerTask</span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">        log.info(<span class="string">&quot;hello&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">TimerTaskTest</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">Timer</span> <span class="variable">timer</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Timer</span>();</span><br><span class="line">        <span class="type">Calendar</span> <span class="variable">calendar</span> <span class="operator">=</span> Calendar.getInstance();</span><br><span class="line">        calendar.set(Calendar.HOUR_OF_DAY, <span class="number">17</span>);<span class="comment">//控制小时</span></span><br><span class="line">        calendar.set(Calendar.MINUTE, <span class="number">1</span>);<span class="comment">//控制分钟</span></span><br><span class="line">        calendar.set(Calendar.SECOND, <span class="number">0</span>);<span class="comment">//控制秒</span></span><br><span class="line">        <span class="type">Date</span> <span class="variable">time</span> <span class="operator">=</span> calendar.getTime();<span class="comment">//执行任务时间为17:01:00</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">//每天定时17:02执行操作，每5秒执行一次</span></span><br><span class="line">        timer.schedule(<span class="keyword">new</span> <span class="title class_">MyTimerTask</span>(), time, <span class="number">5000</span> );</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>代码，ScheduleThreadPoolExecutor</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Slf4j</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ScheduleTask</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">        <span class="type">ScheduledExecutorService</span> <span class="variable">scheduledExecutorService</span> <span class="operator">=</span> Executors.newScheduledThreadPool(<span class="number">3</span>);</span><br><span class="line">        scheduledExecutorService.scheduleAtFixedRate(<span class="keyword">new</span> <span class="title class_">Runnable</span>() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">                log.info(<span class="string">&quot;hello world!&quot;</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;, <span class="number">3</span>, <span class="number">5</span>, TimeUnit.SECONDS);<span class="comment">//10表示首次执行任务的延迟时间，5表示每次执行任务的间隔时间，Thread.sleep(10000);</span></span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">&quot;Shutting down executor...&quot;</span>);</span><br><span class="line">        TimeUnit.SECONDS.sleep(<span class="number">4</span>);</span><br><span class="line">        <span class="comment">//线程池一关闭，定时器就不会再执行</span></span><br><span class="line">        scheduledExecutorService.shutdown();</span><br><span class="line">        <span class="keyword">while</span> (<span class="literal">true</span>)&#123;&#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*结果</span></span><br><span class="line"><span class="comment">Shutting down executor...</span></span><br><span class="line"><span class="comment">2022-11-28 17:25:06 下午 [Thread: pool-1-thread-1] </span></span><br><span class="line"><span class="comment">INFO:hello world!</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">不会再产出，因为线程池已经关了*/</span></span><br></pre></td></tr></table></figure></li>
+</ul>
 <h2 id="线程池大小确定">线程池大小确定</h2>
 <h2 id="参考">参考</h2>
 
