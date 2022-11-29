@@ -599,7 +599,50 @@ alt="image-20221129104234412" />
 </blockquote></li>
 </ul>
 <h2 id="线程池大小确定">线程池大小确定</h2>
-<h2 id="参考">参考</h2>
+<ul>
+<li><p>如果线程池中的线程太多，就会增加<strong>上下文切换</strong>的成本</p>
+<blockquote>
+<p>多线程编程中一般线程的个数都大于 CPU 核心的个数，而一个 CPU
+核心在任意时刻只能被一个线程使用，为了让这些线程都能得到有效执行，CPU
+采取的策略是为每个线程分配时间片并轮转的形式。当一个线程的时间片用完的时候就会重新处于就绪状态让给其他线程使用，这个过程就属于一次上下文切换。概括来说就是：当前任务在执行完
+CPU
+时间片切换到另一个任务之前会先保存自己的状态，以便下次再切换回这个任务时，可以再加载这个任务的状态。<strong>任务从保存到再加载的过程就是一次上下文切换</strong>。</p>
+<p>上下文切换通常是计算密集型的。也就是说，它需要相当可观的处理器时间，在每秒几十上百次的切换中，每次切换都需要纳秒量级的时间。所以，<strong>上下文切换对系统来说意味着消耗大量的
+CPU 时间</strong>，事实上，可能是操作系统中时间消耗最大的操作。</p>
+<p><strong>Linux</strong> 相比与其他操作系统（包括其他类 Unix
+系统）有很多的优点，其中有一项就是，其<strong>上下文切换和模式切换的时间消耗非常少</strong>。</p>
+</blockquote></li>
+<li><p>过大跟过小都不行</p>
+<ul>
+<li>如果我们设置的<strong>线程池数量太小</strong>的话，如果同一时间有大量任务/请求需要处理，可能会导致大<strong>量的请求/任务在任务队列中排队等待执行</strong>，甚至会出现<strong>任务队列满了</strong>之后任务/请求<strong>无法处理</strong>的情况，或者大量任<strong>务堆积在任务队列导致
+OOM</strong></li>
+<li>设置线程<strong>数量太大</strong>，<strong>大量线程可能会同时在争取
+CPU
+资源</strong>，这样会导致<strong>大量的上下文切换</strong>，从而<strong>增加线程的执行时间</strong>，影响了整体执行效率</li>
+</ul></li>
+<li><p>简单且适用面较广的公式</p>
+<ul>
+<li><p><strong>CPU 密集型任务(N+1)：</strong>
+这种<strong>任务消耗的主要是 CPU 资源</strong>，可以将线程数设置为
+N（CPU 核心数）+1，比 CPU
+核心数多出来的一个线程是为了防止线程偶发的缺页中断，或者其它原因导致的任务暂停而带来的影响。一旦任务暂停，CPU
+就会处于空闲状态，而在这种情况下多出来的一个线程就可以充分利用 CPU
+的空闲时间。</p></li>
+<li><p><strong>I/O 密集型任务(2N)：</strong>
+这种任务应用起来，系统会用<strong>大部分的时间来处理 I/O
+交互</strong>，而<strong>线程在处理 I/O 的时间段内不会占用 CPU
+来处理</strong>，这时就可以将 CPU 交出给其它线程使用。因此<strong>在 I/O
+密集型任务的应用中，我们可以多配置一些线程</strong>，具体的计算方法是
+2N。</p></li>
+<li><blockquote>
+<p>如何判断是CPU密集任务还是IO密集任务</p>
+<p>CPU 密集型简单理解就是利用 CPU
+计算能力的任务比如你在内存中对大量数据进行排序。但凡涉及到网络读取，文件读取这类都是
+IO 密集型，这类任务的特点是 CPU 计算耗费时间相比于等待 IO
+操作完成的时间来说很少，大部分时间都花在了等待 IO 操作完成上。</p>
+</blockquote></li>
+</ul></li>
+</ul>
 
     </div>
 
@@ -692,7 +735,7 @@ alt="image-20221129104234412" />
           <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80-%E4%BD%BF%E7%94%A8%E7%BA%BF%E7%A8%8B%E6%B1%A0%E7%9A%84%E5%A5%BD%E5%A4%84"><span class="nav-number">1.</span> <span class="nav-text">一 使用线程池的好处</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C-executor%E6%A1%86%E6%9E%B6"><span class="nav-number">2.</span> <span class="nav-text">二 Executor框架</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#executor%E6%A1%86%E6%9E%B6%E7%BB%93%E6%9E%84"><span class="nav-number">2.1.</span> <span class="nav-text">Executor框架结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#executor%E6%A1%86%E6%9E%B6%E7%9A%84%E4%BD%BF%E7%94%A8%E7%A4%BA%E6%84%8F%E5%9B%BE"><span class="nav-number">2.2.</span> <span class="nav-text">Executor框架的使用示意图</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89-%E9%87%8D%E8%A6%81threadpoolexecutor%E7%B1%BB%E7%AE%80%E5%8D%95%E4%BB%8B%E7%BB%8D"><span class="nav-number">3.</span> <span class="nav-text">三
 (重要)ThreadPoolExecutor类简单介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#threadpoolexecutor%E7%B1%BB%E5%88%86%E6%9E%90"><span class="nav-number">3.1.</span> <span class="nav-text">ThreadPoolExecutor类分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8E%A8%E8%8D%90%E4%BD%BF%E7%94%A8-threadpoolexecutor-%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%E5%88%9B%E5%BB%BA%E7%BA%BF%E7%A8%8B%E6%B1%A0"><span class="nav-number">3.2.</span> <span class="nav-text">推荐使用
 ThreadPoolExecutor 构造函数创建线程池</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B-threadpoolexecutor%E4%BD%BF%E7%94%A8%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90"><span class="nav-number">4.</span> <span class="nav-text">四
-ThreadPoolExecutor使用+原理分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A4%BA%E4%BE%8B%E4%BB%A3%E7%A0%81runnablethreadpoolexecutor"><span class="nav-number">4.1.</span> <span class="nav-text">示例代码：Runnable+ThreadPoolExecutor</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BA%BF%E7%A8%8B%E6%B1%A0%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90"><span class="nav-number">4.2.</span> <span class="nav-text">线程池原理分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%87%A0%E4%B8%AA%E5%B8%B8%E8%A7%81%E7%9A%84%E5%AF%B9%E6%AF%94"><span class="nav-number">4.3.</span> <span class="nav-text">几个常见的对比</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81%E7%9A%84%E7%BA%BF%E7%A8%8B%E6%B1%A0%E8%AF%A6%E8%A7%A3"><span class="nav-number">5.</span> <span class="nav-text">几种常见的线程池详解</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#scheduledthreadpoolexecutor%E8%AF%A6%E8%A7%A3"><span class="nav-number">6.</span> <span class="nav-text">ScheduledThreadPoolExecutor详解</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BA%BF%E7%A8%8B%E6%B1%A0%E5%A4%A7%E5%B0%8F%E7%A1%AE%E5%AE%9A"><span class="nav-number">7.</span> <span class="nav-text">线程池大小确定</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">8.</span> <span class="nav-text">参考</span></a></li></ol></div>
+ThreadPoolExecutor使用+原理分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A4%BA%E4%BE%8B%E4%BB%A3%E7%A0%81runnablethreadpoolexecutor"><span class="nav-number">4.1.</span> <span class="nav-text">示例代码：Runnable+ThreadPoolExecutor</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BA%BF%E7%A8%8B%E6%B1%A0%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90"><span class="nav-number">4.2.</span> <span class="nav-text">线程池原理分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%87%A0%E4%B8%AA%E5%B8%B8%E8%A7%81%E7%9A%84%E5%AF%B9%E6%AF%94"><span class="nav-number">4.3.</span> <span class="nav-text">几个常见的对比</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81%E7%9A%84%E7%BA%BF%E7%A8%8B%E6%B1%A0%E8%AF%A6%E8%A7%A3"><span class="nav-number">5.</span> <span class="nav-text">几种常见的线程池详解</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#scheduledthreadpoolexecutor%E8%AF%A6%E8%A7%A3"><span class="nav-number">6.</span> <span class="nav-text">ScheduledThreadPoolExecutor详解</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BA%BF%E7%A8%8B%E6%B1%A0%E5%A4%A7%E5%B0%8F%E7%A1%AE%E5%AE%9A"><span class="nav-number">7.</span> <span class="nav-text">线程池大小确定</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
