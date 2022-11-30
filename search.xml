@@ -2769,6 +2769,104 @@ HashEntry 数组 + 链表</strong>，而是 <strong>Node 数组 + 链表 /
     <content><![CDATA[<blockquote>
 <p>转载自https://github.com/Snailclimb/JavaGuide</p>
 </blockquote>
+<p><code>Semaphore  [ˈseməfɔː(r)]</code></p>
+<blockquote>
+<ul>
+<li>何为 AQS？AQS 原理了解吗？</li>
+<li><code>CountDownLatch</code> 和 <code>CyclicBarrier</code>
+了解吗？两者的区别是什么？</li>
+<li>用过 <code>Semaphore</code> 吗？应用场景了解吗？</li>
+<li>......</li>
+</ul>
+</blockquote>
+<h1 id="aqs简单介绍">AQS简单介绍</h1>
+<p>AQS,AbstractQueueSyschronizer，即抽象队列同步器，这个类在java.util.concurrent.locks包下面</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221130154309546.png"
+alt="image-20221130154309546" />
+<figcaption aria-hidden="true">image-20221130154309546</figcaption>
+</figure>
+<p>AQS是一个抽象类，主要用来构建锁和同步器</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">AbstractQueuedSynchronizer</span> <span class="keyword">extends</span> <span class="title class_">AbstractOwnableSynchronizer</span> <span class="keyword">implements</span> <span class="title class_">java</span>.io.Serializable &#123;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+<p>AQS
+<strong>为构建锁和同步器提供了一些通用功能</strong>的是实现，因此，使用
+AQS
+能简单且高效地<strong>构造出应用广泛的大量的同步器</strong>，比如我们提到的
+<strong><code>ReentrantLock</code></strong>，<strong><code>Semaphore</code></strong>，其他的诸如
+<code>ReentrantReadWriteLock</code>，<code>SynchronousQueue</code>，<code>FutureTask</code>(jdk1.7)
+等等皆是基于 AQS 的。</p>
+<h1 id="aqs原理">AQS原理</h1>
+<p><strong>面试不是背题，大家一定要加入自己的思想，即使加入不了自己的思想也要保证自己能够通俗的讲出来而不是背出来</strong></p>
+<p>AQS
+核心思想是，如果被请求的共享资源空闲，则将当前请求资源的线程设置为有效的工作线程，并且将共享资源设置为锁定状态。如果被请求的共享资源被占用，那么就需要一套线程阻塞等待以及被唤醒时锁分配的机制，这个机制
+AQS 是用 <strong>CLH
+队列锁</strong>实现的，即<strong>将暂时获取不到锁的线程加入到队列</strong>中。</p>
+<blockquote>
+<p>CLH(Craig,Landin and
+Hagersten)队列是一个<strong>虚拟的双向队列</strong>（虚拟的双向队列即不存在队列实例，仅存在结点之间的关联关系）。AQS
+是<strong>将每条请求共享资源的线程封装成一个 CLH
+锁队列的一个结点</strong>（Node）来实现锁的分配。
+搜索了一下，CLH好像是人名</p>
+</blockquote>
+<ul>
+<li><p>AQS（AbstractQueuedSynchronized）原理图<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221120193141243.png"
+alt="image-20221120193141243" /></p>
+<p>AQS使用一个<strong>int成员变量来表示同步状态</strong>，通过内置的FIFO队列来获取资源线程的排队工作。AQS<strong>使用CAS对同步状态进行原子操作</strong>并实现对其值的修改</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">volatile</span> <span class="type">int</span> state;<span class="comment">//共享变量，使用volatile修饰保证线程可见性</span></span><br></pre></td></tr></table></figure>
+<p>状态信息的操作</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//返回同步状态的当前值</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">getState</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> state;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//设置同步状态的值</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title function_">setState</span><span class="params">(<span class="type">int</span> newState)</span> &#123;</span><br><span class="line">    state = newState;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//原子地（CAS操作）将同步状态值设置为给定值update如果当前同步状态的值等于expect（期望值）</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">final</span> <span class="type">boolean</span> <span class="title function_">compareAndSetState</span><span class="params">(<span class="type">int</span> expect, <span class="type">int</span> update)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> unsafe.compareAndSwapInt(<span class="built_in">this</span>, stateOffset, expect, update);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>AQS对资源的共享方式</p>
+<ul>
+<li><p>包括Exclusive（独占）和Share（共享）</p></li>
+<li><p>Exclusive（独占）
+<strong>只有一个线程能执行，如ReentrantLock，又分为公平锁和非公平锁</strong>，Reentrant同时支持两种所，定义：</p>
+<ul>
+<li><p>公平锁：按照线程在队列中的排队顺序，先到者先拿到锁</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//例子</span></span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">tt</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">        Lock reLock=<span class="keyword">new</span> <span class="title class_">ReentrantLock</span>();</span><br><span class="line">        <span class="comment">//reLock.lock();</span></span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">0</span>;i&lt;<span class="number">100</span>;i++)&#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">finalI</span> <span class="operator">=</span> i;</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">Thread</span>(()-&gt;&#123;</span><br><span class="line">                reLock.lock();</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    log.info(<span class="string">&quot;线程标志&quot;</span>+finalI+<span class="string">&quot;即将停止10s&quot;</span>);</span><br><span class="line">                    TimeUnit.SECONDS.sleep(<span class="number">10</span>);</span><br><span class="line">                    log.info(<span class="string">&quot;线程标志&quot;</span>+finalI+<span class="string">&quot;停止结束&quot;</span>);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125;</span><br><span class="line">                reLock.unlock();</span><br><span class="line">            &#125;).start();</span><br><span class="line">            TimeUnit.SECONDS.sleep(<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">while</span> (<span class="literal">true</span>)&#123;&#125;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="comment">/* 结果</span></span><br><span class="line"><span class="comment">2022-11-30 17:27:31 下午 [Thread: Thread-1] </span></span><br><span class="line"><span class="comment">INFO:线程标志0即将停止10s</span></span><br><span class="line"><span class="comment">2022-11-30 17:27:41 下午 [Thread: Thread-1] </span></span><br><span class="line"><span class="comment">INFO:线程标志0停止结束</span></span><br><span class="line"><span class="comment">2022-11-30 17:27:41 下午 [Thread: Thread-2] </span></span><br><span class="line"><span class="comment">INFO:线程标志1即将停止10s</span></span><br><span class="line"><span class="comment">2022-11-30 17:27:51 下午 [Thread: Thread-2] </span></span><br><span class="line"><span class="comment">INFO:线程标志1停止结束</span></span><br><span class="line"><span class="comment">2022-11-30 17:27:51 下午 [Thread: Thread-3] </span></span><br><span class="line"><span class="comment">INFO:线程标志2即将停止10s</span></span><br><span class="line"><span class="comment">2022-11-30 17:28:01 下午 [Thread: Thread-3] </span></span><br><span class="line"><span class="comment">INFO:线程标志2停止结束</span></span><br><span class="line"><span class="comment">2022-11-30 17:28:01 下午 [Thread: Thread-4] </span></span><br><span class="line"><span class="comment">INFO:线程标志3即将停止10s</span></span><br><span class="line"><span class="comment">2022-11-30 17:28:11 下午 [Thread: Thread-4] </span></span><br><span class="line"><span class="comment">INFO:线程标志3停止结束</span></span><br><span class="line"><span class="comment">2022-11-30 17:28:11 下午 [Thread: Thread-5] </span></span><br><span class="line"><span class="comment">INFO:线程标志4即将停止10s</span></span><br><span class="line"><span class="comment">2022-11-30 17:28:21 下午 [Thread: Thread-5] </span></span><br><span class="line"><span class="comment">INFO:线程标志4停止结束</span></span><br><span class="line"><span class="comment">2022-11-30 17:28:21 下午 [Thread: Thread-6] </span></span><br><span class="line"><span class="comment">INFO:线程标志5即将停止10s</span></span><br><span class="line"><span class="comment">2022-11-30 17:28:31 下午 [Thread: Thread-6] </span></span><br><span class="line"><span class="comment">INFO:线程标志5停止结束</span></span><br><span class="line"><span class="comment">2022-11-30 17:28:31 下午 [Thread: Thread-7] </span></span><br><span class="line"><span class="comment">INFO:线程标志6即将停止10s</span></span><br><span class="line"><span class="comment">2022-11-30 17:28:41 下午 [Thread: Thread-7] </span></span><br><span class="line"><span class="comment">INFO:线程标志6停止结束</span></span><br><span class="line"><span class="comment">2022-11-30 17:28:41 下午 [Thread: Thread-8] </span></span><br><span class="line"><span class="comment">INFO:线程标志7即将停止10s</span></span><br><span class="line"><span class="comment">2022-11-30 17:28:51 下午 [Thread: Thread-8] </span></span><br><span class="line"><span class="comment">INFO:线程标志7停止结束</span></span><br><span class="line"><span class="comment">2022-11-30 17:28:51 下午 [Thread: Thread-9] </span></span><br><span class="line"><span class="comment">INFO:线程标志8即将停止10s</span></span><br><span class="line"><span class="comment">2022-11-30 17:29:01 下午 [Thread: Thread-9] </span></span><br><span class="line"><span class="comment">INFO:线程标志8停止结束</span></span><br><span class="line"><span class="comment">2022-11-30 17:29:01 下午 [Thread: Thread-10] </span></span><br><span class="line"><span class="comment">INFO:线程标志9即将停止10s</span></span><br><span class="line"><span class="comment">2022-11-30 17:29:11 下午 [Thread: Thread-10] </span></span><br><span class="line"><span class="comment">INFO:线程标志9停止结束</span></span><br><span class="line"><span class="comment">2022-11-30 17:29:11 下午 [Thread: Thread-11] </span></span><br><span class="line"><span class="comment">INFO:线程标志10即将停止10s</span></span><br><span class="line"><span class="comment">2022-11-30 17:29:21 下午 [Thread: Thread-11] </span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure></li>
+<li><p>非公平锁：当线程要获取锁时，<strong>先通过两次CAS操作去抢锁</strong>，如果没抢到，当前线程<strong>再加入到队列</strong>中等待唤醒</p></li>
+</ul></li>
+<li><p><strong><code>ReentrantLock</code> 中相关的源代码</strong>
+ReentrantLock默认采用非公平锁，考虑获得更好的性能，通过boolean决定是否用公平锁（传入true用公平锁）</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/** Synchronizer providing all implementation mechanics */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> Sync sync;</span><br><span class="line"><span class="keyword">public</span> <span class="title function_">ReentrantLock</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">// 默认非公平锁</span></span><br><span class="line">    sync = <span class="keyword">new</span> <span class="title class_">NonfairSync</span>();</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="title function_">ReentrantLock</span><span class="params">(<span class="type">boolean</span> fair)</span> &#123;</span><br><span class="line">    sync = fair ? <span class="keyword">new</span> <span class="title class_">FairSync</span>() : <span class="keyword">new</span> <span class="title class_">NonfairSync</span>();</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+<p>ReentrantLock中公平锁的lock方法</p></li>
+</ul></li>
+<li><p>AQS底层使用了模板方法模式 使用方式</p>
+<ol type="1">
+<li><p>使用者继承AbstractQueueSynchronizer并重写指定方法（<strong>无非是对于共享资源state的获取和释放</strong>）</p></li>
+<li><p>将AQS组合在自定义同步组件的实现中，并调用其模板方法，而<strong>这些模板方法会调用使用者重写的方法</strong></p></li>
+<li><p>自定义同步器时，需要重写下面几个AQS提供的钩子方法</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="type">boolean</span> <span class="title function_">tryAcquire</span><span class="params">(<span class="type">int</span>)</span><span class="comment">//独占方式。尝试获取资源，成功则返回true，失败则返回false。</span></span><br><span class="line"><span class="keyword">protected</span> <span class="type">boolean</span> <span class="title function_">tryRelease</span><span class="params">(<span class="type">int</span>)</span><span class="comment">//独占方式。尝试释放资源，成功则返回true，失败则返回false。</span></span><br><span class="line"><span class="keyword">protected</span> <span class="type">int</span> <span class="title function_">tryAcquireShared</span><span class="params">(<span class="type">int</span>)</span><span class="comment">//共享方式。尝试获取资源。负数表示失败；0表示成功，但没有剩余可用资源；正数表示成功，且有剩余资源。</span></span><br><span class="line"><span class="keyword">protected</span> <span class="type">boolean</span> <span class="title function_">tryReleaseShared</span><span class="params">(<span class="type">int</span>)</span><span class="comment">//共享方式。尝试释放资源，成功则返回true，失败则返回false。</span></span><br><span class="line"><span class="keyword">protected</span> <span class="type">boolean</span> <span class="title function_">isHeldExclusively</span><span class="params">()</span><span class="comment">//该线程是否正在独占资源。只有用到condition才需要去实现它。 </span></span><br></pre></td></tr></table></figure></li>
+<li><p><strong>什么是钩子方法呢？</strong>
+钩子方法是一种被声明在抽象类中的方法，它可以是空方法（由子类实现），也可以是默认实现的方法。模板设计模式<strong>通过钩子方法控制固定步骤的实现</strong>。AQS类中除了钩子方法，其他方法都是final</p></li>
+</ol>
+<blockquote>
+<p>重点：以 <code>ReentrantLock</code> 为例，state 初始化为
+0，表示未锁定状态。A 线程 <code>lock()</code> 时，会调用
+<code>tryAcquire()</code> 独占该锁并将 <code>state+1</code>
+。此后，其他线程再 <code>tryAcquire()</code> 时就会失败，直到 A 线程
+<code>unlock()</code> 到
+<code>state=</code>0（即释放锁）为止，其它线程才有机会获取该锁。当然，释放锁之前，A
+线程自己是可以重复获取此锁的（state
+会累加），这就是可重入的概念。但要注意，获取多少次就要释放多少次，这样才能保证
+state 是能回到零态的。</p>
+<p>再以 <code>CountDownLatch</code> 以例，任务分为 N
+个子线程去执行，state 也初始化为 N（注意 N 要与线程个数一致）。这 N
+个子线程是并行执行的，每个子线程执行完后<code>countDown()</code>
+一次，state 会 CAS(Compare and Swap) 减 1。等到所有子线程都执行完后(即
+<code>state=0</code> )，会 <code>unpark()</code>
+主调用线程，然后主调用线程就会从 <code>await()</code>
+函数返回，继续后余动作。</p>
+<p>一般来说，自定义同步器要么是独占方法，要么是共享方式，他们也只需实现<code>tryAcquire-tryRelease</code>、<code>tryAcquireShared-tryReleaseShared</code>中的一种即可。但
+AQS
+也支持自定义同步器同时实现独占和共享两种方式，如<code>ReentrantReadWriteLock</code>。</p>
+</blockquote></li>
+</ul>
+<h1 id="semaphore">Semaphore</h1>
+<h1 id="countdownlatch">CountDownLatch</h1>
+<h1 id="cyclicbarrier">CyclicBarrier</h1>
 ]]></content>
       <categories>
         <category>学习</category>
