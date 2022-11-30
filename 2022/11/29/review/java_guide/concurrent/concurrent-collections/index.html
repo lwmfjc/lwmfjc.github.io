@@ -338,18 +338,42 @@ alt="image-20221130112118211" /></p>
 <h2 id="priorityblockingqueue">PriorityBlockingQueue</h2>
 <ul>
 <li><strong>支持优先级的无界阻塞队列</strong>，默认情况元素采用<strong>自然顺序</strong>进行排序，或通过自定义类实现compareTo()方法指定元素排序，或初始化时通过<strong>构造器参数Comparator</strong>来指定排序规则</li>
-<li><code>PriorityBlockingQueue</code> 并发控制采用的是可重入锁
-<code>ReentrantLock</code>，队列为无界队列（<code>ArrayBlockingQueue</code>
+<li><code>PriorityBlockingQueue</code> 并发控制采用的是<strong>可重入锁
+<code>ReentrantLock</code></strong>，<strong>队列为无界队列</strong>（<code>ArrayBlockingQueue</code>
 是有界队列，<code>LinkedBlockingQueue</code> 也可以通过在构造函数中传入
 <code>capacity</code> 指定队列最大的容量，但是
-<code>PriorityBlockingQueue</code>
-只能指定初始的队列大小，后面插入元素的时候，<strong>如果空间不够的话会自动扩容</strong>）</li>
-<li>它就是 <code>PriorityQueue</code> 的线程安全版本。不可以插入 null
-值，同时，插入队列的对象必须是可比较大小的（comparable），否则报
-<code>ClassCastException</code> 异常。它的插入操作 put 方法不会
-block，因为它是无界队列（take 方法在队列为空的时候会阻塞）</li>
+<strong><code>PriorityBlockingQueue</code>
+只能指定初始的队列大小，后面插入元素的时候，如果空间不够的话会自动扩容</strong>）</li>
+<li>它就是 <code>PriorityQueue</code> 的线程安全版本。<strong>不可以插入
+null 值，同时，插入队列的对象必须是可比较大小的（comparable），否则报
+<code>ClassCastException</code> 异常</strong>。它的插入操作 put 方法不会
+block(<strong>是block 阻塞，不是lock
+锁</strong>)，因为它是无界队列（take 方法在队列为空的时候会阻塞）</li>
 </ul>
 <h1 id="concurrentskiplistmap">ConcurrentSkipListMap</h1>
+<blockquote>
+<p>对于一个单链表，即使<strong>链表是有序</strong>的，如果我们想要在其中查找某个数据，也只能<strong>从头到尾遍历链表</strong>，这样效率自然就会很低，跳表就不一样了。<strong>跳表是一种可以用来快速查找的数据结构，有点类似于平衡树</strong>。它们都可以<strong>对元素进行快速的查找</strong>。但一个重要的区别是：对<strong>平衡树的插入和删除</strong>往往很可能<strong>导致平衡树进行一次全局的调整</strong>。而对<strong>跳表的插入和删除</strong>只需要<strong>对整个数据结构的局部进行操作</strong>即可。这样带来的好处是：<strong>在高并发的情况下，你会需要一个全局锁来保证整个平衡树的线程安全</strong>。而对于<strong>跳表，你只需要部分锁</strong>即可。这样，在高并发环境下，你就可以拥有更好的性能。而就查询的性能而言，<strong>跳表的时间复杂度也是
+O(logn)</strong> 所以在并发数据结构中，JDK 使用跳表来实现一个 Map。</p>
+</blockquote>
+<p>跳表的本质是维护多个链表，且链表是分层的 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221130144105594.png"
+alt="image-20221130144105594" /></p>
+<ul>
+<li>最低层的链表维护跳表内所有元素，每上面一层链表都是下面一层的子集</li>
+<li>跳表内所有链表的元素都是<strong>排序</strong>的</li>
+<li>查找时，可以<strong>从顶级链表开始找</strong>。一旦发现<strong>被查找的元素大于当前链表中的取值（这里应该加上一句，小于前一个节点，比如下面如果是查找3，那么就从1跳下去），就会转入下一层链表继续找</strong>。这也就是说在查找过程中，搜索是跳跃式的。如上图所示，在跳表中查找元素
+18。</li>
+</ul>
+<p><img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221130144439833.png"
+alt="image-20221130144439833" /> 查找 18 的时候原来需要遍历 18
+次，现在只需要 7
+次即可。针对链表长度比较大的时候，构建索引查找效率的提升就会非常明显
+（<strong>这里好像不太对，原来也不需要遍历18次,反正大概率是说效率高就是了</strong>）</p>
+<p>使用跳表实现 <code>Map</code> 和使用哈希算法实现 <code>Map</code>
+的另外一个不同之处是：哈<strong>希并不会保存元素的顺序，而跳表内所有的元素都是排序的</strong>。因此在对跳表进行遍历时，你会得到一个有序的结果。所以，如果你的应用<strong>需要有序性，那么跳表就是你不二的选择</strong>。JDK
+中实现这一数据结构的类是
+<strong><code>ConcurrentSkipListMap</code></strong>。</p>
 
     </div>
 
