@@ -384,8 +384,39 @@ AQS
 <ol type="1">
 <li><p>线程池shutdown之后不再接收新任务</p></li>
 <li><p>sutdown只是将线程池的状态设置为SHUTWDOWN状态，正在执行的任务会继续执行下去，没有被执行的则中断。而shutdownNow则是将线程池的状态设置为STOP，正在执行的任务则被停止，没被执行任务的则返回。如果是shutdownNow,则会报这个问题</p>
-<p><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">java.lang.InterruptedException: sleep interrupted</span><br><span class="line">at java.lang.Thread.sleep(Native Method)</span><br><span class="line">at java.lang.Thread.sleep(Thread.java:<span class="number">340</span>)</span><br><span class="line">at java.util.concurrent.TimeUnit.sleep(TimeUnit.java:<span class="number">386</span>)</span><br><span class="line">at com.ly.SemaphoreExample2.lambda$main$<span class="number">0</span>(SemaphoreExample2.java:<span class="number">45</span>)</span><br><span class="line">at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:<span class="number">511</span>)</span><br><span class="line">at java.util.concurrent.FutureTask.run(FutureTask.java:<span class="number">266</span>)</span><br><span class="line">at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:<span class="number">1149</span>)</span><br><span class="line">at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:<span class="number">624</span>)</span><br><span class="line">at java.lang.Thread.run(Thread.java:<span class="number">748</span>)</span><br></pre></td></tr></table></figure></p></li>
+<p><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">java.lang.InterruptedException: sleep interrupted</span><br><span class="line">at java.lang.Thread.sleep(Native Method)</span><br><span class="line">at java.lang.Thread.sleep(Thread.java:<span class="number">340</span>)</span><br><span class="line">at java.util.concurrent.TimeUnit.sleep(TimeUnit.java:<span class="number">386</span>)</span><br><span class="line">at com.ly.SemaphoreExample2.lambda$main$<span class="number">0</span>(SemaphoreExample2.java:<span class="number">45</span>)</span><br><span class="line">at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:<span class="number">511</span>)</span><br><span class="line">at java.util.concurrent.FutureTask.run(FutureTask.java:<span class="number">266</span>)</span><br><span class="line">at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:<span class="number">1149</span>)</span><br><span class="line">at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:<span class="number">624</span>)</span><br><span class="line">at java.lang.Thread.run(Thread.java:<span class="number">748</span>)</span><br></pre></td></tr></table></figure></p>
+<p>解释最上面的例子：</p>
+<ol type="1">
+<li>执行acquire()方法会导致阻塞，知道有一个许可证可以获得然后拿走一个许可证</li>
+<li>每个release()方法增加一个许可证，这可能会释放一个阻塞的acquire()方法</li>
+<li>Semaphore只是维持了一个可以获得许可证的数量，<strong>没有实际的许可证这个对象</strong></li>
+<li>Semaphore经常用于<strong>限制获取某种资源的线程数量</strong></li>
 </ol>
+<blockquote>
+<p>可以一次性获取或释放多个许可，不过没必要</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">semaphore.acquire(<span class="number">5</span>);<span class="comment">// 获取5个许可，所以可运行线程数量为20/5=4</span></span><br><span class="line">test(threadnum);</span><br><span class="line">semaphore.release(<span class="number">5</span>);<span class="comment">// 释放5个许可</span></span><br></pre></td></tr></table></figure>
+</blockquote>
+<p>对应的使用tryAcquire，如果获取不到许可就立即返回false</p></li>
+</ol>
+<p>Semaphore有两种模式，<strong>公平模式</strong>和<strong>非公平模式</strong></p>
+<ul>
+<li>公平模式：调用acquire()方法的顺序，就是获取许可证的顺序，遵循FIFO</li>
+<li>非公平模式：抢占式的</li>
+</ul>
+<p>两个构造函数，<strong>必须提供许可数量</strong>，第二个构造方法可以指定是公平模式还是非公平模式，<strong>默认非公平模式</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="title function_">Semaphore</span><span class="params">(<span class="type">int</span> permits)</span> &#123;</span><br><span class="line">     sync = <span class="keyword">new</span> <span class="title class_">NonfairSync</span>(permits);</span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line"> <span class="keyword">public</span> <span class="title function_">Semaphore</span><span class="params">(<span class="type">int</span> permits, <span class="type">boolean</span> fair)</span> &#123;</span><br><span class="line">     sync = fair ? <span class="keyword">new</span> <span class="title class_">FairSync</span>(permits) : <span class="keyword">new</span> <span class="title class_">NonfairSync</span>(permits);</span><br><span class="line"> &#125; </span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><code>Semaphore</code> 与 <code>CountDownLatch</code>
+一样，也是共享锁的一种实现。它<strong>默认构造 AQS 的 state 为
+<code>permits</code></strong>。当执行任务的线程<strong>数量超出
+<code>permits</code>，那么多余的线程将会被放入阻塞队列 Park,并自旋判断
+state 是否大于 0。只有当 state 大于 0
+的时候，阻塞的线程才能继续执行</strong>,此时先前执行任务的线程继续执行
+<code>release()</code> 方法，<strong><code>release()</code> 方法使得
+state 的变量会加 1，那么自旋的线程便会判断成功</strong>。
+如此，每次只有最多不超过 <code>permits</code>
+数量的线程能自旋成功，便限制了执行任务线程的数量。</p>
+</blockquote>
 <h1 id="countdownlatch">CountDownLatch</h1>
 <h1 id="cyclicbarrier">CyclicBarrier</h1>
 
