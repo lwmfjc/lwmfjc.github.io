@@ -2905,7 +2905,7 @@ AQS
 <ol type="1">
 <li><p>线程池shutdown之后不再接收新任务</p></li>
 <li><p>sutdown只是将线程池的状态设置为SHUTWDOWN状态，正在执行的任务会继续执行下去，没有被执行的则中断。而shutdownNow则是将线程池的状态设置为STOP，正在执行的任务则被停止，没被执行任务的则返回。如果是shutdownNow,则会报这个问题</p>
-<p><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">java.lang.InterruptedException: sleep interrupted</span><br><span class="line">at java.lang.Thread.sleep(Native Method)</span><br><span class="line">at java.lang.Thread.sleep(Thread.java:<span class="number">340</span>)</span><br><span class="line">at java.util.concurrent.TimeUnit.sleep(TimeUnit.java:<span class="number">386</span>)</span><br><span class="line">at com.ly.SemaphoreExample2.lambda$main$<span class="number">0</span>(SemaphoreExample2.java:<span class="number">45</span>)</span><br><span class="line">at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:<span class="number">511</span>)</span><br><span class="line">at java.util.concurrent.FutureTask.run(FutureTask.java:<span class="number">266</span>)</span><br><span class="line">at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:<span class="number">1149</span>)</span><br><span class="line">at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:<span class="number">624</span>)</span><br><span class="line">at java.lang.Thread.run(Thread.java:<span class="number">748</span>)</span><br></pre></td></tr></table></figure></p>
+<p><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">java.lang.InterruptedException: sleep interrupted</span><br><span class="line">  	at java.lang.Thread.sleep(Native Method)</span><br><span class="line">  	at java.lang.Thread.sleep(Thread.java:<span class="number">340</span>)</span><br><span class="line">  	at java.util.concurrent.TimeUnit.sleep(TimeUnit.java:<span class="number">386</span>)</span><br><span class="line">  	at com.ly.SemaphoreExample2.lambda$main$<span class="number">0</span>(SemaphoreExample2.java:<span class="number">45</span>)</span><br><span class="line">  	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:<span class="number">511</span>)</span><br><span class="line">  	at java.util.concurrent.FutureTask.run(FutureTask.java:<span class="number">266</span>)</span><br><span class="line">  	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:<span class="number">1149</span>)</span><br><span class="line">  	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:<span class="number">624</span>)</span><br><span class="line">  	at java.lang.Thread.run(Thread.java:<span class="number">748</span>)</span><br></pre></td></tr></table></figure></p>
 <p>解释最上面的例子：</p>
 <ol type="1">
 <li>执行acquire()方法会导致阻塞，知道有一个许可证可以获得然后拿走一个许可证</li>
@@ -2938,8 +2938,67 @@ state 的变量会加 1，那么自旋的线程便会判断成功</strong>。
 如此，每次只有最多不超过 <code>permits</code>
 数量的线程能自旋成功，便限制了执行任务线程的数量。</p>
 </blockquote>
-<h1 id="countdownlatch">CountDownLatch</h1>
+<h1 id="countdownlatch倒计时">CountDownLatch(倒计时)</h1>
+<ul>
+<li><code>翻译：闭锁(倒计时锁)</code></li>
+<li>允许count个线程阻塞在一个地方，直至所有线程的任务都执行完毕</li>
+<li>CountDownLatch是共享锁的一种实现（<strong>我的理解是await的时候，其他线程可以执行，而不是lock，所以是"共享"</strong>），默认构造AQS的state值为count。当线程使用countDown()方法时，其实是使用了tryReleaseShared方法以CAS操作来减少state，直至state为0</li>
+<li>当调用await()方法时，如果state不为0，那就证明任务还没有执行完毕,await()方法会一直阻塞，即await()方法之后的语句不会被执行。<strong>之后</strong>CountDownLatch会自旋CAS判断state==0，如果state
+== 0就会释放所有等待线程，await()方法之后的语句得到执行</li>
+</ul>
+<h2 id="countdownlatch的两种典型用法">CountDownLatch的两种典型用法</h2>
+<ol type="1">
+<li><p>某线程在开始运行前等待n个线程执行完毕</p>
+<blockquote>
+<p>将 <code>CountDownLatch</code> 的计数器初始化为 n
+（<strong><code>new CountDownLatch(n)</code></strong>），每<strong>当一个任务线程执行完毕</strong>，就将计数器减
+1
+（<strong><code>countdownlatch.countDown()</code></strong>），当计数器的值<strong>变为
+0</strong> 时，在 <strong><code>CountDownLatch 上 await()</code>
+的线程就会被唤醒</strong>。一个典型应用场景就是启动一个服务时，主线程需要等待多个组件加载完毕，之后再继续执行。</p>
+</blockquote></li>
+<li><p>实现多个线程开始执行任务的<strong>最大并行性</strong>
+<strong>为什么是最大呢，我觉得是因为即使线程已经start，但是不一定就全部启动了，有可能cpu调度并没有真正启动它</strong>（概率极小）</p>
+<blockquote>
+<p>注意是并行性，不是并发，强调的是多个线程在某一时刻同时开始执行。类似于赛跑，将多个线程放到起点，等待发令枪响，然后同时开跑。做法是初始化一个共享的
+<code>CountDownLatch</code> 对象，将其计数器初始化为 1
+（<code>new CountDownLatch(1)</code>），多个线程在开始执行任务前首先
+<code>coundownlatch.await()</code>，当主线程调用
+<code>countDown()</code> 时，计数器变为 0，多个线程同时被唤醒。</p>
+</blockquote></li>
+</ol>
+<p>CountDownLatch使用示例</p>
+<p>300个线程，550个请求（及count =
+550）。启动线程后，主线程阻塞。当所有请求都countDown，主线程恢复运行</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> SnailClimb</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2018年10月1日</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Description</span>: CountDownLatch 使用方法示例</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CountDownLatchExample1</span> &#123;</span><br><span class="line">  <span class="comment">// 请求的数量</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">threadCount</span> <span class="operator">=</span> <span class="number">550</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">    <span class="comment">// 创建一个具有固定线程数量的线程池对象（如果这里线程池的线程数量给太少的话你会发现执行的很慢）</span></span><br><span class="line">    <span class="type">ExecutorService</span> <span class="variable">threadPool</span> <span class="operator">=</span> Executors.newFixedThreadPool(<span class="number">300</span>);</span><br><span class="line">    <span class="keyword">final</span> <span class="type">CountDownLatch</span> <span class="variable">countDownLatch</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">CountDownLatch</span>(threadCount);</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; threadCount; i++) &#123;</span><br><span class="line">      <span class="keyword">final</span> <span class="type">int</span> <span class="variable">threadnum</span> <span class="operator">=</span> i;</span><br><span class="line">      threadPool.execute(() -&gt; &#123;<span class="comment">// Lambda 表达式的运用</span></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">          test(threadnum);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">          <span class="comment">// TODO Auto-generated catch block</span></span><br><span class="line">          e.printStackTrace();</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">          countDownLatch.countDown();<span class="comment">// 表示一个请求已经被完成</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">    countDownLatch.await();</span><br><span class="line">    threadPool.shutdown();</span><br><span class="line">    System.out.println(<span class="string">&quot;finish&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">test</span><span class="params">(<span class="type">int</span> threadnum)</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">    Thread.sleep(<span class="number">1000</span>);<span class="comment">// 模拟请求的耗时操作</span></span><br><span class="line">    System.out.println(<span class="string">&quot;threadnum:&quot;</span> + threadnum);</span><br><span class="line">    Thread.sleep(<span class="number">1000</span>);<span class="comment">// 模拟请求的耗时操作</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>与CountDownLatch的第一次交互是主线程等待其他线程</p></li>
+<li><p>主线程必须在启动其他线程后立即调用CountDownLatch.await()方法，这样主线程的操作就会在这个方法阻塞，直到其他线程完成各自任务</p></li>
+<li><p>其他N个线程必须引用闭锁对象，因为他们需要通知CountDownLatch对象
+--已经完成各自任务（通过countDown()），每调用一次该方法count值减1</p></li>
+<li><p>当count值为0时，主线程就能通过await()方法恢复执行自己的任务</p></li>
+<li><p>如果使用不当会造成死锁（count始终不为0），导致一直等待</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; threadCount-<span class="number">1</span>; i++) &#123;</span><br><span class="line">.......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="countdownlatch-的不足">CountDownLatch 的不足</h2>
+<p><strong><code>CountDownLatch</code>
+是一次性的</strong>，计数器的值只能在构造方法中初始化一次，之后没有任何机制再次对其设置值，当
+<code>CountDownLatch</code>
+<strong>使用完毕后，它不能再次被使用</strong>。</p>
+<h2 id="countdownlatch-相常见面试题">CountDownLatch 相常见面试题</h2>
+<ul>
+<li><code>CountDownLatch</code> 怎么用？应用场景是什么？</li>
+<li><code>CountDownLatch</code> 和 <code>CyclicBarrier</code>
+的不同之处？</li>
+<li><code>CountDownLatch</code> 类中主要的方法？</li>
+</ul>
 <h1 id="cyclicbarrier">CyclicBarrier</h1>
+<ul>
+<li>CyclicBarrier和CountDownLatch类似，可以实现线程间的技术等待，主要应用场景和CountDownLatch类似，但更复杂强大</li>
+<li>CountDownLatch基于AQS，而CycliBarrier基于ReentrantLock（ReentrantLock属于AQS同步器）和Condition</li>
+<li><code>CyclicBarrier</code>
+的字面意思是可循环使用（Cyclic）的屏障（Barrier）。它要做的事情是：让<strong>一组线程(中的一个)到达一个屏障（也可以叫同步点）时</strong>被阻塞，直到<strong>最后一个线程到达屏障</strong>时，<strong>屏障才会开门</strong>，所有被屏障拦截的线程才会继续干活。</li>
+</ul>
 ]]></content>
       <categories>
         <category>学习</category>
