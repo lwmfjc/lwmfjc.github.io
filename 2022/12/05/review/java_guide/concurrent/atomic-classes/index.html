@@ -233,6 +233,20 @@
               </span>
               <span class="post-meta-item-text">阅读次数：</span>
               <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
             </span>
             <div class="post-description">Atomic原子类介绍</div>
 
@@ -258,19 +272,24 @@ src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img
 alt="image-20221205094229003" /></li>
 <li>根据操作的数据类型，可以将JUC包中的原子类分为4类（基本类型、数组类型、引用类型、对象的属性修改类型）
 <ul>
-<li><p>基本类型 使用原子方式更新基本类型，包括AtomicInteger
-整型原子类，AtomicLong 长整型原子类，AtomicBoolean 布尔型原子类</p></li>
-<li><p>数组类型 使用原子方式更新数组里某个元素，包括AtomicIntegerArray
-整型数组原子类，AtomicLongArray
-长整型数组原子类，AtomicReferenceArray：引用类型数组原子类</p></li>
-<li><p>引用类型 AtomicReference 引用类型原子类，AtomicMarkableReference
-原子更新带<strong>有标记</strong>的引用类型，该类将boolean标记与引用关联（<strong>不可解决CAS进行原子操作出现的ABA问题</strong>），AtomicStampedReference
+<li><p>基本类型 使用原子方式更新基本类型，包括<strong>AtomicInteger
+整型原子类</strong>，<strong>AtomicLong
+长整型原子类</strong>，AtomicBoolean 布尔型原子类</p></li>
+<li><p>数组类型
+使用原子方式更新数组里某个元素，包括<strong>AtomicIntegerArray
+整型数组原子类</strong>，<strong>AtomicLongArray
+长整型数组原子类</strong>，<strong>AtomicReferenceArray
+引用类型数组原子类</strong></p></li>
+<li><p>引用类型 <strong>AtomicReference
+引用类型原子类</strong>，AtomicMarkableReference
+原子更新带<strong>有标记</strong>的引用类型，该类将boolean标记与引用关联（<strong>不可解决CAS进行原子操作出现的ABA问题</strong>），<strong>AtomicStampedReference</strong>
 原子更新带有版本号的引用类型
 该类将整数值与引用关联，可用于解决原子更新<strong>数据和数据的版本号(解决使用CAS进行原子更新时可能出现的ABA问题)</strong></p></li>
-<li><p>对象的属性修改类型 AtomicIntegerFieldUpdater
-原子更新整型字段的更新器，AtomicLongFieldUpdater
-原子更新长整型字段的更新器， AtomicReferenceFieldUpdater
-原子更新引用类型里的字段</p></li>
+<li><p>对象的属性修改类型 <strong>AtomicIntegerFieldUpdater
+原子更新整型字段的更新器</strong>，<strong>AtomicLongFieldUpdater
+原子更新长整型字段的更新器</strong>，
+<strong>AtomicReferenceFieldUpdater
+原子更新引用类型里的字段</strong></p></li>
 <li><p><code>AtomicMarkableReference</code> 不能解决 ABA 问题</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SolveABAByAtomicMarkableReference</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="type">AtomicMarkableReference</span> <span class="variable">atomicMarkableReference</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">AtomicMarkableReference</span>(<span class="number">100</span>, <span class="literal">false</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line"></span><br><span class="line">        <span class="type">Thread</span> <span class="variable">refT1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                TimeUnit.SECONDS.sleep(<span class="number">1</span>);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">            atomicMarkableReference.compareAndSet(<span class="number">100</span>, <span class="number">101</span>, atomicMarkableReference.isMarked(), !atomicMarkableReference.isMarked());</span><br><span class="line">            atomicMarkableReference.compareAndSet(<span class="number">101</span>, <span class="number">100</span>, atomicMarkableReference.isMarked(), !atomicMarkableReference.isMarked());</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line">        <span class="type">Thread</span> <span class="variable">refT2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">            <span class="comment">//获取原来的marked标记(false)</span></span><br><span class="line">            <span class="type">boolean</span> <span class="variable">marked</span> <span class="operator">=</span> atomicMarkableReference.isMarked();</span><br><span class="line">            <span class="comment">//2s之后进行替换,不应该替换成功</span></span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                TimeUnit.SECONDS.sleep(<span class="number">2</span>);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="type">boolean</span> <span class="variable">c3</span> <span class="operator">=</span> atomicMarkableReference.compareAndSet(<span class="number">100</span>, <span class="number">101</span>, marked, !marked);</span><br><span class="line">            System.out.println(c3); <span class="comment">// 返回true,实际应该返回false</span></span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line">        refT1.start();</span><br><span class="line">        refT2.start();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
 <li><p>CAS ABA问题</p>
@@ -291,6 +310,12 @@ B，然后巴拉巴拉干别的事，最后又把变量 x 的值变为 A
 </ul></li>
 </ul>
 <h1 id="基本类型原子类">基本类型原子类</h1>
+<ul>
+<li>使用原子方式更新基本类型：AtomicInteger 整型原子类，AtomicLong
+长整型原子类 ，AtomicBoolean
+布尔型原子类，下文以AtomicInteger为例子来介绍</li>
+<li></li>
+</ul>
 <h1 id="数组类型原子类">数组类型原子类</h1>
 <h1 id="引用类型原子类">引用类型原子类</h1>
 <h1 id="对象的属性修改类型原子类">对象的属性修改类型原子类</h1>
@@ -449,6 +474,16 @@ B，然后巴拉巴拉干别的事，最后又把变量 x 的值变为 A
     <i class="fa fa-heart"></i>
   </span>
   <span class="author" itemprop="copyrightHolder">刘易</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">672k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">10:11</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
