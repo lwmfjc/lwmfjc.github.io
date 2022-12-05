@@ -239,14 +239,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>4k</span>
+              <span>6k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>7 分钟</span>
+              <span>11 分钟</span>
             </span>
             <div class="post-description">Atomic原子类介绍</div>
 
@@ -311,10 +311,28 @@ B，然后巴拉巴拉干别的事，最后又把变量 x 的值变为 A
 </ul>
 <h1 id="基本类型原子类">基本类型原子类</h1>
 <ul>
-<li>使用原子方式更新基本类型：AtomicInteger 整型原子类，AtomicLong
+<li><p>使用原子方式更新基本类型：AtomicInteger 整型原子类，AtomicLong
 长整型原子类 ，AtomicBoolean
-布尔型原子类，下文以AtomicInteger为例子来介绍</li>
-<li></li>
+布尔型原子类，下文以AtomicInteger为例子来介绍 常用方法：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">get</span><span class="params">()</span> <span class="comment">//获取当前的值</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">getAndSet</span><span class="params">(<span class="type">int</span> newValue)</span><span class="comment">//获取当前的值，并设置新的值</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">getAndIncrement</span><span class="params">()</span><span class="comment">//获取当前的值，并自增</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">getAndDecrement</span><span class="params">()</span> <span class="comment">//获取当前的值，并自减</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">getAndAdd</span><span class="params">(<span class="type">int</span> delta)</span> <span class="comment">//获取当前的值，并加上预期的值</span></span><br><span class="line"><span class="type">boolean</span> <span class="title function_">compareAndSet</span><span class="params">(<span class="type">int</span> expect, <span class="type">int</span> update)</span> <span class="comment">//如果输入的数值等于预期值，则以原子方式将该值设置为输入值（update）</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title function_">lazySet</span><span class="params">(<span class="type">int</span> newValue)</span><span class="comment">//最终设置为newValue,使用 lazySet 设置之后可能导致其他线程在之后的一小段时间内还是可以读到旧的值。</span></span><br></pre></td></tr></table></figure>
+<p>常见方法使用</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.concurrent.atomic.AtomicInteger;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">AtomicIntegerTest</span> &#123;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">		<span class="comment">// TODO Auto-generated method stub</span></span><br><span class="line">		<span class="type">int</span> <span class="variable">temvalue</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">		<span class="type">AtomicInteger</span> <span class="variable">i</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">AtomicInteger</span>(<span class="number">0</span>);</span><br><span class="line">		temvalue = i.getAndSet(<span class="number">3</span>);</span><br><span class="line">		System.out.println(<span class="string">&quot;temvalue:&quot;</span> + temvalue + <span class="string">&quot;;  i:&quot;</span> + i);<span class="comment">//temvalue:0;  i:3</span></span><br><span class="line">		temvalue = i.getAndIncrement();</span><br><span class="line">		System.out.println(<span class="string">&quot;temvalue:&quot;</span> + temvalue + <span class="string">&quot;;  i:&quot;</span> + i);<span class="comment">//temvalue:3;  i:4</span></span><br><span class="line">		temvalue = i.getAndAdd(<span class="number">5</span>);</span><br><span class="line">		System.out.println(<span class="string">&quot;temvalue:&quot;</span> + temvalue + <span class="string">&quot;;  i:&quot;</span> + i);<span class="comment">//temvalue:4;  i:9</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure></li>
+<li><p>基本数据类型原子类的优势</p>
+<ul>
+<li><p>多线程环境不使用原子类保证线程安全（基本数据类型）</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Test</span> &#123;</span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="type">int</span> <span class="variable">count</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="comment">//若要线程安全执行执行count++，需要加锁</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title function_">increment</span><span class="params">()</span> &#123;</span><br><span class="line">                  count++;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">getCount</span><span class="params">()</span> &#123;</span><br><span class="line">                  <span class="keyword">return</span> count;</span><br><span class="line">        &#125;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure></li>
+<li><p>多线程环境使用原子类保证线程安全(基本数据类型)</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Test2</span> &#123;</span><br><span class="line">        <span class="keyword">private</span> <span class="type">AtomicInteger</span> <span class="variable">count</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">AtomicInteger</span>();</span><br><span class="line">    </span><br><span class="line">	    <span class="comment">//使用AtomicInteger之后，不需要加锁，也可以实现线程安全。</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">increment</span><span class="params">()</span> &#123;</span><br><span class="line">                  count.incrementAndGet();</span><br><span class="line">        &#125;    </span><br><span class="line">        <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">getCount</span><span class="params">()</span> &#123;</span><br><span class="line">                <span class="keyword">return</span> count.get();</span><br><span class="line">        &#125;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure></li>
+<li><p>AtomicInteger线程安全原理简单分析 部分源码：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">/ setup to use Unsafe.compareAndSwapInt <span class="keyword">for</span> updates（更新操作时提供“比较并替换”的作用）</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">Unsafe</span> <span class="variable">unsafe</span> <span class="operator">=</span> Unsafe.getUnsafe();</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">long</span> valueOffset;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            valueOffset = unsafe.objectFieldOffset</span><br><span class="line">                (AtomicInteger.class.getDeclaredField(<span class="string">&quot;value&quot;</span>));</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception ex) &#123; <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>(ex); &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="type">int</span> value; </span><br></pre></td></tr></table></figure>
+<ol type="1">
+<li>AtomicInteger类主要利用CAS（compare and swap) + volatile 和
+native方法来保证原子操作，从而避免synchronized高开销，提高执行效率</li>
+<li>CAS的原理是拿期望的值和原本的值做比较，如果相同则更新成新值
+UnSafe类的objectFieldOffset()方法是一个本地方法，这个方法用来拿到<strong>"原来的值"的内存地址</strong></li>
+<li>value是一个volatile变量，在内存中可见，因此JVM可以保证任何时刻任何线程总能拿到该变量的最新值</li>
+</ol></li>
+</ul></li>
 </ul>
 <h1 id="数组类型原子类">数组类型原子类</h1>
 <h1 id="引用类型原子类">引用类型原子类</h1>
@@ -478,12 +496,12 @@ B，然后巴拉巴拉干别的事，最后又把变量 x 的值变为 A
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">672k</span>
+    <span title="站点总字数">674k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">20:23</span>
+    <span title="站点阅读时长">20:26</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>

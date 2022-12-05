@@ -3125,10 +3125,28 @@ B，然后巴拉巴拉干别的事，最后又把变量 x 的值变为 A
 </ul>
 <h1 id="基本类型原子类">基本类型原子类</h1>
 <ul>
-<li>使用原子方式更新基本类型：AtomicInteger 整型原子类，AtomicLong
+<li><p>使用原子方式更新基本类型：AtomicInteger 整型原子类，AtomicLong
 长整型原子类 ，AtomicBoolean
-布尔型原子类，下文以AtomicInteger为例子来介绍</li>
-<li></li>
+布尔型原子类，下文以AtomicInteger为例子来介绍 常用方法：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">get</span><span class="params">()</span> <span class="comment">//获取当前的值</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">getAndSet</span><span class="params">(<span class="type">int</span> newValue)</span><span class="comment">//获取当前的值，并设置新的值</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">getAndIncrement</span><span class="params">()</span><span class="comment">//获取当前的值，并自增</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">getAndDecrement</span><span class="params">()</span> <span class="comment">//获取当前的值，并自减</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">getAndAdd</span><span class="params">(<span class="type">int</span> delta)</span> <span class="comment">//获取当前的值，并加上预期的值</span></span><br><span class="line"><span class="type">boolean</span> <span class="title function_">compareAndSet</span><span class="params">(<span class="type">int</span> expect, <span class="type">int</span> update)</span> <span class="comment">//如果输入的数值等于预期值，则以原子方式将该值设置为输入值（update）</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title function_">lazySet</span><span class="params">(<span class="type">int</span> newValue)</span><span class="comment">//最终设置为newValue,使用 lazySet 设置之后可能导致其他线程在之后的一小段时间内还是可以读到旧的值。</span></span><br></pre></td></tr></table></figure>
+<p>常见方法使用</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.concurrent.atomic.AtomicInteger;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">AtomicIntegerTest</span> &#123;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">		<span class="comment">// TODO Auto-generated method stub</span></span><br><span class="line">		<span class="type">int</span> <span class="variable">temvalue</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">		<span class="type">AtomicInteger</span> <span class="variable">i</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">AtomicInteger</span>(<span class="number">0</span>);</span><br><span class="line">		temvalue = i.getAndSet(<span class="number">3</span>);</span><br><span class="line">		System.out.println(<span class="string">&quot;temvalue:&quot;</span> + temvalue + <span class="string">&quot;;  i:&quot;</span> + i);<span class="comment">//temvalue:0;  i:3</span></span><br><span class="line">		temvalue = i.getAndIncrement();</span><br><span class="line">		System.out.println(<span class="string">&quot;temvalue:&quot;</span> + temvalue + <span class="string">&quot;;  i:&quot;</span> + i);<span class="comment">//temvalue:3;  i:4</span></span><br><span class="line">		temvalue = i.getAndAdd(<span class="number">5</span>);</span><br><span class="line">		System.out.println(<span class="string">&quot;temvalue:&quot;</span> + temvalue + <span class="string">&quot;;  i:&quot;</span> + i);<span class="comment">//temvalue:4;  i:9</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure></li>
+<li><p>基本数据类型原子类的优势</p>
+<ul>
+<li><p>多线程环境不使用原子类保证线程安全（基本数据类型）</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Test</span> &#123;</span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="type">int</span> <span class="variable">count</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="comment">//若要线程安全执行执行count++，需要加锁</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title function_">increment</span><span class="params">()</span> &#123;</span><br><span class="line">                  count++;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">getCount</span><span class="params">()</span> &#123;</span><br><span class="line">                  <span class="keyword">return</span> count;</span><br><span class="line">        &#125;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure></li>
+<li><p>多线程环境使用原子类保证线程安全(基本数据类型)</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Test2</span> &#123;</span><br><span class="line">        <span class="keyword">private</span> <span class="type">AtomicInteger</span> <span class="variable">count</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">AtomicInteger</span>();</span><br><span class="line">    </span><br><span class="line">	    <span class="comment">//使用AtomicInteger之后，不需要加锁，也可以实现线程安全。</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">increment</span><span class="params">()</span> &#123;</span><br><span class="line">                  count.incrementAndGet();</span><br><span class="line">        &#125;    </span><br><span class="line">        <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">getCount</span><span class="params">()</span> &#123;</span><br><span class="line">                <span class="keyword">return</span> count.get();</span><br><span class="line">        &#125;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure></li>
+<li><p>AtomicInteger线程安全原理简单分析 部分源码：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">/ setup to use Unsafe.compareAndSwapInt <span class="keyword">for</span> updates（更新操作时提供“比较并替换”的作用）</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">Unsafe</span> <span class="variable">unsafe</span> <span class="operator">=</span> Unsafe.getUnsafe();</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">long</span> valueOffset;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            valueOffset = unsafe.objectFieldOffset</span><br><span class="line">                (AtomicInteger.class.getDeclaredField(<span class="string">&quot;value&quot;</span>));</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception ex) &#123; <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>(ex); &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="type">int</span> value; </span><br></pre></td></tr></table></figure>
+<ol type="1">
+<li>AtomicInteger类主要利用CAS（compare and swap) + volatile 和
+native方法来保证原子操作，从而避免synchronized高开销，提高执行效率</li>
+<li>CAS的原理是拿期望的值和原本的值做比较，如果相同则更新成新值
+UnSafe类的objectFieldOffset()方法是一个本地方法，这个方法用来拿到<strong>"原来的值"的内存地址</strong></li>
+<li>value是一个volatile变量，在内存中可见，因此JVM可以保证任何时刻任何线程总能拿到该变量的最新值</li>
+</ol></li>
+</ul></li>
 </ul>
 <h1 id="数组类型原子类">数组类型原子类</h1>
 <h1 id="引用类型原子类">引用类型原子类</h1>
@@ -10746,6 +10764,87 @@ src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img
       </tags>
   </entry>
   <entry>
+    <title>linux_韩老师_07-11</title>
+    <url>/2022/05/10/study/linux/hanshunping/07-11/</url>
+    <content><![CDATA[<h2 id="网络连接">网络连接</h2>
+<ul>
+<li>网络连接的三种模式 同一个教室的三个主机 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220510204902224.png"
+alt="image-20220510204902224" /> 此时三个同学可以正常通讯
+<ul>
+<li>桥接模式 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220510205004081.png"
+alt="image-20220510205004081" />
+这是张三的虚拟机和外部互通；但是如果这样设置，ip会不够用；</li>
+<li>NAT模式 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220510205245256.png"
+alt="image-20220510205245256" />
+如图，虚拟机可以跟虚拟的网卡(192.168.100.99)互通，且通过这个虚拟网卡，及（192.168.0.50代理），与外界(192.168.0.X)互通
+<strong>NAT模式，网络地址转换模式</strong>，虚拟系统和外部系统通讯，不造成IP冲突
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220510205620317.png"
+alt="image-20220510205620317" />
+注意，这里外部其他主机(除0.50和100.99)是访问不到100.88的</li>
+<li>主机模式：独立的系统</li>
+</ul></li>
+</ul>
+<h2 id="虚拟机克隆">虚拟机克隆</h2>
+<ul>
+<li>方式1，直接拷贝整个文件夹 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220510210154549.png"
+alt="image-20220510210154549" /></li>
+<li>方式2，使用VMWare 克隆前先把克隆目标关闭
+克隆虚拟机当前状态--创建完整克隆</li>
+</ul>
+<h2 id="虚拟机快照">虚拟机快照</h2>
+<ul>
+<li><p>为什么需要虚拟机快照 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220510210527420.png"
+alt="image-20220510210527420" /></p></li>
+<li><p>快照a <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220510210626085.png"
+alt="image-20220510210626085" /> 之后创建了文件夹hello 然后拍摄快照b
+之后创建了文件夹hello2 然后拍摄快照c</p></li>
+<li><p>目前 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220510210820396.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220510210750325.png" /></p></li>
+<li><p>回到快照A <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220510210948723.png"
+alt="image-20220510210948723" />
+之后会重启，效果（两个文件夹都没有了)</p></li>
+<li><p>如果恢复到B，然后再创建一个快照，就会变成 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220510211106691.png"
+alt="image-20220510211106691" /></p></li>
+</ul>
+<h2 id="虚拟机迁移">虚拟机迁移</h2>
+<ul>
+<li>直接剪切、删除，即可 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220510211233012.png"
+alt="image-20220510211233012" /></li>
+</ul>
+<h2 id="vmtools工具">vmtools工具</h2>
+<ul>
+<li>如下步骤，注意，这里只是在有界面的情况下进行安装 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220510211404957.png"
+alt="image-20220510211404957" /></li>
+<li>安装完毕后
+<ul>
+<li>在vm上面设置 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220510211547484.png"
+alt="image-20220510211547484" /></li>
+<li>共享文件夹在linux中的路径 /mnt/hgfs/myshare</li>
+</ul></li>
+</ul>
+]]></content>
+      <categories>
+        <category>学习</category>
+      </categories>
+      <tags>
+        <tag>linux_韩老师</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>linux_韩老师_12-20</title>
     <url>/2022/05/10/study/linux/hanshunping/12-20/</url>
     <content><![CDATA[<h2 id="目录结构">目录结构</h2>
@@ -10947,87 +11046,6 @@ alt="image-20220522125607501" /></p></li>
 <li><p>logout 注销用户（图形页面没效果） 在运行级别3下有效 <img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220522125622253.png"
 alt="image-20220522125622253" /></p></li>
-</ul>
-]]></content>
-      <categories>
-        <category>学习</category>
-      </categories>
-      <tags>
-        <tag>linux_韩老师</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>linux_韩老师_07-11</title>
-    <url>/2022/05/10/study/linux/hanshunping/07-11/</url>
-    <content><![CDATA[<h2 id="网络连接">网络连接</h2>
-<ul>
-<li>网络连接的三种模式 同一个教室的三个主机 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220510204902224.png"
-alt="image-20220510204902224" /> 此时三个同学可以正常通讯
-<ul>
-<li>桥接模式 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220510205004081.png"
-alt="image-20220510205004081" />
-这是张三的虚拟机和外部互通；但是如果这样设置，ip会不够用；</li>
-<li>NAT模式 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220510205245256.png"
-alt="image-20220510205245256" />
-如图，虚拟机可以跟虚拟的网卡(192.168.100.99)互通，且通过这个虚拟网卡，及（192.168.0.50代理），与外界(192.168.0.X)互通
-<strong>NAT模式，网络地址转换模式</strong>，虚拟系统和外部系统通讯，不造成IP冲突
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220510205620317.png"
-alt="image-20220510205620317" />
-注意，这里外部其他主机(除0.50和100.99)是访问不到100.88的</li>
-<li>主机模式：独立的系统</li>
-</ul></li>
-</ul>
-<h2 id="虚拟机克隆">虚拟机克隆</h2>
-<ul>
-<li>方式1，直接拷贝整个文件夹 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220510210154549.png"
-alt="image-20220510210154549" /></li>
-<li>方式2，使用VMWare 克隆前先把克隆目标关闭
-克隆虚拟机当前状态--创建完整克隆</li>
-</ul>
-<h2 id="虚拟机快照">虚拟机快照</h2>
-<ul>
-<li><p>为什么需要虚拟机快照 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220510210527420.png"
-alt="image-20220510210527420" /></p></li>
-<li><p>快照a <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220510210626085.png"
-alt="image-20220510210626085" /> 之后创建了文件夹hello 然后拍摄快照b
-之后创建了文件夹hello2 然后拍摄快照c</p></li>
-<li><p>目前 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220510210820396.png" /></p>
-<p><img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220510210750325.png" /></p></li>
-<li><p>回到快照A <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220510210948723.png"
-alt="image-20220510210948723" />
-之后会重启，效果（两个文件夹都没有了)</p></li>
-<li><p>如果恢复到B，然后再创建一个快照，就会变成 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220510211106691.png"
-alt="image-20220510211106691" /></p></li>
-</ul>
-<h2 id="虚拟机迁移">虚拟机迁移</h2>
-<ul>
-<li>直接剪切、删除，即可 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220510211233012.png"
-alt="image-20220510211233012" /></li>
-</ul>
-<h2 id="vmtools工具">vmtools工具</h2>
-<ul>
-<li>如下步骤，注意，这里只是在有界面的情况下进行安装 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220510211404957.png"
-alt="image-20220510211404957" /></li>
-<li>安装完毕后
-<ul>
-<li>在vm上面设置 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220510211547484.png"
-alt="image-20220510211547484" /></li>
-<li>共享文件夹在linux中的路径 /mnt/hgfs/myshare</li>
-</ul></li>
 </ul>
 ]]></content>
       <categories>
