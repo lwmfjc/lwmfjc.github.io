@@ -5782,7 +5782,57 @@ alt="img" /></p>
 <p>简单使用</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ThreadLocalTest</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> List&lt;String&gt; messages = Lists.newArrayList();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> ThreadLocal&lt;ThreadLocalTest&gt; holder = ThreadLocal.withInitial(ThreadLocalTest::<span class="keyword">new</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">add</span><span class="params">(String message)</span> &#123;</span><br><span class="line">        holder.get().messages.add(message);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> List&lt;String&gt; <span class="title function_">clear</span><span class="params">()</span> &#123;</span><br><span class="line">        List&lt;String&gt; messages = holder.get().messages;</span><br><span class="line">        holder.remove();</span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">&quot;size: &quot;</span> + holder.get().messages.size());</span><br><span class="line">        <span class="keyword">return</span> messages;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        ThreadLocalTest.add(<span class="string">&quot;一枝花算不算浪漫&quot;</span>);</span><br><span class="line">        System.out.println(holder.get().messages);</span><br><span class="line">        ThreadLocalTest.clear();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/* 结果 </span></span><br><span class="line"><span class="comment">[一枝花算不算浪漫]</span></span><br><span class="line"><span class="comment">size: 0</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
 <p><strong><code>ThreadLocal</code></strong>对象可以提供<strong>线程局部变量</strong>，<strong>每个线程<code>Thread</code>拥有一份自己的副本变量</strong>，多个线程互不干扰。</p>
+<blockquote>
+<p>回顾之前的知识点</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">set</span><span class="params">(T value)</span> &#123;</span><br><span class="line">    <span class="comment">//获取当前请求的线程    </span></span><br><span class="line">    <span class="type">Thread</span> <span class="variable">t</span> <span class="operator">=</span> Thread.currentThread();</span><br><span class="line">    <span class="comment">//取出 Thread 类内部的 threadLocals 变量(哈希表结构)</span></span><br><span class="line">    <span class="type">ThreadLocalMap</span> <span class="variable">map</span> <span class="operator">=</span> getMap(t);</span><br><span class="line">    <span class="keyword">if</span> (map != <span class="literal">null</span>)</span><br><span class="line">        <span class="comment">// 将需要存储的值放入到这个哈希表中</span></span><br><span class="line">        <span class="comment">//★★实际使用的方法</span></span><br><span class="line">        map.set(<span class="built_in">this</span>, value);</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        <span class="comment">//★★实际使用的方法</span></span><br><span class="line">        createMap(t, value);</span><br><span class="line">&#125;</span><br><span class="line">ThreadLocalMap <span class="title function_">getMap</span><span class="params">(Thread t)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> t.threadLocals;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>如上，实际存取都是从Thread的threadLocals
+（ThreadLocalMap类）中，并不是存在ThreadLocal上，ThreadLocal用来传递了变量值，只是ThreadLocalMap的封装</li>
+<li>ThreadLocal类中通过Thread.currentThread()获取到当前线程对象后，直接通过getMap(Thread
+t) 可以访问到该线程的ThreadLocalMap对象</li>
+<li>每个Thread中具备一个ThreadLocalMap，而ThreadLocalMap可以存储以ThreadLocal为key，Object对象为value的键值对</li>
+</ul>
+</blockquote>
 <h1 id="threadlocal的数据结构">ThreadLocal的数据结构</h1>
+<p>由上面回顾的知识点可知，value实际上都是保存在<strong>线程类(Thread类)中的某个属性(ThreadLocalMap类)</strong>中
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221206091635103.png"
+alt="image-20221206091635103" /></p>
+<p><code>Thread</code>类有一个类型为<strong><code>ThreadLocal.ThreadLocalMap</code></strong>的实例变量<code>threadLocals</code>，也就是说每个线程有一个自己的<code>ThreadLocalMap</code>。
+ThreadLocalMap是一个静态内部类</p>
+<blockquote>
+<p>没有修饰符，为包可见。比如父类有一个protected修饰的方法f()，不同包下存在子类A和其他类X，在子类中可以访问方法f()，即使在其他类X创建子类A实例a1，也不能调用a1.f()</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221206092433827.png"
+alt="image-20221206092433827" />
+<figcaption aria-hidden="true">image-20221206092433827</figcaption>
+</figure>
+</blockquote>
+<p>ThreadLocalMap有自己独立实现，简单地将它的<strong>key视作ThreadLocal</strong>，<strong>value为代码中放入的值</strong>，（看底层代码可知，实际key不是ThreadLocal本身，而是它的一个弱引用）</p>
+<p><strong>★每个线程</strong>在往<code>ThreadLocal</code>里放值的时候，都会往<strong>自己的<code>ThreadLocalMap</code></strong>里存，读也是<strong>以<code>ThreadLocal</code>作为引用，在自己的<code>map</code>里找对应的<code>key</code></strong>，从而实现了<strong>线程隔离</strong>。</p>
+<p><code>ThreadLocalMap</code>有点类似<code>HashMap</code>的结构，只是<code>HashMap</code>是由<strong>数组+链表</strong>实现的，而<code>ThreadLocalMap</code>中并没有<strong>链表</strong>结构。其中，还要注意<code>Entry</code>类，
+它的<code>key</code>是<code>ThreadLocal&lt;?&gt; k</code>
+，(Entry类)继承自<code>WeakReference</code>，
+也就是我们常说的弱引用类型。</p>
+<blockquote>
+<p>如下，有个数组存放Entry(弱引用类，且有属性value)，且</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221206094304751.png"
+alt="image-20221206094304751" />
+<figcaption aria-hidden="true">image-20221206094304751</figcaption>
+</figure>
+<hr />
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">ThreadLocalMap</span> &#123; </span><br><span class="line">        <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">Entry</span> <span class="keyword">extends</span> <span class="title class_">WeakReference</span>&lt;ThreadLocal&lt;?&gt;&gt; &#123;</span><br><span class="line">            <span class="comment">/** The value associated with this ThreadLocal. */</span></span><br><span class="line">            Object value;</span><br><span class="line"></span><br><span class="line">            Entry(ThreadLocal&lt;?&gt; k, Object v) &#123;</span><br><span class="line">                <span class="built_in">super</span>(k);</span><br><span class="line">                value = v;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    <span class="comment">//.....</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</blockquote>
+<h1 id="为上面的知识点总结一张图">为上面的知识点总结一张图</h1>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221206095002176.png"
+alt="image-20221206095002176" />
+<figcaption aria-hidden="true">image-20221206095002176</figcaption>
+</figure>
 <h1 id="gc之后key是否为null">GC之后key是否为null</h1>
 <h1 id="threadlocal.set方法源码详解">ThreadLocal.set()方法源码详解</h1>
 <h1 id="threadlocalmap-hash算法">ThreadLocalMap Hash算法</h1>
