@@ -239,14 +239,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>6.9k</span>
+              <span>7.3k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>12 分钟</span>
+              <span>13 分钟</span>
             </span>
             <div class="post-description">ThreadLocal详解</div>
 
@@ -384,11 +384,40 @@ alt="img" /></li>
 </ul>
 <h1 id="threadlocalmap.set-详解">ThreadLocalMap.set() 详解</h1>
 <p>ThreadLocalMap.set() 原理图解</p>
+<p>往ThreadLocalMap中set数据（新增或更新数据）分为好几种</p>
+<ol type="1">
+<li><p>通过<strong>hash计算后</strong>的槽位对应的<strong>Entry数据为空</strong>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/9.3269651c.png"
+alt="img" /> 直接将数据放到该槽位即可</p></li>
+<li><p>槽位数据不为空，<strong>key值与当前ThreadLocal通过hash</strong>计算获取的<strong>key值一致</strong>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/10.706954d1.png"
+alt="img" /> 直接更新该槽位的数据</p></li>
+<li><p>槽位数据不为空，往后<strong>遍历</strong>过程中，在找到Entry为null的槽位之前，<strong>没有遇到过期的Entry</strong>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/11.bb4e1504.png"
+alt="img" />
+遍历散列数组的过程中，线性往后查找，如果找到Entry为null的槽位则将数据放入槽位中；或者往后遍历过程中遇到key值相等的数据则更新</p></li>
+<li><p>槽位数据不为空，在找到Entry为null的槽位之前，遇到了过期的Entry，如下图
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/12.7f276023.png"
+alt="img" />
+此时会执行replaceStableEntry()方法，该方法含义是<strong>替换过期数据的逻辑</strong></p>
+<blockquote>
+<p>... 以下省略，太复杂</p>
+</blockquote>
+<p>替换完成后也是进行过期元素清理工作，清理工作主要是有两个方法：<code>expungeStaleEntry()</code>和<code>cleanSomeSlots()</code></p>
+<p><strong>经过迭代处理后，有过<code>Hash</code>冲突数据的<code>Entry</code>位置会更靠近正确位置，这样的话，查询的时候
+效率才会更高。</strong></p></li>
+</ol>
 <h1
-id="threadlocalmap过期-key-的探测式清理流程threadlocalmap扩容机制"><code>ThreadLocalMap</code>过期
-key 的探测式清理流程ThreadLocalMap扩容机制</h1>
+id="threadlocalmap过期-key-的探测式清理流程略过"><code>ThreadLocalMap</code>过期
+key 的探测式清理流程(略过)</h1>
+<h1 id="threadlocalmap扩容机制">ThreadLocalMap扩容机制</h1>
 <h1 id="threadlocalmap.get-详解">ThreadLocalMap.get() 详解</h1>
-<h1 id="threadlocalmap过期key的启发">ThreadLocalMap过期key的启发</h1>
+<h1
+id="threadlocalmap过期key的启发式清理流程略过">ThreadLocalMap过期key的启发式清理流程(略过)</h1>
 <h1 id="inheritable-threadlocal">Inheritable ThreadLocal</h1>
 <h1 id="threadlocal项目中使用实战">ThreadLocal项目中使用实战</h1>
 
@@ -480,8 +509,8 @@ key 的探测式清理流程ThreadLocalMap扩容机制</h1>
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%9B%AE%E5%BD%95"><span class="nav-number">1.</span> <span class="nav-text">目录</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#threadlocal%E4%BB%A3%E7%A0%81%E6%BC%94%E7%A4%BA"><span class="nav-number">2.</span> <span class="nav-text">ThreadLocal代码演示</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#threadlocal%E7%9A%84%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"><span class="nav-number">3.</span> <span class="nav-text">ThreadLocal的数据结构</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%BA%E4%B8%8A%E9%9D%A2%E7%9A%84%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93%E4%B8%80%E5%BC%A0%E5%9B%BE"><span class="nav-number">4.</span> <span class="nav-text">为上面的知识点总结一张图</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#gc%E4%B9%8B%E5%90%8Ekey%E6%98%AF%E5%90%A6%E4%B8%BAnull"><span class="nav-number">5.</span> <span class="nav-text">GC之后key是否为null</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#threadlocalmap-hash%E7%AE%97%E6%B3%95"><span class="nav-number">6.</span> <span class="nav-text">ThreadLocalMap Hash算法</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#threadlocalmap-hash%E5%86%B2%E7%AA%81"><span class="nav-number">7.</span> <span class="nav-text">ThreadLocalMap Hash冲突</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#threadlocalmap.set-%E8%AF%A6%E8%A7%A3"><span class="nav-number">8.</span> <span class="nav-text">ThreadLocalMap.set() 详解</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#threadlocalmap%E8%BF%87%E6%9C%9F-key-%E7%9A%84%E6%8E%A2%E6%B5%8B%E5%BC%8F%E6%B8%85%E7%90%86%E6%B5%81%E7%A8%8Bthreadlocalmap%E6%89%A9%E5%AE%B9%E6%9C%BA%E5%88%B6"><span class="nav-number">9.</span> <span class="nav-text">ThreadLocalMap过期
-key 的探测式清理流程ThreadLocalMap扩容机制</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#threadlocalmap.get-%E8%AF%A6%E8%A7%A3"><span class="nav-number">10.</span> <span class="nav-text">ThreadLocalMap.get() 详解</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#threadlocalmap%E8%BF%87%E6%9C%9Fkey%E7%9A%84%E5%90%AF%E5%8F%91"><span class="nav-number">11.</span> <span class="nav-text">ThreadLocalMap过期key的启发</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#inheritable-threadlocal"><span class="nav-number">12.</span> <span class="nav-text">Inheritable ThreadLocal</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#threadlocal%E9%A1%B9%E7%9B%AE%E4%B8%AD%E4%BD%BF%E7%94%A8%E5%AE%9E%E6%88%98"><span class="nav-number">13.</span> <span class="nav-text">ThreadLocal项目中使用实战</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%9B%AE%E5%BD%95"><span class="nav-number">1.</span> <span class="nav-text">目录</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#threadlocal%E4%BB%A3%E7%A0%81%E6%BC%94%E7%A4%BA"><span class="nav-number">2.</span> <span class="nav-text">ThreadLocal代码演示</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#threadlocal%E7%9A%84%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"><span class="nav-number">3.</span> <span class="nav-text">ThreadLocal的数据结构</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%BA%E4%B8%8A%E9%9D%A2%E7%9A%84%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93%E4%B8%80%E5%BC%A0%E5%9B%BE"><span class="nav-number">4.</span> <span class="nav-text">为上面的知识点总结一张图</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#gc%E4%B9%8B%E5%90%8Ekey%E6%98%AF%E5%90%A6%E4%B8%BAnull"><span class="nav-number">5.</span> <span class="nav-text">GC之后key是否为null</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#threadlocalmap-hash%E7%AE%97%E6%B3%95"><span class="nav-number">6.</span> <span class="nav-text">ThreadLocalMap Hash算法</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#threadlocalmap-hash%E5%86%B2%E7%AA%81"><span class="nav-number">7.</span> <span class="nav-text">ThreadLocalMap Hash冲突</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#threadlocalmap.set-%E8%AF%A6%E8%A7%A3"><span class="nav-number">8.</span> <span class="nav-text">ThreadLocalMap.set() 详解</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#threadlocalmap%E8%BF%87%E6%9C%9F-key-%E7%9A%84%E6%8E%A2%E6%B5%8B%E5%BC%8F%E6%B8%85%E7%90%86%E6%B5%81%E7%A8%8B%E7%95%A5%E8%BF%87"><span class="nav-number">9.</span> <span class="nav-text">ThreadLocalMap过期
+key 的探测式清理流程(略过)</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#threadlocalmap%E6%89%A9%E5%AE%B9%E6%9C%BA%E5%88%B6"><span class="nav-number">10.</span> <span class="nav-text">ThreadLocalMap扩容机制</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#threadlocalmap.get-%E8%AF%A6%E8%A7%A3"><span class="nav-number">11.</span> <span class="nav-text">ThreadLocalMap.get() 详解</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#threadlocalmap%E8%BF%87%E6%9C%9Fkey%E7%9A%84%E5%90%AF%E5%8F%91%E5%BC%8F%E6%B8%85%E7%90%86%E6%B5%81%E7%A8%8B%E7%95%A5%E8%BF%87"><span class="nav-number">12.</span> <span class="nav-text">ThreadLocalMap过期key的启发式清理流程(略过)</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#inheritable-threadlocal"><span class="nav-number">13.</span> <span class="nav-text">Inheritable ThreadLocal</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#threadlocal%E9%A1%B9%E7%9B%AE%E4%B8%AD%E4%BD%BF%E7%94%A8%E5%AE%9E%E6%88%98"><span class="nav-number">14.</span> <span class="nav-text">ThreadLocal项目中使用实战</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
