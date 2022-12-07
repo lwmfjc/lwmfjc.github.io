@@ -6776,7 +6776,61 @@ alt="Java 运行时数据区域（JDK1.8 之后）" />
 <li>Java虚拟机栈，<strong>简称"栈"</strong>，也是线程私有的，生命周期和线程相同，随线程创建而创建，线程死亡而死亡</li>
 <li>除了<strong>Native方法</strong>调用的是<strong>通过本地方法栈实现</strong>的，其他所有的Java方法调用都是通过<strong>栈</strong>来实现的（需要和其他运行时数据区域比如<strong>程序计数器</strong>配合）</li>
 <li><strong>方法调用的数据</strong>需要通过栈进行<strong>传递</strong>，<strong>每一次方法调用</strong>都会有一个对应的<strong>栈帧被压入栈</strong>，每一个<strong>方法调用结束后</strong>，都会有一个<strong>栈帧被弹出</strong>。</li>
-<li>栈由一个个栈帧组成，</li>
+<li>栈由一个个栈帧组成，每个栈帧包括<strong>局部变量表</strong>、<strong>操作数栈</strong>、<strong>动态链接</strong>、<strong>方法返回地址</strong>。
+栈为<strong>先进后出</strong>，且只支持<strong>出栈</strong>和<strong>入栈</strong></li>
+</ul>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/stack-area.png"
+alt="Java 虚拟机栈" />
+<figcaption aria-hidden="true">Java 虚拟机栈</figcaption>
+</figure>
+<ul>
+<li><p>局部变量表：存放<strong>编译器可知</strong>的各种<strong>数据类型</strong>(boolean、byte、char、short、int、float、long、double)、对象引用(reference
+类型，不同于对象本身，可能是一个指向对象起始地址的引用指针，也可能是一个<strong>指向一个代表对象的句柄或其他与此对象相关的位置</strong>)
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/local-variables-table.png"
+alt="局部变量表" /></p></li>
+<li><p>操作数栈
+作为方法调用的<strong>中转站</strong>使用，用于存放方法执行过程中产生的<strong>中间计算结果</strong>。计算过程中产生的临时变量也放在操作数栈中</p></li>
+<li><p>动态链接
+主要服务<strong>一个方法需要调用其他方法</strong>的场景。</p>
+<blockquote>
+<p>在 Java
+源文件被编译成字节码文件时，所有的变量和方法引用都作为符号引用（Symbilic
+Reference）保存在 Class
+文件的常量池里。当一个方法要调用其他方法，需要将常量池中指向方法的符号引用转化为其在内存地址中的直接引用。动态链接的作用就是为了将符号引用转换为调用方法的直接引用。</p>
+</blockquote>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/jvmimage-20220331175738692.png"
+alt="img" />
+<figcaption aria-hidden="true">img</figcaption>
+</figure></li>
+<li><p>如果函数调用陷入<strong>无限循环</strong>，会导致栈中被压入太多栈帧而占用太多空间，导致<strong>栈空间过深</strong>。当<strong>线程请求栈的深度超过当前Java虚拟机栈的最大深度</strong>时，就会抛出<strong>StackOverError</strong>错误</p></li>
+<li><p>Java 方法有两种返回方式，一种是 return
+语句正常返回，一种是抛出异常。不管哪种返回方式，都会导致栈帧被弹出。也就是说，
+<strong>栈帧随着方法调用而创建，随着方法结束而销毁。无论方法正常完成还是异常完成都算作方法结束。</strong></p></li>
+<li><p>除了 <code>StackOverFlowError</code>
+错误之外，栈还可能会出现<code>OutOfMemoryError</code>错误，这是因为如果<strong>栈的内存大小可以动态扩展</strong>，
+如果虚拟机在<strong>动态扩展栈时无法申请到足够的内存空间</strong>，则抛出<strong><code>OutOfMemoryError</code></strong>异常。</p></li>
+<li><p>总结，程序运行中栈可能出现的两种错误</p>
+<ul>
+<li><strong>StackOverFlowError</strong>：若<strong>栈的内存大小不允许动态扩展</strong>，那么当<strong>线程请求栈的深度超过当前
+Java 虚拟机栈的最大深度</strong>的时候，就抛出
+<code>StackOverFlowError</code> 错误。</li>
+<li><strong><code>OutOfMemoryError</code>：</strong>
+如果栈的内存大小<strong>可以动态扩展</strong>，
+如果虚拟机在<strong>动态扩展栈时无法申请到足够的内存空间</strong>，则抛出<code>OutOfMemoryError</code>异常。</li>
+</ul>
+<blockquote>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/%25E3%2580%258A%25E6%25B7%25B1%25E5%2585%25A5%25E7%2590%2586%25E8%25A7%25A3%25E8%2599%259A%25E6%258B%259F%25E6%259C%25BA%25E3%2580%258B%25E7%25AC%25AC%25E4%25B8%2589%25E7%2589%2588%25E7%259A%2584%25E7%25AC%25AC2%25E7%25AB%25A0-%25E8%2599%259A%25E6%258B%259F%25E6%259C%25BA%25E6%25A0%2588.f4f863a2.png"
+alt="img" />
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+</blockquote></li>
 </ul>
 <h2 id="本地方法栈">本地方法栈</h2>
 <h2 id="堆">堆</h2>
