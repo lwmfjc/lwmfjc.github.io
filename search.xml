@@ -3345,7 +3345,20 @@ alt="image-20221206220534852" /></p>
 </ul>
 <h2
 id="并行运行多个completablefuture">并行运行多个CompletableFuture</h2>
+<p>通过CompletableFuture的allOf()这个静态方法并行运行多个CompletableFuture</p>
+<blockquote>
+<p>实际项目中，我们经常需要并行运行多个互不相关的任务，这些任务没有依赖关系</p>
+</blockquote>
+<p>比如读取处理6个文件，没有顺序依赖关系
+但我们需要返回给用户的时候将这几个文件的处理结果统计整理，示例：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">CompletableFuture&lt;Void&gt; task1 =</span><br><span class="line">  CompletableFuture.supplyAsync(()-&gt;&#123;</span><br><span class="line">    <span class="comment">//自定义业务操作</span></span><br><span class="line">  &#125;);</span><br><span class="line">......</span><br><span class="line">CompletableFuture&lt;Void&gt; task6 =</span><br><span class="line">  CompletableFuture.supplyAsync(()-&gt;&#123;</span><br><span class="line">    <span class="comment">//自定义业务操作</span></span><br><span class="line">  &#125;);</span><br><span class="line">......</span><br><span class="line"> CompletableFuture&lt;Void&gt; headerFuture=CompletableFuture.allOf(task1,.....,task6);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    headerFuture.join();</span><br><span class="line">  &#125; <span class="keyword">catch</span> (Exception ex) &#123;</span><br><span class="line">    ......</span><br><span class="line">  &#125;</span><br><span class="line">System.out.println(<span class="string">&quot;all done. &quot;</span>); </span><br></pre></td></tr></table></figure>
+<p><strong>调用join()可以让程序等future1和future2都运行完后继续执行</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">CompletableFuture&lt;Void&gt; completableFuture = CompletableFuture.allOf(future1, future2);</span><br><span class="line">completableFuture.join();</span><br><span class="line">assertTrue(completableFuture.isDone());</span><br><span class="line">System.out.println(<span class="string">&quot;all futures done...&quot;</span>); </span><br><span class="line"><span class="comment">/**---</span></span><br><span class="line"><span class="comment">future1 done...</span></span><br><span class="line"><span class="comment">future2 done...</span></span><br><span class="line"><span class="comment">all futures done...</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+<p>anyOf则其中一个执行完就立马返回</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">CompletableFuture&lt;Object&gt; f = CompletableFuture.anyOf(future1, future2);</span><br><span class="line">System.out.println(f.get());</span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">future2 done...</span></span><br><span class="line"><span class="comment">efg</span></span><br><span class="line"><span class="comment">*/</span> <span class="comment">//或</span></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">future1 done...</span></span><br><span class="line"><span class="comment">abc</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
 <h1 id="后记">后记</h1>
+<p>京东的aysncTool框架<br />
+https://gitee.com/jd-platform-opensource/asyncTool#%E5%B9%B6%E8%A1%8C%E5%9C%BA%E6%99%AF%E4%B9%8B%E6%A0%B8%E5%BF%83%E4%BB%BB%E6%84%8F%E7%BC%96%E6%8E%92</p>
 ]]></content>
       <categories>
         <category>学习</category>
