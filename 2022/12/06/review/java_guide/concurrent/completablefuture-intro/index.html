@@ -239,14 +239,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>10k</span>
+              <span>12k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>19 分钟</span>
+              <span>21 分钟</span>
             </span>
             <div class="post-description">completablefuture-intro</div>
 
@@ -384,6 +384,22 @@ alt="image-20221206220534852" /></p>
 <p>让异步的结果直接就抛异常</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line">CompletableFuture&lt;String&gt; completableFuture = <span class="keyword">new</span> <span class="title class_">CompletableFuture</span>&lt;&gt;();</span><br><span class="line"><span class="comment">// ...</span></span><br><span class="line">completableFuture.completeExceptionally(</span><br><span class="line">  <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;Calculation failed!&quot;</span>));</span><br><span class="line"><span class="comment">// ...</span></span><br><span class="line">completableFuture.get(); <span class="comment">// ExecutionException </span></span><br></pre></td></tr></table></figure>
 <h2 id="组合completablefuture">组合CompletableFuture</h2>
+<p>使用thenCompose() 按顺序链接两个CompletableFuture对象</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> &lt;U&gt; CompletableFuture&lt;U&gt; <span class="title function_">thenCompose</span><span class="params">(</span></span><br><span class="line"><span class="params">    Function&lt;? <span class="built_in">super</span> T, ? extends CompletionStage&lt;U&gt;&gt; fn)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> uniComposeStage(<span class="literal">null</span>, fn);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> &lt;U&gt; CompletableFuture&lt;U&gt; <span class="title function_">thenComposeAsync</span><span class="params">(</span></span><br><span class="line"><span class="params">    Function&lt;? <span class="built_in">super</span> T, ? extends CompletionStage&lt;U&gt;&gt; fn)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> uniComposeStage(defaultExecutor(), fn);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> &lt;U&gt; CompletableFuture&lt;U&gt; <span class="title function_">thenComposeAsync</span><span class="params">(</span></span><br><span class="line"><span class="params">    Function&lt;? <span class="built_in">super</span> T, ? extends CompletionStage&lt;U&gt;&gt; fn,</span></span><br><span class="line"><span class="params">    Executor executor)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> uniComposeStage(screenExecutor(executor), fn);</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+<p>使用示例：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">CompletableFuture&lt;String&gt; future</span><br><span class="line">        = CompletableFuture.supplyAsync(() -&gt; <span class="string">&quot;hello!&quot;</span>)</span><br><span class="line">        .thenCompose(s -&gt; CompletableFuture.supplyAsync(() -&gt; s + <span class="string">&quot;world!&quot;</span>));</span><br><span class="line">assertEquals(<span class="string">&quot;hello!world!&quot;</span>, future.get()); </span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>在实际开发中，这个方法还是非常有用的。比如说，我们先要获取用户信息然后再用用户信息去做其他事情。</p>
+</blockquote>
+<p>和thenCompose()方法类似的还有thenCombine()方法，thenCombine()同样可以组合两个CompletableFuture对象</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">CompletableFuture&lt;String&gt; completableFuture</span><br><span class="line">        = CompletableFuture.supplyAsync(() -&gt; <span class="string">&quot;hello!&quot;</span>)</span><br><span class="line">        .thenCombine(CompletableFuture.supplyAsync(</span><br><span class="line">                () -&gt; <span class="string">&quot;world!&quot;</span>), (s1, s2) -&gt; s1 + s2)</span><br><span class="line">        .thenCompose(s -&gt; CompletableFuture.supplyAsync(() -&gt; s + <span class="string">&quot;nice!&quot;</span>));</span><br><span class="line">assertEquals(<span class="string">&quot;hello!world!nice!&quot;</span>, completableFuture.get()); </span><br></pre></td></tr></table></figure>
+<p>★★ thenCompose() 和 thenCombine()有什么区别呢</p>
+<ul>
+<li><code>thenCompose()</code> 可以两个 <code>CompletableFuture</code>
+对象，并将前一个任务的返回结果作为下一个任务的参数，它们之间存在着先后顺序。</li>
+<li><code>thenCombine()</code>
+会在两个任务都执行完成后，把两个任务的结果合并。两个任务是并行执行的，它们之间并没有先后依赖顺序。</li>
+</ul>
 <h2
 id="并行运行多个completablefuture">并行运行多个CompletableFuture</h2>
 <h1 id="后记">后记</h1>
@@ -546,12 +562,12 @@ id="并行运行多个completablefuture">并行运行多个CompletableFuture</h2
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">704k</span>
+    <span title="站点总字数">705k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">21:19</span>
+    <span title="站点阅读时长">21:22</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
