@@ -7027,8 +7027,81 @@ Input/Output)类，引入一种基于<strong>通道（Channel）</strong>与<str
 <li>本机直接内存的分配不会受到Java堆的限制，但是，既然是内存就会<strong>受到本机总内存大小</strong>以及<strong>处理器寻址空间</strong>的限制</li>
 </ul>
 <h1 id="hotspot虚拟机对象探秘">HotSpot虚拟机对象探秘</h1>
-<p><strong>了解一下HotSport虚拟机</strong>在Java堆中对象分配、布局和访问的全过程</p>
+<p><strong>了解一下HotSport虚拟机</strong>在<strong>Java堆中对象分配、布局和访问</strong>的全过程</p>
 <h2 id="对象的创建">对象的创建</h2>
+<p>默认：</p>
+<ol type="1">
+<li><p>类加载检查
+虚拟机遇到一条<strong>new指令</strong>时，首先将去检查这个指令的<strong>参数</strong>是否能在<strong>常量池中</strong>定位到这个<strong>类的符号引用</strong>，并且检查这个符号引用代表的类<strong>是否已被加载过</strong>、<strong>解析和初始化</strong>过。<strong>如果没有</strong>，那必须先执行相应的<strong>类加载</strong>过程</p></li>
+<li><p>分配内存
+<strong>类加载检查</strong>通过后，接下来虚拟机将为新生对象<strong>分配内容</strong>。<strong>对象所需内存大小</strong>在类加载后便可确定，为对象分配空间的任务，等同于<strong>把一块确定大小的内存</strong>从<strong>Java堆中划分出来</strong>。
+分配方式有<strong>”指针碰撞“</strong>和<strong>”空闲列表“</strong>两种，选择哪种分配方式由<strong>Java堆是否规整决定</strong>，而<strong>Java堆是否规整</strong>又由<strong>所采用的垃圾收集器是否带有压缩整理功能决定</strong>
+<strong>内存分配的两种方式</strong>：</p>
+<ul>
+<li><p>指针碰撞</p>
+<ul>
+<li>适用场合：<strong>堆内存规整（即没有内存碎片）</strong>的情况下</li>
+<li>原理：用过的内存全部整合到一边，没有用过的内存放在另一边，<strong>中间有一个分界指针</strong>只需要<strong>向着没用过的内存方向</strong>，将该指针<strong>移动对象内存的大小的位置</strong>即可</li>
+<li>使用该分配方式的GC收集器：Serial，PartNew</li>
+</ul></li>
+<li><p>空闲列表</p>
+<ul>
+<li>适合场合：<strong>堆内存不规整的情况下</strong></li>
+<li>原理：虚拟机会维护一个列表，该列表中会<strong>记录哪些内存块是可用</strong>的，在分配的时候，找一块<strong>足够大的内存块</strong>来划分给对象实例，最后<strong>更新列表记录</strong></li>
+<li>使用该分配方式的GC收集器：CMS</li>
+</ul>
+<p>选择以上两种方式中的哪一种，取决于 Java 堆内存是否规整。而 Java
+堆内存是否规整，取决于 <strong>GC
+收集器的算法</strong>是<strong>"标记-清除"</strong>，还是<strong>"标记-整理"</strong>（也称作<strong>"标记-压缩"</strong>），值得注意的是，<strong>复制算法内存也是规整</strong>的</p></li>
+</ul>
+<p><strong>内存分配并发问题</strong>：</p>
+<p>创建对象时的重要问题---线程安全，因为在实际开发过程中，<strong>创建对象是很频繁的事</strong>，作为虚拟机来说，必须要保证线城市安全的，虚拟机采用<strong>两种方式保证线程安全</strong>：</p>
+<ol type="1">
+<li><p>CAS+失败重试:</p>
+<blockquote>
+<p>CAS
+是乐观锁的一种实现方式。所谓乐观锁就是，每次不加锁而是假设没有冲突而去完成某项操作，如果因为冲突失败就重试，直到成功为止</p>
+</blockquote>
+<p>虚拟机采用<strong>CAS+失败重试</strong>的方式保证更新操作的原子性</p></li>
+<li><p>TLAB：为<strong>每一个线程</strong> <strong>预先</strong>
+<strong>在Eden区分配一块内存</strong>，JVM在<strong>给线程中的对象分配内存</strong>时，首先在TLAB（该内存区域）分配，当对象大于TLAB中的<strong>剩余内存</strong>或TLAB的内存<strong>已用尽</strong>时，再采用上述的<strong>CAS</strong>进行内存分配</p>
+<blockquote>
+<p>在预留这个操作发生的时候，需要进行加锁或者采用CAS等操作进行保护，避免多个线程预留同一个区域</p>
+</blockquote></li>
+</ol></li>
+<li><p>初始化零值
+内存分配完成后，虚拟机需要将<strong>分配到的内存空间</strong>都<strong>初始化为零值（不包括对象头）</strong>，这一步操作<strong>保证了对象的实例字段</strong>在
+<strong>Java
+代码中可以不赋初始值就直接使用</strong>，程序能访问到这些<strong>字段的数据类型所对应的零值</strong>。</p></li>
+<li><p>设置对象头<br />
+初始化零值完成之后，<strong>虚拟机要对对象进行必要的设置</strong>，例如这个对象是哪个类的实例、如何才能找到类的元数据信息、对象的哈希码、对象的
+GC 分代年龄等信息。 <strong>这些信息存放在对象头中。</strong>
+另外，根据虚拟机当前运行状态的不同，如是否启用偏向锁等，对象头会有不同的设置方式。</p></li>
+<li><p>执行init方法<br />
+在上面工作都完成之后，<strong>从虚拟机的视角来看，一个新的对象已经产生了</strong>，但从
+Java 程序的视角来看，对象创建才刚开始，<strong><code>&lt;init&gt;</code>
+方法还没有执行，所有的字段都还为零</strong>。所以一般来说，执行 new
+指令之后会接着执行 <strong><code>&lt;init&gt;</code>
+方法</strong>，把对象<strong>按照程序员的意愿进行初始化</strong>，这样一个真正可用的对象才算完全产生出来。</p>
+<blockquote>
+<p>附： Java 在编译之后会在字节码文件中生成 <strong>init
+方法，称之为实例构造器</strong>，该实例构造器会将语句块，变量初始化，调用父类的构造器等操作<strong>收敛到
+init 方法中</strong>，收敛顺序为：</p>
+<ol type="1">
+<li>父类变量初始化</li>
+<li>父类语句块</li>
+<li>父类构造函数</li>
+<li>子类变量初始化</li>
+<li>子类语句块</li>
+<li>子类构造函数</li>
+</ol>
+<ul>
+<li>收敛到 init 方法的意思是：<strong>将这些操作放入到 init
+中</strong>去执行。</li>
+</ul>
+<p>转自： https://juejin.cn/post/6844903957836333063</p>
+</blockquote></li>
+</ol>
 <h2 id="对象的内存布局">对象的内存布局</h2>
 <h2 id="对象的访问定位">对象的访问定位</h2>
 ]]></content>
