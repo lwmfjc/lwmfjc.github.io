@@ -6902,7 +6902,57 @@ Java 8 max heap sizeopen in new window</a>)</p>
 </ul>
 <h2 id="方法区">方法区</h2>
 <ul>
-<li>方法区属于<strong>JVM运行时数据区域</strong>的一块<strong>逻辑区域</strong>，是各线程共享的内存区域</li>
+<li><p>方法区属于<strong>JVM运行时数据区域</strong>的一块<strong>逻辑区域</strong>，是各线程共享的内存区域</p>
+<blockquote>
+<p>“逻辑”，《Java虚拟机规范》规定了有方法区这么个概念和它的作用，方法区如何实现是虚拟机的事。即，不同虚拟机实现上，方法区的实现是不同的</p>
+</blockquote></li>
+<li><p>当虚拟机要使用一个类时，它需要<strong>读取并解析Class文件获取相关信息</strong>，再将<strong>信息存入方法区</strong>。方法区会存储已被虚拟机加载的<strong>类信息、字段信息、方法信息、常量、静态变量、即时编译器编译后的代码缓存</strong>等数据</p></li>
+<li><p><strong>方法区和永久代以及元空间有什么关系呢？</strong></p>
+<ol type="1">
+<li>方法区和永久代以及元空间的关系很像Java中接口和类的关系，类实现了接口，这里的类就可以看作是<strong>永久代</strong>和<strong>元空间</strong>，接口则看作是<strong>方法区</strong></li>
+<li>永久代及元空间，是HotSpot虚拟机对虚拟机规范中方法区的<strong>两种实现方式</strong></li>
+<li>永久代是JDK1.8之前的方法区实现，元空间是JDK1.8及之后方法区的实现</li>
+</ol>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/method-area-implementation.png"
+alt="HotSpot 虚拟机方法区的两种实现" />
+<figcaption aria-hidden="true">HotSpot
+虚拟机方法区的两种实现</figcaption>
+</figure></li>
+<li><p>为什么将永久代（PermGen）替换成元空间（MetaSpace）呢</p>
+<blockquote>
+<p>下图来自《深入理解Java虚拟机》第3版</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/20210425134508117.png"
+alt="img" />
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+</blockquote>
+<ol type="1">
+<li><p>整个永久代有一个<strong>JVM本身设置的固定大小上限（也就是参数指定）</strong>，无法进行调整，而元空间使用的是<strong>直接内存</strong>，受本机可用内存的限制。<code>虽然元空间仍旧可能溢出，但比原来出现的机率会更小</code></p>
+<blockquote>
+<p>元空间溢出将得到错误： java.lang.OutOfMemoryError: MetaSpace</p>
+</blockquote>
+<ul>
+<li><code>-XX: MaxMetaspaceSize</code>设置最大元空间大小，默认为unlimited，即只受系统内存限制</li>
+<li><code>-XX: MetaspaceSize</code>调整标志定义元空间的<strong>初始大小</strong>，如果未指定此标志，则Metaspace将<strong>根据运行时应用程序需求，动态地重新调整大小</strong>。</li>
+</ul></li>
+<li><p>元空间里存放的是<strong>类的元数据</strong>，这样加载多少<strong>类的元数据就不由MaxPermSize控制</strong>了，而<strong>由系统的实际可用空间控制</strong>，这样加载的类就更多了</p></li>
+<li><p>在 JDK8，合并 HotSpot 和 JRockit 的代码时, JRockit
+从来没有一个叫永久代的东西,
+合并之后就没有必要额外的设置这么一个永久代的地方了</p></li>
+</ol></li>
+<li><p>方法区常用参数有哪些
+JDK1.8之前永久代还没有被彻底移除时通过下面参数调节方法区大小</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">-XX:PermSize=N<span class="comment">//方法区 (永久代) 初始大小</span></span><br><span class="line"></span><br><span class="line">-XX:MaxPermSize=N<span class="comment">//方法区 (永久代) 最大大小,超过这个值将会抛出 OutOfMemoryError 异常:java.lang.OutOfMemoryError: PermGen</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>相对而言，垃圾收集行为在这个区域是比较少出现的，但<strong>并非数据进入方法区后就“永久存在”</strong>了。</p>
+</blockquote>
+<p>JDK1.7方法区(HotSpot的永久代)被移除一部分，JDK1.8时方法区被彻底移除，取而代之的是<strong>元空间</strong>，元空间使用直接内存，下面是常用参数</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">-XX:MetaspaceSize=N <span class="comment">//设置 Metaspace 的初始（和最小大小）</span></span><br><span class="line">-XX:MaxMetaspaceSize=N <span class="comment">//设置 Metaspace 的最大大小</span></span><br></pre></td></tr></table></figure>
+<p>与永久代不同，如果不指定大小，随着更多类的创建，<strong>虚拟机会耗尽所有可用的系统内存</strong>。</p></li>
 </ul>
 <h2 id="运行时常量池">运行时常量池</h2>
 <h2 id="直接内存">直接内存</h2>
