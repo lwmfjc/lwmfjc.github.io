@@ -239,14 +239,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>5.1k</span>
+              <span>6.6k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>9 分钟</span>
+              <span>12 分钟</span>
             </span>
             <div class="post-description">memory-area</div>
 
@@ -281,10 +281,9 @@
 </ol>
 <figure>
 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/java-runtime-data-areas-jdk1.7.png"
-alt="Java 运行时数据区域（JDK1.8 之前）" />
-<figcaption aria-hidden="true">Java 运行时数据区域（JDK1.8
-之前）</figcaption>
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221208144045407.png"
+alt="image-20221208144045407" />
+<figcaption aria-hidden="true">image-20221208144045407</figcaption>
 </figure>
 <p>JDK1.8之后：<br />
 <img
@@ -503,7 +502,59 @@ JDK1.8之前永久代还没有被彻底移除时通过下面参数调节方法�
 <p>与永久代不同，如果不指定大小，随着更多类的创建，<strong>虚拟机会耗尽所有可用的系统内存</strong>。</p></li>
 </ul>
 <h2 id="运行时常量池">运行时常量池</h2>
+<ul>
+<li>Class文件中除了有<strong>类的版本</strong>、<strong>字段</strong>、<strong>方法</strong>、<strong>接口</strong>等描述信息外，还有用于存放编译器期生成的<strong>各种字面量（Literal）</strong>和<strong>符号引用（Symbolic
+Reference）</strong>的<strong>常量池表</strong></li>
+<li><strong>字面量</strong>是源代码中的<strong>固定值表示法</strong>，即通过字面我们就知道其值的含义。字面量包括<strong>整数</strong>、<strong>浮点数</strong>和<strong>字符串字面量</strong>；<strong>符号引用</strong>包括<strong>类符号引用</strong>、<strong>字段符号引用</strong>、<strong>方法符号引用</strong>和<strong>接口方法符号引用</strong>。</li>
+<li><strong>常量池表</strong>会在类加载后存放到<strong>方法区</strong>的<strong>运行时常量池</strong>中</li>
+<li>运行时常量池的功能类似于传统编程语言的<strong>符号表(但是包含了比典型符号表更广泛的数据)</strong></li>
+<li>运行时常量池是方法区的一部分，所以<strong>受到方法区内存的限制</strong>，当常量池无法再申请到内存时会抛出<strong>OutOfMemoryError</strong>的错误</li>
+</ul>
+<h2 id="字符串常量池">字符串常量池</h2>
+<p><strong>字符串常量池</strong>是JVM为了<strong>提升性能和减少内存消耗针对字符串(String类)专门</strong>开辟的一块区域，主要目的是为了避免字符串得重复创建</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 在堆中创建字符串对象”ab“</span></span><br><span class="line"><span class="comment">// 将字符串对象”ab“的引用保存在字符串常量池中</span></span><br><span class="line"><span class="type">String</span> <span class="variable">aa</span> <span class="operator">=</span> <span class="string">&quot;ab&quot;</span>;</span><br><span class="line"><span class="comment">// 直接返回字符串常量池中字符串对象”ab“的引用</span></span><br><span class="line"><span class="type">String</span> <span class="variable">bb</span> <span class="operator">=</span> <span class="string">&quot;ab&quot;</span>;</span><br><span class="line">System.out.println(aa==bb);<span class="comment">// true </span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>HotSpot 虚拟机中字符串常量池的实现是
+<code>src/hotspot/share/classfile/stringTable.cpp</code>
+,<code>StringTable</code>
+本质上就是一个<code>HashSet&lt;String&gt;</code> ,容量为
+<code>StringTableSize</code>（可以通过 <code>-XX:StringTableSize</code>
+参数来设置）。</p>
+<p><code>StringTable</code>
+中保存的是<strong>字符串对象的引用</strong>，字符串对象的引用<strong>指向堆中的字符串对象</strong>。</p>
+</blockquote>
+<p>JDK1.7之前，<strong>运行时常量池(字符串常量池、静态变量)</strong>存放在<strong>永久代</strong>。JDK1.7<strong>字符串常量池和静态变量</strong>从永久代移动到了Java堆中
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/method-area-jdk1.6.png"
+alt="method-area-jdk1.6" /></p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/method-area-jdk1.7.png"
+alt="method-area-jdk1.7" />
+<figcaption aria-hidden="true">method-area-jdk1.7</figcaption>
+</figure>
+<p><strong>JDK1.7为什么要将字符串常量池移动到堆中</strong></p>
+<ul>
+<li><p>因为<strong>永久代（方法区实现）的GC回收效率太低</strong>，只有在整堆收集（Full
+GC）的时候才会被执行GC。Java程序中通常有<strong>大量的被创建的字符串等待回收</strong>，将字符串常量池放到堆中，能够高效及时地回收字符串内存。</p></li>
+<li><p>JVM常量池中存储的是对象还是引用</p>
+<blockquote>
+<p>如果您说的确实是runtime constant pool（而不是interned string pool /
+StringTable之类的其他东西）的话，其中的引用类型常量（例如CONSTANT_String、CONSTANT_Class、CONSTANT_MethodHandle、CONSTANT_MethodType之类）都存的是引用，实际的对象还是存在Java
+heap上的。</p>
+</blockquote></li>
+<li><blockquote>
+<p><strong>运行时常量池、方法区、字符串常量池这些都是不随虚拟机实现而改变的逻辑概念，是公共且抽象的，Metaspace、Heap
+是与具体某种虚拟机实现相关的物理概念，是私有且具体的。</strong></p>
+</blockquote></li>
+</ul>
 <h2 id="直接内存">直接内存</h2>
+<ul>
+<li>直接内存并<strong>不是虚拟机运行时数据区</strong>的一部分，也<strong>不是虚拟机规范中定义的内存</strong>区域，但是这部分内存也被频繁使用，也可能导致OutOfMemoryError错误出现</li>
+<li>JDK1.4中新加入的NIO(New
+Input/Output)类，引入一种基于<strong>通道（Channel）</strong>与<strong>缓冲区（Buffer）</strong>的I/O方式，它可以直接使用<strong>Native函数库直接分配堆外内存</strong>，然后通过一个<strong>存储在Java堆中的DirectByteBuffer对象作为这块内存的引用</strong>进行操作。这样就能在一些场景中<strong>显著提高性能</strong>，因为避免了在<strong>Java堆和Native堆</strong>之间来回复制数据</li>
+<li>本机直接内存的分配不会受到Java堆的限制，但是，既然是内存就会<strong>受到本机总内存大小</strong>以及<strong>处理器寻址空间</strong>的限制</li>
+</ul>
 <h1 id="hotspot虚拟机对象探秘">HotSpot虚拟机对象探秘</h1>
 <h2 id="对象的创建">对象的创建</h2>
 <h2 id="对象的内存布局">对象的内存布局</h2>
@@ -597,7 +648,7 @@ JDK1.8之前永久代还没有被彻底移除时通过下面参数调节方法�
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C%E6%97%B6%E6%95%B0%E6%8D%AE%E5%8C%BA%E5%9F%9F"><span class="nav-number">2.</span> <span class="nav-text">运行时数据区域</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A8%8B%E5%BA%8F%E8%AE%A1%E6%95%B0%E5%99%A8"><span class="nav-number">2.1.</span> <span class="nav-text">程序计数器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#java%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A0%88"><span class="nav-number">2.2.</span> <span class="nav-text">Java虚拟机栈</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%AC%E5%9C%B0%E6%96%B9%E6%B3%95%E6%A0%88"><span class="nav-number">2.3.</span> <span class="nav-text">本地方法栈</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A0%86"><span class="nav-number">2.4.</span> <span class="nav-text">堆</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%B9%E6%B3%95%E5%8C%BA"><span class="nav-number">2.5.</span> <span class="nav-text">方法区</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C%E6%97%B6%E5%B8%B8%E9%87%8F%E6%B1%A0"><span class="nav-number">2.6.</span> <span class="nav-text">运行时常量池</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9B%B4%E6%8E%A5%E5%86%85%E5%AD%98"><span class="nav-number">2.7.</span> <span class="nav-text">直接内存</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#hotspot%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AF%B9%E8%B1%A1%E6%8E%A2%E7%A7%98"><span class="nav-number">3.</span> <span class="nav-text">HotSpot虚拟机对象探秘</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%88%9B%E5%BB%BA"><span class="nav-number">3.1.</span> <span class="nav-text">对象的创建</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80"><span class="nav-number">3.2.</span> <span class="nav-text">对象的内存布局</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%B9%E8%B1%A1%E7%9A%84%E8%AE%BF%E9%97%AE%E5%AE%9A%E4%BD%8D"><span class="nav-number">3.3.</span> <span class="nav-text">对象的访问定位</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C%E6%97%B6%E6%95%B0%E6%8D%AE%E5%8C%BA%E5%9F%9F"><span class="nav-number">2.</span> <span class="nav-text">运行时数据区域</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A8%8B%E5%BA%8F%E8%AE%A1%E6%95%B0%E5%99%A8"><span class="nav-number">2.1.</span> <span class="nav-text">程序计数器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#java%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A0%88"><span class="nav-number">2.2.</span> <span class="nav-text">Java虚拟机栈</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%AC%E5%9C%B0%E6%96%B9%E6%B3%95%E6%A0%88"><span class="nav-number">2.3.</span> <span class="nav-text">本地方法栈</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A0%86"><span class="nav-number">2.4.</span> <span class="nav-text">堆</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%B9%E6%B3%95%E5%8C%BA"><span class="nav-number">2.5.</span> <span class="nav-text">方法区</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C%E6%97%B6%E5%B8%B8%E9%87%8F%E6%B1%A0"><span class="nav-number">2.6.</span> <span class="nav-text">运行时常量池</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%B8%B8%E9%87%8F%E6%B1%A0"><span class="nav-number">2.7.</span> <span class="nav-text">字符串常量池</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9B%B4%E6%8E%A5%E5%86%85%E5%AD%98"><span class="nav-number">2.8.</span> <span class="nav-text">直接内存</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#hotspot%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AF%B9%E8%B1%A1%E6%8E%A2%E7%A7%98"><span class="nav-number">3.</span> <span class="nav-text">HotSpot虚拟机对象探秘</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%88%9B%E5%BB%BA"><span class="nav-number">3.1.</span> <span class="nav-text">对象的创建</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80"><span class="nav-number">3.2.</span> <span class="nav-text">对象的内存布局</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%B9%E8%B1%A1%E7%9A%84%E8%AE%BF%E9%97%AE%E5%AE%9A%E4%BD%8D"><span class="nav-number">3.3.</span> <span class="nav-text">对象的访问定位</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -667,12 +718,12 @@ JDK1.8之前永久代还没有被彻底移除时通过下面参数调节方法�
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">711k</span>
+    <span title="站点总字数">713k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">21:33</span>
+    <span title="站点阅读时长">21:36</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
