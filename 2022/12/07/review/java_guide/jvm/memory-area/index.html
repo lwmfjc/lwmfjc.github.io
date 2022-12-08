@@ -239,14 +239,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>8.2k</span>
+              <span>8.9k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>15 分钟</span>
+              <span>16 分钟</span>
             </span>
             <div class="post-description">memory-area</div>
 
@@ -651,7 +651,37 @@ init 方法中</strong>，收敛顺序为：</p>
 </blockquote></li>
 </ol>
 <h2 id="对象的内存布局">对象的内存布局</h2>
+<ul>
+<li>Hotspot虚拟机中，对象在内存中的布局分为3块区域：<strong>对象头</strong>、<strong>实例数据</strong>和<strong>对齐填充</strong>
+<ul>
+<li>对象头又包括<strong>两部分信息</strong>，第一部分用于<strong>存储对象自身的运行时数据（哈希码、GC分代年龄、锁状态标志等等）</strong>，即markword；第二部分是<strong>类型指针</strong>，即对象指向它的<strong>类元数据的指针</strong>，虚拟机通过这个指针来确定<strong>这个对象是哪个类的实例</strong>。</li>
+<li>实例数据部分是对象<strong>真正存储的有效信息</strong>，也是在程序中所定义的各种类型的<strong>字段</strong>内容</li>
+<li>对齐填充部分<strong>不是必然存在的，没特别含义，只起占位作用</strong>。因为Hotspot虚拟机的<strong>自动内存管理系统</strong>要求<strong>对象起始地址必须是8字节的整数倍</strong>，即<strong>对象的大小必须是8字节的整数倍</strong>。而对象头部分正好是8字节的倍数（1倍或2倍），因此当<strong>对象实例数据部分没有对齐</strong>时，就需要通过<strong>对齐填充</strong>来补全</li>
+</ul></li>
+</ul>
 <h2 id="对象的访问定位">对象的访问定位</h2>
+<p>建立对象就是为了<strong>使用对象</strong>，我们的 Java
+程序通过<strong>栈上的 reference
+数据</strong>来<strong>操作堆上的具体对象</strong>。对象的访问方式由虚拟机实现而定，目前<strong>主流的访问方式</strong>有：<strong>使用句柄</strong>、<strong>直接指针</strong>。</p>
+<ol type="1">
+<li><p>句柄 如果使用句柄的话，那么 Java
+堆中将会划分出<strong>一块内存来作为句柄池</strong>，<strong>reference
+中存储的就是对象的句柄地址</strong>，而<strong>句柄</strong>中包含了<strong>对象实例数据</strong>与<strong>对象类型数据各自的具体地址信息</strong>。</p>
+<p>【也就是多了一层】<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/access-location-of-object-handle.png"
+alt="对象的访问定位-使用句柄" /></p></li>
+<li><p>直接指针 如果使用<strong>直接指针</strong>访问，<strong>reference
+中存储的直接就是对象的地址</strong>。 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/access-location-of-object-handle-direct-pointer.png"
+alt="对象的访问定位-直接指针" /></p></li>
+</ol>
+<p>这两种对象访问方式各有优势。<strong>使用句柄来访问</strong>的最大好处是
+<strong>reference
+中存储的是稳定的句柄地址</strong>，在<strong>对象被移动时只会改变句柄中的实例数据指针，而
+reference
+本身不需要修改</strong>。使用直接指针访问方式最大的好处就是<strong>速度快，它节省了一次指针定位的时间开销</strong>。</p>
+<p>HotSpot
+虚拟机主要使用的就是这种方式<strong>(直接指针</strong>)来进行对象访问。</p>
 
     </div>
 
@@ -675,7 +705,10 @@ init 方法中</strong>，收敛顺序为：</p>
     <a href="/2022/12/06/review/java_guide/concurrent/completablefuture-intro/" rel="prev" title="completablefuture-intro">
       <i class="fa fa-chevron-left"></i> completablefuture-intro
     </a></div>
-      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2022/12/08/review/java_guide/jvm/garbage-collection/" rel="next" title="java垃圾回收器">
+      java垃圾回收器 <i class="fa fa-chevron-right"></i>
+    </a></div>
     </div>
       </footer>
     
@@ -757,7 +790,7 @@ init 方法中</strong>，收敛顺序为：</p>
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">108</span>
+          <span class="site-state-item-count">109</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -770,7 +803,7 @@ init 方法中</strong>，收敛顺序为：</p>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">28</span>
+        <span class="site-state-item-count">29</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -811,12 +844,12 @@ init 方法中</strong>，收敛顺序为：</p>
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">714k</span>
+    <span title="站点总字数">715k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">21:39</span>
+    <span title="站点阅读时长">21:40</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>

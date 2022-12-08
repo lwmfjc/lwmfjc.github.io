@@ -6709,6 +6709,22 @@ alt="image-20221024233326047" />
       </tags>
   </entry>
   <entry>
+    <title>java垃圾回收器</title>
+    <url>/2022/12/08/review/java_guide/jvm/garbage-collection/</url>
+    <content><![CDATA[<blockquote>
+<p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!</p>
+</blockquote>
+]]></content>
+      <categories>
+        <category>学习</category>
+      </categories>
+      <tags>
+        <tag>复习</tag>
+        <tag>复习-javaGuide</tag>
+        <tag>复习-javaGuide-jvm</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>memory-area</title>
     <url>/2022/12/07/review/java_guide/jvm/memory-area/</url>
     <content><![CDATA[<blockquote>
@@ -7103,7 +7119,37 @@ init 方法中</strong>，收敛顺序为：</p>
 </blockquote></li>
 </ol>
 <h2 id="对象的内存布局">对象的内存布局</h2>
+<ul>
+<li>Hotspot虚拟机中，对象在内存中的布局分为3块区域：<strong>对象头</strong>、<strong>实例数据</strong>和<strong>对齐填充</strong>
+<ul>
+<li>对象头又包括<strong>两部分信息</strong>，第一部分用于<strong>存储对象自身的运行时数据（哈希码、GC分代年龄、锁状态标志等等）</strong>，即markword；第二部分是<strong>类型指针</strong>，即对象指向它的<strong>类元数据的指针</strong>，虚拟机通过这个指针来确定<strong>这个对象是哪个类的实例</strong>。</li>
+<li>实例数据部分是对象<strong>真正存储的有效信息</strong>，也是在程序中所定义的各种类型的<strong>字段</strong>内容</li>
+<li>对齐填充部分<strong>不是必然存在的，没特别含义，只起占位作用</strong>。因为Hotspot虚拟机的<strong>自动内存管理系统</strong>要求<strong>对象起始地址必须是8字节的整数倍</strong>，即<strong>对象的大小必须是8字节的整数倍</strong>。而对象头部分正好是8字节的倍数（1倍或2倍），因此当<strong>对象实例数据部分没有对齐</strong>时，就需要通过<strong>对齐填充</strong>来补全</li>
+</ul></li>
+</ul>
 <h2 id="对象的访问定位">对象的访问定位</h2>
+<p>建立对象就是为了<strong>使用对象</strong>，我们的 Java
+程序通过<strong>栈上的 reference
+数据</strong>来<strong>操作堆上的具体对象</strong>。对象的访问方式由虚拟机实现而定，目前<strong>主流的访问方式</strong>有：<strong>使用句柄</strong>、<strong>直接指针</strong>。</p>
+<ol type="1">
+<li><p>句柄 如果使用句柄的话，那么 Java
+堆中将会划分出<strong>一块内存来作为句柄池</strong>，<strong>reference
+中存储的就是对象的句柄地址</strong>，而<strong>句柄</strong>中包含了<strong>对象实例数据</strong>与<strong>对象类型数据各自的具体地址信息</strong>。</p>
+<p>【也就是多了一层】<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/access-location-of-object-handle.png"
+alt="对象的访问定位-使用句柄" /></p></li>
+<li><p>直接指针 如果使用<strong>直接指针</strong>访问，<strong>reference
+中存储的直接就是对象的地址</strong>。 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/access-location-of-object-handle-direct-pointer.png"
+alt="对象的访问定位-直接指针" /></p></li>
+</ol>
+<p>这两种对象访问方式各有优势。<strong>使用句柄来访问</strong>的最大好处是
+<strong>reference
+中存储的是稳定的句柄地址</strong>，在<strong>对象被移动时只会改变句柄中的实例数据指针，而
+reference
+本身不需要修改</strong>。使用直接指针访问方式最大的好处就是<strong>速度快，它节省了一次指针定位的时间开销</strong>。</p>
+<p>HotSpot
+虚拟机主要使用的就是这种方式<strong>(直接指针</strong>)来进行对象访问。</p>
 ]]></content>
       <categories>
         <category>学习</category>
