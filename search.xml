@@ -6729,7 +6729,88 @@ alt="image-20221024233326047" />
     <url>/2022/12/09/review/java_guide/jvm/jvm-intro/</url>
     <content><![CDATA[<blockquote>
 <p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!</p>
+<p>原文地址：
+https://juejin.im/post/5e1505d0f265da5d5d744050#heading-28</p>
 </blockquote>
+<h1 id="jvm的基本介绍">JVM的基本介绍</h1>
+<ul>
+<li>JVM，JavaVirtualMachine的缩写，虚拟出来的计算机，通过在实际的计算机上<strong>仿真模拟</strong>各类计算机功能实现</li>
+<li>JVM类似一台小电脑，运行在windows或者linux这些<strong>真实操作系统环境下</strong>，<strong>直接</strong>和操作系统交互，<strong>与硬件不直接交互</strong>，操作系统帮我们完成和硬件交互的工作</li>
+</ul>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/d947f91e44c44c6c80222b49c2dee859-new-image19a36451-d673-486e-9c8e-3c7d8ab66929.png"
+alt="img" />
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<h2 id="java文件是如何运行的">Java文件是如何运行的</h2>
+<p>场景假设：我们写了一个HelloWorld.java，这是一个文本文件。JVM不认识文本文件，所以<strong>需要一个编译</strong>，让其(xxx.java)成为一个<strong>JVM会读的二进制文件---&gt;
+HelloWorld.class</strong></p>
+<ol type="1">
+<li><p>类加载器
+如果JVM想要执行这个.class文件，需要将其<strong>(这里应该指的二进制文件)</strong>装进<strong>类加载器</strong>中，它就像一个搬运工一样，会把所有的.class文件全部搬进JVM里面
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/81f1813f371c40ffa1c1f6d78bc49ed9-new-image28314ec8-066f-451e-8373-4517917d6bf7.png"
+alt="img" /></p></li>
+<li><p>方法区</p>
+<blockquote>
+<p>类加载器将.class文件搬过来，就是先丢到这一块上</p>
+</blockquote>
+<p>方法区是用于<strong>存放类似于元数据信息方面的数据</strong>的，比如<strong>类信息</strong>、<strong>常量</strong>、<strong>静态变量</strong>、<strong>编译后代码</strong>...等</p></li>
+<li><p>堆
+堆主要放一些<strong>存储的数据</strong>，比如<strong>对象实例</strong>、<strong>数组</strong>...等，它和<strong>方法区</strong>都同属于<strong>线程共享区域</strong>，即它们都是<strong>线程不安全</strong>的</p></li>
+<li><p>栈</p>
+<p>线程独享<br />
+栈是我们<strong>代码运行空间</strong>，我们编写的<strong>每一个方法</strong>都会放到<strong>栈</strong>里面运行。<br />
+名词：<strong>本地方法栈</strong>或<strong>本地方法接口</strong>，不过我们基本不会涉及这两块内容，这<strong>两底层使用C</strong>进行工作，<strong>和Java没有太大关系</strong></p></li>
+<li><p>程序计数器
+主要就是完成一个加载工作，类似于一个指针一样的，<strong>指向下一行我们需要执行的代码</strong>。和栈一样，都是<strong>线程独享</strong>的，就是<strong>每一个线程都会自己对应的一块区域</strong>而不会存在并发和多线程问题。</p></li>
+<li><p>小总结 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/897863ee5ecb4d92b9119d065f468262-new-imagef7287f0b-c9f0-4f22-9eb4-6968bbaa5a82.png"
+alt="img" /></p>
+<ol type="1">
+<li>Java文件经过编译后编程.class字节码文件</li>
+<li>字节码文件通过类加载器被搬运到 JVM虚拟机中</li>
+<li>虚拟机主要的5大块：<strong>方法区、堆</strong>
+都为<strong>线程共享</strong>区域，有线程安全问题；<strong>栈</strong>和<strong>本地方法栈</strong>和<strong>计数器</strong>都是<strong>独享</strong>区域，不存在线程安全问题，而JVM的调优主要就是围绕<strong>堆</strong>、<strong>栈</strong>两大块进行</li>
+</ol></li>
+</ol>
+<h2 id="简单的代码例子">简单的代码例子</h2>
+<p>一个简单的学生类及main方法:</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Student</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> String name;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Student</span><span class="params">(String name)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.name = name;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">sayName</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;student&#x27;s name is : &quot;</span> + name);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>main方法：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">App</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">Student</span> <span class="variable">student</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Student</span>(<span class="string">&quot;tellUrDream&quot;</span>);</span><br><span class="line">        student.sayName();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>★★ 执行main方法的步骤如下</p>
+<ol type="1">
+<li>编译好App.java后得到App.class后，执行APP.class，<strong>系统会启动一个JVM进程</strong>，从<strong>classpath类路径中找到一个名为APP.class的二进制文件</strong>，将<strong>APP的类信息加载到运行时数据区的方法区</strong>内，这个过程叫做<strong>APP类的加载</strong></li>
+<li>JVM找到<strong>APP的主程序入口</strong>，<strong>执行main</strong>方法</li>
+<li>这个main的第一条语句<strong>(指令)</strong>为
+<code>Student student = new Student("tellUrDream")</code>，就是让JVM创建一个Student对象，但是这个时候方法区是没有Student类的信息的，所以JVM马上加载Student类，<strong>把Student类的信息放到方法区中</strong></li>
+<li>加载完Student类后，<strong>JVM在堆中为一个新的Student实例分配内存</strong>，然后<strong>调用构造函数初始化Student实例</strong>，这个Student实例<strong>(对象)</strong>持有<strong>指向方法区中的Student类的类型信息</strong>的引用</li>
+<li>执行<code>student.sayName;</code>时，JVM根据student的引用<strong>找到student对象</strong>，然后根据student对象<strong>持有的引用</strong>定位到<strong>方法区中student类的类型信息的方法表</strong>，获得<strong>sayName()的字节码地址</strong>。</li>
+<li>执行sayName()</li>
+</ol>
+<p>其实也不用管太多，只需要知道<strong>对象实例初始化时</strong>，会<strong>去方法区中找到类信息</strong>（没有的话先加载），完成后再到<strong>栈那里去运行方法</strong></p>
+<h1 id="类加载器的介绍">类加载器的介绍</h1>
+<h2 id="类加载器的流程">类加载器的流程</h2>
+<h2 id="类加载器的加载功能">类加载器的加载功能</h2>
+<h2 id="双亲委派机制">双亲委派机制</h2>
+<h1 id="运行时数据区">运行时数据区</h1>
+<h2 id="本地方法栈和程序计数器">本地方法栈和程序计数器</h2>
+<h2 id="方法区">方法区</h2>
+<h2 id="虚拟机栈和虚拟机堆">虚拟机栈和虚拟机堆</h2>
+<h2 id="垃圾回收算法">垃圾回收算法</h2>
+<h2 id="了解各种各样的垃圾回收器">（了解）各种各样的垃圾回收器</h2>
+<h2 id="了解-jvm的常用参数">（了解） JVM的常用参数</h2>
+<h1 id="关于jvm调优的一些方面">关于JVM调优的一些方面</h1>
+<h2 id="调整最大堆内存和最小堆内存">调整最大堆内存和最小堆内存</h2>
+<h2 id="调整新生代和老年代的比值">调整新生代和老年代的比值</h2>
+<h2 id="调整survivor区和eden区的比值">调整Survivor区和Eden区的比值</h2>
+<h2 id="设置年轻代和老年代的大小">设置年轻代和老年代的大小</h2>
+<h2 id="小总结">小总结</h2>
+<h2 id="永久区的设置">永久区的设置</h2>
+<h2 id="jvm的栈参数调优">JVM的栈参数调优</h2>
+<h1 id="finally">finally</h1>
 ]]></content>
       <categories>
         <category>学习</category>

@@ -239,14 +239,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>56</span>
+              <span>2k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
+              <span>4 分钟</span>
             </span>
             <div class="post-description">jvm-intro</div>
 
@@ -261,7 +261,88 @@
       
         <blockquote>
 <p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!</p>
+<p>原文地址：
+https://juejin.im/post/5e1505d0f265da5d5d744050#heading-28</p>
 </blockquote>
+<h1 id="jvm的基本介绍">JVM的基本介绍</h1>
+<ul>
+<li>JVM，JavaVirtualMachine的缩写，虚拟出来的计算机，通过在实际的计算机上<strong>仿真模拟</strong>各类计算机功能实现</li>
+<li>JVM类似一台小电脑，运行在windows或者linux这些<strong>真实操作系统环境下</strong>，<strong>直接</strong>和操作系统交互，<strong>与硬件不直接交互</strong>，操作系统帮我们完成和硬件交互的工作</li>
+</ul>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/d947f91e44c44c6c80222b49c2dee859-new-image19a36451-d673-486e-9c8e-3c7d8ab66929.png"
+alt="img" />
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<h2 id="java文件是如何运行的">Java文件是如何运行的</h2>
+<p>场景假设：我们写了一个HelloWorld.java，这是一个文本文件。JVM不认识文本文件，所以<strong>需要一个编译</strong>，让其(xxx.java)成为一个<strong>JVM会读的二进制文件---&gt;
+HelloWorld.class</strong></p>
+<ol type="1">
+<li><p>类加载器
+如果JVM想要执行这个.class文件，需要将其<strong>(这里应该指的二进制文件)</strong>装进<strong>类加载器</strong>中，它就像一个搬运工一样，会把所有的.class文件全部搬进JVM里面
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/81f1813f371c40ffa1c1f6d78bc49ed9-new-image28314ec8-066f-451e-8373-4517917d6bf7.png"
+alt="img" /></p></li>
+<li><p>方法区</p>
+<blockquote>
+<p>类加载器将.class文件搬过来，就是先丢到这一块上</p>
+</blockquote>
+<p>方法区是用于<strong>存放类似于元数据信息方面的数据</strong>的，比如<strong>类信息</strong>、<strong>常量</strong>、<strong>静态变量</strong>、<strong>编译后代码</strong>...等</p></li>
+<li><p>堆
+堆主要放一些<strong>存储的数据</strong>，比如<strong>对象实例</strong>、<strong>数组</strong>...等，它和<strong>方法区</strong>都同属于<strong>线程共享区域</strong>，即它们都是<strong>线程不安全</strong>的</p></li>
+<li><p>栈</p>
+<p>线程独享<br />
+栈是我们<strong>代码运行空间</strong>，我们编写的<strong>每一个方法</strong>都会放到<strong>栈</strong>里面运行。<br />
+名词：<strong>本地方法栈</strong>或<strong>本地方法接口</strong>，不过我们基本不会涉及这两块内容，这<strong>两底层使用C</strong>进行工作，<strong>和Java没有太大关系</strong></p></li>
+<li><p>程序计数器
+主要就是完成一个加载工作，类似于一个指针一样的，<strong>指向下一行我们需要执行的代码</strong>。和栈一样，都是<strong>线程独享</strong>的，就是<strong>每一个线程都会自己对应的一块区域</strong>而不会存在并发和多线程问题。</p></li>
+<li><p>小总结 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/897863ee5ecb4d92b9119d065f468262-new-imagef7287f0b-c9f0-4f22-9eb4-6968bbaa5a82.png"
+alt="img" /></p>
+<ol type="1">
+<li>Java文件经过编译后编程.class字节码文件</li>
+<li>字节码文件通过类加载器被搬运到 JVM虚拟机中</li>
+<li>虚拟机主要的5大块：<strong>方法区、堆</strong>
+都为<strong>线程共享</strong>区域，有线程安全问题；<strong>栈</strong>和<strong>本地方法栈</strong>和<strong>计数器</strong>都是<strong>独享</strong>区域，不存在线程安全问题，而JVM的调优主要就是围绕<strong>堆</strong>、<strong>栈</strong>两大块进行</li>
+</ol></li>
+</ol>
+<h2 id="简单的代码例子">简单的代码例子</h2>
+<p>一个简单的学生类及main方法:</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Student</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> String name;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Student</span><span class="params">(String name)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.name = name;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">sayName</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;student&#x27;s name is : &quot;</span> + name);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>main方法：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">App</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">Student</span> <span class="variable">student</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Student</span>(<span class="string">&quot;tellUrDream&quot;</span>);</span><br><span class="line">        student.sayName();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>★★ 执行main方法的步骤如下</p>
+<ol type="1">
+<li>编译好App.java后得到App.class后，执行APP.class，<strong>系统会启动一个JVM进程</strong>，从<strong>classpath类路径中找到一个名为APP.class的二进制文件</strong>，将<strong>APP的类信息加载到运行时数据区的方法区</strong>内，这个过程叫做<strong>APP类的加载</strong></li>
+<li>JVM找到<strong>APP的主程序入口</strong>，<strong>执行main</strong>方法</li>
+<li>这个main的第一条语句<strong>(指令)</strong>为
+<code>Student student = new Student("tellUrDream")</code>，就是让JVM创建一个Student对象，但是这个时候方法区是没有Student类的信息的，所以JVM马上加载Student类，<strong>把Student类的信息放到方法区中</strong></li>
+<li>加载完Student类后，<strong>JVM在堆中为一个新的Student实例分配内存</strong>，然后<strong>调用构造函数初始化Student实例</strong>，这个Student实例<strong>(对象)</strong>持有<strong>指向方法区中的Student类的类型信息</strong>的引用</li>
+<li>执行<code>student.sayName;</code>时，JVM根据student的引用<strong>找到student对象</strong>，然后根据student对象<strong>持有的引用</strong>定位到<strong>方法区中student类的类型信息的方法表</strong>，获得<strong>sayName()的字节码地址</strong>。</li>
+<li>执行sayName()</li>
+</ol>
+<p>其实也不用管太多，只需要知道<strong>对象实例初始化时</strong>，会<strong>去方法区中找到类信息</strong>（没有的话先加载），完成后再到<strong>栈那里去运行方法</strong></p>
+<h1 id="类加载器的介绍">类加载器的介绍</h1>
+<h2 id="类加载器的流程">类加载器的流程</h2>
+<h2 id="类加载器的加载功能">类加载器的加载功能</h2>
+<h2 id="双亲委派机制">双亲委派机制</h2>
+<h1 id="运行时数据区">运行时数据区</h1>
+<h2 id="本地方法栈和程序计数器">本地方法栈和程序计数器</h2>
+<h2 id="方法区">方法区</h2>
+<h2 id="虚拟机栈和虚拟机堆">虚拟机栈和虚拟机堆</h2>
+<h2 id="垃圾回收算法">垃圾回收算法</h2>
+<h2 id="了解各种各样的垃圾回收器">（了解）各种各样的垃圾回收器</h2>
+<h2 id="了解-jvm的常用参数">（了解） JVM的常用参数</h2>
+<h1 id="关于jvm调优的一些方面">关于JVM调优的一些方面</h1>
+<h2 id="调整最大堆内存和最小堆内存">调整最大堆内存和最小堆内存</h2>
+<h2 id="调整新生代和老年代的比值">调整新生代和老年代的比值</h2>
+<h2 id="调整survivor区和eden区的比值">调整Survivor区和Eden区的比值</h2>
+<h2 id="设置年轻代和老年代的大小">设置年轻代和老年代的大小</h2>
+<h2 id="小总结">小总结</h2>
+<h2 id="永久区的设置">永久区的设置</h2>
+<h2 id="jvm的栈参数调优">JVM的栈参数调优</h2>
+<h1 id="finally">finally</h1>
 
     </div>
 
@@ -351,6 +432,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#jvm%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.</span> <span class="nav-text">JVM的基本介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#java%E6%96%87%E4%BB%B6%E6%98%AF%E5%A6%82%E4%BD%95%E8%BF%90%E8%A1%8C%E7%9A%84"><span class="nav-number">1.1.</span> <span class="nav-text">Java文件是如何运行的</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%80%E5%8D%95%E7%9A%84%E4%BB%A3%E7%A0%81%E4%BE%8B%E5%AD%90"><span class="nav-number">1.2.</span> <span class="nav-text">简单的代码例子</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E7%9A%84%E4%BB%8B%E7%BB%8D"><span class="nav-number">2.</span> <span class="nav-text">类加载器的介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E7%9A%84%E6%B5%81%E7%A8%8B"><span class="nav-number">2.1.</span> <span class="nav-text">类加载器的流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E7%9A%84%E5%8A%A0%E8%BD%BD%E5%8A%9F%E8%83%BD"><span class="nav-number">2.2.</span> <span class="nav-text">类加载器的加载功能</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%8C%E4%BA%B2%E5%A7%94%E6%B4%BE%E6%9C%BA%E5%88%B6"><span class="nav-number">2.3.</span> <span class="nav-text">双亲委派机制</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C%E6%97%B6%E6%95%B0%E6%8D%AE%E5%8C%BA"><span class="nav-number">3.</span> <span class="nav-text">运行时数据区</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%AC%E5%9C%B0%E6%96%B9%E6%B3%95%E6%A0%88%E5%92%8C%E7%A8%8B%E5%BA%8F%E8%AE%A1%E6%95%B0%E5%99%A8"><span class="nav-number">3.1.</span> <span class="nav-text">本地方法栈和程序计数器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%B9%E6%B3%95%E5%8C%BA"><span class="nav-number">3.2.</span> <span class="nav-text">方法区</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A0%88%E5%92%8C%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A0%86"><span class="nav-number">3.3.</span> <span class="nav-text">虚拟机栈和虚拟机堆</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E7%AE%97%E6%B3%95"><span class="nav-number">3.4.</span> <span class="nav-text">垃圾回收算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%86%E8%A7%A3%E5%90%84%E7%A7%8D%E5%90%84%E6%A0%B7%E7%9A%84%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8"><span class="nav-number">3.5.</span> <span class="nav-text">（了解）各种各样的垃圾回收器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%86%E8%A7%A3-jvm%E7%9A%84%E5%B8%B8%E7%94%A8%E5%8F%82%E6%95%B0"><span class="nav-number">3.6.</span> <span class="nav-text">（了解） JVM的常用参数</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%B3%E4%BA%8Ejvm%E8%B0%83%E4%BC%98%E7%9A%84%E4%B8%80%E4%BA%9B%E6%96%B9%E9%9D%A2"><span class="nav-number">4.</span> <span class="nav-text">关于JVM调优的一些方面</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B0%83%E6%95%B4%E6%9C%80%E5%A4%A7%E5%A0%86%E5%86%85%E5%AD%98%E5%92%8C%E6%9C%80%E5%B0%8F%E5%A0%86%E5%86%85%E5%AD%98"><span class="nav-number">4.1.</span> <span class="nav-text">调整最大堆内存和最小堆内存</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B0%83%E6%95%B4%E6%96%B0%E7%94%9F%E4%BB%A3%E5%92%8C%E8%80%81%E5%B9%B4%E4%BB%A3%E7%9A%84%E6%AF%94%E5%80%BC"><span class="nav-number">4.2.</span> <span class="nav-text">调整新生代和老年代的比值</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B0%83%E6%95%B4survivor%E5%8C%BA%E5%92%8Ceden%E5%8C%BA%E7%9A%84%E6%AF%94%E5%80%BC"><span class="nav-number">4.3.</span> <span class="nav-text">调整Survivor区和Eden区的比值</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%BE%E7%BD%AE%E5%B9%B4%E8%BD%BB%E4%BB%A3%E5%92%8C%E8%80%81%E5%B9%B4%E4%BB%A3%E7%9A%84%E5%A4%A7%E5%B0%8F"><span class="nav-number">4.4.</span> <span class="nav-text">设置年轻代和老年代的大小</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B0%8F%E6%80%BB%E7%BB%93"><span class="nav-number">4.5.</span> <span class="nav-text">小总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B0%B8%E4%B9%85%E5%8C%BA%E7%9A%84%E8%AE%BE%E7%BD%AE"><span class="nav-number">4.6.</span> <span class="nav-text">永久区的设置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#jvm%E7%9A%84%E6%A0%88%E5%8F%82%E6%95%B0%E8%B0%83%E4%BC%98"><span class="nav-number">4.7.</span> <span class="nav-text">JVM的栈参数调优</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#finally"><span class="nav-number">5.</span> <span class="nav-text">finally</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -420,12 +502,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">715k</span>
+    <span title="站点总字数">717k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">21:40</span>
+    <span title="站点阅读时长">21:44</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
