@@ -239,14 +239,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>2.5k</span>
+              <span>3k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>5 分钟</span>
+              <span>6 分钟</span>
             </span>
             <div class="post-description">jvm-intro</div>
 
@@ -340,11 +340,38 @@ Engine</strong>来决定</p>
 <ol type="1">
 <li>验证：确保加载的类<strong>符合JVM规范和安全</strong>，保证<strong>被校验类的方法</strong>在运行时不会做出<strong>危害虚拟机</strong>的事件，其实就是一个<strong>安全检查</strong></li>
 <li>准备：为<strong>static变量</strong>在<strong>方法区分配内存空间</strong>，<strong>设置</strong>变量的<strong>初始值</strong>，例如<code>static int = 3</code>（注意：准备阶段只设置<strong>类中的静态变量</strong>（<strong>方法区</strong>中），<strong>不包括实例变量（堆内存中）</strong>，实例变量是<strong>对象初始化时赋值的</strong>）</li>
-<li>解析：虚拟机将<strong>常量池内的符号引用</strong>，替换为<strong>直接引用</strong>的过程</li>
+<li>解析：虚拟机将<strong>常量池内的符号引用</strong>，替换为<strong>直接引用</strong>的过程（符号引用比如我现在
+<code>import java.util.ArrayList</code>
+这就算<strong>符号引用</strong>，<strong>直接引用就是指针或者对象地址</strong>，注意<strong>引用对象一定是在内存进行</strong>）</li>
 </ol>
 <h3 id="初始化">初始化</h3>
+<ul>
+<li>初始化就是<strong>执行类构造器方法的<code>&lt;clinit&gt;()</code>的过程</strong>，而且要<strong>保证执行前父类的<code>&lt;clinit&gt;()</code>方法已经执行完毕</strong>。</li>
+<li>这个方法由编译器<strong>收集(也就是编译时产生)</strong>，<strong>顺序执行所有类变量</strong>(static
+修饰的成员变量)
+<strong>显示初始化</strong>和静<strong>态代码块中</strong>语句</li>
+<li>此时准备阶段时的那个static int a
+由默认初始化的0<strong>变成了显示初始化的3</strong>。由于执行顺序缘故，<strong>初始化阶段类变量</strong>如果在静态代码中<strong>又</strong>进行更改，则会覆盖类变量的<strong>显式初始化</strong>，最终<strong>值</strong>会为静态代码块中的<strong>赋值</strong></li>
+</ul>
+<blockquote>
+<ol type="1">
+<li>字节码文件中初始化方法有两种，<strong>非静态资源初始化</strong>的<init>和<strong>静态资源初始化</strong>的<clinit></li>
+<li>类构造器方法<clinit>()
+<strong>不同于</strong>类的构造器，这些方法都是<strong>字节码文件中</strong>只能给<strong>JVM</strong>识别的特殊方法</li>
+</ol>
+</blockquote>
 <h3 id="卸载">卸载</h3>
+<p><strong>GC将无用对象从内存中卸载</strong></p>
 <h2 id="类加载器的加载顺序">类加载器的加载顺序</h2>
+<p>加载一个Class类的顺序也是有优先级的<strong>(加载，也可以称"查找")</strong>
+，<strong>类加载器</strong>
+<strong>从最底层开始往上</strong>的顺序：</p>
+<ol type="1">
+<li>BootStrap ClassLoader： rt.jar</li>
+<li>Extension ClassLoader: 加载扩展的jar包</li>
+<li>APP ClassLoader： 指定的classpath下面的jar包</li>
+<li>Custom ClassLoader： 自定义的类加载器</li>
+</ol>
 <h2 id="双亲委派机制">双亲委派机制</h2>
 <h1 id="运行时数据区">运行时数据区</h1>
 <h2 id="本地方法栈和程序计数器">本地方法栈和程序计数器</h2>
@@ -526,7 +553,7 @@ Engine</strong>来决定</p>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">21:45</span>
+    <span title="站点阅读时长">21:46</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
