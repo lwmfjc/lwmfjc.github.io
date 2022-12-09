@@ -239,14 +239,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>3k</span>
+              <span>4k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>6 分钟</span>
+              <span>7 分钟</span>
             </span>
             <div class="post-description">jvm-intro</div>
 
@@ -367,16 +367,62 @@ Engine</strong>来决定</p>
 ，<strong>类加载器</strong>
 <strong>从最底层开始往上</strong>的顺序：</p>
 <ol type="1">
-<li>BootStrap ClassLoader： rt.jar</li>
-<li>Extension ClassLoader: 加载扩展的jar包</li>
-<li>APP ClassLoader： 指定的classpath下面的jar包</li>
+<li>BootStrap ClassLoader： rt.jar <strong>(lib/rt.jar)</strong></li>
+<li>Extension ClassLoader: 加载扩展的jar包
+<strong>(lib/ext/xxx.jar)</strong></li>
+<li>APP ClassLoader： 指定的classpath下面的jar包<br />
+</li>
 <li>Custom ClassLoader： 自定义的类加载器</li>
 </ol>
 <h2 id="双亲委派机制">双亲委派机制</h2>
+<ul>
+<li><p>当一个类收到了加载请求时，它是<strong>不会先自己去尝试加载</strong>的，而是<strong>委派给父类</strong>去完成，比如我现在要
+new 一个 Person，这个 Person
+是我们自定义的类，如果我们要加载它，就会<strong>先委派 App
+ClassLoader</strong>
+，只有<strong>当父类加载器都反馈自己无法完成</strong>这个请求（也就是<strong>父类加载器都没有找到加载所需的
+Class</strong>）时，子类加载器才会自行尝试加载。</p></li>
+<li><p>好处：加载<strong>位于 rt.jar
+包中的类</strong>时<strong>不管是哪个加载器加载</strong>，<strong>最终都会委托到
+BootStrap ClassLoader</strong>
+进行加载，这样保证了<strong>使用不同的类加载器得到的都是同一个结果</strong>。</p></li>
+<li><p>其实这起了一个隔离的作用，避免自己写的代码影响<strong>JDK的代码</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> java.lang;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">String</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        System.out.println();</span><br><span class="line">    &#125;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>尝试运行当前类的 <code>main</code>
+函数的时候，我们的代码肯定会报错。这是因为在加载的时候其实是找到了
+rt.jar 中的<code>java.lang.String</code>，然而发现这个里面并没有
+<code>main</code> 方法。</p>
+</blockquote></li>
+</ul>
 <h1 id="运行时数据区">运行时数据区</h1>
 <h2 id="本地方法栈和程序计数器">本地方法栈和程序计数器</h2>
+<ul>
+<li>比如说我们现在点开Thread类的源码，会看到它的start0方法带有一个native关键字修饰，而且<strong>不存在方法体</strong>，这种<strong>用native修饰的方法</strong>就是<strong>本地方法</strong>，这是使用C来实现的，然后一般这些方法都会放到一个叫做<strong>本地方法栈</strong>的区域。</li>
+<li><strong>程序计数器</strong>其实就是<strong>一个指针</strong>，它<strong>指向了我们程序中下一句需要执行的指令</strong>，它也是<strong>内存区域中唯一一个不会出现OutOfMemoryError</strong>的区域，而且<strong>占用内存空间小到基本可以忽略不计</strong>。这个<strong>内存仅代表当前线程所执行的字节码的行号指示器</strong>，字节码解析器通过<strong>改变这个计数器的值选取下一条需要执行的字节码指令</strong>。
+<ul>
+<li>如果执行的是native方法，那这个指针就不工作了</li>
+</ul></li>
+</ul>
 <h2 id="方法区">方法区</h2>
+<ul>
+<li>主要存放<strong>类的元数据信息</strong>、<strong>常量</strong>和<strong>静态变量</strong>...等。</li>
+<li>存储过大时，会在无法满足内存分配时报错</li>
+</ul>
 <h2 id="虚拟机栈和虚拟机堆">虚拟机栈和虚拟机堆</h2>
+<ul>
+<li><strong>栈管运行</strong>，<strong>堆管存储</strong></li>
+<li>虚拟机栈负责运行代码，虚拟机堆负责存储数据</li>
+</ul>
+<h3 id="虚拟机栈的概念">虚拟机栈的概念</h3>
+<h3 id="虚拟机栈存在的异常">虚拟机栈存在的异常</h3>
+<h3 id="虚拟机栈的生命周期">虚拟机栈的生命周期</h3>
+<h3 id="虚拟机栈的执行">虚拟机栈的执行</h3>
+<h3 id="局部变量的复用">局部变量的复用</h3>
+<h3 id="虚拟机堆的概念">虚拟机堆的概念</h3>
+<h3 id="eden年轻代的介绍">Eden年轻代的介绍</h3>
+<h3 id="如何判断一个对象需要被干掉">如何判断一个对象需要被干掉</h3>
+<h3 id="如何宣告一个对象的真正死亡">如何宣告一个对象的真正死亡</h3>
 <h2 id="垃圾回收算法">垃圾回收算法</h2>
 <h2 id="了解各种各样的垃圾回收器">（了解）各种各样的垃圾回收器</h2>
 <h2 id="了解-jvm的常用参数">（了解） JVM的常用参数</h2>
@@ -478,7 +524,7 @@ Engine</strong>来决定</p>
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#jvm%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.</span> <span class="nav-text">JVM的基本介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#java%E6%96%87%E4%BB%B6%E6%98%AF%E5%A6%82%E4%BD%95%E8%BF%90%E8%A1%8C%E7%9A%84"><span class="nav-number">1.1.</span> <span class="nav-text">Java文件是如何运行的</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%80%E5%8D%95%E7%9A%84%E4%BB%A3%E7%A0%81%E4%BE%8B%E5%AD%90"><span class="nav-number">1.2.</span> <span class="nav-text">简单的代码例子</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E7%9A%84%E4%BB%8B%E7%BB%8D"><span class="nav-number">2.</span> <span class="nav-text">类加载器的介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E7%9A%84%E6%B5%81%E7%A8%8B"><span class="nav-number">2.1.</span> <span class="nav-text">类加载器的流程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8A%A0%E8%BD%BD"><span class="nav-number">2.1.1.</span> <span class="nav-text">加载</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%93%BE%E6%8E%A5"><span class="nav-number">2.1.2.</span> <span class="nav-text">链接</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="nav-number">2.1.3.</span> <span class="nav-text">初始化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8D%B8%E8%BD%BD"><span class="nav-number">2.1.4.</span> <span class="nav-text">卸载</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E7%9A%84%E5%8A%A0%E8%BD%BD%E9%A1%BA%E5%BA%8F"><span class="nav-number">2.2.</span> <span class="nav-text">类加载器的加载顺序</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%8C%E4%BA%B2%E5%A7%94%E6%B4%BE%E6%9C%BA%E5%88%B6"><span class="nav-number">2.3.</span> <span class="nav-text">双亲委派机制</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C%E6%97%B6%E6%95%B0%E6%8D%AE%E5%8C%BA"><span class="nav-number">3.</span> <span class="nav-text">运行时数据区</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%AC%E5%9C%B0%E6%96%B9%E6%B3%95%E6%A0%88%E5%92%8C%E7%A8%8B%E5%BA%8F%E8%AE%A1%E6%95%B0%E5%99%A8"><span class="nav-number">3.1.</span> <span class="nav-text">本地方法栈和程序计数器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%B9%E6%B3%95%E5%8C%BA"><span class="nav-number">3.2.</span> <span class="nav-text">方法区</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A0%88%E5%92%8C%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A0%86"><span class="nav-number">3.3.</span> <span class="nav-text">虚拟机栈和虚拟机堆</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E7%AE%97%E6%B3%95"><span class="nav-number">3.4.</span> <span class="nav-text">垃圾回收算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%86%E8%A7%A3%E5%90%84%E7%A7%8D%E5%90%84%E6%A0%B7%E7%9A%84%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8"><span class="nav-number">3.5.</span> <span class="nav-text">（了解）各种各样的垃圾回收器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%86%E8%A7%A3-jvm%E7%9A%84%E5%B8%B8%E7%94%A8%E5%8F%82%E6%95%B0"><span class="nav-number">3.6.</span> <span class="nav-text">（了解） JVM的常用参数</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%B3%E4%BA%8Ejvm%E8%B0%83%E4%BC%98%E7%9A%84%E4%B8%80%E4%BA%9B%E6%96%B9%E9%9D%A2"><span class="nav-number">4.</span> <span class="nav-text">关于JVM调优的一些方面</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B0%83%E6%95%B4%E6%9C%80%E5%A4%A7%E5%A0%86%E5%86%85%E5%AD%98%E5%92%8C%E6%9C%80%E5%B0%8F%E5%A0%86%E5%86%85%E5%AD%98"><span class="nav-number">4.1.</span> <span class="nav-text">调整最大堆内存和最小堆内存</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B0%83%E6%95%B4%E6%96%B0%E7%94%9F%E4%BB%A3%E5%92%8C%E8%80%81%E5%B9%B4%E4%BB%A3%E7%9A%84%E6%AF%94%E5%80%BC"><span class="nav-number">4.2.</span> <span class="nav-text">调整新生代和老年代的比值</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B0%83%E6%95%B4survivor%E5%8C%BA%E5%92%8Ceden%E5%8C%BA%E7%9A%84%E6%AF%94%E5%80%BC"><span class="nav-number">4.3.</span> <span class="nav-text">调整Survivor区和Eden区的比值</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%BE%E7%BD%AE%E5%B9%B4%E8%BD%BB%E4%BB%A3%E5%92%8C%E8%80%81%E5%B9%B4%E4%BB%A3%E7%9A%84%E5%A4%A7%E5%B0%8F"><span class="nav-number">4.4.</span> <span class="nav-text">设置年轻代和老年代的大小</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B0%8F%E6%80%BB%E7%BB%93"><span class="nav-number">4.5.</span> <span class="nav-text">小总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B0%B8%E4%B9%85%E5%8C%BA%E7%9A%84%E8%AE%BE%E7%BD%AE"><span class="nav-number">4.6.</span> <span class="nav-text">永久区的设置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#jvm%E7%9A%84%E6%A0%88%E5%8F%82%E6%95%B0%E8%B0%83%E4%BC%98"><span class="nav-number">4.7.</span> <span class="nav-text">JVM的栈参数调优</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#finally"><span class="nav-number">5.</span> <span class="nav-text">finally</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#jvm%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.</span> <span class="nav-text">JVM的基本介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#java%E6%96%87%E4%BB%B6%E6%98%AF%E5%A6%82%E4%BD%95%E8%BF%90%E8%A1%8C%E7%9A%84"><span class="nav-number">1.1.</span> <span class="nav-text">Java文件是如何运行的</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%80%E5%8D%95%E7%9A%84%E4%BB%A3%E7%A0%81%E4%BE%8B%E5%AD%90"><span class="nav-number">1.2.</span> <span class="nav-text">简单的代码例子</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E7%9A%84%E4%BB%8B%E7%BB%8D"><span class="nav-number">2.</span> <span class="nav-text">类加载器的介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E7%9A%84%E6%B5%81%E7%A8%8B"><span class="nav-number">2.1.</span> <span class="nav-text">类加载器的流程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8A%A0%E8%BD%BD"><span class="nav-number">2.1.1.</span> <span class="nav-text">加载</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%93%BE%E6%8E%A5"><span class="nav-number">2.1.2.</span> <span class="nav-text">链接</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="nav-number">2.1.3.</span> <span class="nav-text">初始化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8D%B8%E8%BD%BD"><span class="nav-number">2.1.4.</span> <span class="nav-text">卸载</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E7%9A%84%E5%8A%A0%E8%BD%BD%E9%A1%BA%E5%BA%8F"><span class="nav-number">2.2.</span> <span class="nav-text">类加载器的加载顺序</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%8C%E4%BA%B2%E5%A7%94%E6%B4%BE%E6%9C%BA%E5%88%B6"><span class="nav-number">2.3.</span> <span class="nav-text">双亲委派机制</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C%E6%97%B6%E6%95%B0%E6%8D%AE%E5%8C%BA"><span class="nav-number">3.</span> <span class="nav-text">运行时数据区</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%AC%E5%9C%B0%E6%96%B9%E6%B3%95%E6%A0%88%E5%92%8C%E7%A8%8B%E5%BA%8F%E8%AE%A1%E6%95%B0%E5%99%A8"><span class="nav-number">3.1.</span> <span class="nav-text">本地方法栈和程序计数器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%B9%E6%B3%95%E5%8C%BA"><span class="nav-number">3.2.</span> <span class="nav-text">方法区</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A0%88%E5%92%8C%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A0%86"><span class="nav-number">3.3.</span> <span class="nav-text">虚拟机栈和虚拟机堆</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A0%88%E7%9A%84%E6%A6%82%E5%BF%B5"><span class="nav-number">3.3.1.</span> <span class="nav-text">虚拟机栈的概念</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A0%88%E5%AD%98%E5%9C%A8%E7%9A%84%E5%BC%82%E5%B8%B8"><span class="nav-number">3.3.2.</span> <span class="nav-text">虚拟机栈存在的异常</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A0%88%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F"><span class="nav-number">3.3.3.</span> <span class="nav-text">虚拟机栈的生命周期</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A0%88%E7%9A%84%E6%89%A7%E8%A1%8C"><span class="nav-number">3.3.4.</span> <span class="nav-text">虚拟机栈的执行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B1%80%E9%83%A8%E5%8F%98%E9%87%8F%E7%9A%84%E5%A4%8D%E7%94%A8"><span class="nav-number">3.3.5.</span> <span class="nav-text">局部变量的复用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A0%86%E7%9A%84%E6%A6%82%E5%BF%B5"><span class="nav-number">3.3.6.</span> <span class="nav-text">虚拟机堆的概念</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#eden%E5%B9%B4%E8%BD%BB%E4%BB%A3%E7%9A%84%E4%BB%8B%E7%BB%8D"><span class="nav-number">3.3.7.</span> <span class="nav-text">Eden年轻代的介绍</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E5%88%A4%E6%96%AD%E4%B8%80%E4%B8%AA%E5%AF%B9%E8%B1%A1%E9%9C%80%E8%A6%81%E8%A2%AB%E5%B9%B2%E6%8E%89"><span class="nav-number">3.3.8.</span> <span class="nav-text">如何判断一个对象需要被干掉</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E5%AE%A3%E5%91%8A%E4%B8%80%E4%B8%AA%E5%AF%B9%E8%B1%A1%E7%9A%84%E7%9C%9F%E6%AD%A3%E6%AD%BB%E4%BA%A1"><span class="nav-number">3.3.9.</span> <span class="nav-text">如何宣告一个对象的真正死亡</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E7%AE%97%E6%B3%95"><span class="nav-number">3.4.</span> <span class="nav-text">垃圾回收算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%86%E8%A7%A3%E5%90%84%E7%A7%8D%E5%90%84%E6%A0%B7%E7%9A%84%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8"><span class="nav-number">3.5.</span> <span class="nav-text">（了解）各种各样的垃圾回收器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%86%E8%A7%A3-jvm%E7%9A%84%E5%B8%B8%E7%94%A8%E5%8F%82%E6%95%B0"><span class="nav-number">3.6.</span> <span class="nav-text">（了解） JVM的常用参数</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%B3%E4%BA%8Ejvm%E8%B0%83%E4%BC%98%E7%9A%84%E4%B8%80%E4%BA%9B%E6%96%B9%E9%9D%A2"><span class="nav-number">4.</span> <span class="nav-text">关于JVM调优的一些方面</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B0%83%E6%95%B4%E6%9C%80%E5%A4%A7%E5%A0%86%E5%86%85%E5%AD%98%E5%92%8C%E6%9C%80%E5%B0%8F%E5%A0%86%E5%86%85%E5%AD%98"><span class="nav-number">4.1.</span> <span class="nav-text">调整最大堆内存和最小堆内存</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B0%83%E6%95%B4%E6%96%B0%E7%94%9F%E4%BB%A3%E5%92%8C%E8%80%81%E5%B9%B4%E4%BB%A3%E7%9A%84%E6%AF%94%E5%80%BC"><span class="nav-number">4.2.</span> <span class="nav-text">调整新生代和老年代的比值</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B0%83%E6%95%B4survivor%E5%8C%BA%E5%92%8Ceden%E5%8C%BA%E7%9A%84%E6%AF%94%E5%80%BC"><span class="nav-number">4.3.</span> <span class="nav-text">调整Survivor区和Eden区的比值</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%BE%E7%BD%AE%E5%B9%B4%E8%BD%BB%E4%BB%A3%E5%92%8C%E8%80%81%E5%B9%B4%E4%BB%A3%E7%9A%84%E5%A4%A7%E5%B0%8F"><span class="nav-number">4.4.</span> <span class="nav-text">设置年轻代和老年代的大小</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B0%8F%E6%80%BB%E7%BB%93"><span class="nav-number">4.5.</span> <span class="nav-text">小总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B0%B8%E4%B9%85%E5%8C%BA%E7%9A%84%E8%AE%BE%E7%BD%AE"><span class="nav-number">4.6.</span> <span class="nav-text">永久区的设置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#jvm%E7%9A%84%E6%A0%88%E5%8F%82%E6%95%B0%E8%B0%83%E4%BC%98"><span class="nav-number">4.7.</span> <span class="nav-text">JVM的栈参数调优</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#finally"><span class="nav-number">5.</span> <span class="nav-text">finally</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -548,12 +594,12 @@ Engine</strong>来决定</p>
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">718k</span>
+    <span title="站点总字数">719k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">21:46</span>
+    <span title="站点阅读时长">21:47</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
