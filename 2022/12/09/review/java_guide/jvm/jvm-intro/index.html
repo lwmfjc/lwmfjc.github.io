@@ -239,14 +239,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>4.7k</span>
+              <span>5.3k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>9 分钟</span>
+              <span>10 分钟</span>
             </span>
             <div class="post-description">jvm-intro</div>
 
@@ -451,9 +451,20 @@ rt.jar 中的<code>java.lang.String</code>，然而发现这个里面并没有
 <li><p>虚拟机通过索引方式使用局部变量表，范围为 <strong>[ 0 ,
 局部变量表的slot的数量
 ]</strong>。方法中的<strong>参数</strong>就会<strong>按一定顺序排列</strong>在这个局部变量表中</p></li>
-<li><p>为了节省栈帧空间，这些<strong>slot</strong>是可以复用的，</p></li>
+<li><p>为了节省栈帧空间，这些<strong>slot</strong>是可以复用的。当方法<strong>执行位置超过了某个变量（这里意思应该是用过了这个变量）</strong>，那么<strong>这个变量的slot可以被其它变量复用</strong>。当然如果需要复用，那我们的<strong>垃圾回收自然就不会去动这些内存</strong></p></li>
 </ul>
 <h3 id="虚拟机堆的概念">虚拟机堆的概念</h3>
+<ul>
+<li><p>JVM内存会划分为<strong>堆内存</strong>和<strong>非堆内存</strong>，<strong>堆内存</strong>也会划分为<strong>年轻代</strong>和<strong>老年代</strong>，而<strong>非堆内存</strong>则为<strong>永久代</strong>。</p></li>
+<li><p>年轻代又分为<strong>Eden</strong>和<strong>Survivor</strong>区，Survivor还分为<strong>FromPlace</strong>和<strong>ToPlace</strong>，toPlace的survivor区域是空的</p></li>
+<li><p><strong>Eden：FromPlace：ToPlace</strong>的默认占比是8：1：1，当然这个东西也可以通过一个<code>-XX:+UsePSAdaptiveSurvivorSizePolicy</code>参数来<strong>根据生成对象的速率动态调整</strong><br />
+（因为存活的对象相对较少）</p></li>
+<li><p>堆内存中<strong>存放的是对象</strong>，垃圾收集就是<strong>收集这些对象然后交给GC算法进行回收</strong>。非堆内存其实我们已经说过了，就是<strong>方法区</strong>。在<strong>1.8中已经移除永久代</strong>，替代品是一个<strong>元空间(MetaSpace)</strong>，最大区别是<strong>metaSpace是不存在于JVM</strong>中的，它<strong>使用的是本地内存</strong>。并有两个参数：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">MetaspaceSize：初始化元空间大小，控制发生GC</span><br><span class="line">MaxMetaspaceSize：限制元空间大小上限，防止占用过多物理内存。</span><br></pre></td></tr></table></figure></li>
+<li><p>移除的原因<br />
+融合<strong>HotSpot JVM和JRockit
+VM</strong>而做出的改变，因为<strong>JRockit是没有永久代</strong>的，不过这也<strong>间接性地解决了永久代的OOM</strong>问题。</p></li>
+</ul>
 <h3 id="eden年轻代的介绍">Eden年轻代的介绍</h3>
 <h3 id="如何判断一个对象需要被干掉">如何判断一个对象需要被干掉</h3>
 <h3 id="如何宣告一个对象的真正死亡">如何宣告一个对象的真正死亡</h3>
@@ -633,7 +644,7 @@ rt.jar 中的<code>java.lang.String</code>，然而发现这个里面并没有
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">21:49</span>
+    <span title="站点阅读时长">21:50</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
