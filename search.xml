@@ -6946,7 +6946,20 @@ VM</strong>而做出的改变，因为<strong>JRockit是没有永久代</strong>
 <li><p>当老年区<strong>执行full
 gc周仍然无法进行对象保存</strong>操作，就会产生<strong>OOM</strong>。这时候就是虚拟机中堆内存不足，<strong>原因可能会是</strong>堆内存设置大小过小，可以通过参数<strong>-Xms、-Xmx</strong>来调整。也可能是<strong>代码中创建对象大且多</strong>，而且它们<strong>一直在被引用</strong>从而<strong>长时间垃圾收集无法收集</strong>它们</p></li>
 </ul>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/c02ecba3c33f43429a765987b928e423-new-image93b46f3d-33f9-46f9-a825-ec7129b004f6.png"
+alt="img" />
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<blockquote>
+<p>关于-XX:TargetSurvivorRatio参数的问题。其实也不一定是要满足-XX:MaxTenuringThreshold才移动到老年代。可以举个例子：如<strong>对象年龄5的占30%，年龄6的占36%，年龄7的占34%，加入某个年龄段（如例子中的年龄6）</strong>后，总占用超过Survivor空间*TargetSurvivorRatio的时候，从该年龄段开始及大于的年龄对象就要进入老年代（即例子中的年龄6对象，就是年龄6和年龄7晋升到老年代），这时候无需等到MaxTenuringThreshold中要求的15</p>
+</blockquote>
 <h3 id="如何判断一个对象需要被干掉">如何判断一个对象需要被干掉</h3>
+<p>首先看一下对象的虚拟机的一些流程</p>
+<p>图例有点问题，<strong>橙色是线程共享，青绿色是线程独享</strong> <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1c1d85b5fb8b47239af2a5c0436eb2d7-new-image0cd10827-2f96-433c-9b16-93d4fe491d88.png"
+alt="img" /></p>
 <h3 id="如何宣告一个对象的真正死亡">如何宣告一个对象的真正死亡</h3>
 <h2 id="垃圾回收算法">垃圾回收算法</h2>
 <h2 id="了解各种各样的垃圾回收器">（了解）各种各样的垃圾回收器</h2>
