@@ -239,14 +239,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>5.3k</span>
+              <span>5.9k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>10 分钟</span>
+              <span>11 分钟</span>
             </span>
             <div class="post-description">jvm-intro</div>
 
@@ -466,6 +466,18 @@ rt.jar 中的<code>java.lang.String</code>，然而发现这个里面并没有
 VM</strong>而做出的改变，因为<strong>JRockit是没有永久代</strong>的，不过这也<strong>间接性地解决了永久代的OOM</strong>问题。</p></li>
 </ul>
 <h3 id="eden年轻代的介绍">Eden年轻代的介绍</h3>
+<ul>
+<li><p>当new一个对象后，会放到<strong>Eden划分出来的一块作为存储空间的内存</strong>，由于堆内存共享，所以<strong>可能出现两个对象共用一个内存的情况</strong>。</p>
+<blockquote>
+<p>JVM的处理：<strong>为每个内存</strong>都<strong>预先申请</strong>好一块连续的内存空间并<strong>规定对象存放的位置</strong>，如果空间不足会再申请多块内存空间。这个操作称为TLAB</p>
+</blockquote></li>
+<li><p>Eden空间满了之后，会触发<strong>MinorGC（发生在年轻代的GC）</strong>操作，<strong>存活下来的对象</strong>移动到<strong>Survivor0区</strong>。<strong>Survivor0满后会触发MInorGC</strong>，将<strong>存活对象（这里应该包括Eden的存活对象?）移动到Survivor1区</strong>，此时还会<strong>把from和to两个指针交换</strong>，这样<strong>保证</strong>一段时间内<strong>总有一个survivor区为空且所指向的survivor区为空</strong>。</p></li>
+<li><p>经过<strong>多次的MinorGC后仍然存活的对象</strong>(这里存活判断是15次，对应的虚拟机参数为<code>-XX:MaxTenuringThreshold</code>
+。HotSpot会在对象中的<strong>标记字段</strong>里记录年龄，分配到的空间<strong>仅有4位</strong>，所以<strong>最多记录到15</strong>)会移动到老年代。</p></li>
+<li><p>老年代是存储长期存活对象的，<strong>占满</strong>时就会触发我们常说的FullGC，期间会<strong>停止所有线程</strong>等待GC的完成。所以对于<strong>响应要求高</strong>的应用，应该尽量去<strong>减少</strong>发生FullGC从而避免响应超时的问题</p></li>
+<li><p>当老年区<strong>执行full
+gc周仍然无法进行对象保存</strong>操作，就会产生<strong>OOM</strong>。这时候就是虚拟机中堆内存不足，<strong>原因可能会是</strong>堆内存设置大小过小，可以通过参数<strong>-Xms、-Xmx</strong>来调整。也可能是<strong>代码中创建对象大且多</strong>，而且它们<strong>一直在被引用</strong>从而<strong>长时间垃圾收集无法收集</strong>它们</p></li>
+</ul>
 <h3 id="如何判断一个对象需要被干掉">如何判断一个对象需要被干掉</h3>
 <h3 id="如何宣告一个对象的真正死亡">如何宣告一个对象的真正死亡</h3>
 <h2 id="垃圾回收算法">垃圾回收算法</h2>
@@ -639,12 +651,12 @@ VM</strong>而做出的改变，因为<strong>JRockit是没有永久代</strong>
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">720k</span>
+    <span title="站点总字数">721k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">21:50</span>
+    <span title="站点阅读时长">21:51</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
