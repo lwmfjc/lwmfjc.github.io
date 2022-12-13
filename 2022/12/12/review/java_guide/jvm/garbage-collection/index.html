@@ -239,14 +239,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>1.6k</span>
+              <span>3.6k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>3 分钟</span>
+              <span>7 分钟</span>
             </span>
             <div class="post-description">java垃圾回收器</div>
 
@@ -311,7 +311,53 @@ GC(整堆GC) ）</strong>　　</p>
 </ul>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">GCTest</span> &#123;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">		<span class="type">byte</span>[] allocation1, allocation2,allocation3,allocation4,allocation5;</span><br><span class="line">		allocation1 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">32000</span>*<span class="number">1024</span>];</span><br><span class="line">		allocation2 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">1000</span>*<span class="number">1024</span>];</span><br><span class="line">		allocation3 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">1000</span>*<span class="number">1024</span>];</span><br><span class="line">		allocation4 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">1000</span>*<span class="number">1024</span>];</span><br><span class="line">		allocation5 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">1000</span>*<span class="number">1024</span>];</span><br><span class="line">	&#125;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
 <h2 id="大对象直接进入老年代">大对象直接进入老年代</h2>
+<ul>
+<li>大对象就是需要连续空间的对象（<strong>字符串</strong>、<strong>数组</strong>等）</li>
+<li>大对象直接进入老年代，主要是为了避免为<strong>大对象分配内存时</strong>，由于<strong>分配担保机制(这好像跟分配担保机制没有太大关系)</strong>带来的复制而<strong>降低效率</strong>。</li>
+</ul>
+<blockquote>
+<ul>
+<li><p>假设大对象最后会晋升老年代，而新生代是基于复制算法来回收垃圾的，由两个Survivor区域配合完成复制算法，如果新生代中出现大对象且能屡次躲过GC，那这个对象就会在两个Survivor区域中来回复制，直至最后升入老年代，而大对象在内存里来回复制移动，就会消耗更多的时间。</p></li>
+<li><p>假设大对象最后不会晋升老年代，新生代空间是有限的，在新生代里的对象大部分都是朝生夕死的，如果让一个大对象占据了新生代空间，那么相比起正常的对象被分配在新生代，大对象无疑会让新生代GC提早发生，因为内存空间会更快不够用，如果这个大对象因为业务原因，并不会马上被GC回收，那么这个对象就会进入到Survivor区域，默认情况下，Survivor区域本来就不会被分配的很大，那此时被大对象占据了大部分空间，很可能会导致之后的新生代GC后，存活下来的对象，Survivor区域空间不够放不下，导致大部分对象进入老年代，这就加快了老年代GC发生的时间，而老年代GC对系统性能的负面影响则远远大于新生代GC了。</p></li>
+</ul>
+</blockquote>
 <h2 id="长期存活的对象进入老年代">长期存活的对象进入老年代</h2>
+<ul>
+<li><p>内存回收时必须能够识别，哪些对象放在新生代，哪些对象放在老年代---&gt;
+因此，虚拟机给每个对象一个<strong>对象年龄（Age）</strong>计数器</p></li>
+<li><p><流程> :
+大部分情况下，对象都会<strong>首先在Eden区域</strong>分配。如果对象在Eden出生并经过<strong>第一次MinorGC后</strong>仍然能够存活，并且<strong>能</strong>被Survivor容纳的话，将被移动到Survivor空间（S0或S1）中，并将对象年龄设为<strong>1</strong>(<strong>Eden区
+--&gt; Survivor区后</strong>对象初始年龄变为1 )</p>
+<ul>
+<li>后续，对象在<strong>Survivor区</strong>中每熬过一次MinorGC，<strong>年龄就增加1岁</strong>，当年龄增加到一定程序（<strong>默认为15岁</strong>），就会被晋升到老年代中。对象晋升到老年代的年龄<strong>阈值</strong>，可以通过参数<strong><code>-XX:MaxTenuringThreshold</code></strong>来设置</li>
+<li><strong>★★修正：</strong> “Hotspot
+遍历所有对象时，按照年龄<strong>从小到大</strong>对其所<strong>占用的大小进行累积</strong>，当<strong>累积的某个年龄大小超过了
+survivor 区的 50%</strong> 时（默认值是 50%，可以通过
+<code>-XX:TargetSurvivorRatio=percent</code> 来设置，参见 <a
+target="_blank" rel="noopener" href="https://github.com/Snailclimb/JavaGuide/issues/1199">issue1199open
+in new window</a> ），取<strong>这个年龄</strong>和
+<strong>MaxTenuringThreshold
+中更小的一个值</strong>，作为新的晋升年龄阈值”。</li>
+</ul>
+<p>动态年龄计算的代码：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">uint ageTable::compute_tenuring_threshold(size_t survivor_capacity) &#123;</span><br><span class="line"><span class="comment">//survivor_capacity是survivor空间的大小</span></span><br><span class="line"><span class="type">size_t</span> <span class="variable">desired_survivor_size</span> <span class="operator">=</span> (size_t)((((<span class="type">double</span>)survivor_capacity)*TargetSurvivorRatio)/<span class="number">100</span>);</span><br><span class="line"><span class="type">size_t</span> <span class="variable">total</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line"><span class="type">uint</span> <span class="variable">age</span> <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line"><span class="keyword">while</span> (age &lt; table_size) &#123;</span><br><span class="line"><span class="comment">//sizes数组是每个年龄段对象大小</span></span><br><span class="line">total += sizes[age];</span><br><span class="line"><span class="keyword">if</span> (total &gt; desired_survivor_size) &#123;</span><br><span class="line"><span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br><span class="line">age++;</span><br><span class="line">&#125;</span><br><span class="line"><span class="type">uint</span> <span class="variable">result</span> <span class="operator">=</span> age &lt; MaxTenuringThreshold ? age : MaxTenuringThreshold;</span><br><span class="line">...</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>例子：
+如<strong>对象年龄5的占30%，年龄6的占36%，年龄7的占34%，加入某个年龄段（如例子中的年龄6）</strong>后，总占用超过Survivor空间*TargetSurvivorRatio的时候，从该年龄段开始及大于的年龄对象就要进入老年代（即例子中的年龄6对象，就是年龄6和年龄7晋升到老年代），这时候无需等到MaxTenuringThreshold中要求的15</p>
+<blockquote>
+<p><strong>关于默认的晋升年龄是 15，这个说法的来源大部分都是《深入理解
+Java 虚拟机》这本书。</strong> 如果你去 Oracle 的官网阅读<a
+target="_blank" rel="noopener" href="https://docs.oracle.com/javase/8/docs/technotes/tools/unix/java.html">相关的虚拟机参数open
+in new
+window</a>，你会发现<code>-XX:MaxTenuringThreshold=threshold</code>这里有个说明</p>
+<p><strong>Sets the maximum tenuring threshold for use in adaptive GC
+sizing. The largest value is 15. The default value is 15 for the
+parallel (throughput) collector, and 6 for the CMS
+collector.默认晋升年龄并不都是 15，这个是要区分垃圾收集器的，CMS 就是
+6.</strong></p>
+</blockquote>
+</blockquote></li>
+</ul>
 <h2 id="主要进行gc的区域">主要进行gc的区域</h2>
 <h2 id="空间分配担保">空间分配担保</h2>
 <h1 id="死亡对象判断方法">死亡对象判断方法</h1>
@@ -485,12 +531,12 @@ GC(整堆GC) ）</strong>　　</p>
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">739k</span>
+    <span title="站点总字数">741k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">22:24</span>
+    <span title="站点阅读时长">22:28</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>

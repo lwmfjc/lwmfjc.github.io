@@ -6763,7 +6763,53 @@ GC(整堆GC) ）</strong>　　</p>
 </ul>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">GCTest</span> &#123;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">		<span class="type">byte</span>[] allocation1, allocation2,allocation3,allocation4,allocation5;</span><br><span class="line">		allocation1 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">32000</span>*<span class="number">1024</span>];</span><br><span class="line">		allocation2 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">1000</span>*<span class="number">1024</span>];</span><br><span class="line">		allocation3 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">1000</span>*<span class="number">1024</span>];</span><br><span class="line">		allocation4 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">1000</span>*<span class="number">1024</span>];</span><br><span class="line">		allocation5 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">1000</span>*<span class="number">1024</span>];</span><br><span class="line">	&#125;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
 <h2 id="大对象直接进入老年代">大对象直接进入老年代</h2>
+<ul>
+<li>大对象就是需要连续空间的对象（<strong>字符串</strong>、<strong>数组</strong>等）</li>
+<li>大对象直接进入老年代，主要是为了避免为<strong>大对象分配内存时</strong>，由于<strong>分配担保机制(这好像跟分配担保机制没有太大关系)</strong>带来的复制而<strong>降低效率</strong>。</li>
+</ul>
+<blockquote>
+<ul>
+<li><p>假设大对象最后会晋升老年代，而新生代是基于复制算法来回收垃圾的，由两个Survivor区域配合完成复制算法，如果新生代中出现大对象且能屡次躲过GC，那这个对象就会在两个Survivor区域中来回复制，直至最后升入老年代，而大对象在内存里来回复制移动，就会消耗更多的时间。</p></li>
+<li><p>假设大对象最后不会晋升老年代，新生代空间是有限的，在新生代里的对象大部分都是朝生夕死的，如果让一个大对象占据了新生代空间，那么相比起正常的对象被分配在新生代，大对象无疑会让新生代GC提早发生，因为内存空间会更快不够用，如果这个大对象因为业务原因，并不会马上被GC回收，那么这个对象就会进入到Survivor区域，默认情况下，Survivor区域本来就不会被分配的很大，那此时被大对象占据了大部分空间，很可能会导致之后的新生代GC后，存活下来的对象，Survivor区域空间不够放不下，导致大部分对象进入老年代，这就加快了老年代GC发生的时间，而老年代GC对系统性能的负面影响则远远大于新生代GC了。</p></li>
+</ul>
+</blockquote>
 <h2 id="长期存活的对象进入老年代">长期存活的对象进入老年代</h2>
+<ul>
+<li><p>内存回收时必须能够识别，哪些对象放在新生代，哪些对象放在老年代---&gt;
+因此，虚拟机给每个对象一个<strong>对象年龄（Age）</strong>计数器</p></li>
+<li><p><流程> :
+大部分情况下，对象都会<strong>首先在Eden区域</strong>分配。如果对象在Eden出生并经过<strong>第一次MinorGC后</strong>仍然能够存活，并且<strong>能</strong>被Survivor容纳的话，将被移动到Survivor空间（S0或S1）中，并将对象年龄设为<strong>1</strong>(<strong>Eden区
+--&gt; Survivor区后</strong>对象初始年龄变为1 )</p>
+<ul>
+<li>后续，对象在<strong>Survivor区</strong>中每熬过一次MinorGC，<strong>年龄就增加1岁</strong>，当年龄增加到一定程序（<strong>默认为15岁</strong>），就会被晋升到老年代中。对象晋升到老年代的年龄<strong>阈值</strong>，可以通过参数<strong><code>-XX:MaxTenuringThreshold</code></strong>来设置</li>
+<li><strong>★★修正：</strong> “Hotspot
+遍历所有对象时，按照年龄<strong>从小到大</strong>对其所<strong>占用的大小进行累积</strong>，当<strong>累积的某个年龄大小超过了
+survivor 区的 50%</strong> 时（默认值是 50%，可以通过
+<code>-XX:TargetSurvivorRatio=percent</code> 来设置，参见 <a
+href="https://github.com/Snailclimb/JavaGuide/issues/1199">issue1199open
+in new window</a> ），取<strong>这个年龄</strong>和
+<strong>MaxTenuringThreshold
+中更小的一个值</strong>，作为新的晋升年龄阈值”。</li>
+</ul>
+<p>动态年龄计算的代码：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">uint ageTable::compute_tenuring_threshold(size_t survivor_capacity) &#123;</span><br><span class="line"><span class="comment">//survivor_capacity是survivor空间的大小</span></span><br><span class="line"><span class="type">size_t</span> <span class="variable">desired_survivor_size</span> <span class="operator">=</span> (size_t)((((<span class="type">double</span>)survivor_capacity)*TargetSurvivorRatio)/<span class="number">100</span>);</span><br><span class="line"><span class="type">size_t</span> <span class="variable">total</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line"><span class="type">uint</span> <span class="variable">age</span> <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line"><span class="keyword">while</span> (age &lt; table_size) &#123;</span><br><span class="line"><span class="comment">//sizes数组是每个年龄段对象大小</span></span><br><span class="line">total += sizes[age];</span><br><span class="line"><span class="keyword">if</span> (total &gt; desired_survivor_size) &#123;</span><br><span class="line"><span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br><span class="line">age++;</span><br><span class="line">&#125;</span><br><span class="line"><span class="type">uint</span> <span class="variable">result</span> <span class="operator">=</span> age &lt; MaxTenuringThreshold ? age : MaxTenuringThreshold;</span><br><span class="line">...</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>例子：
+如<strong>对象年龄5的占30%，年龄6的占36%，年龄7的占34%，加入某个年龄段（如例子中的年龄6）</strong>后，总占用超过Survivor空间*TargetSurvivorRatio的时候，从该年龄段开始及大于的年龄对象就要进入老年代（即例子中的年龄6对象，就是年龄6和年龄7晋升到老年代），这时候无需等到MaxTenuringThreshold中要求的15</p>
+<blockquote>
+<p><strong>关于默认的晋升年龄是 15，这个说法的来源大部分都是《深入理解
+Java 虚拟机》这本书。</strong> 如果你去 Oracle 的官网阅读<a
+href="https://docs.oracle.com/javase/8/docs/technotes/tools/unix/java.html">相关的虚拟机参数open
+in new
+window</a>，你会发现<code>-XX:MaxTenuringThreshold=threshold</code>这里有个说明</p>
+<p><strong>Sets the maximum tenuring threshold for use in adaptive GC
+sizing. The largest value is 15. The default value is 15 for the
+parallel (throughput) collector, and 6 for the CMS
+collector.默认晋升年龄并不都是 15，这个是要区分垃圾收集器的，CMS 就是
+6.</strong></p>
+</blockquote>
+</blockquote></li>
+</ul>
 <h2 id="主要进行gc的区域">主要进行gc的区域</h2>
 <h2 id="空间分配担保">空间分配担保</h2>
 <h1 id="死亡对象判断方法">死亡对象判断方法</h1>
@@ -11920,269 +11966,6 @@ alt="image-20220723092855691" /></p></li>
       </tags>
   </entry>
   <entry>
-    <title>09-18_git_尚硅谷</title>
-    <url>/2022/07/23/study/git/git_sgg/09-18/</url>
-    <content><![CDATA[<h1 id="命令">命令</h1>
-<ol type="1">
-<li><p>命令-设置用户签名</p>
-<ul>
-<li>查看 <code>git config user.name</code>
-<code>git config user.email</code></li>
-<li>设置 <code>git config --global user.name ly001</code>
-<code>git config --global user.email xxx@xx.com</code></li>
-<li>git的配置文件查看 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220723213819948.png"
-alt="image-20220723213819948" /></li>
-<li>作用：区分不同操作者身份，跟后面登陆的账号没有关系</li>
-</ul></li>
-<li><p>初始化本地库</p>
-<ul>
-<li><p><code>git init</code></p>
-<p><img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220723221535272.png"
-alt="image-20220723221535272" /> 多出一个文件夹 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220723221752414.png"
-alt="image-20220723221752414" /></p></li>
-</ul></li>
-<li><p>查看本地库状态</p>
-<ul>
-<li><code>git status</code> <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220723221936215.png"
-alt="image-20220723221936215" /> 默认在master分支</li>
-<li>新增一个文件 <code>vim hello.txt</code> <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724094610700.png"
-alt="image-20220724094610700" /></li>
-<li>此时查看本地库的状态 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724094729991.png"
-alt="image-20220724094729991" /> untracketd files
-未被追踪的文件，也就是这个文件还在工作区</li>
-</ul></li>
-<li><p>添加暂存区</p>
-<ul>
-<li><p><code>git add hello.txt</code> <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724095104535.png"
-alt="image-20220724095104535" /> LF 将会被替换成
-CRLF，windows里面是CRLF，也就是说</p>
-<blockquote>
-<p>这个<code>换行符自动转换</code>会把自动把你代码里
-与你当前操作系统不相同的换行的方式
-转换成当前系统的换行方式（即<code>LF</code>和<code>CRLF</code>
-之间的转换）</p>
-</blockquote>
-<p>这是因为这个hello.txt是使用<code>vm hello.txt</code>在git
-bash里面添加的，如果直接在windows文件管理器添加一个文件（hello2.txt)，就会发现没有这个警告，因为他已经是CRLF了
-（为了和视频保持一致，git rm --cached hello2.txt 后删除这个文件） <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724100600978.png"
-alt="image-20220724100600978" /></p></li>
-<li><p>查看当前状态，绿色表示git已经追踪到了这个文件</p>
-<p>文件已经存在于暂存区 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724095955869.png"
-alt="image-20220724095955869" /></p></li>
-<li><p>使用<code>git rm --cached hello.txt</code>可以将文件从暂存区删除
-使用后，文件又出现在工作区了（未添加） <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724100308401.png"
-alt="image-20220724100308401" /></p></li>
-<li></li>
-</ul></li>
-<li><p>提交本地库</p>
-<ul>
-<li><p><code>git commit -m "first commit" hello.txt</code>
-会出现一些警告，以及此时提交的修改和生成的版本号（前七位） <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724100937599.png"
-alt="image-20220724100937599" /> <code>git status</code> <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724101043687.png"
-alt="image-20220724101043687" /></p></li>
-<li><p>使用git reflog查看引用日志信息 git log 查看详细日志信息 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724101139028.png"
-alt="image-20220724101139028" /></p></li>
-</ul></li>
-<li><p>修改命令</p>
-<ul>
-<li><p>前提，修改了文件 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724101329134.png"
-alt="image-20220724101329134" /></p></li>
-<li><p>git status</p>
-<p><img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724101355054.png"
-alt="image-20220724101355054" />红色表示git还没有追踪到这个修改，如果此时commit
-，会提示没有需要commit的 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724101505483.png"
-alt="image-20220724101505483" /></p></li>
-<li><p>使用git add hello.txt 将文件修改添加到暂存区 之后git status <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724102125244.png"
-alt="image-20220724102125244" /></p>
-<ul>
-<li><p>注意，这里如果提交到暂存区之后，使用git
-restore是无法恢复文件的</p>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724102234835.png"
-alt="image-20220724102234835" />
-<figcaption aria-hidden="true">image-20220724102234835</figcaption>
-</figure></li>
-<li><p>git restore --staged <file>..." to unstage
-使用这个命令丢弃这个文件的commit操作</p>
-<blockquote>
-<p>几个命令的区别：</p>
-<ul>
-<li>git restore file
-的命令是丢弃你在工作区修改的内容,(修改的内容会丢失)</li>
-<li>git restore --staged file 丢弃你在工作区的修改不被<a
-href="https://so.csdn.net/so/search?q=commit&amp;spm=1001.2101.3001.7020">commit</a>
-。但是你的修改依然在工作区。</li>
-<li>git rm --cached file和git restore --staged file
-效果好像一样，这里不做更进一步的分析</li>
-</ul>
-</blockquote></li>
-</ul></li>
-<li><p>回到最初，这里主要是为了看修改，如最上面，将第一行后面添加了22222</p>
-<p>commit 之后的提示，删除了一行，添加了一行（修改的另一种说法） <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724102949971.png"
-alt="image-20220724102949971" /></p></li>
-<li><p>如果，HEAD -&gt; master ，指针指向了第二个版本 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724103127996.png"
-alt="image-20220724103127996" /></p></li>
-<li><p>这里再做第三次修改，并add 及commit <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724103303974.png"
-alt="image-20220724103303974" /></p></li>
-<li><p>查看工作区，永远只有最后那次修改的文件 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724103332836.png"
-alt="image-20220724103332836" /></p></li>
-</ul></li>
-<li><p>版本穿梭</p>
-<ul>
-<li><p>git reflog和git log <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724103443297.png"
-alt="image-20220724103443297" /></p></li>
-<li><p>回顾：hello.txt先是5行，然后第一行加了2，之后第二行加了3</p></li>
-<li><p>使用git reset --hard
-版本号进行穿梭，这里多了一行，是因为我复制的时候复制粗了版本号</p>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724103935566.png"
-alt="image-20220724103935566" />
-<figcaption aria-hidden="true">image-20220724103935566</figcaption>
-</figure>
-<p>使用cat 查看，发现文件已经在另一个版本 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724104008811.png"
-alt="image-20220724104008811" /></p></li>
-<li><p>查看.git的一些文件 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724104132475.png"
-alt="image-20220724104132475" /> 说明目前是在master这个版本上
-下面这个文件 .git/refs/heads/master 记录了指向master分支的哪个版本号
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724104310287.png"
-alt="image-20220724104310287" /></p></li>
-<li><p>这里将文件指向最初的版本 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724104528829.png"
-alt="image-20220724104528829" /></p>
-<ul>
-<li>此时查看刚才说的那个记录某个分支当前指向版本的文件，已经做了更新
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724104638810.png"
-alt="image-20220724104638810" /></li>
-</ul></li>
-<li><figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724104706066.png"
-alt="image-20220724104706066" />
-<figcaption aria-hidden="true">image-20220724104706066</figcaption>
-</figure></li>
-<li><p>再穿梭为后面的版本 git reset --hard file <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724104819678.png"
-alt="image-20220724104819678" /></p></li>
-<li><p>图片解释 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724104910442.png"
-alt="image-20220724104910442" /> master指针指向first,second,third
-head永远都是指向master（当前分支，目前只有master，所以不变）</p></li>
-</ul></li>
-</ol>
-<h1 id="分支">分支</h1>
-<ol type="1">
-<li><p>概述和优点 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724132914166.png"
-alt="image-20220724132914166" /> <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724134235798.png"
-alt="image-20220724134235798" /></p></li>
-<li><p>查看&amp;创建&amp;切换</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git branch 分支名    #创建分支</span><br><span class="line">git branch -v       #查看分支</span><br><span class="line">git checkout 分支名  #切换分支</span><br><span class="line">git merge 分支名     #把指定的分支合并到当前分支上</span><br></pre></td></tr></table></figure>
-<ul>
-<li><p>查看分支并显示当前分支指向的版本 git branch -v <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724161017521.png"
-alt="image-20220724161017521" /></p></li>
-<li><p>创建分支 git branch hot-fix git branch #再次查看 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724161127755.png"
-alt="image-20220724161127755" /></p></li>
-<li><p>切换分支</p>
-<p>git branch hot-fix 此时修改一个文件并提交 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724161340416.png"
-alt="image-20220724161340416" /> <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724161444200.png"
-alt="image-20220724161444200" />
-查看.git/head文件，会发现现在它指向hot-fix分支 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724161600603.png"
-alt="image-20220724161600603" /> <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724161757944.png"
-alt="image-20220724161757944" /></p></li>
-</ul></li>
-<li><p>合并分支（正常合并）</p>
-<ul>
-<li><p>切换分支 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724161934736.png"
-alt="image-20220724161934736" /></p></li>
-<li><p>将某分支xx合并到当前分支 git merge 分支名</p>
-<p><img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724162147318.png"
-alt="image-20220724162147318" /> 如图，合并成功
-以后面那个分支的修改为主</p></li>
-</ul></li>
-<li><p>合并分支（冲突合并）</p>
-<ul>
-<li><p>前提，现在master分支倒数第二行修改并添加和提交 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724162554933.png"
-alt="image-20220724162554933" /> <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724162642482.png"
-alt="image-20220724162642482" /></p></li>
-<li><p>此时切换到hot-fix分支 修改倒数第一行 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724162857236.png"
-alt="image-20220724162857236" />
-将文件从工作区添加到暂存区并提交到本地库 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724163014554.png"
-alt="image-20220724163014554" /></p></li>
-<li><p>此时再切回master</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git checkout master</span><br><span class="line">git merge hot-fix</span><br></pre></td></tr></table></figure>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724163154164.png"
-alt="image-20220724163154164" />
-<figcaption aria-hidden="true">image-20220724163154164</figcaption>
-</figure></li>
-<li><p>提示出错了，而且所有有异常的文件，都以下面的形式标注 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724163343835.png"
-alt="image-20220724163343835" /> 按dd进行删除某一行 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724163547658.png"
-alt="image-20220724163547658" /> 改完了之后，保存并提交即可 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724163849114.png"
-alt="image-20220724163849114" />
-切回之后查看hot-fix分支，发现这里的文件是没有变化的 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724164010559.png"
-alt="image-20220724164010559" /></p></li>
-<li><p>原理 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724164111179.png"
-alt="image-20220724164111179" /> <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724164209633.png"
-alt="image-20220724164209633" /></p></li>
-</ul></li>
-</ol>
-]]></content>
-      <categories>
-        <category>学习</category>
-      </categories>
-      <tags>
-        <tag>git_尚硅谷</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>19-26_git_尚硅谷</title>
     <url>/2022/07/24/study/git/git_sgg/19-26/</url>
     <content><![CDATA[<h1 id="介绍">介绍</h1>
@@ -15624,6 +15407,269 @@ cáng/zang 四声，没查到，好像读音都有，暂取cang 二声</strong>)
       </categories>
       <tags>
         <tag>《易经杂说》-南怀瑾</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>09-18_git_尚硅谷</title>
+    <url>/2022/07/23/study/git/git_sgg/09-18/</url>
+    <content><![CDATA[<h1 id="命令">命令</h1>
+<ol type="1">
+<li><p>命令-设置用户签名</p>
+<ul>
+<li>查看 <code>git config user.name</code>
+<code>git config user.email</code></li>
+<li>设置 <code>git config --global user.name ly001</code>
+<code>git config --global user.email xxx@xx.com</code></li>
+<li>git的配置文件查看 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220723213819948.png"
+alt="image-20220723213819948" /></li>
+<li>作用：区分不同操作者身份，跟后面登陆的账号没有关系</li>
+</ul></li>
+<li><p>初始化本地库</p>
+<ul>
+<li><p><code>git init</code></p>
+<p><img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220723221535272.png"
+alt="image-20220723221535272" /> 多出一个文件夹 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220723221752414.png"
+alt="image-20220723221752414" /></p></li>
+</ul></li>
+<li><p>查看本地库状态</p>
+<ul>
+<li><code>git status</code> <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220723221936215.png"
+alt="image-20220723221936215" /> 默认在master分支</li>
+<li>新增一个文件 <code>vim hello.txt</code> <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724094610700.png"
+alt="image-20220724094610700" /></li>
+<li>此时查看本地库的状态 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724094729991.png"
+alt="image-20220724094729991" /> untracketd files
+未被追踪的文件，也就是这个文件还在工作区</li>
+</ul></li>
+<li><p>添加暂存区</p>
+<ul>
+<li><p><code>git add hello.txt</code> <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724095104535.png"
+alt="image-20220724095104535" /> LF 将会被替换成
+CRLF，windows里面是CRLF，也就是说</p>
+<blockquote>
+<p>这个<code>换行符自动转换</code>会把自动把你代码里
+与你当前操作系统不相同的换行的方式
+转换成当前系统的换行方式（即<code>LF</code>和<code>CRLF</code>
+之间的转换）</p>
+</blockquote>
+<p>这是因为这个hello.txt是使用<code>vm hello.txt</code>在git
+bash里面添加的，如果直接在windows文件管理器添加一个文件（hello2.txt)，就会发现没有这个警告，因为他已经是CRLF了
+（为了和视频保持一致，git rm --cached hello2.txt 后删除这个文件） <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724100600978.png"
+alt="image-20220724100600978" /></p></li>
+<li><p>查看当前状态，绿色表示git已经追踪到了这个文件</p>
+<p>文件已经存在于暂存区 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724095955869.png"
+alt="image-20220724095955869" /></p></li>
+<li><p>使用<code>git rm --cached hello.txt</code>可以将文件从暂存区删除
+使用后，文件又出现在工作区了（未添加） <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724100308401.png"
+alt="image-20220724100308401" /></p></li>
+<li></li>
+</ul></li>
+<li><p>提交本地库</p>
+<ul>
+<li><p><code>git commit -m "first commit" hello.txt</code>
+会出现一些警告，以及此时提交的修改和生成的版本号（前七位） <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724100937599.png"
+alt="image-20220724100937599" /> <code>git status</code> <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724101043687.png"
+alt="image-20220724101043687" /></p></li>
+<li><p>使用git reflog查看引用日志信息 git log 查看详细日志信息 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724101139028.png"
+alt="image-20220724101139028" /></p></li>
+</ul></li>
+<li><p>修改命令</p>
+<ul>
+<li><p>前提，修改了文件 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724101329134.png"
+alt="image-20220724101329134" /></p></li>
+<li><p>git status</p>
+<p><img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724101355054.png"
+alt="image-20220724101355054" />红色表示git还没有追踪到这个修改，如果此时commit
+，会提示没有需要commit的 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724101505483.png"
+alt="image-20220724101505483" /></p></li>
+<li><p>使用git add hello.txt 将文件修改添加到暂存区 之后git status <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724102125244.png"
+alt="image-20220724102125244" /></p>
+<ul>
+<li><p>注意，这里如果提交到暂存区之后，使用git
+restore是无法恢复文件的</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724102234835.png"
+alt="image-20220724102234835" />
+<figcaption aria-hidden="true">image-20220724102234835</figcaption>
+</figure></li>
+<li><p>git restore --staged <file>..." to unstage
+使用这个命令丢弃这个文件的commit操作</p>
+<blockquote>
+<p>几个命令的区别：</p>
+<ul>
+<li>git restore file
+的命令是丢弃你在工作区修改的内容,(修改的内容会丢失)</li>
+<li>git restore --staged file 丢弃你在工作区的修改不被<a
+href="https://so.csdn.net/so/search?q=commit&amp;spm=1001.2101.3001.7020">commit</a>
+。但是你的修改依然在工作区。</li>
+<li>git rm --cached file和git restore --staged file
+效果好像一样，这里不做更进一步的分析</li>
+</ul>
+</blockquote></li>
+</ul></li>
+<li><p>回到最初，这里主要是为了看修改，如最上面，将第一行后面添加了22222</p>
+<p>commit 之后的提示，删除了一行，添加了一行（修改的另一种说法） <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724102949971.png"
+alt="image-20220724102949971" /></p></li>
+<li><p>如果，HEAD -&gt; master ，指针指向了第二个版本 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724103127996.png"
+alt="image-20220724103127996" /></p></li>
+<li><p>这里再做第三次修改，并add 及commit <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724103303974.png"
+alt="image-20220724103303974" /></p></li>
+<li><p>查看工作区，永远只有最后那次修改的文件 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724103332836.png"
+alt="image-20220724103332836" /></p></li>
+</ul></li>
+<li><p>版本穿梭</p>
+<ul>
+<li><p>git reflog和git log <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724103443297.png"
+alt="image-20220724103443297" /></p></li>
+<li><p>回顾：hello.txt先是5行，然后第一行加了2，之后第二行加了3</p></li>
+<li><p>使用git reset --hard
+版本号进行穿梭，这里多了一行，是因为我复制的时候复制粗了版本号</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724103935566.png"
+alt="image-20220724103935566" />
+<figcaption aria-hidden="true">image-20220724103935566</figcaption>
+</figure>
+<p>使用cat 查看，发现文件已经在另一个版本 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724104008811.png"
+alt="image-20220724104008811" /></p></li>
+<li><p>查看.git的一些文件 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724104132475.png"
+alt="image-20220724104132475" /> 说明目前是在master这个版本上
+下面这个文件 .git/refs/heads/master 记录了指向master分支的哪个版本号
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724104310287.png"
+alt="image-20220724104310287" /></p></li>
+<li><p>这里将文件指向最初的版本 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724104528829.png"
+alt="image-20220724104528829" /></p>
+<ul>
+<li>此时查看刚才说的那个记录某个分支当前指向版本的文件，已经做了更新
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724104638810.png"
+alt="image-20220724104638810" /></li>
+</ul></li>
+<li><figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724104706066.png"
+alt="image-20220724104706066" />
+<figcaption aria-hidden="true">image-20220724104706066</figcaption>
+</figure></li>
+<li><p>再穿梭为后面的版本 git reset --hard file <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724104819678.png"
+alt="image-20220724104819678" /></p></li>
+<li><p>图片解释 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724104910442.png"
+alt="image-20220724104910442" /> master指针指向first,second,third
+head永远都是指向master（当前分支，目前只有master，所以不变）</p></li>
+</ul></li>
+</ol>
+<h1 id="分支">分支</h1>
+<ol type="1">
+<li><p>概述和优点 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724132914166.png"
+alt="image-20220724132914166" /> <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724134235798.png"
+alt="image-20220724134235798" /></p></li>
+<li><p>查看&amp;创建&amp;切换</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git branch 分支名    #创建分支</span><br><span class="line">git branch -v       #查看分支</span><br><span class="line">git checkout 分支名  #切换分支</span><br><span class="line">git merge 分支名     #把指定的分支合并到当前分支上</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>查看分支并显示当前分支指向的版本 git branch -v <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724161017521.png"
+alt="image-20220724161017521" /></p></li>
+<li><p>创建分支 git branch hot-fix git branch #再次查看 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724161127755.png"
+alt="image-20220724161127755" /></p></li>
+<li><p>切换分支</p>
+<p>git branch hot-fix 此时修改一个文件并提交 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724161340416.png"
+alt="image-20220724161340416" /> <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724161444200.png"
+alt="image-20220724161444200" />
+查看.git/head文件，会发现现在它指向hot-fix分支 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724161600603.png"
+alt="image-20220724161600603" /> <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724161757944.png"
+alt="image-20220724161757944" /></p></li>
+</ul></li>
+<li><p>合并分支（正常合并）</p>
+<ul>
+<li><p>切换分支 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724161934736.png"
+alt="image-20220724161934736" /></p></li>
+<li><p>将某分支xx合并到当前分支 git merge 分支名</p>
+<p><img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724162147318.png"
+alt="image-20220724162147318" /> 如图，合并成功
+以后面那个分支的修改为主</p></li>
+</ul></li>
+<li><p>合并分支（冲突合并）</p>
+<ul>
+<li><p>前提，现在master分支倒数第二行修改并添加和提交 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724162554933.png"
+alt="image-20220724162554933" /> <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724162642482.png"
+alt="image-20220724162642482" /></p></li>
+<li><p>此时切换到hot-fix分支 修改倒数第一行 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724162857236.png"
+alt="image-20220724162857236" />
+将文件从工作区添加到暂存区并提交到本地库 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724163014554.png"
+alt="image-20220724163014554" /></p></li>
+<li><p>此时再切回master</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git checkout master</span><br><span class="line">git merge hot-fix</span><br></pre></td></tr></table></figure>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724163154164.png"
+alt="image-20220724163154164" />
+<figcaption aria-hidden="true">image-20220724163154164</figcaption>
+</figure></li>
+<li><p>提示出错了，而且所有有异常的文件，都以下面的形式标注 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724163343835.png"
+alt="image-20220724163343835" /> 按dd进行删除某一行 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724163547658.png"
+alt="image-20220724163547658" /> 改完了之后，保存并提交即可 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724163849114.png"
+alt="image-20220724163849114" />
+切回之后查看hot-fix分支，发现这里的文件是没有变化的 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724164010559.png"
+alt="image-20220724164010559" /></p></li>
+<li><p>原理 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724164111179.png"
+alt="image-20220724164111179" /> <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724164209633.png"
+alt="image-20220724164209633" /></p></li>
+</ul></li>
+</ol>
+]]></content>
+      <categories>
+        <category>学习</category>
+      </categories>
+      <tags>
+        <tag>git_尚硅谷</tag>
       </tags>
   </entry>
 </search>
