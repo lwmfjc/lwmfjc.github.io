@@ -239,14 +239,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>1.1k</span>
+              <span>1.6k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>2 分钟</span>
+              <span>3 分钟</span>
             </span>
             <div class="post-description">java垃圾回收器</div>
 
@@ -300,13 +300,16 @@ alt="img" />
 </blockquote>
 <p>假如我们再为allocation2分配内存会怎么样(不处理的话，年轻代会溢出)</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line">allocation2 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">900</span> * <span class="number">1024</span>];</span><br></pre></td></tr></table></figure>
-<figure>
-<img
+<p><img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/28128785.jpg"
 alt="img" />
-<figcaption aria-hidden="true">img</figcaption>
-</figure></li>
+在给allocation2分配内存之前，Eden区内存几乎已经被分配完。所以当<strong>Eden区没有足够空间进行分配时</strong>，虚拟机将发起一次MinorGC。GC期间虚拟机又发现<strong>allocation1无法存入空间</strong>，所以只好通过<strong>分配担保机制</strong>，把<strong>新生代的对象</strong>，<strong>提前转移到老年代</strong>去，老年代的空间足够存放allocation1，<strong>所以不会出现Full
+GC（这里可能是之前的说法，可能只是要表达老年代的GC，而不是Full
+GC(整堆GC) ）</strong>　　</p>
+<p>执行MinorGC后，<strong>后面分配的对象如果能够存在Eden区</strong>的话，还是会在Eden区分配内存<br />
+执行如下代码验证：</p></li>
 </ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">GCTest</span> &#123;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">		<span class="type">byte</span>[] allocation1, allocation2,allocation3,allocation4,allocation5;</span><br><span class="line">		allocation1 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">32000</span>*<span class="number">1024</span>];</span><br><span class="line">		allocation2 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">1000</span>*<span class="number">1024</span>];</span><br><span class="line">		allocation3 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">1000</span>*<span class="number">1024</span>];</span><br><span class="line">		allocation4 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">1000</span>*<span class="number">1024</span>];</span><br><span class="line">		allocation5 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">1000</span>*<span class="number">1024</span>];</span><br><span class="line">	&#125;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
 <h2 id="大对象直接进入老年代">大对象直接进入老年代</h2>
 <h2 id="长期存活的对象进入老年代">长期存活的对象进入老年代</h2>
 <h2 id="主要进行gc的区域">主要进行gc的区域</h2>
@@ -487,7 +490,7 @@ alt="img" />
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">22:23</span>
+    <span title="站点阅读时长">22:24</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
