@@ -169,6 +169,50 @@ src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img
       </tags>
   </entry>
   <entry>
+    <title>方法的参数传递机制</title>
+    <url>/2022/09/22/review/basics/Method_parameter_passing_mechanism/</url>
+    <content><![CDATA[<h2 id="代码">代码</h2>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Exam4</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line">        <span class="type">String</span> <span class="variable">str</span> <span class="operator">=</span> <span class="string">&quot;hello&quot;</span>;</span><br><span class="line">        <span class="type">Integer</span> <span class="variable">num</span> <span class="operator">=</span> <span class="number">2</span>;</span><br><span class="line">        <span class="type">int</span>[] arr = &#123;<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>&#125;;</span><br><span class="line">        <span class="type">MyData</span> <span class="variable">my</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">MyData</span>();</span><br><span class="line"></span><br><span class="line">        change(i, str, num, arr, my);</span><br><span class="line">        System.out.println(<span class="string">&quot;i = &quot;</span> + i);</span><br><span class="line">        System.out.println(<span class="string">&quot;str = &quot;</span> + str);</span><br><span class="line">        System.out.println(<span class="string">&quot;num = &quot;</span> + num);</span><br><span class="line">        System.out.println(<span class="string">&quot;arr = &quot;</span> + Arrays.toString(arr));</span><br><span class="line">        System.out.println(<span class="string">&quot;my.a = &quot;</span> + my.a); </span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">change</span><span class="params">(<span class="type">int</span> j, String s, Integer n, <span class="type">int</span>[] a,</span></span><br><span class="line"><span class="params">                              MyData m)</span> &#123;</span><br><span class="line">        j+=<span class="number">1</span>;</span><br><span class="line">        s+=<span class="string">&quot;world&quot;</span>;</span><br><span class="line">        n+=<span class="number">1</span>;</span><br><span class="line">        a[<span class="number">0</span>]+=<span class="number">1</span>;</span><br><span class="line">        m.a+=<span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>结果</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">i = 1</span><br><span class="line">str = hello</span><br><span class="line">num = 2</span><br><span class="line">arr = [2, 2, 3, 4, 5]</span><br><span class="line">my.a = 11</span><br></pre></td></tr></table></figure>
+<h2 id="知识点">知识点</h2>
+<ul>
+<li>方法的参数传递机制</li>
+<li>String、包装类等对象的不可变性</li>
+</ul>
+<h2 id="分析">分析</h2>
+<ul>
+<li><p>对于包装类，如果是使用new，那么一定是开辟新的空间；如果是直接赋值，那么-128-127之间会有缓存池(堆中)</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//当使用new的时候，一定在堆中新开辟的空间</span></span><br><span class="line">Integer a1= <span class="keyword">new</span> <span class="title class_">Integer</span>(<span class="number">12</span>);</span><br><span class="line">Integer b1= <span class="keyword">new</span> <span class="title class_">Integer</span>(<span class="number">12</span>);</span><br><span class="line">System.out.println(a1 == b1);<span class="comment">//false</span></span><br><span class="line">Integer a2= -<span class="number">128</span>;</span><br><span class="line">Integer b2= -<span class="number">128</span>;</span><br><span class="line">System.out.println(a2 == b2);<span class="comment">//true</span></span><br><span class="line">Integer a21= -<span class="number">129</span>;</span><br><span class="line">Integer b21= -<span class="number">129</span>;</span><br><span class="line">System.out.println(a21 == b21);<span class="comment">//false</span></span><br><span class="line">Integer a3=  <span class="number">127</span>;</span><br><span class="line">Integer b3=  <span class="number">127</span>;</span><br><span class="line">System.out.println(a3 == b3);<span class="comment">//true</span></span><br><span class="line">Integer a4=  <span class="number">22</span>;</span><br><span class="line">Integer b4=  <span class="number">22</span>;</span><br><span class="line">System.out.println(a4 == b4);<span class="comment">//true</span></span><br><span class="line">Integer a31=  <span class="number">128</span>;</span><br><span class="line">Integer b31=  <span class="number">128</span>;</span><br><span class="line">System.out.println(a31 == b31);<span class="comment">//false</span></span><br></pre></td></tr></table></figure></li>
+<li><p>对于String类</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//先查找常量池中是否有&quot;abc&quot;，如果有直接返回在常量池中的引用,</span></span><br><span class="line"><span class="comment">//如果没有，则在常量池中创建&quot;abc&quot;,然后返回该引用</span></span><br><span class="line">String a=<span class="string">&quot;abc&quot;</span>;</span><br><span class="line">  </span><br><span class="line"><span class="comment">//先查找常量池中是否有&quot;abc&quot;，如果有则在堆内存中创建对象，然后返回堆内存中的地址</span></span><br><span class="line"><span class="comment">//如果没有，则先在常量池中创建字符串对象，然后再在堆内存中创建对象，最后返回堆内存中的地址</span></span><br><span class="line">String ab=<span class="keyword">new</span> <span class="title class_">String</span>(<span class="string">&quot;abc&quot;</span>);</span><br><span class="line">System.out.println(a==ab);<span class="comment">//true</span></span><br><span class="line">  </span><br><span class="line"><span class="comment">//intern() //判断常量池中是否有ab对象的字符串，如果存在&quot;abc&quot;则返回&quot;abc&quot;在</span></span><br><span class="line"><span class="comment">//常量池中的引用，如果不存在则在常量池中创建,</span></span><br><span class="line"><span class="comment">//并返回&quot;abc&quot;在常量池中的引用</span></span><br><span class="line">System.out.println(a==ab.intern());<span class="comment">//true</span></span><br></pre></td></tr></table></figure></li>
+<li><p>change方法调用之前，jvm中的结构 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220922113056133.png"
+alt="image-20220922113056133" /></p></li>
+<li><p>方法栈帧中的数据 执行change方法后，实参给形参赋值：
+基本数据类型：数据值 引用数据类型：地址值</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220922211437515.png"
+alt="image-20220922211437515" />
+<figcaption aria-hidden="true">image-20220922211437515</figcaption>
+</figure>
+<p>当实参是特殊的类型时：比如String、包装类等对象，不可变，即
+<code>s+="world";</code> 会导致创建两个对象，如图（ Integer也是） <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220922211733044.png"
+alt="image-20220922211733044" /></p></li>
+</ul>
+<p>数组和对象，则是找到堆内存中的地址，直接更改</p>
+]]></content>
+      <categories>
+        <category>学习</category>
+      </categories>
+      <tags>
+        <tag>复习</tag>
+        <tag>复习-基础</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>类、实例初始化</title>
     <url>/2022/09/22/review/basics/Class_and_instance_initialization/</url>
     <content><![CDATA[<h2 id="代码">代码</h2>
@@ -216,50 +260,6 @@ alt="image-20220922100330126" /></li>
 final方法、静态方法、父类中的private等修饰使得子类不可见的方法</li>
 </ul></li>
 </ul>
-]]></content>
-      <categories>
-        <category>学习</category>
-      </categories>
-      <tags>
-        <tag>复习</tag>
-        <tag>复习-基础</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>方法的参数传递机制</title>
-    <url>/2022/09/22/review/basics/Method_parameter_passing_mechanism/</url>
-    <content><![CDATA[<h2 id="代码">代码</h2>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Exam4</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line">        <span class="type">String</span> <span class="variable">str</span> <span class="operator">=</span> <span class="string">&quot;hello&quot;</span>;</span><br><span class="line">        <span class="type">Integer</span> <span class="variable">num</span> <span class="operator">=</span> <span class="number">2</span>;</span><br><span class="line">        <span class="type">int</span>[] arr = &#123;<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>&#125;;</span><br><span class="line">        <span class="type">MyData</span> <span class="variable">my</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">MyData</span>();</span><br><span class="line"></span><br><span class="line">        change(i, str, num, arr, my);</span><br><span class="line">        System.out.println(<span class="string">&quot;i = &quot;</span> + i);</span><br><span class="line">        System.out.println(<span class="string">&quot;str = &quot;</span> + str);</span><br><span class="line">        System.out.println(<span class="string">&quot;num = &quot;</span> + num);</span><br><span class="line">        System.out.println(<span class="string">&quot;arr = &quot;</span> + Arrays.toString(arr));</span><br><span class="line">        System.out.println(<span class="string">&quot;my.a = &quot;</span> + my.a); </span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">change</span><span class="params">(<span class="type">int</span> j, String s, Integer n, <span class="type">int</span>[] a,</span></span><br><span class="line"><span class="params">                              MyData m)</span> &#123;</span><br><span class="line">        j+=<span class="number">1</span>;</span><br><span class="line">        s+=<span class="string">&quot;world&quot;</span>;</span><br><span class="line">        n+=<span class="number">1</span>;</span><br><span class="line">        a[<span class="number">0</span>]+=<span class="number">1</span>;</span><br><span class="line">        m.a+=<span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>结果</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">i = 1</span><br><span class="line">str = hello</span><br><span class="line">num = 2</span><br><span class="line">arr = [2, 2, 3, 4, 5]</span><br><span class="line">my.a = 11</span><br></pre></td></tr></table></figure>
-<h2 id="知识点">知识点</h2>
-<ul>
-<li>方法的参数传递机制</li>
-<li>String、包装类等对象的不可变性</li>
-</ul>
-<h2 id="分析">分析</h2>
-<ul>
-<li><p>对于包装类，如果是使用new，那么一定是开辟新的空间；如果是直接赋值，那么-128-127之间会有缓存池(堆中)</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//当使用new的时候，一定在堆中新开辟的空间</span></span><br><span class="line">Integer a1= <span class="keyword">new</span> <span class="title class_">Integer</span>(<span class="number">12</span>);</span><br><span class="line">Integer b1= <span class="keyword">new</span> <span class="title class_">Integer</span>(<span class="number">12</span>);</span><br><span class="line">System.out.println(a1 == b1);<span class="comment">//false</span></span><br><span class="line">Integer a2= -<span class="number">128</span>;</span><br><span class="line">Integer b2= -<span class="number">128</span>;</span><br><span class="line">System.out.println(a2 == b2);<span class="comment">//true</span></span><br><span class="line">Integer a21= -<span class="number">129</span>;</span><br><span class="line">Integer b21= -<span class="number">129</span>;</span><br><span class="line">System.out.println(a21 == b21);<span class="comment">//false</span></span><br><span class="line">Integer a3=  <span class="number">127</span>;</span><br><span class="line">Integer b3=  <span class="number">127</span>;</span><br><span class="line">System.out.println(a3 == b3);<span class="comment">//true</span></span><br><span class="line">Integer a4=  <span class="number">22</span>;</span><br><span class="line">Integer b4=  <span class="number">22</span>;</span><br><span class="line">System.out.println(a4 == b4);<span class="comment">//true</span></span><br><span class="line">Integer a31=  <span class="number">128</span>;</span><br><span class="line">Integer b31=  <span class="number">128</span>;</span><br><span class="line">System.out.println(a31 == b31);<span class="comment">//false</span></span><br></pre></td></tr></table></figure></li>
-<li><p>对于String类</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//先查找常量池中是否有&quot;abc&quot;，如果有直接返回在常量池中的引用,</span></span><br><span class="line"><span class="comment">//如果没有，则在常量池中创建&quot;abc&quot;,然后返回该引用</span></span><br><span class="line">String a=<span class="string">&quot;abc&quot;</span>;</span><br><span class="line">  </span><br><span class="line"><span class="comment">//先查找常量池中是否有&quot;abc&quot;，如果有则在堆内存中创建对象，然后返回堆内存中的地址</span></span><br><span class="line"><span class="comment">//如果没有，则先在常量池中创建字符串对象，然后再在堆内存中创建对象，最后返回堆内存中的地址</span></span><br><span class="line">String ab=<span class="keyword">new</span> <span class="title class_">String</span>(<span class="string">&quot;abc&quot;</span>);</span><br><span class="line">System.out.println(a==ab);<span class="comment">//true</span></span><br><span class="line">  </span><br><span class="line"><span class="comment">//intern() //判断常量池中是否有ab对象的字符串，如果存在&quot;abc&quot;则返回&quot;abc&quot;在</span></span><br><span class="line"><span class="comment">//常量池中的引用，如果不存在则在常量池中创建,</span></span><br><span class="line"><span class="comment">//并返回&quot;abc&quot;在常量池中的引用</span></span><br><span class="line">System.out.println(a==ab.intern());<span class="comment">//true</span></span><br></pre></td></tr></table></figure></li>
-<li><p>change方法调用之前，jvm中的结构 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220922113056133.png"
-alt="image-20220922113056133" /></p></li>
-<li><p>方法栈帧中的数据 执行change方法后，实参给形参赋值：
-基本数据类型：数据值 引用数据类型：地址值</p>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220922211437515.png"
-alt="image-20220922211437515" />
-<figcaption aria-hidden="true">image-20220922211437515</figcaption>
-</figure>
-<p>当实参是特殊的类型时：比如String、包装类等对象，不可变，即
-<code>s+="world";</code> 会导致创建两个对象，如图（ Integer也是） <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220922211733044.png"
-alt="image-20220922211733044" /></p></li>
-</ul>
-<p>数组和对象，则是找到堆内存中的地址，直接更改</p>
 ]]></content>
       <categories>
         <category>学习</category>
@@ -6792,7 +6792,7 @@ in new window</a> ），取<strong>这个年龄</strong>和
 中更小的一个值</strong>，作为新的晋升年龄阈值”。</li>
 </ul>
 <p>动态年龄计算的代码：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">uint ageTable::compute_tenuring_threshold(size_t survivor_capacity) &#123;</span><br><span class="line"><span class="comment">//survivor_capacity是survivor空间的大小</span></span><br><span class="line"><span class="type">size_t</span> <span class="variable">desired_survivor_size</span> <span class="operator">=</span> (size_t)((((<span class="type">double</span>)survivor_capacity)*TargetSurvivorRatio)/<span class="number">100</span>);</span><br><span class="line"><span class="type">size_t</span> <span class="variable">total</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line"><span class="type">uint</span> <span class="variable">age</span> <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line"><span class="keyword">while</span> (age &lt; table_size) &#123;</span><br><span class="line"><span class="comment">//sizes数组是每个年龄段对象大小</span></span><br><span class="line">total += sizes[age];</span><br><span class="line"><span class="keyword">if</span> (total &gt; desired_survivor_size) &#123;</span><br><span class="line"><span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br><span class="line">age++;</span><br><span class="line">&#125;</span><br><span class="line"><span class="type">uint</span> <span class="variable">result</span> <span class="operator">=</span> age &lt; MaxTenuringThreshold ? age : MaxTenuringThreshold;</span><br><span class="line">...</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">uint ageTable::compute_tenuring_threshold(size_t survivor_capacity) &#123;</span><br><span class="line"><span class="comment">//survivor_capacity是survivor空间的大小</span></span><br><span class="line"><span class="type">size_t</span> <span class="variable">desired_survivor_size</span> <span class="operator">=</span> (size_t)((((<span class="type">double</span>)survivor_capacity)*TargetSurvivorRatio)/<span class="number">100</span>);</span><br><span class="line"><span class="type">size_t</span> <span class="variable">total</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line"><span class="type">uint</span> <span class="variable">age</span> <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line"><span class="keyword">while</span> (age &lt; table_size) &#123;</span><br><span class="line"><span class="comment">//sizes数组是每个年龄段对象大小</span></span><br><span class="line">total += sizes[age];</span><br><span class="line"><span class="keyword">if</span> (total &gt; desired_survivor_size) &#123;</span><br><span class="line"><span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br><span class="line">age++; <span class="comment">//注意这里，age是递增的，最终是去某个值，而不是区间的值计算</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="type">uint</span> <span class="variable">result</span> <span class="operator">=</span> age &lt; MaxTenuringThreshold ? age : MaxTenuringThreshold;</span><br><span class="line">...</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
 <blockquote>
 <p>例子：
 如<strong>对象年龄5的占30%，年龄6的占36%，年龄7的占34%，加入某个年龄段（如例子中的年龄6）</strong>后，总占用超过Survivor空间*TargetSurvivorRatio的时候，从该年龄段开始及大于的年龄对象就要进入老年代（即例子中的年龄6对象，就是年龄6和年龄7晋升到老年代），这时候无需等到MaxTenuringThreshold中要求的15</p>
@@ -11966,6 +11966,269 @@ alt="image-20220723092855691" /></p></li>
       </tags>
   </entry>
   <entry>
+    <title>09-18_git_尚硅谷</title>
+    <url>/2022/07/23/study/git/git_sgg/09-18/</url>
+    <content><![CDATA[<h1 id="命令">命令</h1>
+<ol type="1">
+<li><p>命令-设置用户签名</p>
+<ul>
+<li>查看 <code>git config user.name</code>
+<code>git config user.email</code></li>
+<li>设置 <code>git config --global user.name ly001</code>
+<code>git config --global user.email xxx@xx.com</code></li>
+<li>git的配置文件查看 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220723213819948.png"
+alt="image-20220723213819948" /></li>
+<li>作用：区分不同操作者身份，跟后面登陆的账号没有关系</li>
+</ul></li>
+<li><p>初始化本地库</p>
+<ul>
+<li><p><code>git init</code></p>
+<p><img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220723221535272.png"
+alt="image-20220723221535272" /> 多出一个文件夹 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220723221752414.png"
+alt="image-20220723221752414" /></p></li>
+</ul></li>
+<li><p>查看本地库状态</p>
+<ul>
+<li><code>git status</code> <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220723221936215.png"
+alt="image-20220723221936215" /> 默认在master分支</li>
+<li>新增一个文件 <code>vim hello.txt</code> <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724094610700.png"
+alt="image-20220724094610700" /></li>
+<li>此时查看本地库的状态 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724094729991.png"
+alt="image-20220724094729991" /> untracketd files
+未被追踪的文件，也就是这个文件还在工作区</li>
+</ul></li>
+<li><p>添加暂存区</p>
+<ul>
+<li><p><code>git add hello.txt</code> <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724095104535.png"
+alt="image-20220724095104535" /> LF 将会被替换成
+CRLF，windows里面是CRLF，也就是说</p>
+<blockquote>
+<p>这个<code>换行符自动转换</code>会把自动把你代码里
+与你当前操作系统不相同的换行的方式
+转换成当前系统的换行方式（即<code>LF</code>和<code>CRLF</code>
+之间的转换）</p>
+</blockquote>
+<p>这是因为这个hello.txt是使用<code>vm hello.txt</code>在git
+bash里面添加的，如果直接在windows文件管理器添加一个文件（hello2.txt)，就会发现没有这个警告，因为他已经是CRLF了
+（为了和视频保持一致，git rm --cached hello2.txt 后删除这个文件） <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724100600978.png"
+alt="image-20220724100600978" /></p></li>
+<li><p>查看当前状态，绿色表示git已经追踪到了这个文件</p>
+<p>文件已经存在于暂存区 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724095955869.png"
+alt="image-20220724095955869" /></p></li>
+<li><p>使用<code>git rm --cached hello.txt</code>可以将文件从暂存区删除
+使用后，文件又出现在工作区了（未添加） <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724100308401.png"
+alt="image-20220724100308401" /></p></li>
+<li></li>
+</ul></li>
+<li><p>提交本地库</p>
+<ul>
+<li><p><code>git commit -m "first commit" hello.txt</code>
+会出现一些警告，以及此时提交的修改和生成的版本号（前七位） <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724100937599.png"
+alt="image-20220724100937599" /> <code>git status</code> <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724101043687.png"
+alt="image-20220724101043687" /></p></li>
+<li><p>使用git reflog查看引用日志信息 git log 查看详细日志信息 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724101139028.png"
+alt="image-20220724101139028" /></p></li>
+</ul></li>
+<li><p>修改命令</p>
+<ul>
+<li><p>前提，修改了文件 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724101329134.png"
+alt="image-20220724101329134" /></p></li>
+<li><p>git status</p>
+<p><img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724101355054.png"
+alt="image-20220724101355054" />红色表示git还没有追踪到这个修改，如果此时commit
+，会提示没有需要commit的 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724101505483.png"
+alt="image-20220724101505483" /></p></li>
+<li><p>使用git add hello.txt 将文件修改添加到暂存区 之后git status <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724102125244.png"
+alt="image-20220724102125244" /></p>
+<ul>
+<li><p>注意，这里如果提交到暂存区之后，使用git
+restore是无法恢复文件的</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724102234835.png"
+alt="image-20220724102234835" />
+<figcaption aria-hidden="true">image-20220724102234835</figcaption>
+</figure></li>
+<li><p>git restore --staged <file>..." to unstage
+使用这个命令丢弃这个文件的commit操作</p>
+<blockquote>
+<p>几个命令的区别：</p>
+<ul>
+<li>git restore file
+的命令是丢弃你在工作区修改的内容,(修改的内容会丢失)</li>
+<li>git restore --staged file 丢弃你在工作区的修改不被<a
+href="https://so.csdn.net/so/search?q=commit&amp;spm=1001.2101.3001.7020">commit</a>
+。但是你的修改依然在工作区。</li>
+<li>git rm --cached file和git restore --staged file
+效果好像一样，这里不做更进一步的分析</li>
+</ul>
+</blockquote></li>
+</ul></li>
+<li><p>回到最初，这里主要是为了看修改，如最上面，将第一行后面添加了22222</p>
+<p>commit 之后的提示，删除了一行，添加了一行（修改的另一种说法） <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724102949971.png"
+alt="image-20220724102949971" /></p></li>
+<li><p>如果，HEAD -&gt; master ，指针指向了第二个版本 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724103127996.png"
+alt="image-20220724103127996" /></p></li>
+<li><p>这里再做第三次修改，并add 及commit <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724103303974.png"
+alt="image-20220724103303974" /></p></li>
+<li><p>查看工作区，永远只有最后那次修改的文件 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724103332836.png"
+alt="image-20220724103332836" /></p></li>
+</ul></li>
+<li><p>版本穿梭</p>
+<ul>
+<li><p>git reflog和git log <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724103443297.png"
+alt="image-20220724103443297" /></p></li>
+<li><p>回顾：hello.txt先是5行，然后第一行加了2，之后第二行加了3</p></li>
+<li><p>使用git reset --hard
+版本号进行穿梭，这里多了一行，是因为我复制的时候复制粗了版本号</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724103935566.png"
+alt="image-20220724103935566" />
+<figcaption aria-hidden="true">image-20220724103935566</figcaption>
+</figure>
+<p>使用cat 查看，发现文件已经在另一个版本 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724104008811.png"
+alt="image-20220724104008811" /></p></li>
+<li><p>查看.git的一些文件 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724104132475.png"
+alt="image-20220724104132475" /> 说明目前是在master这个版本上
+下面这个文件 .git/refs/heads/master 记录了指向master分支的哪个版本号
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724104310287.png"
+alt="image-20220724104310287" /></p></li>
+<li><p>这里将文件指向最初的版本 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724104528829.png"
+alt="image-20220724104528829" /></p>
+<ul>
+<li>此时查看刚才说的那个记录某个分支当前指向版本的文件，已经做了更新
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724104638810.png"
+alt="image-20220724104638810" /></li>
+</ul></li>
+<li><figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724104706066.png"
+alt="image-20220724104706066" />
+<figcaption aria-hidden="true">image-20220724104706066</figcaption>
+</figure></li>
+<li><p>再穿梭为后面的版本 git reset --hard file <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724104819678.png"
+alt="image-20220724104819678" /></p></li>
+<li><p>图片解释 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724104910442.png"
+alt="image-20220724104910442" /> master指针指向first,second,third
+head永远都是指向master（当前分支，目前只有master，所以不变）</p></li>
+</ul></li>
+</ol>
+<h1 id="分支">分支</h1>
+<ol type="1">
+<li><p>概述和优点 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724132914166.png"
+alt="image-20220724132914166" /> <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724134235798.png"
+alt="image-20220724134235798" /></p></li>
+<li><p>查看&amp;创建&amp;切换</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git branch 分支名    #创建分支</span><br><span class="line">git branch -v       #查看分支</span><br><span class="line">git checkout 分支名  #切换分支</span><br><span class="line">git merge 分支名     #把指定的分支合并到当前分支上</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>查看分支并显示当前分支指向的版本 git branch -v <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724161017521.png"
+alt="image-20220724161017521" /></p></li>
+<li><p>创建分支 git branch hot-fix git branch #再次查看 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724161127755.png"
+alt="image-20220724161127755" /></p></li>
+<li><p>切换分支</p>
+<p>git branch hot-fix 此时修改一个文件并提交 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724161340416.png"
+alt="image-20220724161340416" /> <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724161444200.png"
+alt="image-20220724161444200" />
+查看.git/head文件，会发现现在它指向hot-fix分支 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724161600603.png"
+alt="image-20220724161600603" /> <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724161757944.png"
+alt="image-20220724161757944" /></p></li>
+</ul></li>
+<li><p>合并分支（正常合并）</p>
+<ul>
+<li><p>切换分支 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724161934736.png"
+alt="image-20220724161934736" /></p></li>
+<li><p>将某分支xx合并到当前分支 git merge 分支名</p>
+<p><img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724162147318.png"
+alt="image-20220724162147318" /> 如图，合并成功
+以后面那个分支的修改为主</p></li>
+</ul></li>
+<li><p>合并分支（冲突合并）</p>
+<ul>
+<li><p>前提，现在master分支倒数第二行修改并添加和提交 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724162554933.png"
+alt="image-20220724162554933" /> <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724162642482.png"
+alt="image-20220724162642482" /></p></li>
+<li><p>此时切换到hot-fix分支 修改倒数第一行 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724162857236.png"
+alt="image-20220724162857236" />
+将文件从工作区添加到暂存区并提交到本地库 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724163014554.png"
+alt="image-20220724163014554" /></p></li>
+<li><p>此时再切回master</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git checkout master</span><br><span class="line">git merge hot-fix</span><br></pre></td></tr></table></figure>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724163154164.png"
+alt="image-20220724163154164" />
+<figcaption aria-hidden="true">image-20220724163154164</figcaption>
+</figure></li>
+<li><p>提示出错了，而且所有有异常的文件，都以下面的形式标注 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724163343835.png"
+alt="image-20220724163343835" /> 按dd进行删除某一行 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724163547658.png"
+alt="image-20220724163547658" /> 改完了之后，保存并提交即可 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724163849114.png"
+alt="image-20220724163849114" />
+切回之后查看hot-fix分支，发现这里的文件是没有变化的 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724164010559.png"
+alt="image-20220724164010559" /></p></li>
+<li><p>原理 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724164111179.png"
+alt="image-20220724164111179" /> <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724164209633.png"
+alt="image-20220724164209633" /></p></li>
+</ul></li>
+</ol>
+]]></content>
+      <categories>
+        <category>学习</category>
+      </categories>
+      <tags>
+        <tag>git_尚硅谷</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>19-26_git_尚硅谷</title>
     <url>/2022/07/24/study/git/git_sgg/19-26/</url>
     <content><![CDATA[<h1 id="介绍">介绍</h1>
@@ -15407,269 +15670,6 @@ cáng/zang 四声，没查到，好像读音都有，暂取cang 二声</strong>)
       </categories>
       <tags>
         <tag>《易经杂说》-南怀瑾</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>09-18_git_尚硅谷</title>
-    <url>/2022/07/23/study/git/git_sgg/09-18/</url>
-    <content><![CDATA[<h1 id="命令">命令</h1>
-<ol type="1">
-<li><p>命令-设置用户签名</p>
-<ul>
-<li>查看 <code>git config user.name</code>
-<code>git config user.email</code></li>
-<li>设置 <code>git config --global user.name ly001</code>
-<code>git config --global user.email xxx@xx.com</code></li>
-<li>git的配置文件查看 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220723213819948.png"
-alt="image-20220723213819948" /></li>
-<li>作用：区分不同操作者身份，跟后面登陆的账号没有关系</li>
-</ul></li>
-<li><p>初始化本地库</p>
-<ul>
-<li><p><code>git init</code></p>
-<p><img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220723221535272.png"
-alt="image-20220723221535272" /> 多出一个文件夹 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220723221752414.png"
-alt="image-20220723221752414" /></p></li>
-</ul></li>
-<li><p>查看本地库状态</p>
-<ul>
-<li><code>git status</code> <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220723221936215.png"
-alt="image-20220723221936215" /> 默认在master分支</li>
-<li>新增一个文件 <code>vim hello.txt</code> <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724094610700.png"
-alt="image-20220724094610700" /></li>
-<li>此时查看本地库的状态 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724094729991.png"
-alt="image-20220724094729991" /> untracketd files
-未被追踪的文件，也就是这个文件还在工作区</li>
-</ul></li>
-<li><p>添加暂存区</p>
-<ul>
-<li><p><code>git add hello.txt</code> <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724095104535.png"
-alt="image-20220724095104535" /> LF 将会被替换成
-CRLF，windows里面是CRLF，也就是说</p>
-<blockquote>
-<p>这个<code>换行符自动转换</code>会把自动把你代码里
-与你当前操作系统不相同的换行的方式
-转换成当前系统的换行方式（即<code>LF</code>和<code>CRLF</code>
-之间的转换）</p>
-</blockquote>
-<p>这是因为这个hello.txt是使用<code>vm hello.txt</code>在git
-bash里面添加的，如果直接在windows文件管理器添加一个文件（hello2.txt)，就会发现没有这个警告，因为他已经是CRLF了
-（为了和视频保持一致，git rm --cached hello2.txt 后删除这个文件） <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724100600978.png"
-alt="image-20220724100600978" /></p></li>
-<li><p>查看当前状态，绿色表示git已经追踪到了这个文件</p>
-<p>文件已经存在于暂存区 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724095955869.png"
-alt="image-20220724095955869" /></p></li>
-<li><p>使用<code>git rm --cached hello.txt</code>可以将文件从暂存区删除
-使用后，文件又出现在工作区了（未添加） <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724100308401.png"
-alt="image-20220724100308401" /></p></li>
-<li></li>
-</ul></li>
-<li><p>提交本地库</p>
-<ul>
-<li><p><code>git commit -m "first commit" hello.txt</code>
-会出现一些警告，以及此时提交的修改和生成的版本号（前七位） <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724100937599.png"
-alt="image-20220724100937599" /> <code>git status</code> <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724101043687.png"
-alt="image-20220724101043687" /></p></li>
-<li><p>使用git reflog查看引用日志信息 git log 查看详细日志信息 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724101139028.png"
-alt="image-20220724101139028" /></p></li>
-</ul></li>
-<li><p>修改命令</p>
-<ul>
-<li><p>前提，修改了文件 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724101329134.png"
-alt="image-20220724101329134" /></p></li>
-<li><p>git status</p>
-<p><img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724101355054.png"
-alt="image-20220724101355054" />红色表示git还没有追踪到这个修改，如果此时commit
-，会提示没有需要commit的 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724101505483.png"
-alt="image-20220724101505483" /></p></li>
-<li><p>使用git add hello.txt 将文件修改添加到暂存区 之后git status <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724102125244.png"
-alt="image-20220724102125244" /></p>
-<ul>
-<li><p>注意，这里如果提交到暂存区之后，使用git
-restore是无法恢复文件的</p>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724102234835.png"
-alt="image-20220724102234835" />
-<figcaption aria-hidden="true">image-20220724102234835</figcaption>
-</figure></li>
-<li><p>git restore --staged <file>..." to unstage
-使用这个命令丢弃这个文件的commit操作</p>
-<blockquote>
-<p>几个命令的区别：</p>
-<ul>
-<li>git restore file
-的命令是丢弃你在工作区修改的内容,(修改的内容会丢失)</li>
-<li>git restore --staged file 丢弃你在工作区的修改不被<a
-href="https://so.csdn.net/so/search?q=commit&amp;spm=1001.2101.3001.7020">commit</a>
-。但是你的修改依然在工作区。</li>
-<li>git rm --cached file和git restore --staged file
-效果好像一样，这里不做更进一步的分析</li>
-</ul>
-</blockquote></li>
-</ul></li>
-<li><p>回到最初，这里主要是为了看修改，如最上面，将第一行后面添加了22222</p>
-<p>commit 之后的提示，删除了一行，添加了一行（修改的另一种说法） <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724102949971.png"
-alt="image-20220724102949971" /></p></li>
-<li><p>如果，HEAD -&gt; master ，指针指向了第二个版本 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724103127996.png"
-alt="image-20220724103127996" /></p></li>
-<li><p>这里再做第三次修改，并add 及commit <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724103303974.png"
-alt="image-20220724103303974" /></p></li>
-<li><p>查看工作区，永远只有最后那次修改的文件 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724103332836.png"
-alt="image-20220724103332836" /></p></li>
-</ul></li>
-<li><p>版本穿梭</p>
-<ul>
-<li><p>git reflog和git log <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724103443297.png"
-alt="image-20220724103443297" /></p></li>
-<li><p>回顾：hello.txt先是5行，然后第一行加了2，之后第二行加了3</p></li>
-<li><p>使用git reset --hard
-版本号进行穿梭，这里多了一行，是因为我复制的时候复制粗了版本号</p>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724103935566.png"
-alt="image-20220724103935566" />
-<figcaption aria-hidden="true">image-20220724103935566</figcaption>
-</figure>
-<p>使用cat 查看，发现文件已经在另一个版本 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724104008811.png"
-alt="image-20220724104008811" /></p></li>
-<li><p>查看.git的一些文件 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724104132475.png"
-alt="image-20220724104132475" /> 说明目前是在master这个版本上
-下面这个文件 .git/refs/heads/master 记录了指向master分支的哪个版本号
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724104310287.png"
-alt="image-20220724104310287" /></p></li>
-<li><p>这里将文件指向最初的版本 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724104528829.png"
-alt="image-20220724104528829" /></p>
-<ul>
-<li>此时查看刚才说的那个记录某个分支当前指向版本的文件，已经做了更新
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724104638810.png"
-alt="image-20220724104638810" /></li>
-</ul></li>
-<li><figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724104706066.png"
-alt="image-20220724104706066" />
-<figcaption aria-hidden="true">image-20220724104706066</figcaption>
-</figure></li>
-<li><p>再穿梭为后面的版本 git reset --hard file <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724104819678.png"
-alt="image-20220724104819678" /></p></li>
-<li><p>图片解释 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724104910442.png"
-alt="image-20220724104910442" /> master指针指向first,second,third
-head永远都是指向master（当前分支，目前只有master，所以不变）</p></li>
-</ul></li>
-</ol>
-<h1 id="分支">分支</h1>
-<ol type="1">
-<li><p>概述和优点 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724132914166.png"
-alt="image-20220724132914166" /> <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724134235798.png"
-alt="image-20220724134235798" /></p></li>
-<li><p>查看&amp;创建&amp;切换</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git branch 分支名    #创建分支</span><br><span class="line">git branch -v       #查看分支</span><br><span class="line">git checkout 分支名  #切换分支</span><br><span class="line">git merge 分支名     #把指定的分支合并到当前分支上</span><br></pre></td></tr></table></figure>
-<ul>
-<li><p>查看分支并显示当前分支指向的版本 git branch -v <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724161017521.png"
-alt="image-20220724161017521" /></p></li>
-<li><p>创建分支 git branch hot-fix git branch #再次查看 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724161127755.png"
-alt="image-20220724161127755" /></p></li>
-<li><p>切换分支</p>
-<p>git branch hot-fix 此时修改一个文件并提交 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724161340416.png"
-alt="image-20220724161340416" /> <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724161444200.png"
-alt="image-20220724161444200" />
-查看.git/head文件，会发现现在它指向hot-fix分支 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724161600603.png"
-alt="image-20220724161600603" /> <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724161757944.png"
-alt="image-20220724161757944" /></p></li>
-</ul></li>
-<li><p>合并分支（正常合并）</p>
-<ul>
-<li><p>切换分支 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724161934736.png"
-alt="image-20220724161934736" /></p></li>
-<li><p>将某分支xx合并到当前分支 git merge 分支名</p>
-<p><img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724162147318.png"
-alt="image-20220724162147318" /> 如图，合并成功
-以后面那个分支的修改为主</p></li>
-</ul></li>
-<li><p>合并分支（冲突合并）</p>
-<ul>
-<li><p>前提，现在master分支倒数第二行修改并添加和提交 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724162554933.png"
-alt="image-20220724162554933" /> <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724162642482.png"
-alt="image-20220724162642482" /></p></li>
-<li><p>此时切换到hot-fix分支 修改倒数第一行 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724162857236.png"
-alt="image-20220724162857236" />
-将文件从工作区添加到暂存区并提交到本地库 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724163014554.png"
-alt="image-20220724163014554" /></p></li>
-<li><p>此时再切回master</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git checkout master</span><br><span class="line">git merge hot-fix</span><br></pre></td></tr></table></figure>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724163154164.png"
-alt="image-20220724163154164" />
-<figcaption aria-hidden="true">image-20220724163154164</figcaption>
-</figure></li>
-<li><p>提示出错了，而且所有有异常的文件，都以下面的形式标注 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724163343835.png"
-alt="image-20220724163343835" /> 按dd进行删除某一行 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724163547658.png"
-alt="image-20220724163547658" /> 改完了之后，保存并提交即可 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724163849114.png"
-alt="image-20220724163849114" />
-切回之后查看hot-fix分支，发现这里的文件是没有变化的 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724164010559.png"
-alt="image-20220724164010559" /></p></li>
-<li><p>原理 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724164111179.png"
-alt="image-20220724164111179" /> <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724164209633.png"
-alt="image-20220724164209633" /></p></li>
-</ul></li>
-</ol>
-]]></content>
-      <categories>
-        <category>学习</category>
-      </categories>
-      <tags>
-        <tag>git_尚硅谷</tag>
       </tags>
   </entry>
 </search>
