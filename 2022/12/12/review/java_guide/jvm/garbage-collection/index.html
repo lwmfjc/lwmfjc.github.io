@@ -239,14 +239,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>4.3k</span>
+              <span>5.9k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>8 分钟</span>
+              <span>11 分钟</span>
             </span>
             <div class="post-description">java垃圾回收器</div>
 
@@ -396,9 +396,71 @@ GC</strong></p>
 </blockquote></li>
 </ul>
 <h1 id="死亡对象判断方法">死亡对象判断方法</h1>
+<p><strong>堆</strong>中<strong>几乎放着所有的对象实例</strong>，对堆垃圾回收前的第一步就是要<strong>判断哪些对象已经死亡</strong>（即不能再被<strong>任何途径使用</strong>的对象）</p>
 <h2 id="引用计数法">引用计数法</h2>
+<ul>
+<li><p>给对象中添加一个<strong>引用计数器</strong></p>
+<ul>
+<li>每当有一个地方引用它，<strong>计数器就加1</strong></li>
+<li>当引用失效，<strong>计数器就减1</strong></li>
+<li>任何时候<strong>计数器为0的对象</strong>就是<strong>不可能再被使用</strong>的</li>
+</ul></li>
+<li><p>这个方法实现<strong>简单，效率高</strong>，但是目前主流的虚拟机中并没有选择这个算法来管理内存，其最主要的原因是它<strong>很难解决对象之间相互循环引用</strong>的问题。</p></li>
+</ul>
+<blockquote>
+<p>除了对象 <code>objA</code> 和 <code>objB</code>
+相互引用着对方之外，这两个对象之间再无任何引用。但是他们因为互相引用对方，导致它们的引用计数器都不为
+0，于是引用计数算法无法通知 GC 回收器回收他们</p>
+</blockquote>
+<p>★其实我觉得只跟相互有关，跟是不是<strong>循环</strong>关系不会太大</p>
+<p><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ReferenceCountingGc</span> &#123;</span><br><span class="line">    <span class="type">Object</span> <span class="variable">instance</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">ReferenceCountingGc</span> <span class="variable">objA</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ReferenceCountingGc</span>();</span><br><span class="line">        <span class="type">ReferenceCountingGc</span> <span class="variable">objB</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ReferenceCountingGc</span>();</span><br><span class="line">        objA.instance = objB;</span><br><span class="line">        objB.instance = objA;</span><br><span class="line">        objA = <span class="literal">null</span>;</span><br><span class="line">        objB = <span class="literal">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure></p>
 <h2 id="可达性分析算法">可达性分析算法</h2>
+<ul>
+<li><p>该算法的基本思想就是通过一系列称为<strong>“GC
+Roots"</strong>的对象作为起点，从这些节点开始<strong>向下搜索</strong>，节点所走过的<strong>路径</strong>
+称为<strong>引用链</strong>，当一个对象到GC
+Roots<strong>没有任何引用链</strong>相连的话，证明该对象不可用，需要<strong>被回收</strong>
+下图中由于Object 6 ~ Object
+10之间有引用关系，但它们到GC不可达，所以需要被回收 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/jvm-gc-roots.d187e957.png"
+alt="可达性分析算法" /></p></li>
+<li><p>哪些对象可以作为GC Roots呢</p>
+<ol type="1">
+<li>虚拟机栈（栈帧中的<strong>本地变量表</strong>）中引用的对象</li>
+<li>本地方法栈（<strong>Native方法</strong>）中引用的对象</li>
+<li>方法区中<strong>类静态属性</strong>引用的对象</li>
+<li>方法区中<strong>常量</strong>引用的变量</li>
+<li>所有被<strong>同步锁持有的对象</strong></li>
+</ol></li>
+<li><p>对象可以被回收，就代码一定会被回收吗
+即使在可达性分析法中不可达的对象，也并非是“非死不可”的，这时候它们<strong>暂时处于“缓刑阶段”</strong>，要真正宣告一个对象死亡，至少要经历两次标记过程：</p>
+<ol type="1">
+<li><p>可达性分析中<strong>不可达的对象被第一次标记</strong>并且进行<strong>一次筛选</strong>：筛选的条件是此对象是否有必要执行finalize方法（有必要则放入）<br />
+当对象<strong>没有覆盖finalize</strong>方法，或<strong>finalize方法已经被虚拟机调用</strong>过，则虚拟机将两种情况视为<strong>没有必要</strong>执行，该对象会被<strong>直接回收</strong></p></li>
+<li><p>如果这个对象被判定为<strong>有必要执行finalize()</strong>方法，那么这个对象将会被<strong>放置在一个叫做F-Queue的队列</strong>中，然后由Finalizer线程去执行。GC将会<strong>对F-Queue中的对象进行第二次标记</strong>，如果对象<strong>在finalize()方法中重新与引用链上的任何一个对象建立关联</strong>，那么在<strong>第二次标记时将会被移除“即将回收”的集合</strong>，否则该对象将会被回收。</p>
+<p>（比如：把自己（this关键字）赋值给某个类变量(static修饰)或者对象的成员变量）</p></li>
+</ol>
+<blockquote>
+<p><code>Object</code> 类中的 <code>finalize</code>
+方法一直被认为是一个糟糕的设计，成为了 Java 语言的负担，影响了 Java
+语言的安全和 GC 的性能。JDK9 版本及后续版本中各个类中的
+<code>finalize</code> 方法会被逐渐弃用移除。忘掉它的存在吧！</p>
+</blockquote></li>
+</ul>
 <h2 id="引用类型总结">引用类型总结</h2>
+<ul>
+<li>不论是通过<strong>引用计数法</strong>判断对象引用数量，还是通过<strong>可达性分析法</strong>判断对象的引用链是否可达，判定对象的存活都与<strong>”引用“</strong>有关</li>
+<li>JDK1.2
+之前，Java中<strong>引用</strong>的定义很传统：如果<strong>reference类型的数据存储</strong>的数值代表的是<strong>另一块内存的起始地址</strong>，就称这块内存代表<strong>一个引用</strong></li>
+<li>JDK1.2
+之后，Java对引用的概念进行了扩充，将引用(具体)分为<strong>强引用</strong>、<strong>软引用</strong>、<strong>弱引用</strong>、<strong>虚引用</strong>四种（引用强度<strong>逐渐减弱</strong>）
+<ol type="1">
+<li><p><strong>强引用</strong>（Strong Reference）</p></li>
+<li><p><strong>软引用</strong>（SoftReference）</p></li>
+<li><p><strong>弱引用</strong>（WeakReference）</p></li>
+<li><p><strong>虚引用</strong>（PhantomReference）</p></li>
+</ol></li>
+</ul>
 <h2 id="如何判断一个常量是废弃常量">如何判断一个常量是废弃常量</h2>
 <h2 id="如何判断一个类是无用类">如何判断一个类是无用类</h2>
 <h1 id="垃圾收集算法">垃圾收集算法</h1>
@@ -566,12 +628,12 @@ GC</strong></p>
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">742k</span>
+    <span title="站点总字数">744k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">22:29</span>
+    <span title="站点阅读时长">22:32</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
