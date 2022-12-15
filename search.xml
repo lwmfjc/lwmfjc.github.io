@@ -5781,6 +5781,187 @@ alt="image-20221030184523659" /> 其中有一个,
       </tags>
   </entry>
   <entry>
+    <title>线程池最佳实践</title>
+    <url>/2022/11/29/review/java_guide/concurrent/thread-pool-best/</url>
+    <content><![CDATA[<blockquote>
+<p>转载自https://github.com/Snailclimb/JavaGuide
+（添加小部分笔记）感谢作者!</p>
+</blockquote>
+<h2 id="线程池知识回顾">线程池知识回顾</h2>
+<h3 id="为什么要使用线程池">1. 为什么要使用线程池</h3>
+<ul>
+<li>池化技术的思想，主要是为了减少每次获取资源的消耗，提高对资源的利用率</li>
+<li>线程池提供了一种限制和管理资源（包括执行一个任务）的方法，每个线程池还维护一些基本统计信息，例如已完成任务的数量</li>
+</ul>
+<p>好处：</p>
+<ol type="1">
+<li>降低资源消耗</li>
+<li>提高响应速度</li>
+<li>提高线程的可管理性</li>
+</ol>
+<h3 id="线程池在实际项目的使用场景">2. 线程池在实际项目的使用场景</h3>
+<p>线程池一般用于执行<strong>多个不相关联的耗时任务</strong>，没有多线程的情况下，任务顺序执行，使用了线程池的话可让多个不相关联的任务<strong>同时执行</strong>。</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221129144110632.png"
+alt="image-20221129144110632" />
+<figcaption aria-hidden="true">image-20221129144110632</figcaption>
+</figure>
+<h3 id="如何使用线程池">3. 如何使用线程池</h3>
+<p>一般是通过 <code>ThreadPoolExecutor</code>
+的构造函数来创建线程池，然后提交任务给线程池执行就可以了。构造函数如下：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">   * 用给定的初始参数创建一个新的ThreadPoolExecutor。</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">ThreadPoolExecutor</span><span class="params">(<span class="type">int</span> corePoolSize,//线程池的核心线程数量</span></span><br><span class="line"><span class="params">                            <span class="type">int</span> maximumPoolSize,//线程池的最大线程数</span></span><br><span class="line"><span class="params">                            <span class="type">long</span> keepAliveTime,//当线程数大于核心线程数时，多余的空闲线程存活的最长时间</span></span><br><span class="line"><span class="params">                            TimeUnit unit,//时间单位</span></span><br><span class="line"><span class="params">                            BlockingQueue&lt;Runnable&gt; workQueue,//任务队列，用来储存等待执行任务的队列</span></span><br><span class="line"><span class="params">                            ThreadFactory threadFactory,//线程工厂，用来创建线程，一般默认即可</span></span><br><span class="line"><span class="params">                            RejectedExecutionHandler handler//拒绝策略，当提交的任务过多而不能及时处理时，我们可以定制策略来处理任务</span></span><br><span class="line"><span class="params">                             )</span> &#123;</span><br><span class="line">      <span class="keyword">if</span> (corePoolSize &lt; <span class="number">0</span> ||</span><br><span class="line">          maximumPoolSize &lt;= <span class="number">0</span> ||</span><br><span class="line">          maximumPoolSize &lt; corePoolSize ||</span><br><span class="line">          keepAliveTime &lt; <span class="number">0</span>)</span><br><span class="line">          <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>();</span><br><span class="line">      <span class="keyword">if</span> (workQueue == <span class="literal">null</span> || threadFactory == <span class="literal">null</span> || handler == <span class="literal">null</span>)</span><br><span class="line">          <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">NullPointerException</span>();</span><br><span class="line">      <span class="built_in">this</span>.corePoolSize = corePoolSize;</span><br><span class="line">      <span class="built_in">this</span>.maximumPoolSize = maximumPoolSize;</span><br><span class="line">      <span class="built_in">this</span>.workQueue = workQueue;</span><br><span class="line">      <span class="built_in">this</span>.keepAliveTime = unit.toNanos(keepAliveTime);</span><br><span class="line">      <span class="built_in">this</span>.threadFactory = threadFactory;</span><br><span class="line">      <span class="built_in">this</span>.handler = handler;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>使用代码：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">CORE_POOL_SIZE</span> <span class="operator">=</span> <span class="number">5</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">MAX_POOL_SIZE</span> <span class="operator">=</span> <span class="number">10</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">QUEUE_CAPACITY</span> <span class="operator">=</span> <span class="number">100</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">Long</span> <span class="variable">KEEP_ALIVE_TIME</span> <span class="operator">=</span> <span class="number">1L</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//使用阿里巴巴推荐的创建线程池的方式</span></span><br><span class="line">        <span class="comment">//通过ThreadPoolExecutor构造函数自定义参数创建</span></span><br><span class="line">        <span class="type">ThreadPoolExecutor</span> <span class="variable">executor</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ThreadPoolExecutor</span>(</span><br><span class="line">                CORE_POOL_SIZE,</span><br><span class="line">                MAX_POOL_SIZE,</span><br><span class="line">                KEEP_ALIVE_TIME,</span><br><span class="line">                TimeUnit.SECONDS,</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">ArrayBlockingQueue</span>&lt;&gt;(QUEUE_CAPACITY),</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">ThreadPoolExecutor</span>.CallerRunsPolicy());</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; <span class="number">10</span>; i++) &#123;</span><br><span class="line">            executor.execute(() -&gt; &#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    Thread.sleep(<span class="number">2000</span>);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125;</span><br><span class="line">                System.out.println(<span class="string">&quot;CurrentThread name:&quot;</span> + Thread.currentThread().getName() + <span class="string">&quot;date：&quot;</span> + Instant.now());</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//终止线程池</span></span><br><span class="line">        executor.shutdown();</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">/* </span></span><br><span class="line"><span class="comment">            awaitTermination()方法的作用:</span></span><br><span class="line"><span class="comment">			当前线程阻塞，直到</span></span><br><span class="line"><span class="comment">			1. 等所有已提交的任务（包括正在跑的和队列中等待的）执行完</span></span><br><span class="line"><span class="comment">			2. 或者等超时时间到</span></span><br><span class="line"><span class="comment">			3. 或者线程被中断，抛出InterruptedException 然后返回true（shutdown请求后所有任务执行完毕）或false（已超时）</span></span><br><span class="line"><span class="comment">            */</span></span><br><span class="line">            executor.awaitTermination(<span class="number">5</span>, TimeUnit.SECONDS);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.println(<span class="string">&quot;Finished all threads&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"><span class="comment">/*输出</span></span><br><span class="line"><span class="comment"> CurrentThread name:pool-1-thread-5date：2020-06-06T11:45:31.639Z</span></span><br><span class="line"><span class="comment">CurrentThread name:pool-1-thread-3date：2020-06-06T11:45:31.639Z</span></span><br><span class="line"><span class="comment">CurrentThread name:pool-1-thread-1date：2020-06-06T11:45:31.636Z</span></span><br><span class="line"><span class="comment">CurrentThread name:pool-1-thread-4date：2020-06-06T11:45:31.639Z</span></span><br><span class="line"><span class="comment">CurrentThread name:pool-1-thread-2date：2020-06-06T11:45:31.639Z</span></span><br><span class="line"><span class="comment">CurrentThread name:pool-1-thread-2date：2020-06-06T11:45:33.656Z</span></span><br><span class="line"><span class="comment">CurrentThread name:pool-1-thread-4date：2020-06-06T11:45:33.656Z</span></span><br><span class="line"><span class="comment">CurrentThread name:pool-1-thread-1date：2020-06-06T11:45:33.656Z</span></span><br><span class="line"><span class="comment">CurrentThread name:pool-1-thread-3date：2020-06-06T11:45:33.656Z</span></span><br><span class="line"><span class="comment">CurrentThread name:pool-1-thread-5date：2020-06-06T11:45:33.656Z</span></span><br><span class="line"><span class="comment">Finished all threads </span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+<h2 id="线程池最佳实践">线程池最佳实践</h2>
+<h3 id="使用threadpoolexecutor的构造函数声明线程池">1.
+使用ThreadPoolExecutor的构造函数声明线程池</h3>
+<p>线程池必须手动通过 <code>ThreadPoolExecutor</code>
+的构造函数来声明，避免使用<code>Executors</code> 类的
+<strong><code>newFixedThreadPool</code></strong> 和
+<strong><code>newCachedThreadPool</code></strong> ，因为可能会有 OOM
+的风险。</p>
+<blockquote>
+<p><strong><code>FixedThreadPool</code> 和
+<code>SingleThreadExecutor</code></strong> ： 允许请求的队列长度为
+<code>Integer.MAX_VALUE</code>,可能堆积大量的请求，从而导致 OOM。</p>
+<p><strong>CachedThreadPool 和 ScheduledThreadPool</strong> ：
+允许创建的线程数量为 <code>Integer.MAX_VALUE</code>
+，可能会创建大量线程，从而导致 OOM。</p>
+</blockquote>
+<p>总结：使用有界队列，控制线程创建数量</p>
+<p>其他原因：</p>
+<ol type="1">
+<li>实际中要根据自己机器的性能、业务场景来手动配置线程池参数，比如<strong>核心线程数</strong>、<strong>使用的任务队列</strong>、<strong>饱和策略</strong></li>
+<li>给<strong>线程池命名</strong>，方便定位问题</li>
+</ol>
+<h3 id="监测线程池运行状态">2. 监测线程池运行状态</h3>
+<p>可以通过一些手段检测线程池运行状态，比如SpringBoot中的Actuator组件</p>
+<p>或者利用ThreadPoolExecutor相关的API做简陋监控，ThreadPoolExecutor提供了<strong>获取线程池当前的线程数</strong>和<strong>活跃线程数</strong>、<strong>已经执行完成的任务数</strong>，<strong>正在排队中的任务数</strong>等</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221129151614427.png"
+alt="image-20221129151614427" />
+<figcaption aria-hidden="true">image-20221129151614427</figcaption>
+</figure>
+<p>简单的demo，使用ScheduleExecutorService定时打印线程池信息</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 打印线程池的状态</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> threadPool 线程池对象</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">printThreadPoolStatus</span><span class="params">(ThreadPoolExecutor threadPool)</span> &#123;</span><br><span class="line">    <span class="type">ScheduledExecutorService</span> <span class="variable">scheduledExecutorService</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ScheduledThreadPoolExecutor</span>(<span class="number">1</span>, createThreadFactory(<span class="string">&quot;print-images/thread-pool-status&quot;</span>, <span class="literal">false</span>));</span><br><span class="line">    scheduledExecutorService.scheduleAtFixedRate(() -&gt; &#123;</span><br><span class="line">        log.info(<span class="string">&quot;=========================&quot;</span>);</span><br><span class="line">        log.info(<span class="string">&quot;ThreadPool Size: [&#123;&#125;]&quot;</span>, threadPool.getPoolSize());</span><br><span class="line">        log.info(<span class="string">&quot;Active Threads: &#123;&#125;&quot;</span>, threadPool.getActiveCount());</span><br><span class="line">        log.info(<span class="string">&quot;Number of Tasks : &#123;&#125;&quot;</span>, threadPool.getCompletedTaskCount());</span><br><span class="line">        log.info(<span class="string">&quot;Number of Tasks in Queue: &#123;&#125;&quot;</span>, threadPool.getQueue().size());</span><br><span class="line">        log.info(<span class="string">&quot;=========================&quot;</span>);</span><br><span class="line">    &#125;, <span class="number">0</span>, <span class="number">1</span>, TimeUnit.SECONDS);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="建议不同类别的业务用不同的线程池">3.
+建议不同类别的业务用不同的线程池</h3>
+<blockquote>
+<p>建议是不同的业务使用不同的线程池，配置线程池的时候根据当前业务的情况对当前线程池进行配置，因为不同的业务的并发以及对资源的使用情况都不同，重心优化系统性能瓶颈相关的业务</p>
+</blockquote>
+<p>极端情况导致死锁：<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221129153400643.png"
+alt="image-20221129153400643" /></p>
+<p>假如我们线程池的核心线程数为
+<strong>n</strong>，父任务（扣费任务）数量为
+<strong>n</strong>，父任务下面有两个子任务（扣费任务下的子任务），其中一个已经执行完成，另外一个被放在了任务队列中。由于父任务把线程池核心线程资源用完，所以子任务因为无法获取到线程资源无法正常执行，一直被阻塞在队列中。父任务等待子任务执行完成，而子任务等待父任务释放线程池资源，这也就造成了
+<strong>"死锁"</strong>。</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221129154616346.png"
+alt="image-20221129154616346" />
+<figcaption aria-hidden="true">image-20221129154616346</figcaption>
+</figure>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221129154543256.png"
+alt="image-20221129154543256" />
+<figcaption aria-hidden="true">image-20221129154543256</figcaption>
+</figure>
+<h3 id="别忘记给线程池命名">4. 别忘记给线程池命名</h3>
+<p>初始化线程池时显示命名（设置线程池名称前缀），有利于定位问题</p>
+<ul>
+<li><p>利用guava的ThreadFactoryBuilder</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">ThreadFactory</span> <span class="variable">threadFactory</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ThreadFactoryBuilder</span>()</span><br><span class="line">                        .setNameFormat(threadNamePrefix + <span class="string">&quot;-%d&quot;</span>)</span><br><span class="line">                        .setDaemon(<span class="literal">true</span>).build();</span><br><span class="line"><span class="type">ExecutorService</span> <span class="variable">threadPool</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ThreadPoolExecutor</span>(corePoolSize, maximumPoolSize, keepAliveTime, TimeUnit.MINUTES, workQueue, threadFactory)</span><br></pre></td></tr></table></figure></li>
+<li><p>自己实现ThreadFactor</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.concurrent.Executors;</span><br><span class="line"><span class="keyword">import</span> java.util.concurrent.ThreadFactory;</span><br><span class="line"><span class="keyword">import</span> java.util.concurrent.atomic.AtomicInteger;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 线程工厂，它设置线程名称，有利于我们定位问题。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">NamingThreadFactory</span> <span class="keyword">implements</span> <span class="title class_">ThreadFactory</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">AtomicInteger</span> <span class="variable">threadNum</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">AtomicInteger</span>();</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ThreadFactory delegate;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> String name;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 创建一个带名字的线程池生产工厂</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">NamingThreadFactory</span><span class="params">(ThreadFactory delegate, String name)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.delegate = delegate;</span><br><span class="line">        <span class="built_in">this</span>.name = name; <span class="comment">// TODO consider uniquifying this</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Thread <span class="title function_">newThread</span><span class="params">(Runnable r)</span> &#123;</span><br><span class="line">        <span class="type">Thread</span> <span class="variable">t</span> <span class="operator">=</span> delegate.newThread(r);</span><br><span class="line">        t.setName(name + <span class="string">&quot; [#&quot;</span> + threadNum.incrementAndGet() + <span class="string">&quot;]&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> t;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="正确配置线程池参数">5. 正确配置线程池参数</h3>
+<ul>
+<li><p>如果线程池中的线程太多，就会增加<strong>上下文切换</strong>的成本</p>
+<blockquote>
+<p>多线程编程中一般线程的个数都大于 CPU 核心的个数，而一个 CPU
+核心在任意时刻只能被一个线程使用，为了让这些线程都能得到有效执行，CPU
+采取的策略是为每个线程分配时间片并轮转的形式。当一个线程的时间片用完的时候就会重新处于就绪状态让给其他线程使用，这个过程就属于一次上下文切换。概括来说就是：当前任务在执行完
+CPU
+时间片切换到另一个任务之前会先保存自己的状态，以便下次再切换回这个任务时，可以再加载这个任务的状态。<strong>任务从保存到再加载的过程就是一次上下文切换</strong>。</p>
+<p>上下文切换通常是计算密集型的。也就是说，它需要相当可观的处理器时间，在每秒几十上百次的切换中，每次切换都需要纳秒量级的时间。所以，<strong>上下文切换对系统来说意味着消耗大量的
+CPU 时间</strong>，事实上，可能是操作系统中时间消耗最大的操作。</p>
+<p><strong>Linux</strong> 相比与其他操作系统（包括其他类 Unix
+系统）有很多的优点，其中有一项就是，其<strong>上下文切换和模式切换的时间消耗非常少</strong>。</p>
+</blockquote></li>
+<li><p>过大跟过小都不行</p>
+<ul>
+<li>如果我们设置的<strong>线程池数量太小</strong>的话，如果同一时间有大量任务/请求需要处理，可能会导致大<strong>量的请求/任务在任务队列中排队等待执行</strong>，甚至会出现<strong>任务队列满了</strong>之后任务/请求<strong>无法处理</strong>的情况，或者大量任<strong>务堆积在任务队列导致
+OOM</strong></li>
+<li>设置线程<strong>数量太大</strong>，<strong>大量线程可能会同时在争取
+CPU
+资源</strong>，这样会导致<strong>大量的上下文切换</strong>，从而<strong>增加线程的执行时间</strong>，影响了整体执行效率</li>
+</ul></li>
+<li><p>简单且适用面较广的公式</p>
+<ul>
+<li><p><strong>CPU 密集型任务(N+1)：</strong>
+这种<strong>任务消耗的主要是 CPU 资源</strong>，可以将线程数设置为
+N（CPU 核心数）+1，比 CPU
+核心数多出来的一个线程是为了防止线程偶发的缺页中断，或者其它原因导致的任务暂停而带来的影响。一旦任务暂停，CPU
+就会处于空闲状态，而在这种情况下多出来的一个线程就可以充分利用 CPU
+的空闲时间。</p></li>
+<li><p><strong>I/O 密集型任务(2N)：</strong>
+这种任务应用起来，系统会用<strong>大部分的时间来处理 I/O
+交互</strong>，而<strong>线程在处理 I/O 的时间段内不会占用 CPU
+来处理</strong>，这时就可以将 CPU 交出给其它线程使用。因此<strong>在 I/O
+密集型任务的应用中，我们可以多配置一些线程</strong>，具体的计算方法是
+2N。</p></li>
+<li><blockquote>
+<p>如何判断是CPU密集任务还是IO密集任务</p>
+<p>CPU 密集型简单理解就是利用 CPU
+计算能力的任务比如你在内存中对大量数据进行排序。但凡涉及到网络读取，文件读取这类都是
+IO 密集型，这类任务的特点是 CPU 计算耗费时间相比于等待 IO
+操作完成的时间来说很少，大部分时间都花在了等待 IO 操作完成上。</p>
+</blockquote></li>
+</ul></li>
+<li><p>美团线程池的处理 主要对线程池的核心参数实现自定义可配置</p>
+<ul>
+<li><strong><code>corePoolSize</code> :</strong>
+核心线程数线程数定义了最小可以同时运行的线程数量。</li>
+<li><strong><code>maximumPoolSize</code> :</strong>
+当队列中存放的任务达到队列容量的时候，当前可以同时运行的线程数量变为最大线程数。</li>
+<li><strong><code>workQueue</code>:</strong>
+当新任务来的时候会先判断当前运行的线程数量是否达到核心线程数，如果达到的话，新任务就会被存放在队列中</li>
+</ul>
+<p>参数动态配置 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221129154916589.png"
+alt="image-20221129154916589" /></p>
+<ol type="1">
+<li>格外需要注意的是<code>corePoolSize</code>，
+程序运行期间的时候，我们调用
+<code>setCorePoolSize（）</code>这个方法的话，线程池会首先判断当前工作线程数是否大于<code>corePoolSize</code>，如果大于的话就会回收工作线程。</li>
+<li>另外，你也看到了上面并没有动态指定队列长度的方法，美团的方式是自定义了一个叫做
+<code>ResizableCapacityLinkedBlockIngQueue</code>
+的队列（主要就是把<code>LinkedBlockingQueue</code>的 capacity 字段的
+final 关键字修饰给去掉了，让它变为可变的）</li>
+</ol>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221129155849107.png"
+alt="image-20221129155849107" />
+<figcaption aria-hidden="true">image-20221129155849107</figcaption>
+</figure></li>
+</ul>
+]]></content>
+      <categories>
+        <category>学习</category>
+      </categories>
+      <tags>
+        <tag>复习</tag>
+        <tag>复习-javaGuide</tag>
+        <tag>复习-javaGuide-并发</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>ThreadLocal详解</title>
     <url>/2022/12/05/review/java_guide/concurrent/threadlocal/</url>
     <content><![CDATA[<blockquote>
@@ -6016,187 +6197,6 @@ Thread()方法创建子线程，Thread#init
 <h2 id="feign远程调用解决方案">Feign远程调用解决方案</h2>
 <h2 id="线程池异步调用requestid-传递">线程池异步调用,requestId 传递</h2>
 <h2 id="使用mq发送消息给第三方系统">使用MQ发送消息给第三方系统</h2>
-]]></content>
-      <categories>
-        <category>学习</category>
-      </categories>
-      <tags>
-        <tag>复习</tag>
-        <tag>复习-javaGuide</tag>
-        <tag>复习-javaGuide-并发</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>线程池最佳实践</title>
-    <url>/2022/11/29/review/java_guide/concurrent/thread-pool-best/</url>
-    <content><![CDATA[<blockquote>
-<p>转载自https://github.com/Snailclimb/JavaGuide
-（添加小部分笔记）感谢作者!</p>
-</blockquote>
-<h2 id="线程池知识回顾">线程池知识回顾</h2>
-<h3 id="为什么要使用线程池">1. 为什么要使用线程池</h3>
-<ul>
-<li>池化技术的思想，主要是为了减少每次获取资源的消耗，提高对资源的利用率</li>
-<li>线程池提供了一种限制和管理资源（包括执行一个任务）的方法，每个线程池还维护一些基本统计信息，例如已完成任务的数量</li>
-</ul>
-<p>好处：</p>
-<ol type="1">
-<li>降低资源消耗</li>
-<li>提高响应速度</li>
-<li>提高线程的可管理性</li>
-</ol>
-<h3 id="线程池在实际项目的使用场景">2. 线程池在实际项目的使用场景</h3>
-<p>线程池一般用于执行<strong>多个不相关联的耗时任务</strong>，没有多线程的情况下，任务顺序执行，使用了线程池的话可让多个不相关联的任务<strong>同时执行</strong>。</p>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221129144110632.png"
-alt="image-20221129144110632" />
-<figcaption aria-hidden="true">image-20221129144110632</figcaption>
-</figure>
-<h3 id="如何使用线程池">3. 如何使用线程池</h3>
-<p>一般是通过 <code>ThreadPoolExecutor</code>
-的构造函数来创建线程池，然后提交任务给线程池执行就可以了。构造函数如下：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">   * 用给定的初始参数创建一个新的ThreadPoolExecutor。</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">ThreadPoolExecutor</span><span class="params">(<span class="type">int</span> corePoolSize,//线程池的核心线程数量</span></span><br><span class="line"><span class="params">                            <span class="type">int</span> maximumPoolSize,//线程池的最大线程数</span></span><br><span class="line"><span class="params">                            <span class="type">long</span> keepAliveTime,//当线程数大于核心线程数时，多余的空闲线程存活的最长时间</span></span><br><span class="line"><span class="params">                            TimeUnit unit,//时间单位</span></span><br><span class="line"><span class="params">                            BlockingQueue&lt;Runnable&gt; workQueue,//任务队列，用来储存等待执行任务的队列</span></span><br><span class="line"><span class="params">                            ThreadFactory threadFactory,//线程工厂，用来创建线程，一般默认即可</span></span><br><span class="line"><span class="params">                            RejectedExecutionHandler handler//拒绝策略，当提交的任务过多而不能及时处理时，我们可以定制策略来处理任务</span></span><br><span class="line"><span class="params">                             )</span> &#123;</span><br><span class="line">      <span class="keyword">if</span> (corePoolSize &lt; <span class="number">0</span> ||</span><br><span class="line">          maximumPoolSize &lt;= <span class="number">0</span> ||</span><br><span class="line">          maximumPoolSize &lt; corePoolSize ||</span><br><span class="line">          keepAliveTime &lt; <span class="number">0</span>)</span><br><span class="line">          <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>();</span><br><span class="line">      <span class="keyword">if</span> (workQueue == <span class="literal">null</span> || threadFactory == <span class="literal">null</span> || handler == <span class="literal">null</span>)</span><br><span class="line">          <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">NullPointerException</span>();</span><br><span class="line">      <span class="built_in">this</span>.corePoolSize = corePoolSize;</span><br><span class="line">      <span class="built_in">this</span>.maximumPoolSize = maximumPoolSize;</span><br><span class="line">      <span class="built_in">this</span>.workQueue = workQueue;</span><br><span class="line">      <span class="built_in">this</span>.keepAliveTime = unit.toNanos(keepAliveTime);</span><br><span class="line">      <span class="built_in">this</span>.threadFactory = threadFactory;</span><br><span class="line">      <span class="built_in">this</span>.handler = handler;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
-<p>使用代码：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">CORE_POOL_SIZE</span> <span class="operator">=</span> <span class="number">5</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">MAX_POOL_SIZE</span> <span class="operator">=</span> <span class="number">10</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">QUEUE_CAPACITY</span> <span class="operator">=</span> <span class="number">100</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">Long</span> <span class="variable">KEEP_ALIVE_TIME</span> <span class="operator">=</span> <span class="number">1L</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//使用阿里巴巴推荐的创建线程池的方式</span></span><br><span class="line">        <span class="comment">//通过ThreadPoolExecutor构造函数自定义参数创建</span></span><br><span class="line">        <span class="type">ThreadPoolExecutor</span> <span class="variable">executor</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ThreadPoolExecutor</span>(</span><br><span class="line">                CORE_POOL_SIZE,</span><br><span class="line">                MAX_POOL_SIZE,</span><br><span class="line">                KEEP_ALIVE_TIME,</span><br><span class="line">                TimeUnit.SECONDS,</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">ArrayBlockingQueue</span>&lt;&gt;(QUEUE_CAPACITY),</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">ThreadPoolExecutor</span>.CallerRunsPolicy());</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; <span class="number">10</span>; i++) &#123;</span><br><span class="line">            executor.execute(() -&gt; &#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    Thread.sleep(<span class="number">2000</span>);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125;</span><br><span class="line">                System.out.println(<span class="string">&quot;CurrentThread name:&quot;</span> + Thread.currentThread().getName() + <span class="string">&quot;date：&quot;</span> + Instant.now());</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//终止线程池</span></span><br><span class="line">        executor.shutdown();</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">/* </span></span><br><span class="line"><span class="comment">            awaitTermination()方法的作用:</span></span><br><span class="line"><span class="comment">			当前线程阻塞，直到</span></span><br><span class="line"><span class="comment">			1. 等所有已提交的任务（包括正在跑的和队列中等待的）执行完</span></span><br><span class="line"><span class="comment">			2. 或者等超时时间到</span></span><br><span class="line"><span class="comment">			3. 或者线程被中断，抛出InterruptedException 然后返回true（shutdown请求后所有任务执行完毕）或false（已超时）</span></span><br><span class="line"><span class="comment">            */</span></span><br><span class="line">            executor.awaitTermination(<span class="number">5</span>, TimeUnit.SECONDS);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.println(<span class="string">&quot;Finished all threads&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"><span class="comment">/*输出</span></span><br><span class="line"><span class="comment"> CurrentThread name:pool-1-thread-5date：2020-06-06T11:45:31.639Z</span></span><br><span class="line"><span class="comment">CurrentThread name:pool-1-thread-3date：2020-06-06T11:45:31.639Z</span></span><br><span class="line"><span class="comment">CurrentThread name:pool-1-thread-1date：2020-06-06T11:45:31.636Z</span></span><br><span class="line"><span class="comment">CurrentThread name:pool-1-thread-4date：2020-06-06T11:45:31.639Z</span></span><br><span class="line"><span class="comment">CurrentThread name:pool-1-thread-2date：2020-06-06T11:45:31.639Z</span></span><br><span class="line"><span class="comment">CurrentThread name:pool-1-thread-2date：2020-06-06T11:45:33.656Z</span></span><br><span class="line"><span class="comment">CurrentThread name:pool-1-thread-4date：2020-06-06T11:45:33.656Z</span></span><br><span class="line"><span class="comment">CurrentThread name:pool-1-thread-1date：2020-06-06T11:45:33.656Z</span></span><br><span class="line"><span class="comment">CurrentThread name:pool-1-thread-3date：2020-06-06T11:45:33.656Z</span></span><br><span class="line"><span class="comment">CurrentThread name:pool-1-thread-5date：2020-06-06T11:45:33.656Z</span></span><br><span class="line"><span class="comment">Finished all threads </span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
-<h2 id="线程池最佳实践">线程池最佳实践</h2>
-<h3 id="使用threadpoolexecutor的构造函数声明线程池">1.
-使用ThreadPoolExecutor的构造函数声明线程池</h3>
-<p>线程池必须手动通过 <code>ThreadPoolExecutor</code>
-的构造函数来声明，避免使用<code>Executors</code> 类的
-<strong><code>newFixedThreadPool</code></strong> 和
-<strong><code>newCachedThreadPool</code></strong> ，因为可能会有 OOM
-的风险。</p>
-<blockquote>
-<p><strong><code>FixedThreadPool</code> 和
-<code>SingleThreadExecutor</code></strong> ： 允许请求的队列长度为
-<code>Integer.MAX_VALUE</code>,可能堆积大量的请求，从而导致 OOM。</p>
-<p><strong>CachedThreadPool 和 ScheduledThreadPool</strong> ：
-允许创建的线程数量为 <code>Integer.MAX_VALUE</code>
-，可能会创建大量线程，从而导致 OOM。</p>
-</blockquote>
-<p>总结：使用有界队列，控制线程创建数量</p>
-<p>其他原因：</p>
-<ol type="1">
-<li>实际中要根据自己机器的性能、业务场景来手动配置线程池参数，比如<strong>核心线程数</strong>、<strong>使用的任务队列</strong>、<strong>饱和策略</strong></li>
-<li>给<strong>线程池命名</strong>，方便定位问题</li>
-</ol>
-<h3 id="监测线程池运行状态">2. 监测线程池运行状态</h3>
-<p>可以通过一些手段检测线程池运行状态，比如SpringBoot中的Actuator组件</p>
-<p>或者利用ThreadPoolExecutor相关的API做简陋监控，ThreadPoolExecutor提供了<strong>获取线程池当前的线程数</strong>和<strong>活跃线程数</strong>、<strong>已经执行完成的任务数</strong>，<strong>正在排队中的任务数</strong>等</p>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221129151614427.png"
-alt="image-20221129151614427" />
-<figcaption aria-hidden="true">image-20221129151614427</figcaption>
-</figure>
-<p>简单的demo，使用ScheduleExecutorService定时打印线程池信息</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 打印线程池的状态</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> threadPool 线程池对象</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">printThreadPoolStatus</span><span class="params">(ThreadPoolExecutor threadPool)</span> &#123;</span><br><span class="line">    <span class="type">ScheduledExecutorService</span> <span class="variable">scheduledExecutorService</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ScheduledThreadPoolExecutor</span>(<span class="number">1</span>, createThreadFactory(<span class="string">&quot;print-images/thread-pool-status&quot;</span>, <span class="literal">false</span>));</span><br><span class="line">    scheduledExecutorService.scheduleAtFixedRate(() -&gt; &#123;</span><br><span class="line">        log.info(<span class="string">&quot;=========================&quot;</span>);</span><br><span class="line">        log.info(<span class="string">&quot;ThreadPool Size: [&#123;&#125;]&quot;</span>, threadPool.getPoolSize());</span><br><span class="line">        log.info(<span class="string">&quot;Active Threads: &#123;&#125;&quot;</span>, threadPool.getActiveCount());</span><br><span class="line">        log.info(<span class="string">&quot;Number of Tasks : &#123;&#125;&quot;</span>, threadPool.getCompletedTaskCount());</span><br><span class="line">        log.info(<span class="string">&quot;Number of Tasks in Queue: &#123;&#125;&quot;</span>, threadPool.getQueue().size());</span><br><span class="line">        log.info(<span class="string">&quot;=========================&quot;</span>);</span><br><span class="line">    &#125;, <span class="number">0</span>, <span class="number">1</span>, TimeUnit.SECONDS);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="建议不同类别的业务用不同的线程池">3.
-建议不同类别的业务用不同的线程池</h3>
-<blockquote>
-<p>建议是不同的业务使用不同的线程池，配置线程池的时候根据当前业务的情况对当前线程池进行配置，因为不同的业务的并发以及对资源的使用情况都不同，重心优化系统性能瓶颈相关的业务</p>
-</blockquote>
-<p>极端情况导致死锁：<br />
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221129153400643.png"
-alt="image-20221129153400643" /></p>
-<p>假如我们线程池的核心线程数为
-<strong>n</strong>，父任务（扣费任务）数量为
-<strong>n</strong>，父任务下面有两个子任务（扣费任务下的子任务），其中一个已经执行完成，另外一个被放在了任务队列中。由于父任务把线程池核心线程资源用完，所以子任务因为无法获取到线程资源无法正常执行，一直被阻塞在队列中。父任务等待子任务执行完成，而子任务等待父任务释放线程池资源，这也就造成了
-<strong>"死锁"</strong>。</p>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221129154616346.png"
-alt="image-20221129154616346" />
-<figcaption aria-hidden="true">image-20221129154616346</figcaption>
-</figure>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221129154543256.png"
-alt="image-20221129154543256" />
-<figcaption aria-hidden="true">image-20221129154543256</figcaption>
-</figure>
-<h3 id="别忘记给线程池命名">4. 别忘记给线程池命名</h3>
-<p>初始化线程池时显示命名（设置线程池名称前缀），有利于定位问题</p>
-<ul>
-<li><p>利用guava的ThreadFactoryBuilder</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">ThreadFactory</span> <span class="variable">threadFactory</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ThreadFactoryBuilder</span>()</span><br><span class="line">                        .setNameFormat(threadNamePrefix + <span class="string">&quot;-%d&quot;</span>)</span><br><span class="line">                        .setDaemon(<span class="literal">true</span>).build();</span><br><span class="line"><span class="type">ExecutorService</span> <span class="variable">threadPool</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ThreadPoolExecutor</span>(corePoolSize, maximumPoolSize, keepAliveTime, TimeUnit.MINUTES, workQueue, threadFactory)</span><br></pre></td></tr></table></figure></li>
-<li><p>自己实现ThreadFactor</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.concurrent.Executors;</span><br><span class="line"><span class="keyword">import</span> java.util.concurrent.ThreadFactory;</span><br><span class="line"><span class="keyword">import</span> java.util.concurrent.atomic.AtomicInteger;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 线程工厂，它设置线程名称，有利于我们定位问题。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">NamingThreadFactory</span> <span class="keyword">implements</span> <span class="title class_">ThreadFactory</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">AtomicInteger</span> <span class="variable">threadNum</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">AtomicInteger</span>();</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ThreadFactory delegate;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> String name;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 创建一个带名字的线程池生产工厂</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">NamingThreadFactory</span><span class="params">(ThreadFactory delegate, String name)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.delegate = delegate;</span><br><span class="line">        <span class="built_in">this</span>.name = name; <span class="comment">// TODO consider uniquifying this</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Thread <span class="title function_">newThread</span><span class="params">(Runnable r)</span> &#123;</span><br><span class="line">        <span class="type">Thread</span> <span class="variable">t</span> <span class="operator">=</span> delegate.newThread(r);</span><br><span class="line">        t.setName(name + <span class="string">&quot; [#&quot;</span> + threadNum.incrementAndGet() + <span class="string">&quot;]&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> t;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure></li>
-</ul>
-<h3 id="正确配置线程池参数">5. 正确配置线程池参数</h3>
-<ul>
-<li><p>如果线程池中的线程太多，就会增加<strong>上下文切换</strong>的成本</p>
-<blockquote>
-<p>多线程编程中一般线程的个数都大于 CPU 核心的个数，而一个 CPU
-核心在任意时刻只能被一个线程使用，为了让这些线程都能得到有效执行，CPU
-采取的策略是为每个线程分配时间片并轮转的形式。当一个线程的时间片用完的时候就会重新处于就绪状态让给其他线程使用，这个过程就属于一次上下文切换。概括来说就是：当前任务在执行完
-CPU
-时间片切换到另一个任务之前会先保存自己的状态，以便下次再切换回这个任务时，可以再加载这个任务的状态。<strong>任务从保存到再加载的过程就是一次上下文切换</strong>。</p>
-<p>上下文切换通常是计算密集型的。也就是说，它需要相当可观的处理器时间，在每秒几十上百次的切换中，每次切换都需要纳秒量级的时间。所以，<strong>上下文切换对系统来说意味着消耗大量的
-CPU 时间</strong>，事实上，可能是操作系统中时间消耗最大的操作。</p>
-<p><strong>Linux</strong> 相比与其他操作系统（包括其他类 Unix
-系统）有很多的优点，其中有一项就是，其<strong>上下文切换和模式切换的时间消耗非常少</strong>。</p>
-</blockquote></li>
-<li><p>过大跟过小都不行</p>
-<ul>
-<li>如果我们设置的<strong>线程池数量太小</strong>的话，如果同一时间有大量任务/请求需要处理，可能会导致大<strong>量的请求/任务在任务队列中排队等待执行</strong>，甚至会出现<strong>任务队列满了</strong>之后任务/请求<strong>无法处理</strong>的情况，或者大量任<strong>务堆积在任务队列导致
-OOM</strong></li>
-<li>设置线程<strong>数量太大</strong>，<strong>大量线程可能会同时在争取
-CPU
-资源</strong>，这样会导致<strong>大量的上下文切换</strong>，从而<strong>增加线程的执行时间</strong>，影响了整体执行效率</li>
-</ul></li>
-<li><p>简单且适用面较广的公式</p>
-<ul>
-<li><p><strong>CPU 密集型任务(N+1)：</strong>
-这种<strong>任务消耗的主要是 CPU 资源</strong>，可以将线程数设置为
-N（CPU 核心数）+1，比 CPU
-核心数多出来的一个线程是为了防止线程偶发的缺页中断，或者其它原因导致的任务暂停而带来的影响。一旦任务暂停，CPU
-就会处于空闲状态，而在这种情况下多出来的一个线程就可以充分利用 CPU
-的空闲时间。</p></li>
-<li><p><strong>I/O 密集型任务(2N)：</strong>
-这种任务应用起来，系统会用<strong>大部分的时间来处理 I/O
-交互</strong>，而<strong>线程在处理 I/O 的时间段内不会占用 CPU
-来处理</strong>，这时就可以将 CPU 交出给其它线程使用。因此<strong>在 I/O
-密集型任务的应用中，我们可以多配置一些线程</strong>，具体的计算方法是
-2N。</p></li>
-<li><blockquote>
-<p>如何判断是CPU密集任务还是IO密集任务</p>
-<p>CPU 密集型简单理解就是利用 CPU
-计算能力的任务比如你在内存中对大量数据进行排序。但凡涉及到网络读取，文件读取这类都是
-IO 密集型，这类任务的特点是 CPU 计算耗费时间相比于等待 IO
-操作完成的时间来说很少，大部分时间都花在了等待 IO 操作完成上。</p>
-</blockquote></li>
-</ul></li>
-<li><p>美团线程池的处理 主要对线程池的核心参数实现自定义可配置</p>
-<ul>
-<li><strong><code>corePoolSize</code> :</strong>
-核心线程数线程数定义了最小可以同时运行的线程数量。</li>
-<li><strong><code>maximumPoolSize</code> :</strong>
-当队列中存放的任务达到队列容量的时候，当前可以同时运行的线程数量变为最大线程数。</li>
-<li><strong><code>workQueue</code>:</strong>
-当新任务来的时候会先判断当前运行的线程数量是否达到核心线程数，如果达到的话，新任务就会被存放在队列中</li>
-</ul>
-<p>参数动态配置 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221129154916589.png"
-alt="image-20221129154916589" /></p>
-<ol type="1">
-<li>格外需要注意的是<code>corePoolSize</code>，
-程序运行期间的时候，我们调用
-<code>setCorePoolSize（）</code>这个方法的话，线程池会首先判断当前工作线程数是否大于<code>corePoolSize</code>，如果大于的话就会回收工作线程。</li>
-<li>另外，你也看到了上面并没有动态指定队列长度的方法，美团的方式是自定义了一个叫做
-<code>ResizableCapacityLinkedBlockIngQueue</code>
-的队列（主要就是把<code>LinkedBlockingQueue</code>的 capacity 字段的
-final 关键字修饰给去掉了，让它变为可变的）</li>
-</ol>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221129155849107.png"
-alt="image-20221129155849107" />
-<figcaption aria-hidden="true">image-20221129155849107</figcaption>
-</figure></li>
-</ul>
 ]]></content>
       <categories>
         <category>学习</category>
@@ -7016,6 +7016,10 @@ alt="标记-整理算法" />
 </ul></li>
 </ul>
 <h1 id="垃圾收集器">垃圾收集器</h1>
+<ul>
+<li><strong>收集算法</strong>是内存回收的<strong>方法论</strong>，而<strong>垃圾收集器</strong>则是内存回收的<strong>具体实现</strong></li>
+<li>没有<strong>最好的</strong>垃圾收集器，也没有<strong>万能的</strong>，应该<strong>根据具体应用场景</strong>，选择适合自己的<strong>垃圾收集器</strong></li>
+</ul>
 <h2 id="汇总">汇总</h2>
 <figure>
 <img
@@ -7023,9 +7027,66 @@ src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img
 alt="img" />
 <figcaption aria-hidden="true">img</figcaption>
 </figure>
+<blockquote>
+<ul>
+<li>新生代的垃圾回收器：Serial（串行--复制），ParNew（并行--复制），ParallelScavenge（并行--复制）</li>
+<li>老年代的垃圾回收器：SerialOld（串行--标记整理），ParallelOld（并行--标记整理），CMS（并发--标记清除）</li>
+<li>只有CMS和G1是并发，且CMS只作用于老年代，而G1都有</li>
+<li>JDK8为止，默认垃圾回收器是Parallel Scavenge和Parallel
+Old【并行--复制和并行--标记整理】</li>
+<li>JDK9开始，G1收集器成为默认的垃圾收集器，目前来看，G1回收期停顿时间最短且没有明显缺点，偏适合Web应用</li>
+</ul>
+<blockquote>
+<p>jdk8中测试Web应用，堆内存6G中新生代4.5G的情况下</p>
+<ul>
+<li>ParallelScavenge回收新生代停顿长达1.5秒。</li>
+<li>G1回收器回收同样大小的新生代只停顿0.2秒</li>
+</ul>
+</blockquote>
+</blockquote>
 <h2 id="serial-收集器">Serial 收集器</h2>
+<ul>
+<li>Serial 串行
+收集器是<strong>最基本</strong>、<strong>历史最悠久</strong>的垃圾收集器</li>
+<li>这是一个<strong>单线程收集器</strong>，它的<strong>单线程</strong>意义不仅意味着它只会使用<strong>一条垃圾收集线程</strong>去完成垃圾收集工作，更重要的是它在<strong>进行垃圾收集工作时</strong>必须暂停其他所有的工作线程<strong>（”Stop
+The World“）</strong>，直到它<strong>收集结束</strong>。
+<ul>
+<li>新生代采用<strong>标记-复制</strong>算法，老年代采用<strong>标记-整理</strong>算法
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/46873026.3a9311ec.png"
+alt="Serial 收集器" /></li>
+<li>StopTheWorld会带来<strong>不良用户体验</strong>，所以在后续垃圾收集器设计中<strong>停顿时间不断缩短</strong>。（仍然有停顿，垃圾收集器的过程仍然在继续）</li>
+<li>优点：<strong>简单而高效</strong>（与其他收集器的单线程相比）
+<ol type="1">
+<li>且由于其<strong>没有线程交互</strong>的开销，自然可以获得<strong>很高的单线程收集效率</strong></li>
+<li>Serial收集器对于<strong>运行在Client模式</strong>下的虚拟机来说是个不错的选择</li>
+</ol></li>
+</ul></li>
+</ul>
 <h2 id="parnew-收集器">ParNew 收集器</h2>
+<ul>
+<li><p><strong>ParNew</strong>收集器其实就是<strong>Serial收集器</strong>的<strong>多线程版本</strong>，除了使用<strong>多线程</strong>进行垃圾收集外，其余行为（<strong>控制参数</strong>、<strong>收集算法</strong>、<strong>回收策略</strong>等等）和<strong>Serial收集器</strong>完全一样</p></li>
+<li><p><strong>新生代</strong>采用<strong>标记-复制</strong>算法，<strong>老年代</strong>采用<strong>标记-整理</strong>算法</p>
+<p><img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/22018368.df835851.png"
+alt="ParNew 收集器" />
+这是许多运行在Server模式下的虚拟机的首要选择，除了<strong>Serial收集器</strong>外，只有它能与<strong>CMS收集器</strong>（真正意义上的<strong>并发</strong>收集器）配合工作</p></li>
+<li><p><strong>并行和并发</strong>概念补充</p>
+<ul>
+<li><strong>并行（Parallel）</strong>：指<strong>多条垃圾收集线程</strong>并行工作，但此时用户线程仍然处于<strong>等待</strong>状态</li>
+<li><strong>并发（Concurrent）</strong>：指<strong>用户线程</strong>与<strong>垃圾收集线程</strong>
+<strong>同时</strong>执行（不一定并行，可能会交替执行），<strong>用户程序在继续执行</strong>，而<strong>收集收集器</strong>运行在另一个CPU上</li>
+</ul></li>
+</ul>
 <h2 id="parallelscavenge-收集器">ParallelScavenge 收集器</h2>
+<ul>
+<li><p>部分<strong>参数</strong> (有点争议)</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">-XX:+UseParallelGC  # 新生代使用ParallelGC，老年代使用串行回收器</span><br><span class="line">-XX:+UseParallelOldGC # 新生代使用ParallelGC，老年代使用ParallelOldGC</span><br></pre></td></tr></table></figure></li>
+<li><p>它也是<strong>标记-复制</strong>算法的多线程收集器，看上去几乎和<strong>ParNew</strong>一样，<strong>区别</strong>：</p>
+<ul>
+<li></li>
+</ul></li>
+</ul>
 <h2 id="serialold-收集器">SerialOld 收集器</h2>
 <h2 id="parallelold-收集器">ParallelOld 收集器</h2>
 <h2 id="cms-收集器">CMS 收集器</h2>
@@ -11858,70 +11919,6 @@ SpringProcessEngineConfiguration 上的“beans”属性传递。当没有设置
       </tags>
   </entry>
   <entry>
-    <title>zsx_flowable_design01</title>
-    <url>/2022/05/23/study/flowable/zsx_design/01/</url>
-    <content><![CDATA[<ul>
-<li><p>模型设计完后，下面三个表有变化</p>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220523171949603.png"
-alt="image-20220523171949603" />
-<figcaption aria-hidden="true">image-20220523171949603</figcaption>
-</figure>
-<ul>
-<li>act_cio_model <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220523172131614.png"
-alt="image-20220523172131614" /></li>
-<li>act_cio_model_module_rel <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220523172159869.png"
-alt="image-20220523172159869" /></li>
-<li>act_ge_bytearray <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220523172239714.png"
-alt="image-20220523172239714" /></li>
-</ul></li>
-<li><p>部署之后，四个表有变化 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220523172615648.png"
-alt="image-20220523172615648" /></p>
-<ul>
-<li><p>act_cio_deployment 多了39条记录 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220523172836324.png"
-alt="image-20220523172836324" /></p>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220523172821450.png"
-alt="image-20220523172821450" />
-<figcaption aria-hidden="true">image-20220523172821450</figcaption>
-</figure></li>
-<li><p>act_ge_bytearray 多了两条记录 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220523172936205.png"
-alt="image-20220523172936205" /></p></li>
-<li><p>act_re_deployment 多了一条记录 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220523173031162.png"
-alt="image-20220523173031162" /></p></li>
-<li><p>act_re_procdef 多了一条记录 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220523173141905.png"
-alt="image-20220523173141905" /></p></li>
-</ul></li>
-<li><p>流程开始运行</p>
-<ul>
-<li>下面只写上主要的几个表</li>
-<li>送审时这个结点只能选一个 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220523173557679.png"
-alt="image-20220523173557679" /></li>
-<li>流程运行时变量表 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220523174011670.png"
-alt="image-20220523174011670" /></li>
-</ul></li>
-</ul>
-]]></content>
-      <categories>
-        <category>学习</category>
-      </categories>
-      <tags>
-        <tag>zsx_flowable设计</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Flowable-05-spring-boot</title>
     <url>/2022/04/29/study/flowable/offical/05/</url>
     <content><![CDATA[<h3 id="入门">入门</h3>
@@ -12010,6 +12007,70 @@ IdmEngine bean</p></li>
       </categories>
       <tags>
         <tag>flowable官方</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>zsx_flowable_design01</title>
+    <url>/2022/05/23/study/flowable/zsx_design/01/</url>
+    <content><![CDATA[<ul>
+<li><p>模型设计完后，下面三个表有变化</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220523171949603.png"
+alt="image-20220523171949603" />
+<figcaption aria-hidden="true">image-20220523171949603</figcaption>
+</figure>
+<ul>
+<li>act_cio_model <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220523172131614.png"
+alt="image-20220523172131614" /></li>
+<li>act_cio_model_module_rel <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220523172159869.png"
+alt="image-20220523172159869" /></li>
+<li>act_ge_bytearray <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220523172239714.png"
+alt="image-20220523172239714" /></li>
+</ul></li>
+<li><p>部署之后，四个表有变化 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220523172615648.png"
+alt="image-20220523172615648" /></p>
+<ul>
+<li><p>act_cio_deployment 多了39条记录 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220523172836324.png"
+alt="image-20220523172836324" /></p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220523172821450.png"
+alt="image-20220523172821450" />
+<figcaption aria-hidden="true">image-20220523172821450</figcaption>
+</figure></li>
+<li><p>act_ge_bytearray 多了两条记录 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220523172936205.png"
+alt="image-20220523172936205" /></p></li>
+<li><p>act_re_deployment 多了一条记录 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220523173031162.png"
+alt="image-20220523173031162" /></p></li>
+<li><p>act_re_procdef 多了一条记录 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220523173141905.png"
+alt="image-20220523173141905" /></p></li>
+</ul></li>
+<li><p>流程开始运行</p>
+<ul>
+<li>下面只写上主要的几个表</li>
+<li>送审时这个结点只能选一个 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220523173557679.png"
+alt="image-20220523173557679" /></li>
+<li>流程运行时变量表 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220523174011670.png"
+alt="image-20220523174011670" /></li>
+</ul></li>
+</ul>
+]]></content>
+      <categories>
+        <category>学习</category>
+      </categories>
+      <tags>
+        <tag>zsx_flowable设计</tag>
       </tags>
   </entry>
   <entry>
@@ -12163,130 +12224,6 @@ alt="image-20220723092729653" /></p></li>
 <p>安装成功---视频里面是2.31 <img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220723092855691.png"
 alt="image-20220723092855691" /></p></li>
-</ul>
-]]></content>
-      <categories>
-        <category>学习</category>
-      </categories>
-      <tags>
-        <tag>git_尚硅谷</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>19-26_git_尚硅谷</title>
-    <url>/2022/07/24/study/git/git_sgg/19-26/</url>
-    <content><![CDATA[<h1 id="介绍">介绍</h1>
-<p>使用代码托管中心（远程服务器） <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724170726396.png"
-alt="image-20220724170726396" /></p>
-<ul>
-<li>团队内写作 push--clone--push--- --pull <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724204533485.png"
-alt="image-20220724204533485" /></li>
-<li>跨团队写作 fork（到自己的远程库）---clone <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724204930503.png"
-alt="image-20220724204930503" /></li>
-</ul>
-<h1 id="创建远程库创建别名">创建远程库&amp;创建别名</h1>
-<ul>
-<li>官网：https://github.com</li>
-<li>现在yuebuqun注册一个账号 创建一个远程库git-demo，创建成功 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724211410556.png"
-alt="image-20220724211410556" /></li>
-<li>创建远程库别名 git remote -v （查看别名） 为远程库创建别名
-<code>git remote add git-demo https://github.com/lwmfjc/git-demo.git</code>
-别名创建成功 fetch和push都可以使用别名 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724211655584.png"
-alt="image-20220724211655584" /></li>
-</ul>
-<h1 id="推送本地库到远程库">推送本地库到远程库</h1>
-<ul>
-<li>推送master分支 切换<code>git checkout master</code></li>
-<li>推送 git push git-demo master <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220727202645908.png"
-alt="image-20220727202645908" /></li>
-</ul>
-<h1 id="拉取远程库到本地库">拉取远程库到本地库</h1>
-<ul>
-<li><code>git pull git-demo master</code> 结果 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220727203004350.png"
-alt="image-20220727203004350" /></li>
-</ul>
-<h1 id="克隆远程库到本地">克隆远程库到本地</h1>
-<ul>
-<li>git clone xxxxxxx/git-demo.git <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220727203532719.png"
-alt="image-20220727203532719" />
-clone之后有默认的别名，且已经初始化了本地库</li>
-</ul>
-<h1 id="团队内写作">团队内写作</h1>
-<ul>
-<li>lhc修改了git-demo下的hello.txt</li>
-<li>之后进行git add hello.txt</li>
-<li>git commit -m "lhc-commit " hello.txt</li>
-<li>现在进行push git push origin master 出错了 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220727203924432.png"
-alt="image-20220727203924432" /></li>
-<li>使用ybq，对库进行设置，管理成员 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220727204017197.png"
-alt="image-20220727204017197" /></li>
-<li>添加成员即可 输入账号名 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220727204040960.png"
-alt="image-20220727204040960" /></li>
-<li>将邀请函 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220727204110304.png"
-alt="image-20220727204110304" /> 发送给lhc <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220727204126988.png"
-alt="image-20220727204126988" /></li>
-<li>现在再次推送，则推送成功 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220727204229743.png"
-alt="image-20220727204229743" /></li>
-</ul>
-<h1 id="团队外合作">团队外合作</h1>
-<ul>
-<li><p>先把别人的项目fork下来 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220727205710975.png"
-alt="image-20220727205710975" /></p></li>
-<li><p>之后进行修改并且commit <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220727204508432.png"
-alt="image-20220727204508432" /></p></li>
-<li><p>pull request (拉取请求) <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220727204551005.png"
-alt="image-20220727204551005" /></p>
-<ul>
-<li><p>请求 东方不败：<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220727204646055.png"
-alt="image-20220727204646055" /></p></li>
-<li><p>岳不群：看到别人发过来的请求 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220727205511903.png"
-alt="image-20220727205511903" /></p>
-<p>可以同意 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220727204751179.png"
-alt="image-20220727204751179" /> 合并申请 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220727204859648.png"
-alt="image-20220727204859648" /></p></li>
-</ul></li>
-</ul>
-<h1 id="ssh免密登录">SSH免密登录</h1>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220727204931707.png"
-alt="image-20220727204931707" />
-<figcaption aria-hidden="true">image-20220727204931707</figcaption>
-</figure>
-<ul>
-<li><p>ssh免密公钥添加 删除~/.ssh 使用</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ssh-keygen -t rsa  -C xxxx@xx.com</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">再次到~/.ssh 查看</span></span><br><span class="line">cat id_rsa  私钥</span><br></pre></td></tr></table></figure></li>
-<li><p>把私钥复制到 账号--设置--ssh and gpgkeys</p></li>
-</ul>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220727205152327.png"
-alt="image-20220727205152327" />
-<figcaption aria-hidden="true">image-20220727205152327</figcaption>
-</figure>
-<ul>
-<li>测试是否成功</li>
 </ul>
 ]]></content>
       <categories>
@@ -12551,6 +12488,130 @@ src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img
 alt="image-20220724164209633" /></p></li>
 </ul></li>
 </ol>
+]]></content>
+      <categories>
+        <category>学习</category>
+      </categories>
+      <tags>
+        <tag>git_尚硅谷</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>19-26_git_尚硅谷</title>
+    <url>/2022/07/24/study/git/git_sgg/19-26/</url>
+    <content><![CDATA[<h1 id="介绍">介绍</h1>
+<p>使用代码托管中心（远程服务器） <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724170726396.png"
+alt="image-20220724170726396" /></p>
+<ul>
+<li>团队内写作 push--clone--push--- --pull <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724204533485.png"
+alt="image-20220724204533485" /></li>
+<li>跨团队写作 fork（到自己的远程库）---clone <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724204930503.png"
+alt="image-20220724204930503" /></li>
+</ul>
+<h1 id="创建远程库创建别名">创建远程库&amp;创建别名</h1>
+<ul>
+<li>官网：https://github.com</li>
+<li>现在yuebuqun注册一个账号 创建一个远程库git-demo，创建成功 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724211410556.png"
+alt="image-20220724211410556" /></li>
+<li>创建远程库别名 git remote -v （查看别名） 为远程库创建别名
+<code>git remote add git-demo https://github.com/lwmfjc/git-demo.git</code>
+别名创建成功 fetch和push都可以使用别名 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220724211655584.png"
+alt="image-20220724211655584" /></li>
+</ul>
+<h1 id="推送本地库到远程库">推送本地库到远程库</h1>
+<ul>
+<li>推送master分支 切换<code>git checkout master</code></li>
+<li>推送 git push git-demo master <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220727202645908.png"
+alt="image-20220727202645908" /></li>
+</ul>
+<h1 id="拉取远程库到本地库">拉取远程库到本地库</h1>
+<ul>
+<li><code>git pull git-demo master</code> 结果 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220727203004350.png"
+alt="image-20220727203004350" /></li>
+</ul>
+<h1 id="克隆远程库到本地">克隆远程库到本地</h1>
+<ul>
+<li>git clone xxxxxxx/git-demo.git <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220727203532719.png"
+alt="image-20220727203532719" />
+clone之后有默认的别名，且已经初始化了本地库</li>
+</ul>
+<h1 id="团队内写作">团队内写作</h1>
+<ul>
+<li>lhc修改了git-demo下的hello.txt</li>
+<li>之后进行git add hello.txt</li>
+<li>git commit -m "lhc-commit " hello.txt</li>
+<li>现在进行push git push origin master 出错了 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220727203924432.png"
+alt="image-20220727203924432" /></li>
+<li>使用ybq，对库进行设置，管理成员 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220727204017197.png"
+alt="image-20220727204017197" /></li>
+<li>添加成员即可 输入账号名 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220727204040960.png"
+alt="image-20220727204040960" /></li>
+<li>将邀请函 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220727204110304.png"
+alt="image-20220727204110304" /> 发送给lhc <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220727204126988.png"
+alt="image-20220727204126988" /></li>
+<li>现在再次推送，则推送成功 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220727204229743.png"
+alt="image-20220727204229743" /></li>
+</ul>
+<h1 id="团队外合作">团队外合作</h1>
+<ul>
+<li><p>先把别人的项目fork下来 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220727205710975.png"
+alt="image-20220727205710975" /></p></li>
+<li><p>之后进行修改并且commit <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220727204508432.png"
+alt="image-20220727204508432" /></p></li>
+<li><p>pull request (拉取请求) <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220727204551005.png"
+alt="image-20220727204551005" /></p>
+<ul>
+<li><p>请求 东方不败：<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220727204646055.png"
+alt="image-20220727204646055" /></p></li>
+<li><p>岳不群：看到别人发过来的请求 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220727205511903.png"
+alt="image-20220727205511903" /></p>
+<p>可以同意 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220727204751179.png"
+alt="image-20220727204751179" /> 合并申请 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220727204859648.png"
+alt="image-20220727204859648" /></p></li>
+</ul></li>
+</ul>
+<h1 id="ssh免密登录">SSH免密登录</h1>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220727204931707.png"
+alt="image-20220727204931707" />
+<figcaption aria-hidden="true">image-20220727204931707</figcaption>
+</figure>
+<ul>
+<li><p>ssh免密公钥添加 删除~/.ssh 使用</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ssh-keygen -t rsa  -C xxxx@xx.com</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">再次到~/.ssh 查看</span></span><br><span class="line">cat id_rsa  私钥</span><br></pre></td></tr></table></figure></li>
+<li><p>把私钥复制到 账号--设置--ssh and gpgkeys</p></li>
+</ul>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220727205152327.png"
+alt="image-20220727205152327" />
+<figcaption aria-hidden="true">image-20220727205152327</figcaption>
+</figure>
+<ul>
+<li>测试是否成功</li>
+</ul>
 ]]></content>
       <categories>
         <category>学习</category>
