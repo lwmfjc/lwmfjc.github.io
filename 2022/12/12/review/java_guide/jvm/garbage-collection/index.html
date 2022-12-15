@@ -239,14 +239,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>6.7k</span>
+              <span>7.9k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>12 分钟</span>
+              <span>14 分钟</span>
             </span>
             <div class="post-description">java垃圾回收器</div>
 
@@ -497,13 +497,88 @@ JVM
 </ol></li>
 </ul>
 <h2 id="如何判断一个常量是废弃常量">如何判断一个常量是废弃常量</h2>
+<p>运行时常量池主要是回收<strong>废弃的常量</strong></p>
+<blockquote>
+<ol type="1">
+<li>JDK1.7
+之前，<strong>运行时常量池逻辑</strong>，包括字符串常量池，存放在<strong>方法区</strong>，此时hotspot虚拟机对<strong>方法区</strong>的实现为<strong>永久代</strong></li>
+<li>JDK1.7字符串常量池被<strong>从方法区</strong>拿到了<strong>堆</strong>中，这里没有提到运行时常量池，也就是说<strong>字符串常量池</strong>被单独拿到堆，运行时常量池剩下的东西，<strong>还在方法区</strong>。即hotspot中的<strong>永久代</strong></li>
+<li>JDK1.8
+hotspot移除了永久代，用<strong>元空间Metaspace</strong>取代之，这时候<strong>字符串常量池</strong>还在堆，<strong>运行时常量池</strong>还在方法区，只不过<strong>方法区的实现</strong>从永久代变成了<strong>元空间Metaspace</strong></li>
+</ol>
+</blockquote>
+<p>★★
+假如<strong>字符串常量池</strong>存在字符串“abc”，如果当前没有任何String对象<strong>引用该字符串常量</strong>的话，就说明常量“abc”是废弃常量。如果这时发生内存回收并且<strong>有必要</strong>的话，“abc”就会被系统<strong>清理出</strong>常量池</p>
 <h2 id="如何判断一个类是无用类">如何判断一个类是无用类</h2>
+<ul>
+<li><p><strong>方法区</strong>主要回收<strong>无用的类</strong>，判断一个类是否是<strong>无用的类</strong>相对苛刻，需要同时满足下面<strong>条件</strong></p>
+<ul>
+<li>该类所有实例都已经被回收，即<strong>Java堆中不存在该类的任何实例</strong></li>
+<li>加载该类的<strong>ClassLoader</strong>已经被回收</li>
+<li>该类对应的<strong>java.lang.Class</strong>对象没有在任何地方被引用，<strong>无法</strong>在任何地方<strong>通过反射</strong>访问该类方法</li>
+</ul>
+<p>Java虚拟机<strong>可以</strong>对<strong>满足上述3个条件</strong>的无用类进行回收，是<strong>“可以”</strong>，而<strong>不是必然</strong></p></li>
+</ul>
 <h1 id="垃圾收集算法">垃圾收集算法</h1>
 <h2 id="标记-清除算法">标记-清除算法</h2>
+<p>该算法分为<strong>“标记”</strong>和<strong>“清除”</strong>阶段：<br />
+标记出所有<strong>不需要回收的对象</strong>，在标记完成后<strong>统一回收掉所有没有被标记</strong>的对象</p>
+<p>这是<strong>最基础</strong>的<strong>收集算法</strong>，后续的算法都是对其不足进行改进得到，有两个明显问题：</p>
+<ol type="1">
+<li><strong>效率问题</strong></li>
+<li><strong>空间问题</strong>（标记清除后会产生<strong>大量不连续碎片</strong>）</li>
+</ol>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/%25E6%25A0%2587%25E8%25AE%25B0-%25E6%25B8%2585%25E9%2599%25A4%25E7%25AE%2597%25E6%25B3%2595.c1fbd0fe.jpeg"
+alt="img" />
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
 <h2 id="标记-复制算法">标记-复制算法</h2>
+<ul>
+<li>将内存分为<strong>大小相同的两块</strong>，每次<strong>使用其中一块</strong></li>
+<li>当这块<strong>内存使用完后</strong>，就将还存活的对象<strong>复制到另一块</strong>去，然后再把<strong>使用的空间一次清理掉</strong></li>
+<li>这样每次内存<strong>回收</strong>都是对内存区间的一半<strong>进行回收</strong></li>
+</ul>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/90984624.e8c186ae.png"
+alt="复制算法" />
+<figcaption aria-hidden="true">复制算法</figcaption>
+</figure>
 <h2 id="标记-整理算法">标记-整理算法</h2>
+<p>根据老年代特点提出的一种<strong>标记算法</strong>，<strong>标记过程</strong>仍然与<strong>“标记-清除”</strong>算法一样，但后续不是直接对可回收对象回收，而是让<strong>所有存活对象向一端移动</strong>，然后直接<strong>清理掉端边界以外的内存</strong></p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/94057049.22c58294.png"
+alt="标记-整理算法" />
+<figcaption aria-hidden="true">标记-整理算法</figcaption>
+</figure>
 <h2 id="分代收集算法">分代收集算法</h2>
+<ul>
+<li>当前虚拟机的垃圾收集都采用<strong>分代收集算法</strong>，没有新的思想，只是<strong>根据对象存活周期的不同</strong>将内存分为几块。</li>
+<li>一般将Java堆分为<strong>新生代</strong>和<strong>老年代</strong>，这样就可以<strong>根据各个年代的特点</strong>，选择合适的<strong>垃圾收集算法</strong>
+<ul>
+<li><strong>新生代</strong>中，每次收集都会有大量对象死去，所以可以选择<strong>“标记-复制”</strong>算法，只需要付出少量<strong>对象的复制成本</strong>就可以完成<strong>每次垃圾收集</strong></li>
+<li><strong>老年代</strong>对象存活几率是比较高的，而且<strong>没有额外的空间对它进行分配担保</strong>，所以必须选择<strong>标记-清除</strong>或者<strong>“标记-整理”</strong>算法进行垃圾收集</li>
+</ul></li>
+</ul>
 <h1 id="垃圾收集器">垃圾收集器</h1>
+<h2 id="汇总">汇总</h2>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/11e9dcd0f1ee4f25836e6f1c47104c51-new-image69e1c56a-1d40-493a-9901-6efc647a01f3.png"
+alt="img" />
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<h2 id="serial-收集器">Serial 收集器</h2>
+<h2 id="parnew-收集器">ParNew 收集器</h2>
+<h2 id="parallelscavenge-收集器">ParallelScavenge 收集器</h2>
+<h2 id="serialold-收集器">SerialOld 收集器</h2>
+<h2 id="parallelold-收集器">ParallelOld 收集器</h2>
+<h2 id="cms-收集器">CMS 收集器</h2>
+<h2 id="g1-收集器">G1 收集器</h2>
+<h2 id="zgc-收集器">ZGC 收集器</h2>
 
     </div>
 
@@ -593,7 +668,7 @@ JVM
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%A0%86%E7%A9%BA%E9%97%B4%E7%9A%84%E5%9F%BA%E6%9C%AC%E7%BB%93%E6%9E%84"><span class="nav-number">2.</span> <span class="nav-text">堆空间的基本结构</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E5%92%8C%E5%9B%9E%E6%94%B6%E5%8E%9F%E5%88%99"><span class="nav-number">3.</span> <span class="nav-text">内存分配和回收原则</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%B9%E8%B1%A1%E4%BC%98%E5%85%88%E5%9C%A8eden%E5%8C%BA%E5%88%86%E9%85%8D"><span class="nav-number">3.1.</span> <span class="nav-text">对象优先在Eden区分配</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A4%A7%E5%AF%B9%E8%B1%A1%E7%9B%B4%E6%8E%A5%E8%BF%9B%E5%85%A5%E8%80%81%E5%B9%B4%E4%BB%A3"><span class="nav-number">3.2.</span> <span class="nav-text">大对象直接进入老年代</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%95%BF%E6%9C%9F%E5%AD%98%E6%B4%BB%E7%9A%84%E5%AF%B9%E8%B1%A1%E8%BF%9B%E5%85%A5%E8%80%81%E5%B9%B4%E4%BB%A3"><span class="nav-number">3.3.</span> <span class="nav-text">长期存活的对象进入老年代</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BB%E8%A6%81%E8%BF%9B%E8%A1%8Cgc%E7%9A%84%E5%8C%BA%E5%9F%9F"><span class="nav-number">3.4.</span> <span class="nav-text">主要进行gc的区域</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A9%BA%E9%97%B4%E5%88%86%E9%85%8D%E6%8B%85%E4%BF%9D"><span class="nav-number">3.5.</span> <span class="nav-text">空间分配担保</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%AD%BB%E4%BA%A1%E5%AF%B9%E8%B1%A1%E5%88%A4%E6%96%AD%E6%96%B9%E6%B3%95"><span class="nav-number">4.</span> <span class="nav-text">死亡对象判断方法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%95%E7%94%A8%E8%AE%A1%E6%95%B0%E6%B3%95"><span class="nav-number">4.1.</span> <span class="nav-text">引用计数法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%AF%E8%BE%BE%E6%80%A7%E5%88%86%E6%9E%90%E7%AE%97%E6%B3%95"><span class="nav-number">4.2.</span> <span class="nav-text">可达性分析算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%95%E7%94%A8%E7%B1%BB%E5%9E%8B%E6%80%BB%E7%BB%93"><span class="nav-number">4.3.</span> <span class="nav-text">引用类型总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E5%88%A4%E6%96%AD%E4%B8%80%E4%B8%AA%E5%B8%B8%E9%87%8F%E6%98%AF%E5%BA%9F%E5%BC%83%E5%B8%B8%E9%87%8F"><span class="nav-number">4.4.</span> <span class="nav-text">如何判断一个常量是废弃常量</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E5%88%A4%E6%96%AD%E4%B8%80%E4%B8%AA%E7%B1%BB%E6%98%AF%E6%97%A0%E7%94%A8%E7%B1%BB"><span class="nav-number">4.5.</span> <span class="nav-text">如何判断一个类是无用类</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E7%AE%97%E6%B3%95"><span class="nav-number">5.</span> <span class="nav-text">垃圾收集算法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A0%87%E8%AE%B0-%E6%B8%85%E9%99%A4%E7%AE%97%E6%B3%95"><span class="nav-number">5.1.</span> <span class="nav-text">标记-清除算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A0%87%E8%AE%B0-%E5%A4%8D%E5%88%B6%E7%AE%97%E6%B3%95"><span class="nav-number">5.2.</span> <span class="nav-text">标记-复制算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A0%87%E8%AE%B0-%E6%95%B4%E7%90%86%E7%AE%97%E6%B3%95"><span class="nav-number">5.3.</span> <span class="nav-text">标记-整理算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E4%BB%A3%E6%94%B6%E9%9B%86%E7%AE%97%E6%B3%95"><span class="nav-number">5.4.</span> <span class="nav-text">分代收集算法</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E5%99%A8"><span class="nav-number">6.</span> <span class="nav-text">垃圾收集器</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%A0%86%E7%A9%BA%E9%97%B4%E7%9A%84%E5%9F%BA%E6%9C%AC%E7%BB%93%E6%9E%84"><span class="nav-number">2.</span> <span class="nav-text">堆空间的基本结构</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E5%92%8C%E5%9B%9E%E6%94%B6%E5%8E%9F%E5%88%99"><span class="nav-number">3.</span> <span class="nav-text">内存分配和回收原则</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%B9%E8%B1%A1%E4%BC%98%E5%85%88%E5%9C%A8eden%E5%8C%BA%E5%88%86%E9%85%8D"><span class="nav-number">3.1.</span> <span class="nav-text">对象优先在Eden区分配</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A4%A7%E5%AF%B9%E8%B1%A1%E7%9B%B4%E6%8E%A5%E8%BF%9B%E5%85%A5%E8%80%81%E5%B9%B4%E4%BB%A3"><span class="nav-number">3.2.</span> <span class="nav-text">大对象直接进入老年代</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%95%BF%E6%9C%9F%E5%AD%98%E6%B4%BB%E7%9A%84%E5%AF%B9%E8%B1%A1%E8%BF%9B%E5%85%A5%E8%80%81%E5%B9%B4%E4%BB%A3"><span class="nav-number">3.3.</span> <span class="nav-text">长期存活的对象进入老年代</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BB%E8%A6%81%E8%BF%9B%E8%A1%8Cgc%E7%9A%84%E5%8C%BA%E5%9F%9F"><span class="nav-number">3.4.</span> <span class="nav-text">主要进行gc的区域</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A9%BA%E9%97%B4%E5%88%86%E9%85%8D%E6%8B%85%E4%BF%9D"><span class="nav-number">3.5.</span> <span class="nav-text">空间分配担保</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%AD%BB%E4%BA%A1%E5%AF%B9%E8%B1%A1%E5%88%A4%E6%96%AD%E6%96%B9%E6%B3%95"><span class="nav-number">4.</span> <span class="nav-text">死亡对象判断方法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%95%E7%94%A8%E8%AE%A1%E6%95%B0%E6%B3%95"><span class="nav-number">4.1.</span> <span class="nav-text">引用计数法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%AF%E8%BE%BE%E6%80%A7%E5%88%86%E6%9E%90%E7%AE%97%E6%B3%95"><span class="nav-number">4.2.</span> <span class="nav-text">可达性分析算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%95%E7%94%A8%E7%B1%BB%E5%9E%8B%E6%80%BB%E7%BB%93"><span class="nav-number">4.3.</span> <span class="nav-text">引用类型总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E5%88%A4%E6%96%AD%E4%B8%80%E4%B8%AA%E5%B8%B8%E9%87%8F%E6%98%AF%E5%BA%9F%E5%BC%83%E5%B8%B8%E9%87%8F"><span class="nav-number">4.4.</span> <span class="nav-text">如何判断一个常量是废弃常量</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E5%88%A4%E6%96%AD%E4%B8%80%E4%B8%AA%E7%B1%BB%E6%98%AF%E6%97%A0%E7%94%A8%E7%B1%BB"><span class="nav-number">4.5.</span> <span class="nav-text">如何判断一个类是无用类</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E7%AE%97%E6%B3%95"><span class="nav-number">5.</span> <span class="nav-text">垃圾收集算法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A0%87%E8%AE%B0-%E6%B8%85%E9%99%A4%E7%AE%97%E6%B3%95"><span class="nav-number">5.1.</span> <span class="nav-text">标记-清除算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A0%87%E8%AE%B0-%E5%A4%8D%E5%88%B6%E7%AE%97%E6%B3%95"><span class="nav-number">5.2.</span> <span class="nav-text">标记-复制算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A0%87%E8%AE%B0-%E6%95%B4%E7%90%86%E7%AE%97%E6%B3%95"><span class="nav-number">5.3.</span> <span class="nav-text">标记-整理算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E4%BB%A3%E6%94%B6%E9%9B%86%E7%AE%97%E6%B3%95"><span class="nav-number">5.4.</span> <span class="nav-text">分代收集算法</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E5%99%A8"><span class="nav-number">6.</span> <span class="nav-text">垃圾收集器</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B1%87%E6%80%BB"><span class="nav-number">6.1.</span> <span class="nav-text">汇总</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#serial-%E6%94%B6%E9%9B%86%E5%99%A8"><span class="nav-number">6.2.</span> <span class="nav-text">Serial 收集器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#parnew-%E6%94%B6%E9%9B%86%E5%99%A8"><span class="nav-number">6.3.</span> <span class="nav-text">ParNew 收集器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#parallelscavenge-%E6%94%B6%E9%9B%86%E5%99%A8"><span class="nav-number">6.4.</span> <span class="nav-text">ParallelScavenge 收集器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#serialold-%E6%94%B6%E9%9B%86%E5%99%A8"><span class="nav-number">6.5.</span> <span class="nav-text">SerialOld 收集器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#parallelold-%E6%94%B6%E9%9B%86%E5%99%A8"><span class="nav-number">6.6.</span> <span class="nav-text">ParallelOld 收集器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#cms-%E6%94%B6%E9%9B%86%E5%99%A8"><span class="nav-number">6.7.</span> <span class="nav-text">CMS 收集器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#g1-%E6%94%B6%E9%9B%86%E5%99%A8"><span class="nav-number">6.8.</span> <span class="nav-text">G1 收集器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#zgc-%E6%94%B6%E9%9B%86%E5%99%A8"><span class="nav-number">6.9.</span> <span class="nav-text">ZGC 收集器</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -663,12 +738,12 @@ JVM
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">745k</span>
+    <span title="站点总字数">746k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">22:34</span>
+    <span title="站点阅读时长">22:36</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
