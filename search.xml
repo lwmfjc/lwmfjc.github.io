@@ -7046,10 +7046,10 @@ Old【并行--复制和并行--标记整理】</li>
 </blockquote>
 <h2 id="serial-收集器">Serial 收集器</h2>
 <ul>
-<li>Serial 串行
-收集器是<strong>最基本</strong>、<strong>历史最悠久</strong>的垃圾收集器</li>
-<li>这是一个<strong>单线程收集器</strong>，它的<strong>单线程</strong>意义不仅意味着它只会使用<strong>一条垃圾收集线程</strong>去完成垃圾收集工作，更重要的是它在<strong>进行垃圾收集工作时</strong>必须暂停其他所有的工作线程<strong>（”Stop
-The World“）</strong>，直到它<strong>收集结束</strong>。
+<li><p>Serial 串行
+收集器是<strong>最基本</strong>、<strong>历史最悠久</strong>的垃圾收集器</p></li>
+<li><p>这是一个<strong>单线程收集器</strong>，它的<strong>单线程</strong>意义不仅意味着它只会使用<strong>一条垃圾收集线程</strong>去完成垃圾收集工作，更重要的是它在<strong>进行垃圾收集工作时</strong>必须暂停其他所有的工作线程<strong>（”Stop
+The World“）</strong>，直到它<strong>收集结束</strong>。</p>
 <ul>
 <li>新生代采用<strong>标记-复制</strong>算法，老年代采用<strong>标记-整理</strong>算法
 <img
@@ -7062,30 +7062,36 @@ alt="Serial 收集器" /></li>
 <li>Serial收集器对于<strong>运行在Client模式</strong>下的虚拟机来说是个不错的选择</li>
 </ol></li>
 </ul></li>
-</ul>
-<h2 id="parnew-收集器">ParNew 收集器</h2>
-<ul>
-<li><p><strong>ParNew</strong>收集器其实就是<strong>Serial收集器</strong>的<strong>多线程版本</strong>，除了使用<strong>多线程</strong>进行垃圾收集外，其余行为（<strong>控制参数</strong>、<strong>收集算法</strong>、<strong>回收策略</strong>等等）和<strong>Serial收集器</strong>完全一样</p></li>
-<li><p><strong>新生代</strong>采用<strong>标记-复制</strong>算法，<strong>老年代</strong>采用<strong>标记-整理</strong>算法</p>
-<p><img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/22018368.df835851.png"
-alt="ParNew 收集器" />
-这是许多运行在Server模式下的虚拟机的首要选择，除了<strong>Serial收集器</strong>外，只有它能与<strong>CMS收集器</strong>（真正意义上的<strong>并发</strong>收集器）配合工作</p></li>
-<li><p><strong>并行和并发</strong>概念补充</p>
-<ul>
-<li><strong>并行（Parallel）</strong>：指<strong>多条垃圾收集线程</strong>并行工作，但此时用户线程仍然处于<strong>等待</strong>状态</li>
-<li><strong>并发（Concurrent）</strong>：指<strong>用户线程</strong>与<strong>垃圾收集线程</strong>
-<strong>同时</strong>执行（不一定并行，可能会交替执行），<strong>用户程序在继续执行</strong>，而<strong>收集收集器</strong>运行在另一个CPU上</li>
-</ul></li>
+<li><p>```shell -XX:+UseSerialGC
+#虚拟机运行在Client模式下的默认值，Serial+Serial Old。
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">## ParNew 收集器</span><br><span class="line"></span><br><span class="line">- **ParNew**收集器其实就是**Serial收集器**的**多线程版本**，除了使用**多线程**进行垃圾收集外，其余行为（**控制参数**、**收集算法**、**回收策略**等等）和**Serial收集器**完全一样</span><br><span class="line"></span><br><span class="line">- **新生代**采用**标记-复制**算法，**老年代**采用**标记-整理**算法</span><br><span class="line"></span><br><span class="line">  ![ParNew 收集器 ](https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/22018368.df835851.png)</span><br><span class="line">  ★★★  这是许多运行在Server模式下的虚拟机的首要选择，除了**Serial收集器**外，只有它能与**CMS收集器**（真正意义上的**并发**收集器）配合工作</span><br><span class="line"></span><br><span class="line">- **并行和并发**概念补充</span><br><span class="line"></span><br><span class="line">  - **并行（Parallel）**：指**多条垃圾收集线程**并行工作，但此时用户线程仍然处于**等待**状态</span><br><span class="line">  - **并发（Concurrent）**：指**用户线程**与**垃圾收集线程** **同时**执行（不一定并行，可能会交替执行），**用户程序在继续执行**，而**收集收集器**运行在另一个CPU上</span><br><span class="line"></span><br><span class="line">- ```shell</span><br><span class="line">  -XX:+UseParNewGC  #ParNew+Serial Old，在JDK1.8被废弃，在JDK1.7还可以使用。</span><br></pre></td></tr></table></figure></p></li>
 </ul>
 <h2 id="parallelscavenge-收集器">ParallelScavenge 收集器</h2>
 <ul>
-<li><p>部分<strong>参数</strong> (有点争议)</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">-XX:+UseParallelGC  # 新生代使用ParallelGC，老年代使用串行回收器</span><br><span class="line">-XX:+UseParallelOldGC # 新生代使用ParallelGC，老年代使用ParallelOldGC</span><br></pre></td></tr></table></figure></li>
-<li><p>它也是<strong>标记-复制</strong>算法的多线程收集器，看上去几乎和<strong>ParNew</strong>一样，<strong>区别</strong>：</p>
+<li><p>它也是<strong>标记-复制</strong>算法的多线程收集器，看上去几乎和<strong>ParNew</strong>一样，<strong>区别</strong></p>
 <ul>
-<li></li>
+<li><p>部分<strong>参数</strong> (有点争议，先以下面为准)</p>
+<p><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">-XX:+UseParallelGC  # 虚拟机运行在Server模式下的默认值(1.8) 新生代使用ParallelGC，老年代使用回收器 ; ★★ JDK1.7之后，能达到UseParallelOldGC 的效果 </span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment"># 参考自 https://zhuanlan.zhihu.com/p/353458348</span></span> </span><br><span class="line"></span><br><span class="line">    </span><br><span class="line">-XX:+UseParallelOldGC # 新生代使用ParallelGC，老年代使用ParallelOldGC</span><br></pre></td></tr></table></figure></p></li>
+<li><p><strong>Parallel
+Scavenge</strong>收集器关注点是<strong>吞吐量（高效率利用CPU）</strong>，<strong>CMS</strong>等垃圾收集器关注点是用户的<strong>停顿时间</strong>（提高用户体验）</p>
+<blockquote>
+<p>所谓<strong>吞吐量</strong>就是CPU中用于<strong>运行用户代码的时间</strong>与<strong>CPU</strong>总消耗时间的<strong>比值</strong>
+（也就是<strong>希望</strong>消耗少量CPU就能<strong>运行更多代码</strong>）</p>
+</blockquote></li>
+<li><p>Parallel Scavenge
+收集器提供了很多参数供用户找到<strong>最合适的停顿时间</strong>或<strong>最大吞吐量</strong>，如果对于收集器运作不太了解，手工优化存在困难的时候，使用
+<strong>Parallel Scavenge
+收集器</strong>配合<strong>自适应调节策略</strong>，把<strong>内存管理优化</strong>交给虚拟机去完成也是一个不错的选择。</p></li>
+<li><p>新生代采用<strong>标记-复制</strong>，老年代采用<strong>标记-整理</strong>算法
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221215170900774.png"
+alt="image-20221215170900774" /></p></li>
 </ul></li>
+<li><p>这是JDK1.8 的默认收集器 使用 java -XX:+PrintCommandLineFlags
+-version 命令查看 如下，两种情况：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">默认</span></span><br><span class="line">λ java -XX:+PrintCommandLineFlags -version</span><br><span class="line">-XX:InitialHeapSize=531924800 -XX:MaxHeapSize=8510796800 -XX:+PrintCommandLineFlags -XX:+UseCompressedClassPointers -XX:+UseCompressedOops -XX:-UseLargePagesIndividualAllocation -XX:+UseParallelGC</span><br><span class="line">java version &quot;1.8.0_202&quot;</span><br><span class="line">Java(TM) SE Runtime Environment (build 1.8.0_202-b08)</span><br><span class="line">Java HotSpot(TM) 64-Bit Server VM (build 25.202-b08, mixed mode)</span><br></pre></td></tr></table></figure>
+<p>第二种情况：(注意：<code>-XX:-UseParallelOldGC</code>)</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">λ java -XX:-UseParallelOldGC -XX:+PrintCommandLineFlags -version</span><br><span class="line">-XX:InitialHeapSize=531924800 -XX:MaxHeapSize=8510796800 -XX:+PrintCommandLineFlags -XX:+UseCompressedClassPointers -XX:+UseCompressedOops -XX:-UseLargePagesIndividualAllocation -XX:+UseParallelGC -XX:-UseParallelOldGC</span><br><span class="line"></span><br><span class="line">java version &quot;1.8.0_202&quot;</span><br><span class="line">Java(TM) SE Runtime Environment (build 1.8.0_202-b08)</span><br><span class="line">Java HotSpot(TM) 64-Bit Server VM (build 25.202-b08, mixed mode)</span><br></pre></td></tr></table></figure></li>
 </ul>
 <h2 id="serialold-收集器">SerialOld 收集器</h2>
 <h2 id="parallelold-收集器">ParallelOld 收集器</h2>
