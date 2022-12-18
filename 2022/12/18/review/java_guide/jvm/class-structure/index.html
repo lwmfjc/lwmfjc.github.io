@@ -240,14 +240,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>56</span>
+              <span>1.3k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
+              <span>2 分钟</span>
             </span>
             <div class="post-description">类文件结构</div>
 
@@ -263,6 +263,46 @@
         <blockquote>
 <p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!</p>
 </blockquote>
+<h1 id="概述">概述</h1>
+<ul>
+<li>Java中，JVM可以理解的代码就叫做<strong>字节码</strong>（即扩展名为.class的文件），它不面向任何特定的处理器，只<strong>面向虚拟机</strong></li>
+<li>Java语言通过<strong>字节码</strong>的方式，在一定程度上解决了<strong>传统解释型语言执行效率低</strong>的问题，同时又保留了<strong>解释型语言</strong>可移植的特点。所以Java程序运行时<strong>效率极高</strong>，且由于字节码并不针对一种特定的<strong>机器</strong>。因此，Java程序无需重新编译便可在<strong>多种不通操作系统的计算机</strong>运行</li>
+<li>Clojure（Lisp 语言的一种方言）、Groovy、Scala 等语言都是运行在 Java
+虚拟机之上。下图展示了<strong>不同的语言被不同的编译器</strong>编译<strong>成<code>.class</code></strong>文件<strong>最终运行在
+Java
+虚拟机</strong>之上。<strong><code>.class</code>文件的二进制格式</strong>可以使用
+<a target="_blank" rel="noopener" href="https://www.x-ways.net/winhex/">WinHexopen in new window</a>
+查看。</li>
+</ul>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221218224536987.png"
+alt="image-20221218224536987" />
+<figcaption aria-hidden="true">image-20221218224536987</figcaption>
+</figure>
+<p>.class文件是不同语言在<strong>Java虚拟机</strong>之间的重要桥梁，同时也是<strong>支持Java跨平台</strong>很重要的一个原因</p>
+<h1 id="class文件结构总结">Class文件结构总结</h1>
+<p>根据Java虚拟机规范，Class文件通过<strong>ClassFile</strong>定义，有点类似C语言的<strong>结构体</strong></p>
+<p>ClassFile的结构如下：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">ClassFile &#123;</span><br><span class="line">    u4             magic; <span class="comment">//Class 文件的标志</span></span><br><span class="line">    u2             minor_version;<span class="comment">//Class 的小版本号</span></span><br><span class="line">    u2             major_version;<span class="comment">//Class 的大版本号</span></span><br><span class="line">    u2             constant_pool_count;<span class="comment">//常量池的数量</span></span><br><span class="line">    cp_info        constant_pool[constant_pool_count-<span class="number">1</span>];<span class="comment">//常量池</span></span><br><span class="line">    u2             access_flags;<span class="comment">//Class 的访问标记</span></span><br><span class="line">    u2             this_class;<span class="comment">//当前类</span></span><br><span class="line">    u2             super_class;<span class="comment">//父类</span></span><br><span class="line">    u2             interfaces_count;<span class="comment">//接口</span></span><br><span class="line">    u2             interfaces[interfaces_count];<span class="comment">//一个类可以实现多个接口</span></span><br><span class="line">    u2             fields_count;<span class="comment">//Class 文件的字段属性</span></span><br><span class="line">    field_info     fields[fields_count];<span class="comment">//一个类可以有多个字段</span></span><br><span class="line">    u2             methods_count;<span class="comment">//Class 文件的方法数量</span></span><br><span class="line">    method_info    methods[methods_count];<span class="comment">//一个类可以有个多个方法</span></span><br><span class="line">    u2             attributes_count;<span class="comment">//此类的属性表中的属性数</span></span><br><span class="line">    attribute_info attributes[attributes_count];<span class="comment">//属性表集合</span></span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221218230117020.png"
+alt="image-20221218230117020" />
+<figcaption aria-hidden="true">image-20221218230117020</figcaption>
+</figure>
+<h2 id="魔数magic-number">魔数（Magic Number）</h2>
+<h2
+id="class文件版本号minormajor-version">Class文件版本号（Minor&amp;Major
+Version）</h2>
+<h2 id="常量池constant-pool">常量池（Constant Pool）</h2>
+<h2 id="访问标志access-flag">访问标志（Access Flag）</h2>
+<h2
+id="当前类this-class父类super-class接口interfaces索引集合">当前类（This
+Class）、父类（Super Class）、接口（Interfaces）索引集合</h2>
+<h2 id="字段表集合-fields">字段表集合 （Fields）</h2>
+<h2 id="方法表集合methods">方法表集合（Methods）</h2>
+<h2 id="属性表集合attributes">属性表集合（Attributes）</h2>
 
     </div>
 
@@ -352,6 +392,9 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A6%82%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#class%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84%E6%80%BB%E7%BB%93"><span class="nav-number">2.</span> <span class="nav-text">Class文件结构总结</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%AD%94%E6%95%B0magic-number"><span class="nav-number">2.1.</span> <span class="nav-text">魔数（Magic Number）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#class%E6%96%87%E4%BB%B6%E7%89%88%E6%9C%AC%E5%8F%B7minormajor-version"><span class="nav-number">2.2.</span> <span class="nav-text">Class文件版本号（Minor&amp;Major
+Version）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B8%B8%E9%87%8F%E6%B1%A0constant-pool"><span class="nav-number">2.3.</span> <span class="nav-text">常量池（Constant Pool）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%BF%E9%97%AE%E6%A0%87%E5%BF%97access-flag"><span class="nav-number">2.4.</span> <span class="nav-text">访问标志（Access Flag）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BD%93%E5%89%8D%E7%B1%BBthis-class%E7%88%B6%E7%B1%BBsuper-class%E6%8E%A5%E5%8F%A3interfaces%E7%B4%A2%E5%BC%95%E9%9B%86%E5%90%88"><span class="nav-number">2.5.</span> <span class="nav-text">当前类（This
+Class）、父类（Super Class）、接口（Interfaces）索引集合</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AD%97%E6%AE%B5%E8%A1%A8%E9%9B%86%E5%90%88-fields"><span class="nav-number">2.6.</span> <span class="nav-text">字段表集合 （Fields）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%B9%E6%B3%95%E8%A1%A8%E9%9B%86%E5%90%88methods"><span class="nav-number">2.7.</span> <span class="nav-text">方法表集合（Methods）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B1%9E%E6%80%A7%E8%A1%A8%E9%9B%86%E5%90%88attributes"><span class="nav-number">2.8.</span> <span class="nav-text">属性表集合（Attributes）</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -421,12 +464,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">757k</span>
+    <span title="站点总字数">758k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">22:56</span>
+    <span title="站点阅读时长">22:58</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
