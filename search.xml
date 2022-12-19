@@ -334,6 +334,57 @@ alt="image-20220923113808372" /></p>
       </tags>
   </entry>
   <entry>
+    <title>递归与迭代</title>
+    <url>/2022/09/22/review/basics/recursion_and_iteration/</url>
+    <content><![CDATA[<h2 id="编程题">编程题</h2>
+<p>有n步台阶，一次只能上1步或2步，共有多少种走法</p>
+<h3 id="分析">分析</h3>
+<ul>
+<li><p>分析<br />
+n = 1，1步 f(1) = 1<br />
+n = 2, 两个1步,2步 f(2) = 2<br />
+n = 3, 分两种情况： 最后1步是2级台阶/最后1步是1级台阶， 即 f(3) =
+f(1)+f(2) n = 4, 分两种情况： 最后1步是2级台阶/最后1步是1级台阶， 即f(4)
+= f(2)+f(3)</p>
+<p>也就是说，不管有几(n)个台阶，总要分成两种情况：最后1步是2级台阶/最后1步是1级台阶，即
+f(n)= f(n-2) + f(n-1)</p></li>
+</ul>
+<h3 id="递归">递归</h3>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="type">int</span> <span class="title function_">f</span><span class="params">(<span class="type">int</span> n)</span>&#123;</span><br><span class="line">      <span class="keyword">if</span>(n==<span class="number">1</span> || n==<span class="number">2</span>)&#123;</span><br><span class="line">          <span class="keyword">return</span> n;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> f(n-<span class="number">2</span>)+f(n-<span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">      System.out.println(f(<span class="number">1</span>)); <span class="comment">//1</span></span><br><span class="line">      System.out.println(f(<span class="number">2</span>)); <span class="comment">//2</span></span><br><span class="line">      System.out.println(f(<span class="number">3</span>)); <span class="comment">//3</span></span><br><span class="line">      System.out.println(f(<span class="number">4</span>)); <span class="comment">//5</span></span><br><span class="line">      System.out.println(f(<span class="number">5</span>)); <span class="comment">//8</span></span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>debug调试 方法栈 f(4)----&gt;分解成f(2)+f(3) f(2)---返回-
+f(3)---f(2)返回---f(1)返回 【f(3)分解成f(2)和f(1)】 方法栈的个数： <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220923093752921.png"
+alt="image-20220923093752921" /></li>
+</ul>
+<h3 id="使用循环">使用循环</h3>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="type">int</span> <span class="title function_">loop</span><span class="params">(<span class="type">int</span> n)</span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (n &lt; <span class="number">1</span>) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>(n + <span class="string">&quot;不能小于1&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (n == <span class="number">1</span> || n == <span class="number">2</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> n;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="type">int</span> one=<span class="number">2</span>;<span class="comment">//最后只走1步，会有2种走法</span></span><br><span class="line">    <span class="type">int</span> two=<span class="number">1</span>;<span class="comment">//最后走2步，会有1种走法</span></span><br><span class="line">    <span class="type">int</span> sum=<span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">3</span>;i&lt;=n;i++)&#123;</span><br><span class="line">        <span class="comment">//最后跨两级台阶+最后跨一级台阶的走法</span></span><br><span class="line">        sum=two+one;</span><br><span class="line">        two=one;</span><br><span class="line">        one=sum;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> sum;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220923095719037.png"
+alt="image-20220923095719037" />
+<figcaption aria-hidden="true">image-20220923095719037</figcaption>
+</figure>
+<h3 id="小结">小结</h3>
+<ul>
+<li>方法调用自身称为递归，利用变量的原值推出新值称为迭代(while循环)</li>
+<li>递归<br />
+优点：大问题转换为小问题，代码精简<br />
+缺点：浪费空间（栈空间），可能会照成栈的溢出</li>
+<li>迭代<br />
+优点：效率高，时间只受循环次数限制，不受出栈入栈时间<br />
+缺点：不如递归精简，可读性稍差</li>
+</ul>
+]]></content>
+      <categories>
+        <category>学习</category>
+      </categories>
+      <tags>
+        <tag>复习</tag>
+        <tag>复习-基础</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>自增变量</title>
     <url>/2022/09/21/review/basics/self_incrementing_variable/</url>
     <content><![CDATA[<h2 id="题目">题目</h2>
@@ -438,57 +489,6 @@ alt="image-20220921143557083" /></p>
 <li>只有当内部类被加载和初始化的时候，才会创建INSTANCE实例对象</li>
 <li>静态内部类不会自动随着外部类的加载和初始化而初始化，他需要单独去加载和初始化</li>
 <li>又由于他是在内部类加载和初始化时，创建的，属于类加载器处理的，所以是线程安全的</li>
-</ul>
-]]></content>
-      <categories>
-        <category>学习</category>
-      </categories>
-      <tags>
-        <tag>复习</tag>
-        <tag>复习-基础</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>递归与迭代</title>
-    <url>/2022/09/22/review/basics/recursion_and_iteration/</url>
-    <content><![CDATA[<h2 id="编程题">编程题</h2>
-<p>有n步台阶，一次只能上1步或2步，共有多少种走法</p>
-<h3 id="分析">分析</h3>
-<ul>
-<li><p>分析<br />
-n = 1，1步 f(1) = 1<br />
-n = 2, 两个1步,2步 f(2) = 2<br />
-n = 3, 分两种情况： 最后1步是2级台阶/最后1步是1级台阶， 即 f(3) =
-f(1)+f(2) n = 4, 分两种情况： 最后1步是2级台阶/最后1步是1级台阶， 即f(4)
-= f(2)+f(3)</p>
-<p>也就是说，不管有几(n)个台阶，总要分成两种情况：最后1步是2级台阶/最后1步是1级台阶，即
-f(n)= f(n-2) + f(n-1)</p></li>
-</ul>
-<h3 id="递归">递归</h3>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="type">int</span> <span class="title function_">f</span><span class="params">(<span class="type">int</span> n)</span>&#123;</span><br><span class="line">      <span class="keyword">if</span>(n==<span class="number">1</span> || n==<span class="number">2</span>)&#123;</span><br><span class="line">          <span class="keyword">return</span> n;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> f(n-<span class="number">2</span>)+f(n-<span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">      System.out.println(f(<span class="number">1</span>)); <span class="comment">//1</span></span><br><span class="line">      System.out.println(f(<span class="number">2</span>)); <span class="comment">//2</span></span><br><span class="line">      System.out.println(f(<span class="number">3</span>)); <span class="comment">//3</span></span><br><span class="line">      System.out.println(f(<span class="number">4</span>)); <span class="comment">//5</span></span><br><span class="line">      System.out.println(f(<span class="number">5</span>)); <span class="comment">//8</span></span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>debug调试 方法栈 f(4)----&gt;分解成f(2)+f(3) f(2)---返回-
-f(3)---f(2)返回---f(1)返回 【f(3)分解成f(2)和f(1)】 方法栈的个数： <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220923093752921.png"
-alt="image-20220923093752921" /></li>
-</ul>
-<h3 id="使用循环">使用循环</h3>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="type">int</span> <span class="title function_">loop</span><span class="params">(<span class="type">int</span> n)</span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (n &lt; <span class="number">1</span>) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>(n + <span class="string">&quot;不能小于1&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (n == <span class="number">1</span> || n == <span class="number">2</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> n;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="type">int</span> one=<span class="number">2</span>;<span class="comment">//最后只走1步，会有2种走法</span></span><br><span class="line">    <span class="type">int</span> two=<span class="number">1</span>;<span class="comment">//最后走2步，会有1种走法</span></span><br><span class="line">    <span class="type">int</span> sum=<span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">3</span>;i&lt;=n;i++)&#123;</span><br><span class="line">        <span class="comment">//最后跨两级台阶+最后跨一级台阶的走法</span></span><br><span class="line">        sum=two+one;</span><br><span class="line">        two=one;</span><br><span class="line">        one=sum;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> sum;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220923095719037.png"
-alt="image-20220923095719037" />
-<figcaption aria-hidden="true">image-20220923095719037</figcaption>
-</figure>
-<h3 id="小结">小结</h3>
-<ul>
-<li>方法调用自身称为递归，利用变量的原值推出新值称为迭代(while循环)</li>
-<li>递归<br />
-优点：大问题转换为小问题，代码精简<br />
-缺点：浪费空间（栈空间），可能会照成栈的溢出</li>
-<li>迭代<br />
-优点：效率高，时间只受循环次数限制，不受出栈入栈时间<br />
-缺点：不如递归精简，可读性稍差</li>
 </ul>
 ]]></content>
       <categories>
@@ -8430,9 +8430,34 @@ GC
 </ol></li>
 </ul>
 <h2 id="显示指定永久代元空间的大小">显示指定永久代/元空间的大小</h2>
+<p>从Java 8开始，<strong>如果我们没有指定 Metaspace(元空间)</strong>
+的大小，随着更多类的创建，<strong>虚拟机会耗尽</strong>所有<strong>可用的系统内存</strong>（永久代并不会出现这种情况）</p>
+<ul>
+<li><p><strong>JDK 1.8
+之前永久代还没被彻底移除</strong>的时候通常通过下面这些参数来调节方法区大小</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">-XX:PermSize=N <span class="comment">//方法区 (永久代) 初始大小</span></span><br><span class="line">-XX:MaxPermSize=N <span class="comment">//方法区 (永久代) 最大大小,超过这个值将会抛出 OutOfMemoryError 异常:java.lang.OutOfMemoryError: PermGen </span></span><br></pre></td></tr></table></figure></li>
+<li><p><strong>相对</strong>而言，垃圾收集行为在这个区域是<strong>比较少出现</strong>的，但<strong>并非数据进入方法区后就“永久存在”</strong>了。</p></li>
+<li><p><strong>JDK 1.8 的时候，方法区（HotSpot
+的永久代）被彻底移除了（JDK1.7
+就已经开始了），取而代之是元空间，元空间使用的是本地内存</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">-XX:MetaspaceSize=N <span class="comment">//设置 Metaspace 的初始（和最小大小）</span></span><br><span class="line">-XX:MaxMetaspaceSize=N <span class="comment">//设置 Metaspace 的最大大小，如果不指定大小的话，随着更多类的创建，虚拟机会耗尽所有可用的系统内存。 </span></span><br></pre></td></tr></table></figure></li>
+</ul>
 <h1 id="垃圾收集相关">垃圾收集相关</h1>
 <h2 id="垃圾回收器">垃圾回收器</h2>
+<p>为了提高应用程序的稳定性，选择正确的<strong>垃圾收集算法</strong>至关重要<br />
+JVM具有<strong>四种类型</strong>的GC实现：</p>
+<ol type="1">
+<li>串行垃圾收集器</li>
+<li>并行垃圾收集器</li>
+<li>CMS垃圾收集器（并发）</li>
+<li>G1垃圾收集器（并发）</li>
+</ol>
+<p>使用下列参数实现：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">-XX:+UseSerialGC</span><br><span class="line">-XX:+UseParallelGC</span><br><span class="line">-XX:+UseParNewGC</span><br><span class="line">-XX:+UseG1GC</span><br></pre></td></tr></table></figure>
 <h2 id="gc记录">GC记录</h2>
+<p>为了严格<strong>监控应用程序</strong>的<strong>运行状况</strong>，应该始终<strong>检查JVM的垃圾回收性能</strong>。最简单的方法是<strong>以人类可读的格式记录GC活动</strong><br />
+通过以下参数</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">-XX:+UseGCLogFileRotation </span><br><span class="line">-XX:NumberOfGCLogFiles=&lt; number of log files &gt; </span><br><span class="line">-XX:GCLogFileSize=&lt; file size &gt;[ unit ]</span><br><span class="line">-Xloggc:/path/to/gc.log </span><br></pre></td></tr></table></figure>
 ]]></content>
       <categories>
         <category>学习</category>
