@@ -240,14 +240,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>3.1k</span>
+              <span>4.3k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>6 分钟</span>
+              <span>8 分钟</span>
             </span>
             <div class="post-description">类文件结构</div>
 
@@ -375,8 +375,8 @@ alt="image-20221219105523632" />
 <p>常量池结束后，紧接着<strong>两个字节</strong>代表访问标志，这个标志用于识别一些<strong>类</strong>或者<strong>接口</strong>
 <strong>层次</strong>的访问信息，包括<br />
 这个Class是<strong>类</strong>还是<strong>接口</strong>，是否为<strong>public</strong>或者<strong>abstract</strong>类型，如果是类的话是否声明为<strong>final</strong>等等</p>
-<p><strong>类访问和属性</strong>修饰符<br />
-<img
+<p><strong>类访问和属性</strong>修饰符</p>
+<p>【这里好像漏了一个0x0002 ，private 】<img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221219111039047.png"
 alt="image-20221219111039047" /></p>
 <blockquote>
@@ -414,8 +414,60 @@ Java 语言的单继承，所以<strong>父类索引只有一个</strong>，<str
 <strong>后的接口顺序从左到右</strong>排列在接口索引集合中。</li>
 </ul>
 <h2 id="字段表集合-fields">字段表集合 （Fields）</h2>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">u2             fields_count;<span class="comment">//Class 文件的字段的个数</span></span><br><span class="line">field_info     fields[fields_count];<span class="comment">//一个类可以有多个字段 </span></span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>字段表（filed
+info）用于描述<strong>接口</strong>或<strong>类</strong>中声明的变量</p></li>
+<li><p>字段包括<strong>类级变量</strong>以及<strong>实例变量</strong>，但不包括在<strong>方法内部</strong>声明的局部变量
+filed info(字段表)的结构：<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221219134423914.png"
+alt="image-20221219134423914" /></p>
+<ol type="1">
+<li>access_flag：字段的作用域（public、private、protected修饰符）、是<strong>实例变量</strong>还是<strong>类变量</strong>（static修饰符）、可否被<strong>序列化</strong>（transient修饰符）、<strong>可变</strong>性（final）、<strong>可见</strong>性（volatile修饰符，是否强制从主内存读写）</li>
+<li>name_index：对常量池的<strong>引用</strong>，表示的字段的名称</li>
+<li>descriptor_index：对常量池的<strong>引用</strong>，表示<strong>字段和方法</strong>的描述符</li>
+<li>attributes_count：一个字段还会拥有<strong>额外的属性</strong>，attributes_count
+存放属性的个数</li>
+<li>attributes[attriutes_count]: 存放具体属性具体内容</li>
+</ol>
+<p>上述这些信息中，各个<strong>修饰符都是布尔值</strong>，<strong>要么有</strong>某个修饰符，<strong>要么没有</strong>，很适合<strong>使用标志位</strong>来表示。而<strong>字段叫什么名字</strong>、<strong>字段被定义为什么数据类型</strong>这些都是无法固定的，只能<strong>引用常量池中常量</strong>来描述。</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20201031084342859.png"
+alt="字段的 access_flag 的取值" />
+<figcaption aria-hidden="true">字段的 access_flag 的取值</figcaption>
+</figure></li>
+</ul>
 <h2 id="方法表集合methods">方法表集合（Methods）</h2>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">u2             methods_count;<span class="comment">//Class 文件的方法的数量</span></span><br><span class="line">method_info    methods[methods_count];<span class="comment">//一个类可以有个多个方法</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li><p><strong>methods_count</strong> 表示方法的数量，而
+<strong>method_info</strong> 表示方法表。-</p></li>
+<li><p>Class
+文件存储格式中<strong>对方法的描述与对字段的描述几乎采用了完全一致</strong>的方式。方法表的结构如同字段表一样，依次包括了<strong>访问标志</strong>、<strong>名称索引</strong>、<strong>描述符索引</strong>、<strong>属性表</strong>集合几项。</p></li>
+<li><p><strong>method_info（方法表的）结构</strong><br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/%25E6%2596%25B9%25E6%25B3%2595%25E8%25A1%25A8%25E7%259A%2584%25E7%25BB%2593%25E6%259E%2584.png"
+alt="方法表的结构" /> <strong>方法表的 access_flag 取值：</strong> <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20201031084248965.png"
+alt="方法表的 access_flag 取值" /></p>
+<blockquote>
+<p>注意：因为<code>volatile</code>修饰符和<code>transient</code>修饰符不可以修饰方法，所以方法表的访问标志中没有这两个对应的标志，但是增加了<code>synchronized</code>、<code>native</code>、<code>abstract</code>等关键字修饰方法，所以也就多了这些关键字对应的标志。</p>
+</blockquote></li>
+</ul>
 <h2 id="属性表集合attributes">属性表集合（Attributes）</h2>
+<p><strong>如上，字段和方法都拥有属性</strong> 属性大概就是这种 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221219152310600.png"
+alt="image-20221219152310600" /></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">u2             attributes_count;<span class="comment">//此类的属性表中的属性数</span></span><br><span class="line">attribute_info attributes[attributes_count];<span class="comment">//属性表集合</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>在 Class
+文件，<strong>字段表</strong>，<strong>方法表</strong>中都可以携带自己的属性表集合，以用于描述某些场景专有的信息</li>
+<li>与 Class
+文件中其它的数据项目要求的顺序、长度和内容不同，属性表集合的限制稍微宽松一些，不再要求各个属性表具有严格的顺序，并且只要不与已有的属性名重复，任何人实现的编译器都可以向属性表中写
+入自己定义的属性信息，Java 虚拟机运行时会忽略掉它不认识的属性</li>
+</ul>
 
     </div>
 
@@ -439,7 +491,10 @@ Java 语言的单继承，所以<strong>父类索引只有一个</strong>，<str
     <a href="/2022/12/17/review/java_guide/jvm/jdk-monitoring-and-troubleshooting-tools/" rel="prev" title="jvm监控和故障处理工具">
       <i class="fa fa-chevron-left"></i> jvm监控和故障处理工具
     </a></div>
-      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2022/12/19/review/java_guide/jvm/jvm-params/" rel="next" title="jvm参数">
+      jvm参数 <i class="fa fa-chevron-right"></i>
+    </a></div>
     </div>
       </footer>
     
@@ -577,12 +632,12 @@ Class）、父类（Super Class）、接口（Interfaces）索引集合</span></
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">760k</span>
+    <span title="站点总字数">762k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">23:01</span>
+    <span title="站点阅读时长">23:05</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
