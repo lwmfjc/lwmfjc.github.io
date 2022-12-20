@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="并发03">
+<meta property="og:type" content="article">
+<meta property="og:title" content="并发03">
+<meta property="og:url" content="http://example.com/2022/11/07/review/java_guide/java/concurrent/concurrent-03/index.html">
+<meta property="og:site_name" content="随记">
+<meta property="og:description" content="并发03">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-11-07T16:04:33.000Z">
+<meta property="article:modified_time" content="2022-11-21T10:54:33.000Z">
+<meta property="article:author" content="刘易">
+<meta property="article:tag" content="复习">
+<meta property="article:tag" content="复习-javaGuide">
+<meta property="article:tag" content="复习-javaGuide-并发">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2022/11/07/review/java_guide/java/concurrent/concurrent-03/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>并发03 | 随记</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">随记</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/11/07/review/java_guide/java/concurrent/concurrent-03/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/avatar.png">
+      <meta itemprop="name" content="刘易">
+      <meta itemprop="description" content="知命不惧 日日自新">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="随记">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          并发03
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-11-07 16:04:33" itemprop="dateCreated datePublished" datetime="2022-11-07T16:04:33+00:00">2022-11-07</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-11-21 10:54:33" itemprop="dateModified" datetime="2022-11-21T10:54:33+00:00">2022-11-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%AD%A6%E4%B9%A0/" itemprop="url" rel="index"><span itemprop="name">学习</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>24k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>43 分钟</span>
+            </span>
+            <div class="post-description">并发03</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>转载自https://github.com/Snailclimb/JavaGuide
+（添加小部分笔记）感谢作者!</p>
+</blockquote>
+<h2 id="线程池">线程池</h2>
+<ul>
+<li><p>为什么要使用线程池</p>
+<blockquote>
+<ul>
+<li>池化技术：线程池、数据库连接池、Http连接池</li>
+<li>池化技术思想意义：为了减少每次获取资源的消耗，提高对资源的利用率</li>
+</ul>
+</blockquote>
+<ul>
+<li>线程池提供了<strong>限制</strong>和<strong>管理</strong>资源(包括执行一个任务)的方法</li>
+<li>每个线程池还维护基本统计信息，例如已完成任务的数量</li>
+<li>好处：
+<ol type="1">
+<li><strong>降低资源消耗</strong>
+重复利用已创建线程降低线程创建和销毁造成的消耗</li>
+<li>提高响应速度 任务到达时，任务可以不需等到线程创建就能继续执行</li>
+<li>提高线程的可管理性
+线程是稀缺资源，如果无限制创建，不仅<strong>消耗系统资源</strong>，还会<strong>降低系统的稳定性</strong>，使用线程池统一<strong>管理分配</strong>、<strong>调优</strong>和<strong>监控</strong>。</li>
+</ol></li>
+</ul></li>
+<li><p>实现Runnable接口和Callable接口的区别</p>
+<ul>
+<li>Runnable接口不会返回接口或抛出检查异常，Callable接口可以</li>
+<li>Executors可以实现将Runnable对象转换成Callable对象<br />
+Executors.callable(Runnable
+task)<code>或</code>Executors.callable(Runnable task, Object result)
+//则两个方法，运行的结果是 Callable<Object></li>
+</ul>
+<p>Runnable和Callable：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//Runnable.java</span></span><br><span class="line"><span class="meta">@FunctionalInterface</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Runnable</span> &#123;</span><br><span class="line">   <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 被线程执行，没有返回值也无法抛出异常</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//=========================================</span></span><br><span class="line"><span class="comment">//Callable.java</span></span><br><span class="line"><span class="meta">@FunctionalInterface</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Callable</span>&lt;V&gt; &#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 计算结果，或在无法这样做时抛出异常。</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 计算得出的结果</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> 如果无法计算结果，则抛出异常</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    V <span class="title function_">call</span><span class="params">()</span> <span class="keyword">throws</span> Exception;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>执行execute()和submit()方法的区别是什么</p>
+<ol type="1">
+<li><p><strong>execute()</strong>
+方法用于提交<strong>不需要返回值的任务</strong>，所以<strong>无法判断任务是否被线程池执行成功</strong></p></li>
+<li><p><strong>submit()</strong>方法用于提交<strong>需要返回值的任务</strong>，线程池会<strong>返回一个Future类型</strong>的对象，通过这个Future对象<strong>可以判断任务是否返回成功</strong></p>
+<ul>
+<li><p>这个Future的get()方法来获取返回值，get()方法会阻塞当前线程直到任务完成；
+使用get(long timeout,TimeUnit unit)
+方法会在阻塞当前线程一段时间后立即返回(此时任务不一定已经执行完) 注意:
+这里的get()不一定会有返回值的，例子如下</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">        <span class="type">ExecutorService</span> <span class="variable">executorService</span> <span class="operator">=</span> Executors.newCachedThreadPool();</span><br><span class="line">        Callable&lt;MyClass&gt; myClassCallable = <span class="keyword">new</span> <span class="title class_">Callable</span>&lt;MyClass&gt;() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="keyword">public</span> MyClass <span class="title function_">call</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">                <span class="type">MyClass</span> <span class="variable">myClass1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">MyClass</span>();</span><br><span class="line">                myClass1.setName(<span class="string">&quot;ly-callable-测试&quot;</span>);</span><br><span class="line">                TimeUnit.SECONDS.sleep(<span class="number">2</span>);</span><br><span class="line">                <span class="keyword">return</span> myClass1;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line">        Future&lt;?&gt; submit = executorService.submit(myClassCallable);</span><br><span class="line">        <span class="comment">//这里会阻塞</span></span><br><span class="line">        <span class="type">Object</span> <span class="variable">o</span> <span class="operator">=</span> submit.get();</span><br><span class="line">        log.info(<span class="string">&quot;ly-callable-打印结果1:&quot;</span> + o);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        FutureTask&lt;MyClass&gt; futureTask = <span class="keyword">new</span> <span class="title class_">FutureTask</span>&lt;&gt;(() -&gt; &#123;</span><br><span class="line">            <span class="type">MyClass</span> <span class="variable">myClass1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">MyClass</span>();</span><br><span class="line">            myClass1.setName(<span class="string">&quot;ly-FutureTask-测试&quot;</span>);</span><br><span class="line">            TimeUnit.SECONDS.sleep(<span class="number">2</span>);</span><br><span class="line">            <span class="keyword">return</span> myClass1;</span><br><span class="line">        &#125;);</span><br><span class="line">        Future&lt;?&gt; submit2 = executorService.submit(futureTask);</span><br><span class="line">        <span class="comment">//这里会阻塞</span></span><br><span class="line">        <span class="type">Object</span> <span class="variable">o2</span> <span class="operator">=</span> submit2.get();</span><br><span class="line">        log.info(<span class="string">&quot;ly-callable-打印结果2:&quot;</span> + o2);</span><br><span class="line">        executorService.shutdown();</span><br><span class="line"></span><br><span class="line"><span class="comment">/*结果</span></span><br><span class="line"><span class="comment">2022-11-09 10:19:10 上午 [Thread: main] </span></span><br><span class="line"><span class="comment">INFO:ly-callable-打印结果1:MyClass(name=ly-callable-测试)</span></span><br><span class="line"><span class="comment">2022-11-09 10:19:12 上午 [Thread: main] </span></span><br><span class="line"><span class="comment">INFO:ly-callable-打印结果2:null</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+<p>当submit一个Callable对象的时候，能从submit返回的Futureget到返回值；当submit一个FutureTask对象时，没法获取返回值，因为会被当作Runnable对象submit进来</p>
+<p><img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221109103922513.png"
+alt="image-20221109103922513" />
+而入参为Runnable时返回值里是get不到结果的</p></li>
+</ul></li>
+<li><p>下面这段源码，解释了为什么当传入的类型是Runnable对象时，结果为null</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//源码AbstractExecutorService 接口中的一个submit方法</span></span><br><span class="line"><span class="keyword">public</span> Future&lt;?&gt; submit(Runnable task) &#123;</span><br><span class="line">    <span class="keyword">if</span> (task == <span class="literal">null</span>) <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">NullPointerException</span>();</span><br><span class="line">    RunnableFuture&lt;Void&gt; ftask = newTaskFor(task, <span class="literal">null</span>);</span><br><span class="line">    execute(ftask);</span><br><span class="line">    <span class="keyword">return</span> ftask;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//其中的newTaskFor方法</span></span><br><span class="line"><span class="keyword">protected</span> &lt;T&gt; RunnableFuture&lt;T&gt; <span class="title function_">newTaskFor</span><span class="params">(Runnable runnable, T value)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">FutureTask</span>&lt;T&gt;(runnable, value);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//execute()方法</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">execute</span><span class="params">(Runnable command)</span> &#123;</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ol></li>
+<li><p>如何创建线程池</p>
+<ul>
+<li><p>不允许使用Executors去创建，而是通过new
+ThreadPoolExecutor的方式：能让写的同学明确线程池运行规则，规避资源耗尽</p>
+<blockquote>
+<p>使用Executors返回线程池对象的弊端：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//#####时间表示keepAliveTime#####</span></span><br><span class="line"><span class="comment">//########线程数量固定，队列长度为Integer.MAX################</span></span><br><span class="line">Executors.newFixedThreadPool(<span class="number">3</span>);</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> ExecutorService <span class="title function_">newFixedThreadPool</span><span class="params">(<span class="type">int</span> nThreads)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">ThreadPoolExecutor</span>(nThreads, nThreads,</span><br><span class="line">                                      <span class="number">0L</span>, TimeUnit.MILLISECONDS,</span><br><span class="line">                                      <span class="keyword">new</span> <span class="title class_">LinkedBlockingQueue</span>&lt;Runnable&gt;());</span><br><span class="line">    &#125;</span><br><span class="line"><span class="comment">//############线程数量固定，队列长度为Integer.MAX############## </span></span><br><span class="line">Executors.newSingleThreadExecutor(Executors.defaultThreadFactory());</span><br><span class="line"> <span class="keyword">public</span> <span class="keyword">static</span> ExecutorService <span class="title function_">newSingleThreadExecutor</span><span class="params">(ThreadFactory threadFactory)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">FinalizableDelegatedExecutorService</span></span><br><span class="line">            (<span class="keyword">new</span> <span class="title class_">ThreadPoolExecutor</span>(<span class="number">1</span>, <span class="number">1</span>,</span><br><span class="line">                                    <span class="number">0L</span>, TimeUnit.MILLISECONDS,</span><br><span class="line">                                    <span class="keyword">new</span> <span class="title class_">LinkedBlockingQueue</span>&lt;Runnable&gt;(),</span><br><span class="line">                                    threadFactory));</span><br><span class="line"><span class="comment">//############线程数量为Integer.MAX############# </span></span><br><span class="line">Executors.newCachedThreadPool(Executors.defaultThreadFactory());</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> ExecutorService <span class="title function_">newCachedThreadPool</span><span class="params">(ThreadFactory threadFactory)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">ThreadPoolExecutor</span>(<span class="number">0</span>, Integer.MAX_VALUE,</span><br><span class="line">                                      <span class="number">60L</span>, TimeUnit.SECONDS,</span><br><span class="line">                                      <span class="keyword">new</span> <span class="title class_">SynchronousQueue</span>&lt;Runnable&gt;(),</span><br><span class="line">                                      threadFactory);</span><br><span class="line">    &#125;</span><br><span class="line"><span class="comment">//#############线程数量为Integer.MAX############# </span></span><br><span class="line">Executors.newScheduledThreadPool(<span class="number">3</span>, Executors.defaultThreadFactory()); </span><br><span class="line">     <span class="keyword">public</span> <span class="keyword">static</span> ScheduledExecutorService <span class="title function_">newScheduledThreadPool</span><span class="params">(</span></span><br><span class="line"><span class="params">            <span class="type">int</span> corePoolSize, ThreadFactory threadFactory)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">ScheduledThreadPoolExecutor</span>(corePoolSize, threadFactory);</span><br><span class="line">    &#125;</span><br><span class="line">     ====================&gt;</span><br><span class="line"><span class="keyword">public</span> <span class="title function_">ScheduledThreadPoolExecutor</span><span class="params">(<span class="type">int</span> corePoolSize,</span></span><br><span class="line"><span class="params">                                       ThreadFactory threadFactory)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>(corePoolSize, Integer.MAX_VALUE, <span class="number">0</span>, NANOSECONDS,</span><br><span class="line">              <span class="keyword">new</span> <span class="title class_">DelayedWorkQueue</span>(), threadFactory);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>FixedThreadPool</strong>和<strong>SingleThreadExecutor</strong>：这两个方案允许请求的队列长度为Integer.MAX_VALUE，可能<strong>堆积大量请求</strong>，导致OOM</li>
+<li><strong>CachedThreadPool</strong>和<strong>ScheduledThreadPool</strong>：允许创建的线程数量为Integer.MAX_VALUE，可能<strong>创建大量线程</strong>，导致OOM</li>
+</ul>
+</blockquote></li>
+<li><p>通过构造方法实现 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221109171604573.png"
+alt="image-20221109171604573" /></p></li>
+<li><p>通过Executor框架的工具类Executors来实现
+以下三个方法，返回的类型都是ThreadPoolExecutor</p>
+<ul>
+<li>FixedThreadPool :
+该方法返回<strong>固定线程数量</strong>的线程池，线程数量<strong>始终不变</strong>。当有新任务提交时，线程池中若有空闲线程则立即执行；若没有，则新任务被暂存到任务队列中，待有线程空闲时，则处理在任务队列中的任务</li>
+<li>SingleThreadExecutor：方法返回一个<strong>只有一个线程</strong>的线程池。若多余一个任务被提交到该线程池，任务被保存到一个任务队列中，待线程空闲，按先进先出的顺序执行队列中任务</li>
+<li>CachedThreadPool：该方法返回一个<strong>根据实际情况调整线程数量</strong>的线程池。
+数量不固定，若有空闲线程可以复用则<strong>优先使用可复用</strong>线程。若<strong>所有线程均工作，此时又有新任务</strong>提交，则<strong>创建新线程</strong>处理任务。所有线程在当前任务执行完毕后返回线程池进行复用</li>
+</ul>
+<p>Executors工具类中的方法<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221110104950618.png"
+alt="image-20221110104950618" /></p></li>
+<li><p>ThreadPoolExecutor类分析
+该类提供四个构造方法，看最长那个，其余的都是（给定默认值后）调用这个方法</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 用给定的初始参数创建一个新的ThreadPoolExecutor。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="title function_">ThreadPoolExecutor</span><span class="params">(<span class="type">int</span> corePoolSize,</span></span><br><span class="line"><span class="params">                      <span class="type">int</span> maximumPoolSize,</span></span><br><span class="line"><span class="params">                      <span class="type">long</span> keepAliveTime,</span></span><br><span class="line"><span class="params">                      TimeUnit unit,</span></span><br><span class="line"><span class="params">                      BlockingQueue&lt;Runnable&gt; workQueue,</span></span><br><span class="line"><span class="params">                      ThreadFactory threadFactory,</span></span><br><span class="line"><span class="params">                      RejectedExecutionHandler handler)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (corePoolSize &lt; <span class="number">0</span> ||</span><br><span class="line">        maximumPoolSize &lt;= <span class="number">0</span> ||</span><br><span class="line">        maximumPoolSize &lt; corePoolSize ||</span><br><span class="line">        keepAliveTime &lt; <span class="number">0</span>)</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>();</span><br><span class="line">    <span class="keyword">if</span> (workQueue == <span class="literal">null</span> || threadFactory == <span class="literal">null</span> || handler == <span class="literal">null</span>)</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">NullPointerException</span>();</span><br><span class="line">    <span class="built_in">this</span>.corePoolSize = corePoolSize;</span><br><span class="line">    <span class="built_in">this</span>.maximumPoolSize = maximumPoolSize;</span><br><span class="line">    <span class="built_in">this</span>.workQueue = workQueue;</span><br><span class="line">    <span class="built_in">this</span>.keepAliveTime = unit.toNanos(keepAliveTime);</span><br><span class="line">    <span class="built_in">this</span>.threadFactory = threadFactory;</span><br><span class="line">    <span class="built_in">this</span>.handler = handler;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>构造函数重要参数分析<br />
+corePoolSize :
+核心线程数定义<strong>最小可以运行的线程数</strong>量<br />
+maximumPoolSize:
+当队列中存放的任务<strong>达到队列容量时</strong>，当前可以同时运行的线程数量<strong>变为最大线程数</strong><br />
+workQueue：当新线程来的时候先判断当前运行线程数量是否<strong>达到核心</strong>线程数，如果达到的话，<strong>新任务就会被存放在队列</strong>中
+ThreadPoolExecutor其他常见参数：</p>
+<ol type="1">
+<li><p>keepAliveTime：如果线程池中的线程数量大于corePoolSize时，如果这时没有新任务提交，核心线程外的线程不会立即销毁，而是等待，等待的时间超过了keepAliveTime就会被回收</p></li>
+<li><p>unit: keepAliveTime参数的时间单位</p></li>
+<li><p>threadFactory: executor创建新线程的时候会用到</p></li>
+<li><p>handle: 饱和策略</p>
+<blockquote>
+<p>如果同时运行的线程数量达到最大线程数，且队列已经被放满任务，ThreadPoolTaskExecutor定义该情况下的策略：</p>
+<ul>
+<li><strong><code>ThreadPoolExecutor.AbortPolicy</code>：</strong> 抛出
+<code>RejectedExecutionException</code>来拒绝新任务的处理。</li>
+<li><strong><code>ThreadPoolExecutor.CallerRunsPolicy</code>：</strong>
+调用<strong>执行自己的线程(如果在main方法中，那就是main线程)</strong>运行任务，也就是直接在<strong>调用<code>execute</code>方法的线程</strong>中<strong>运行(<code>run</code>)被拒绝的任务</strong>，如果<strong>执行程序已关闭，则会丢弃该任务</strong>。因此这种策略会降低对于新任务提交速度，影响程序的整体性能。如果您的应用程序可以承受此延迟并且你要求任何一个任务请求都要被执行的话，你可以选择这个策略。</li>
+<li><strong><code>ThreadPoolExecutor.DiscardPolicy</code>：</strong>
+不处理新任务，直接丢弃掉。</li>
+<li><strong><code>ThreadPoolExecutor.DiscardOldestPolicy</code>：</strong>
+此策略将丢弃最早的未处理的任务请求。</li>
+</ul>
+</blockquote>
+<p>使用ThreadPoolTaskExecutor或ThreadPoolExecutor构造函数创建线程池时，若不指定RejectExcecutorHandler饱和策略则默认使用ThreadPoolExecutor.AbortPolicy，即抛出RejectedExecution来拒绝新来的任务；对于可伸缩程序，建议使用ThreadPoolExecutor.CallerRunsPolicy，</p></li>
+</ol></li>
+<li><p>一个简单的线程池Demo</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//定义一个Runnable接口实现类</span></span><br><span class="line"><span class="keyword">import</span> java.util.Date;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 这是一个简单的Runnable类，需要大约5秒钟来执行其任务。</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> shuang.kou</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyRunnable</span> <span class="keyword">implements</span> <span class="title class_">Runnable</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> String command;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">MyRunnable</span><span class="params">(String s)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.command = s;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(Thread.currentThread().getName() + <span class="string">&quot; Start. Time = &quot;</span> + <span class="keyword">new</span> <span class="title class_">Date</span>());</span><br><span class="line">        processCommand();</span><br><span class="line">        System.out.println(Thread.currentThread().getName() + <span class="string">&quot; End. Time = &quot;</span> + <span class="keyword">new</span> <span class="title class_">Date</span>());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">processCommand</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            Thread.sleep(<span class="number">5000</span>);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">toString</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">this</span>.command;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//实际执行</span></span><br><span class="line"><span class="keyword">import</span> java.util.concurrent.ArrayBlockingQueue;</span><br><span class="line"><span class="keyword">import</span> java.util.concurrent.ThreadPoolExecutor;</span><br><span class="line"><span class="keyword">import</span> java.util.concurrent.TimeUnit;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ThreadPoolExecutorDemo</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">CORE_POOL_SIZE</span> <span class="operator">=</span> <span class="number">5</span>;<span class="comment">//核心线程数5</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">MAX_POOL_SIZE</span> <span class="operator">=</span> <span class="number">10</span>;<span class="comment">//最大线程数10</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">QUEUE_CAPACITY</span> <span class="operator">=</span> <span class="number">100</span>;<span class="comment">//队列容量100</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">Long</span> <span class="variable">KEEP_ALIVE_TIME</span> <span class="operator">=</span> <span class="number">1L</span>;<span class="comment">//等待时间</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//使用阿里巴巴推荐的创建线程池的方式</span></span><br><span class="line">        <span class="comment">//通过ThreadPoolExecutor构造函数自定义参数创建</span></span><br><span class="line">        <span class="type">ThreadPoolExecutor</span> <span class="variable">executor</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ThreadPoolExecutor</span>(</span><br><span class="line">                CORE_POOL_SIZE,</span><br><span class="line">                MAX_POOL_SIZE,</span><br><span class="line">                KEEP_ALIVE_TIME,</span><br><span class="line">                TimeUnit.SECONDS,</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">ArrayBlockingQueue</span>&lt;&gt;(QUEUE_CAPACITY),</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">ThreadPoolExecutor</span>.CallerRunsPolicy());</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; <span class="number">10</span>; i++) &#123;</span><br><span class="line">            <span class="comment">//创建 MyRunnable 对象（MyRunnable 类实现了Runnable 接口）</span></span><br><span class="line">            <span class="type">Runnable</span> <span class="variable">worker</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">MyRunnable</span>(<span class="string">&quot;&quot;</span> + i);</span><br><span class="line">            <span class="comment">//执行Runnable</span></span><br><span class="line">            executor.execute(worker);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//终止线程池</span></span><br><span class="line">        executor.shutdown();</span><br><span class="line">        <span class="keyword">while</span> (!executor.isTerminated()) &#123;</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.println(<span class="string">&quot;Finished all threads&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*------输出</span></span><br><span class="line"><span class="comment">pool-1-thread-3 Start. Time = Sun Apr 12 11:14:37 CST 2020</span></span><br><span class="line"><span class="comment">pool-1-thread-5 Start. Time = Sun Apr 12 11:14:37 CST 2020</span></span><br><span class="line"><span class="comment">pool-1-thread-2 Start. Time = Sun Apr 12 11:14:37 CST 2020</span></span><br><span class="line"><span class="comment">pool-1-thread-1 Start. Time = Sun Apr 12 11:14:37 CST 2020</span></span><br><span class="line"><span class="comment">pool-1-thread-4 Start. Time = Sun Apr 12 11:14:37 CST 2020</span></span><br><span class="line"><span class="comment">pool-1-thread-3 End. Time = Sun Apr 12 11:14:42 CST 2020</span></span><br><span class="line"><span class="comment">pool-1-thread-4 End. Time = Sun Apr 12 11:14:42 CST 2020</span></span><br><span class="line"><span class="comment">pool-1-thread-1 End. Time = Sun Apr 12 11:14:42 CST 2020</span></span><br><span class="line"><span class="comment">pool-1-thread-5 End. Time = Sun Apr 12 11:14:42 CST 2020</span></span><br><span class="line"><span class="comment">pool-1-thread-1 Start. Time = Sun Apr 12 11:14:42 CST 2020</span></span><br><span class="line"><span class="comment">pool-1-thread-2 End. Time = Sun Apr 12 11:14:42 CST 2020</span></span><br><span class="line"><span class="comment">pool-1-thread-5 Start. Time = Sun Apr 12 11:14:42 CST 2020</span></span><br><span class="line"><span class="comment">pool-1-thread-4 Start. Time = Sun Apr 12 11:14:42 CST 2020</span></span><br><span class="line"><span class="comment">pool-1-thread-3 Start. Time = Sun Apr 12 11:14:42 CST 2020</span></span><br><span class="line"><span class="comment">pool-1-thread-2 Start. Time = Sun Apr 12 11:14:42 CST 2020</span></span><br><span class="line"><span class="comment">pool-1-thread-1 End. Time = Sun Apr 12 11:14:47 CST 2020</span></span><br><span class="line"><span class="comment">pool-1-thread-4 End. Time = Sun Apr 12 11:14:47 CST 2020</span></span><br><span class="line"><span class="comment">pool-1-thread-5 End. Time = Sun Apr 12 11:14:47 CST 2020</span></span><br><span class="line"><span class="comment">pool-1-thread-3 End. Time = Sun Apr 12 11:14:47 CST 2020</span></span><br><span class="line"><span class="comment">pool-1-thread-2 End. Time = Sun Apr 12 11:14:47 CST 2020</span></span><br><span class="line"><span class="comment">------ </span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure></li>
+</ul></li>
+<li><p>线程池分析原理
+由结果可以看出，线程池<strong>先执行5个任务</strong>，此时多出的任务会放到<strong>队列</strong>，那5个任务中<strong>有任务执行完</strong>的话，会拿新的任务执行</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//源码分析</span></span><br><span class="line"><span class="comment">// 存放线程池的运行状态 (runState) 和线程池内有效线程的数量 (workerCount)</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> <span class="type">AtomicInteger</span> <span class="variable">ctl</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">AtomicInteger</span>(ctlOf(RUNNING, <span class="number">0</span>));</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="type">int</span> <span class="title function_">workerCountOf</span><span class="params">(<span class="type">int</span> c)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> c &amp; CAPACITY;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> BlockingQueue&lt;Runnable&gt; workQueue;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">execute</span><span class="params">(Runnable command)</span> &#123;</span><br><span class="line">    <span class="comment">// 如果任务为null，则抛出异常。</span></span><br><span class="line">    <span class="keyword">if</span> (command == <span class="literal">null</span>)</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">NullPointerException</span>();</span><br><span class="line">    <span class="comment">// ctl 中保存的线程池当前的一些状态信息</span></span><br><span class="line">    <span class="type">int</span> <span class="variable">c</span> <span class="operator">=</span> ctl.get();</span><br><span class="line"></span><br><span class="line">    <span class="comment">//  下面会涉及到 3 步 操作</span></span><br><span class="line">    <span class="comment">// 1.首先判断当前线程池中执行的任务数量是否小于 corePoolSize</span></span><br><span class="line">    <span class="comment">// 如果小于的话，通过addWorker(command, true)新建一个线程，并将任务(command)添加到该线程中；然后，启动该线程从而执行任务。</span></span><br><span class="line">    <span class="keyword">if</span> (workerCountOf(c) &lt; corePoolSize) &#123;</span><br><span class="line">        <span class="keyword">if</span> (addWorker(command, <span class="literal">true</span>))</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        c = ctl.get();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 2.如果当前执行的任务数量大于等于 corePoolSize 的时候就会走到这里</span></span><br><span class="line">    <span class="comment">// 通过 isRunning 方法判断线程池状态，线程池处于 RUNNING 状态并且队列可以加入任务，该任务才会被加入进去</span></span><br><span class="line">    <span class="keyword">if</span> (isRunning(c) &amp;&amp; workQueue.offer(command)) &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">recheck</span> <span class="operator">=</span> ctl.get();</span><br><span class="line">        <span class="comment">// 再次获取线程池状态，如果线程池状态不是 RUNNING 状态就需要从任务队列中移除任务，并尝试判断线程是否全部执行完毕。同时执行拒绝策略。</span></span><br><span class="line">        <span class="keyword">if</span> (!isRunning(recheck) &amp;&amp; remove(command))</span><br><span class="line">            reject(command);</span><br><span class="line">            <span class="comment">// 如果当前线程池为空就新创建一个线程并执行。</span></span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (workerCountOf(recheck) == <span class="number">0</span>)</span><br><span class="line">            addWorker(<span class="literal">null</span>, <span class="literal">false</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//3. 通过addWorker(command, false)新建一个线程，并将任务(command)添加到该线程中；然后，启动该线程从而执行任务。</span></span><br><span class="line">    <span class="comment">//如果addWorker(command, false)执行失败，则通过reject()执行相应的拒绝策略的内容。</span></span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (!addWorker(command, <span class="literal">false</span>))</span><br><span class="line">        reject(command);</span><br><span class="line">&#125;</span><br><span class="line">------ </span><br></pre></td></tr></table></figure>
+<p>如图 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221117140008973.png"
+alt="image-20221117140008973" /> 分析上面的例子，</p>
+<blockquote>
+<p>我们在代码中模拟了 10 个任务，我们配置的核心线程数为 5
+、等待队列容量为 100 ，所以每次只可能存在 5 个任务同时执行，剩下的 5
+个任务会被放到等待队列中去。当前的5个任务中如果有任务被执行完了，线程池就会去拿新的任务执行。</p>
+</blockquote></li>
+</ul>
+<h2 id="atomic原子类">Atomic原子类</h2>
+<p>Atomic <code>英[əˈtɒmɪk]</code>原子，即不可分割</p>
+<p>线程中，Atomic，指一个操作是不可中断的，即使在多线程一起执行时，一个操作一旦开始，就不会被其他线程干扰</p>
+<p>原子类，即具有<strong>原子/原子操作特性</strong>的类。并发包<code>java.util.concurrent</code>原子类都放在<code>java.util.concurrent.atomit</code>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221117152847851.png"
+alt="image-20221117152847851" /></p>
+<p>Java中存在四种原子类（基本、数组、引用、对象属性）</p>
+<ol type="1">
+<li>基本类型：AtomicInteger，AtomicLong，AtomicBoolean</li>
+<li>数组类型：AtomicIntegerArray，AtomicLongArray，AtomicReferenceArray</li>
+<li>引用类型：AtomicReference，AtomicStampedReference（原子更新带有版本号的引用类型。该类将整数值与引用关联，解决原子的更新数据和数据的版本号，解决使用CAS进行原子更新可能出现的ABA问题），AtomicMarkableReference（原子更新带有标记位的引用类型）</li>
+<li>对象属性修改类型：AtomicIntegerFiledUpdater原子更新整型字段的更新器；AtomicLongFiledUpdater；AtomicReferenceFieldUpdater</li>
+</ol>
+<h3 id="atomicinteger的使用">AtomicInteger的使用</h3>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//AtomicInteger类常用方法(下面的自增，都使用了CAS，是同步安全的)</span></span><br><span class="line">ublic <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">get</span><span class="params">()</span> <span class="comment">//获取当前的值</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">getAndSet</span><span class="params">(<span class="type">int</span> newValue)</span><span class="comment">//获取当前的值，并设置新的值</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">getAndIncrement</span><span class="params">()</span><span class="comment">//获取当前的值，并自增</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">getAndDecrement</span><span class="params">()</span> <span class="comment">//获取当前的值，并自减</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">getAndAdd</span><span class="params">(<span class="type">int</span> delta)</span> <span class="comment">//获取当前的值，并加上预期的值</span></span><br><span class="line"><span class="type">boolean</span> <span class="title function_">compareAndSet</span><span class="params">(<span class="type">int</span> expect, <span class="type">int</span> update)</span> <span class="comment">//如果输入的数值等于预期值，则以原子方式将该值设置为输入值（update）</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title function_">lazySet</span><span class="params">(<span class="type">int</span> newValue)</span><span class="comment">//最终设置为newValue,使用 lazySet 设置之后可能导致其他线程在之后的一小段时间内还是可以读到旧的值。</span></span><br><span class="line">------</span><br><span class="line"><span class="comment">//使用如下</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">AtomicIntegerTest</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">AtomicInteger</span> <span class="variable">count</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">AtomicInteger</span>();</span><br><span class="line">    <span class="comment">//使用AtomicInteger之后，不需要对该方法加锁，也可以实现线程安全。</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">increment</span><span class="params">()</span> &#123;</span><br><span class="line">        count.incrementAndGet();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">getCount</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> count.get();</span><br><span class="line">    &#125;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+<h3 id="浅谈atomicinteger实现原理">浅谈AtomicInteger实现原理</h3>
+<ol type="1">
+<li><p>位于Java.util.concurrent.atomic包下，对int封装，提供<strong>原子性的访问和更新</strong>操作，其原子性操作的实现基于CAS（CompareAndSet）</p>
+<ul>
+<li>CAS，比较并交换，Java并发中lock-free机制的基础，调用Sun的Unsafe的CompareAndSwapInt完成，为native方法，<strong>基于CPU的CAS</strong>指令来实现的，即无阻塞；且为CAS原语</li>
+<li>CAS：三个参数，1. 当前内存值V 2.旧的预期值
+3.即将更新的值，当且仅当预期值A和内存值相同时，将内存值改为 8
+并返回true；否则返回false
+<code>在JAVA中,CAS通过调用C++库实现，由C++库再去调用CPU指令集。</code></li>
+<li>CAS确定
+<ul>
+<li><p>ABA　问题 如果期间发生了 A -&gt; B -&gt; A 的更新，仅仅判断数值是
+A，可能导致不合理的修改操作；为此，提供了AtomicStampedReference
+工具类，为引用建立类似版本号ｓｔａｍｐ的方式</p></li>
+<li><p>循环时间长，开销大。CAS适用于<strong>竞争情况短暂</strong>的情况，有需要的时候要限制自旋次数，以免过度消耗CPU</p></li>
+<li><p>只能保证一个共享变量的原子操作
+对多个共享变量操作时，循环CAS就无法保证操作的原子性，这个时候就可以用锁；或者取巧一下，比如
+i = 2 , j = a ，合并后为 ij = 2a ，然后cas操作2a</p>
+<blockquote>
+<p>Java1.5开始JDK提供了<strong>AtomicReference</strong>类来保证引用对象之间的原子性，你可以把<strong>多个变量放在一个对象</strong>里来进行CAS操作，例子如下：
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221118113655799.png"
+alt="image-20221118113655799" />
+如图，它是同时更新了两个变量，而这两个变量都在新的对象上，所以就能解决多个共享变量的问题，即“将问题转换成，如果变量更新了，则更换一个对象”</p>
+</blockquote></li>
+</ul></li>
+</ul></li>
+<li><p>AtomicInteger原理浅析</p>
+<p>一些公共属性：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">AtomicInteger</span> <span class="keyword">extends</span> <span class="title class_">Number</span> <span class="keyword">implements</span> <span class="title class_">java</span>.io.Serializable &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">long</span> <span class="variable">serialVersionUID</span> <span class="operator">=</span> <span class="number">6214790243416807050L</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// setup to use Unsafe.compareAndSwapInt for updates</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">Unsafe</span> <span class="variable">unsafe</span> <span class="operator">=</span> Unsafe.getUnsafe();</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">long</span> valueOffset;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            valueOffset = unsafe.objectFieldOffset</span><br><span class="line">                (AtomicInteger.class.getDeclaredField(<span class="string">&quot;value&quot;</span>));</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception ex) &#123; <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>(ex); &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="type">int</span> value;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>AtomicInteger，根据<strong>valueOffset</strong>代表的该变量值，<strong>在内存中的偏移地址</strong>，从而获取数据；且value用volatile修饰，保证多线程之间的可见性</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">getAndIncrement</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> unsafe.getAndAddInt(<span class="built_in">this</span>, valueOffset, <span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//unsafe.getAndAddInt</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">getAndAddInt</span><span class="params">(Object var1, <span class="type">long</span> var2, <span class="type">int</span> var4)</span> &#123;</span><br><span class="line">    <span class="type">int</span> var5;</span><br><span class="line">    <span class="keyword">do</span> &#123;</span><br><span class="line">        var5 = <span class="built_in">this</span>.getIntVolatile(var1, var2);</span><br><span class="line">    &#125; <span class="keyword">while</span>(!<span class="built_in">this</span>.compareAndSwapInt(var1, var2, var5, var5 + var4));<span class="comment">//先获取var1对象的偏移量为var2的内存地址上的值，设置为var5</span></span><br><span class="line"><span class="comment">//如果此刻还是var5，+1并赋值，否则重新获取</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> var5;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>假设线程1和线程2通过getIntVolatile拿到value的值都为1，线程1被挂起，线程2继续执行</li>
+<li>线程2在compareAndSwapInt操作中由于预期值和内存值都为1，因此成功将内存值更新为2</li>
+<li>线程1继续执行，在compareAndSwapInt操作中，预期值是1，而当前的内存值为2，CAS操作失败，什么都不做，返回false</li>
+<li>线程1重新通过getIntVolatile拿到最新的value为2，再进行一次compareAndSwapInt操作，这次操作成功，内存值更新为3</li>
+</ul></li>
+<li><p>原子操作的实现原理</p>
+<ul>
+<li>Java中的CAS操作正是利用了处理器提供的CMPXCHG指令实现的。自旋CAS实现的基本思路就是循环进行CAS操作直到操作成功为止。</li>
+<li>在CAS中有三个操作数：分别是内存地址（在Java中可以简单理解为变量的内存地址，用V表示）、旧的预期值（用A表示）和新值（用B表示）。CAS指令执行时，当且仅当V符合旧的预期值A时，处理器才会用新值B更新V的值，否则他就不执行更新，但无论是否更新了V的值，都会返回V的旧值。(<strong>这里说的三个值，指的是逻辑概念，而不是实际概念</strong>)</li>
+</ul></li>
+</ol>
+<h3 id="java实现cas的原理">Java实现CAS的原理</h3>
+<p>i++是非线程安全的，因为<strong>i++不是原子</strong>操作；可以使用<strong>synchronized和CAS实现加锁</strong></p>
+<p><strong>synchronized是悲观锁</strong>，一旦获得锁，其他线程进入后就会阻塞等待锁；而<strong>CAS是乐观锁</strong>，执行时不会加锁，假设没有冲突，<strong>如果因为冲突失败了就重试</strong>，直到成功</p>
+<ul>
+<li><p>乐观锁和悲观锁</p>
+<ul>
+<li>这是一种分类方式</li>
+<li><strong>悲观锁</strong>，总是认为<strong>每次访问共享资源会发生冲突</strong>，所以<strong>必须对每次数据操作加锁</strong>，以<strong>保证临界区的程序同一时间只能有一个线程</strong>在执行</li>
+<li>乐观锁，又称<strong>“无锁”</strong>，<strong>假设对共享资源访问没有冲突</strong>，线程可以不停的执行，无需加锁无需等待；一旦发生冲突，通常是使用一种称为CAS的技术保证线程执行安全
+<ul>
+<li>无锁没有锁的存在，因此不可能发生死锁，即乐观锁天生免疫死锁</li>
+<li>乐观锁用于“读多写少”的环境，避免加锁频繁影响性能；悲观锁用于“写多读少”，避免频繁失败及重试影响性能</li>
+</ul></li>
+</ul></li>
+<li><p>CAS概念，即CompareAndSwap
+，比较和交换，CAS中，有三个值（概念上）<br />
+V：要更新的变量(var)；E：期望值（expected）；N：新值（new）
+判断V是否等于E，如果等于，将V的值设置为N；如果不等，说明已经有其它线程更新了V，则当前线程放弃更新，什么都不做。
+一般来说，预期值E本质上指的是“旧值”（判断是否修改了）</p>
+<blockquote>
+<ol type="1">
+<li>如果有一个多个线程共享的变量<code>i</code>原本等于5，我现在在线程A中，想把它设置为新的值6;</li>
+<li>我们使用CAS来做这个事情；</li>
+<li>首先我们用i去与5对比，发现它等于5，说明没有被其它线程改过，那我就把它设置为新的值6，此次CAS成功，<code>i</code>的值被设置成了6；</li>
+<li>如果不等于5，说明<code>i</code>被其它线程改过了（比如现在<code>i</code>的值为2），那么我就什么也不做，此次CAS失败，<code>i</code>的值仍然为2。</li>
+</ol>
+<p>其中i为V，5为E，6为N</p>
+</blockquote>
+<p>CAS是一种原子操作，它是一种系统原语，是一条CPU原子指令，从CPU层面保证它的原子性（<strong>不可能出现说，判断了i为5之后，正准备更新它的值，此时该值被其他线程改了</strong>）</p>
+<p>当<strong>多个线程同时使用CAS操作一个变量</strong>时，<strong>只有一个会胜出，并成功更新</strong>，<strong>其余均会失败</strong>，但<strong>失败的线程并不会被挂起</strong>，仅是<strong>被告知失败，并且允许再次尝试</strong>，当然也<strong>允许失败的线程放弃</strong>操作。</p></li>
+<li><p>Java实现CAS的原理 - Unsafe类</p>
+<ul>
+<li><p>在Java中，如果一个方法是native的，那Java就不负责具体实现它，而是交给底层的JVM使用c或者c++去实现</p></li>
+<li><p>Java中有一个Unsafe类，在sun.misc包中，里面有一些native方法，其中包括：</p>
+<blockquote>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">boolean</span> <span class="title function_">compareAndSwapObject</span><span class="params">(Object o, <span class="type">long</span> offset,Object expected, Object x)</span>;</span><br><span class="line"><span class="type">boolean</span> <span class="title function_">compareAndSwapInt</span><span class="params">(Object o, <span class="type">long</span> offset,<span class="type">int</span> expected,<span class="type">int</span> x)</span>;</span><br><span class="line"><span class="type">boolean</span> <span class="title function_">compareAndSwapLong</span><span class="params">(Object o, <span class="type">long</span> offset,<span class="type">long</span> expected,<span class="type">long</span> x)</span>;</span><br><span class="line"><span class="comment">//AtomicInteger.class</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">AtomicInteger</span> <span class="keyword">extends</span> <span class="title class_">Number</span> <span class="keyword">implements</span> <span class="title class_">java</span>.io.Serializable &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">long</span> <span class="variable">serialVersionUID</span> <span class="operator">=</span> <span class="number">6214790243416807050L</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// setup to use Unsafe.compareAndSwapInt for updates</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">Unsafe</span> <span class="variable">unsafe</span> <span class="operator">=</span> Unsafe.getUnsafe();</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">long</span> valueOffset;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            valueOffset = unsafe.objectFieldOffset</span><br><span class="line">                (AtomicInteger.class.getDeclaredField(<span class="string">&quot;value&quot;</span>));</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception ex) &#123; <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>(ex); &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="type">int</span> value;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">getAndIncrement</span><span class="params">()</span> &#123;</span><br><span class="line">    	<span class="keyword">return</span> unsafe.getAndAddInt(<span class="built_in">this</span>, valueOffset, <span class="number">1</span>);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</blockquote>
+<p><strong>Unsafe中对CAS的实现是C++</strong>写的，它的具体实现和操作系统、CPU都有关系。Linux的X86中主要通过cmpxchgl这个指令在CPU级完成CAS操作，如果是多处理器则必须使用lock指令加锁</p>
+<p>Unsafe类中还有park(线程挂起)和unpark(线程恢复)，LockSupport底层则调用了该方法；还有支持反射操作的allocateInstance()</p></li>
+</ul></li>
+<li><p>原子操作- AtomicInteger类源码简析
+JDK提供了一些原子操作的类，在java.util.concurrent.atomic包下面，JDK11中有如下17个类
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221120182811204.png"
+alt="image-20221120182811204" /></p>
+<ul>
+<li><p>包括
+原子更新基本类型，原子更新数组，原子更新引用，原子更新字段(属性)</p></li>
+<li><p>其中，AtomicInteger类的getAndAdd(int data)</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"> <span class="keyword">public</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">getAndAdd</span><span class="params">(<span class="type">int</span> delta)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> unsafe.getAndAddInt(<span class="built_in">this</span>, valueOffset, delta);</span><br><span class="line">    &#125;</span><br><span class="line"><span class="comment">//unsafe字段</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> jdk.internal.misc.<span class="type">Unsafe</span> <span class="variable">U</span> <span class="operator">=</span> jdk.internal.misc.Unsafe.getUnsafe();</span><br><span class="line"><span class="comment">//上面方法实际调用</span></span><br><span class="line"><span class="meta">@HotSpotIntrinsicCandidate</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">getAndAddInt</span><span class="params">(Object o, <span class="type">long</span> offset, <span class="type">int</span> delta)</span> &#123;</span><br><span class="line">    <span class="type">int</span> v;</span><br><span class="line">    <span class="keyword">do</span> &#123;</span><br><span class="line">        v = getIntVolatile(o, offset);</span><br><span class="line">    &#125; <span class="keyword">while</span> (!weakCompareAndSetInt(o, offset, v, v + delta));</span><br><span class="line">    <span class="keyword">return</span> v;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//对于offset，这是一个对象偏移量，用于获取某个字段相对Java对象的起始地址的偏移量</span></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">一个java对象可以看成是一段内存，各个字段都得按照一定的顺序放在这段内存里，同时考虑到对齐要求，可能这些字段不是连续放置的，</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">用这个方法能准确地告诉你某个字段相对于对象的起始内存地址的字节偏移量，因为是相对偏移量，所以它其实跟某个具体对象又没什么太大关系，跟class的定义和虚拟机的内存模型的实现细节更相关。</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">AtomicInteger</span> <span class="keyword">extends</span> <span class="title class_">Number</span> <span class="keyword">implements</span> <span class="title class_">java</span>.io.Serializable &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">long</span> <span class="variable">serialVersionUID</span> <span class="operator">=</span> <span class="number">6214790243416807050L</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// setup to use Unsafe.compareAndSwapInt for updates</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">Unsafe</span> <span class="variable">unsafe</span> <span class="operator">=</span> Unsafe.getUnsafe();</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">long</span> valueOffset;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            valueOffset = unsafe.objectFieldOffset</span><br><span class="line">                (AtomicInteger.class.getDeclaredField(<span class="string">&quot;value&quot;</span>));</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception ex) &#123; <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>(ex); &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="type">int</span> value;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">getAndIncrement</span><span class="params">()</span> &#123;</span><br><span class="line">    	<span class="keyword">return</span> unsafe.getAndAddInt(<span class="built_in">this</span>, valueOffset, <span class="number">1</span>);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>再重新看这段代码</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@HotSpotIntrinsicCandidate</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">getAndAddInt</span><span class="params">(Object o, <span class="type">long</span> offset, <span class="type">int</span> delta)</span> &#123;</span><br><span class="line">    <span class="type">int</span> v;</span><br><span class="line">    <span class="keyword">do</span> &#123;</span><br><span class="line">        v = getIntVolatile(o, offset);</span><br><span class="line">    &#125; <span class="keyword">while</span> (!weakCompareAndSetInt(o, offset, v, v + delta));</span><br><span class="line">    <span class="keyword">return</span> v;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里声明了v，即要返回的值，即不论如何都会返回原来的值(更新成功前的值)，然后新的值为v+delta</p>
+<p>使用do-while保证所有循环至少执行一遍<br />
+循环体的条件是一个CAS方法：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="type">boolean</span> <span class="title function_">weakCompareAndSetInt</span><span class="params">(Object o, <span class="type">long</span> offset,</span></span><br><span class="line"><span class="params">                                          <span class="type">int</span> expected,</span></span><br><span class="line"><span class="params">                                          <span class="type">int</span> x)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> compareAndSetInt(o, offset, expected, x);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">native</span> <span class="type">boolean</span> <span class="title function_">compareAndSetInt</span><span class="params">(Object o, <span class="type">long</span> offset,</span></span><br><span class="line"><span class="params">                                             <span class="type">int</span> expected,</span></span><br><span class="line"><span class="params">                                             <span class="type">int</span> x)</span>;</span><br></pre></td></tr></table></figure>
+<p>最终调用了native方法：compareAndSetInt方法</p>
+<blockquote>
+<p>为甚么要经过一层weakCompareAndSetInt，在JDK
+8及之前的版本，这两个方法是一样的。</p>
+<p>而在JDK
+9开始，这两个方法上面增加了@HotSpotIntrinsicCandidate注解。这个注解允许HotSpot
+VM自己来写汇编或IR编译器来实现该方法以提供性能。也就是说虽然外面看到的在JDK9中weakCompareAndSet和compareAndSet底层依旧是调用了一样的代码，但是不排除HotSpot
+VM会手动来实现weakCompareAndSet真正含义的功能的可能性。</p>
+<p>简单来说，<code>weakCompareAndSet</code>操作仅保留了<code>volatile</code>自身变量的特性，而除去了happens-before规则带来的内存语义。也就是说，<code>weakCompareAndSet</code><strong>无法保证处理操作目标的volatile变量外的其他变量的执行顺序(
+编译器和处理器为了优化程序性能而对指令序列进行重新排序
+)，同时也无法保证这些变量的可见性。</strong>这在一定程度上可以提高性能。（没看懂）</p>
+</blockquote>
+<p>CAS如果旧值V不等于预期值E，它就会更新失败。说明旧的值发生了变化。那我们当然需要返回的是被其他线程改变之后的旧值了，因此放在了do循环体内</p></li>
+</ul></li>
+<li><p>CAS实现原子操作的三大问题</p>
+<ul>
+<li><p>ABA问题</p>
+<ul>
+<li><p>就是一个值<strong>原来是A，变成了B，又变回了A</strong>。这个时候使用CAS是检查不出变化的，但实际上却被更新了两次</p></li>
+<li><p>在变量前面追加上<strong>版本号或者时间戳</strong>。从JDK
+1.5开始，JDK的atomic包里提供了一个类<code>AtomicStampedReference</code>类来解决ABA问题</p></li>
+<li><p><code>AtomicStampedReference</code>类的<code>compareAndSet</code>方法的作用是首先检查当前引用是否等于预期引用，并且检查当前标志是否等于预期标志，如果二者都相等，才使用CAS设置为新的值和标志。</p>
+<blockquote>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">compareAndSet</span><span class="params">(V   expectedReference,</span></span><br><span class="line"><span class="params">                             V   newReference,</span></span><br><span class="line"><span class="params">                             <span class="type">int</span> expectedStamp,</span></span><br><span class="line"><span class="params">                             <span class="type">int</span> newStamp)</span> &#123;</span><br><span class="line">    Pair&lt;V&gt; current = pair;</span><br><span class="line">    <span class="type">return</span></span><br><span class="line">        <span class="variable">expectedReference</span> <span class="operator">=</span>= current.reference &amp;&amp;</span><br><span class="line">        expectedStamp == current.stamp &amp;&amp;</span><br><span class="line">        ((newReference == current.reference &amp;&amp;</span><br><span class="line">          newStamp == current.stamp) ||</span><br><span class="line">         casPair(current, Pair.of(newReference, newStamp)));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</blockquote></li>
+</ul></li>
+<li><p>循环时间长开销大</p>
+<ul>
+<li><p>CAS多与自旋结合，如果自旋CAS长时间不成功，则会占用大量CPU资源，解决思路是让<strong>JVM支持处理器提供的pause指令</strong></p>
+<blockquote>
+<p>pause指令能让自旋失败时cpu睡眠一小段时间再继续自旋，从而使得读操作的频率低很多,为解决内存顺序冲突而导致的CPU流水线重排的代价也会小很多。</p>
+</blockquote></li>
+<li><p>限制次数（如果可以放弃操作的话）</p></li>
+</ul></li>
+<li><p>只能保证一个共享变量的原子操作</p>
+<ul>
+<li>使用JDK
+1.5开始就提供的<code>AtomicReference</code>类保证对象之间的原子性，把多个变量放到一个对象里面进行CAS操作；</li>
+<li>使用锁。锁内的临界区代码可以保证只有当前线程能操作。</li>
+</ul></li>
+</ul></li>
+</ul>
+<h2 id="aqs">AQS</h2>
+<ul>
+<li><p>AQS介绍
+全程，AbstractQueuedSynchronizer抽象队列同步器，在java.util.concurrent.locks包下
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221121094942039.png"
+alt="image-20221121094942039" /></p>
+<p>AQS：用来构建锁和同步器的框架，能<strong>简单且高效</strong>地构造出大量应用广泛的同步器，例如ReentrantLock，Semaphore<code>[ˈseməfɔː(r)]</code>以及ReentrantReadWriteLock，SynchronousQueue，FutureTask都基于AQS</p></li>
+<li><p>AQS原理分析</p>
+<p><strong>面试不是背题，大家一定要加入自己的思想，即使加入不了自己的思想也要保证自己能够通俗的讲出来而不是背出来</strong></p>
+<p>AQS
+核心思想是，如果被请求的共享资源空闲，则将当前请求资源的线程设置为有效的工作线程，并且将共享资源设置为锁定状态。如果被请求的共享资源被占用，那么就需要一套线程阻塞等待以及被唤醒时锁分配的机制，这个机制
+AQS 是用 <strong>CLH
+队列锁</strong>实现的，即<strong>将暂时获取不到锁的线程加入到队列</strong>中。</p>
+<blockquote>
+<p>CLH(Craig,Landin and
+Hagersten)队列是一个<strong>虚拟的双向队列</strong>（虚拟的双向队列即不存在队列实例，仅存在结点之间的关联关系）。AQS
+是<strong>将每条请求共享资源的线程封装成一个 CLH
+锁队列的一个结点</strong>（Node）来实现锁的分配。
+搜索了一下，CLH好像是人名</p>
+</blockquote>
+<p>AQS（AbstractQueuedSynchronized）原理图<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221120193141243.png"
+alt="image-20221120193141243" /></p>
+<p>AQS使用一个<strong>int成员变量来表示同步状态</strong>，通过内置的FIFO队列来获取资源线程的排队工作。AQS<strong>使用CAS对同步状态进行原子操作</strong>并实现对其值的修改</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">volatile</span> <span class="type">int</span> state;<span class="comment">//共享变量，使用volatile修饰保证线程可见性</span></span><br></pre></td></tr></table></figure>
+<p>状态信息的操作</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//返回同步状态的当前值</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">getState</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> state;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//设置同步状态的值</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title function_">setState</span><span class="params">(<span class="type">int</span> newState)</span> &#123;</span><br><span class="line">    state = newState;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//原子地（CAS操作）将同步状态值设置为给定值update如果当前同步状态的值等于expect（期望值）</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">final</span> <span class="type">boolean</span> <span class="title function_">compareAndSetState</span><span class="params">(<span class="type">int</span> expect, <span class="type">int</span> update)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> unsafe.compareAndSwapInt(<span class="built_in">this</span>, stateOffset, expect, update);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>AQS对资源的共享方式</p>
+<ul>
+<li>AQS定义两种资源共享方式
+<ul>
+<li>Exclusive
+独占：<strong>只有一个线程</strong>能执行，如ReentrantLock，又分公平锁（按照线程在队列中排队顺序，先到者先拿到锁）及非公平锁（当线程要获取锁时，无视队列顺序直接去抢锁，谁抢到就是谁的）</li>
+<li>Share
+共享：<strong>多个线程可同时执行</strong>，如CountDownLatch、Semaphore、CyclicBarrier、ReadWriteLock</li>
+</ul></li>
+<li>ReentrantReadWriteLock是组合式，读写锁允许<strong>多个线程同时对某一资源</strong>进行读</li>
+<li>★不同定义器同步器征用共享资源的方式不同，<strong>自定义同步器在实现时只需要实现共享资源state的获取与释放方法</strong>，至于具体线程等待队列的维护（获取资源失败入队/唤醒出队等），AQS已经在顶层实现好</li>
+</ul></li>
+<li><p>AQS底层使用了模板方法模式 使用方式</p>
+<ol type="1">
+<li><p>使用者继承AbstractQueueSynchronizer并重写指定方法（无<strong>非是对于共享资源state的获取和释放</strong>）</p></li>
+<li><p>将AQS组合在自定义同步组件的实现中，并调用其模板方法，而<strong>这些模板方法会调用使用者重写的方法</strong></p></li>
+<li><p>自定义同步器时，需要重写下面几个AQS提供的钩子方法</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="type">boolean</span> <span class="title function_">tryAcquire</span><span class="params">(<span class="type">int</span>)</span><span class="comment">//独占方式。尝试获取资源，成功则返回true，失败则返回false。</span></span><br><span class="line"><span class="keyword">protected</span> <span class="type">boolean</span> <span class="title function_">tryRelease</span><span class="params">(<span class="type">int</span>)</span><span class="comment">//独占方式。尝试释放资源，成功则返回true，失败则返回false。</span></span><br><span class="line"><span class="keyword">protected</span> <span class="type">int</span> <span class="title function_">tryAcquireShared</span><span class="params">(<span class="type">int</span>)</span><span class="comment">//共享方式。尝试获取资源。负数表示失败；0表示成功，但没有剩余可用资源；正数表示成功，且有剩余资源。</span></span><br><span class="line"><span class="keyword">protected</span> <span class="type">boolean</span> <span class="title function_">tryReleaseShared</span><span class="params">(<span class="type">int</span>)</span><span class="comment">//共享方式。尝试释放资源，成功则返回true，失败则返回false。</span></span><br><span class="line"><span class="keyword">protected</span> <span class="type">boolean</span> <span class="title function_">isHeldExclusively</span><span class="params">()</span><span class="comment">//该线程是否正在独占资源。只有用到condition才需要去实现它。 </span></span><br></pre></td></tr></table></figure></li>
+<li><p><strong>什么是钩子方法呢？</strong>
+钩子方法是一种被声明在抽象类中的方法，它可以是空方法（由子类实现），也可以是默认实现的方法。模板设计模式<strong>通过钩子方法控制固定步骤的实现</strong>。AQS类中除了钩子方法，其他方法都是final</p></li>
+</ol>
+<blockquote>
+<p>重点：以 <code>ReentrantLock</code> 为例，state 初始化为
+0，表示未锁定状态。A 线程 <code>lock()</code> 时，会调用
+<code>tryAcquire()</code> 独占该锁并将 <code>state+1</code>
+。此后，其他线程再 <code>tryAcquire()</code> 时就会失败，直到 A 线程
+<code>unlock()</code> 到
+<code>state=</code>0（即释放锁）为止，其它线程才有机会获取该锁。当然，释放锁之前，A
+线程自己是可以重复获取此锁的（state
+会累加），这就是可重入的概念。但要注意，获取多少次就要释放多少次，这样才能保证
+state 是能回到零态的。</p>
+<p>再以 <code>CountDownLatch</code> 以例，任务分为 N
+个子线程去执行，state 也初始化为 N（注意 N 要与线程个数一致）。这 N
+个子线程是并行执行的，每个子线程执行完后<code>countDown()</code>
+一次，state 会 CAS(Compare and Swap) 减 1。等到所有子线程都执行完后(即
+<code>state=0</code> )，会 <code>unpark()</code>
+主调用线程，然后主调用线程就会从 <code>await()</code>
+函数返回，继续后余动作。</p>
+<p>一般来说，自定义同步器要么是独占方法，要么是共享方式，他们也只需实现<code>tryAcquire-tryRelease</code>、<code>tryAcquireShared-tryReleaseShared</code>中的一种即可。但
+AQS
+也支持自定义同步器同时实现独占和共享两种方式，如<code>ReentrantReadWriteLock</code>。</p>
+</blockquote></li>
+<li><p>AQS组件总结</p>
+<ul>
+<li><strong><code>Semaphore</code>(信号量)-允许多个线程同时访问：</strong>
+<code>synchronized</code> 和 <code>ReentrantLock</code>
+都是一次只允许一个线程访问某个资源，<code>Semaphore</code>(信号量)可以指定多个线程同时访问某个资源。</li>
+<li><strong><code>CountDownLatch</code>（倒计时器）：</strong>
+<code>CountDownLatch</code>
+是一个同步工具类，用来协调多个线程之间的同步。这个工具通常用来控制线程等待，它可以<strong>让某一个线程等待直到倒计时结束</strong>，再开始执行。</li>
+<li><strong><code>CyclicBarrier</code>(循环栅栏)：</strong>
+<code>CyclicBarrier</code> 和 <code>CountDownLatch</code>
+非常类似，它也可以实现线程间的技术等待，但是它的功能比
+<code>CountDownLatch</code> 更加复杂和强大。主要应用场景和
+<code>CountDownLatch</code> 类似。<code>CyclicBarrier</code>
+的字面意思是可循环使用（<code>Cyclic</code>）的屏障（<code>Barrier</code>）。它要做的事情是，让一组线程到达一个屏障（也可以叫同步点）时被阻塞，直到最后一个线程到达屏障时，屏障才会开门，所有被屏障拦截的线程才会继续干活。<code>CyclicBarrier</code>
+默认的构造方法是
+<code>CyclicBarrier(int parties)</code>，其参数表示屏障拦截的线程数量，每个线程调用
+<code>await()</code> 方法告诉 <code>CyclicBarrier</code>
+我已经到达了屏障，然后当前线程被阻塞。</li>
+</ul></li>
+<li><p>用过CountDownLatch么，什么场景下用的</p>
+<p>作用：<strong>允许count个线程阻塞在一个地方，直到所有线程的任务都执行完毕</strong>（例子种，需要读取处理6个文件，6个任务没有执行顺序依赖，但是返回的时候，需要将这几个文件的处理结果进行统计整理）</p>
+<p>解析：定义了一个线程池和 count 为 6 的<code>CountDownLatch</code>对象
+。使用线程池处理读取任务，<strong>每一个线程处理完之后就将
+count-1，调用<code>CountDownLatch</code>对象的
+<code>await()</code>方法，直到所有文件读取完之后，才会接着执行后面的逻辑</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//共享</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CountDownLatchExample1</span> &#123;</span><br><span class="line">    <span class="comment">// 处理文件的数量</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">threadCount</span> <span class="operator">=</span> <span class="number">6</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">        <span class="comment">// 创建一个具有固定线程数量的线程池对象（推荐使用构造方法创建）</span></span><br><span class="line">        <span class="type">ExecutorService</span> <span class="variable">threadPool</span> <span class="operator">=</span> Executors.newFixedThreadPool(<span class="number">10</span>);</span><br><span class="line">        <span class="keyword">final</span> <span class="type">CountDownLatch</span> <span class="variable">countDownLatch</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">CountDownLatch</span>(threadCount);</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; threadCount; i++) &#123;</span><br><span class="line">            <span class="keyword">final</span> <span class="type">int</span> <span class="variable">threadnum</span> <span class="operator">=</span> i;</span><br><span class="line">            threadPool.execute(() -&gt; &#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    <span class="comment">//处理文件的业务操作</span></span><br><span class="line">                    <span class="comment">//......</span></span><br><span class="line">                &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                    <span class="comment">//表示一个文件已经被完成(将count-1)</span></span><br><span class="line">                    countDownLatch.countDown();</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;</span><br><span class="line">        countDownLatch.await();<span class="comment">//会一直阻塞，直到count为0</span></span><br><span class="line">        threadPool.shutdown();</span><br><span class="line">        System.out.println(<span class="string">&quot;finish&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+<p>改进，使用CompletableFuture类改进，该类提供了很多对多线程有好的方式，包括
+异步、串行、并行或者等待所有线程执行完任务</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">CompletableFuture&lt;Void&gt; task1 =</span><br><span class="line">    CompletableFuture.supplyAsync(()-&gt;&#123;</span><br><span class="line">        <span class="comment">//自定义业务操作</span></span><br><span class="line">    &#125;);</span><br><span class="line">......</span><br><span class="line">CompletableFuture&lt;Void&gt; task6 =</span><br><span class="line">    CompletableFuture.supplyAsync(()-&gt;&#123;</span><br><span class="line">    <span class="comment">//自定义业务操作</span></span><br><span class="line">    &#125;);</span><br><span class="line">......</span><br><span class="line">CompletableFuture&lt;Void&gt; headerFuture=CompletableFuture.allOf(task1,.....,task6);</span><br><span class="line"></span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    headerFuture.join();</span><br><span class="line">&#125; <span class="keyword">catch</span> (Exception ex) &#123;</span><br><span class="line">    <span class="comment">//......</span></span><br><span class="line">&#125;</span><br><span class="line">System.out.println(<span class="string">&quot;all done. &quot;</span>); </span><br></pre></td></tr></table></figure>
+<p>使用循环：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//文件夹位置</span></span><br><span class="line">List&lt;String&gt; filePaths = Arrays.asList(...)</span><br><span class="line"><span class="comment">// 异步处理所有文件</span></span><br><span class="line">List&lt;CompletableFuture&lt;String&gt;&gt; fileFutures = filePaths.stream()</span><br><span class="line">    .map(filePath -&gt; doSomeThing(filePath))</span><br><span class="line">    .collect(Collectors.toList());</span><br><span class="line"><span class="comment">// 将他们合并起来</span></span><br><span class="line">CompletableFuture&lt;Void&gt; allFutures = CompletableFuture.allOf(</span><br><span class="line">    fileFutures.toArray(<span class="keyword">new</span> <span class="title class_">CompletableFuture</span>[fileFutures.size()])</span><br><span class="line">); </span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="参考">参考</h2>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%A4%8D%E4%B9%A0/" rel="tag"># 复习</a>
+              <a href="/tags/%E5%A4%8D%E4%B9%A0-javaGuide/" rel="tag"># 复习-javaGuide</a>
+              <a href="/tags/%E5%A4%8D%E4%B9%A0-javaGuide-%E5%B9%B6%E5%8F%91/" rel="tag"># 复习-javaGuide-并发</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/11/06/review/java_guide/java/concurrent/lock_escalation/" rel="prev" title="锁升级">
+      <i class="fa fa-chevron-left"></i> 锁升级
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/11/21/review/java_guide/java/concurrent/jmm/" rel="next" title="java内存模型">
+      java内存模型 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    
+  
+  <div class="comments">
+  <script src="https://utteranc.es/client.js" repo="lwmfjc/lwmfjc.github.io.comment" issue-term="pathname" theme="github-light" crossorigin="anonymous" async></script>
+  </div>
+  
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BA%BF%E7%A8%8B%E6%B1%A0"><span class="nav-number">1.</span> <span class="nav-text">线程池</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#atomic%E5%8E%9F%E5%AD%90%E7%B1%BB"><span class="nav-number">2.</span> <span class="nav-text">Atomic原子类</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#atomicinteger%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="nav-number">2.1.</span> <span class="nav-text">AtomicInteger的使用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B5%85%E8%B0%88atomicinteger%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86"><span class="nav-number">2.2.</span> <span class="nav-text">浅谈AtomicInteger实现原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#java%E5%AE%9E%E7%8E%B0cas%E7%9A%84%E5%8E%9F%E7%90%86"><span class="nav-number">2.3.</span> <span class="nav-text">Java实现CAS的原理</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#aqs"><span class="nav-number">3.</span> <span class="nav-text">AQS</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">4.</span> <span class="nav-text">参考</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="刘易"
+      src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/avatar.png">
+  <p class="site-author-name" itemprop="name">刘易</p>
+  <div class="site-description" itemprop="description">知命不惧 日日自新</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">116</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">30</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/lwmfjc" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;lwmfjc" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i></a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">刘易</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">772k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">23:23</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+</body>
+</html>
