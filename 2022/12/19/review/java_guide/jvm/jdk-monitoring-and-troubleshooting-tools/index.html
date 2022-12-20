@@ -240,14 +240,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>2.5k</span>
+              <span>3.9k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>5 分钟</span>
+              <span>7 分钟</span>
             </span>
             <div class="post-description">jvm监控和故障处理工具 总结</div>
 
@@ -370,9 +370,36 @@ alt="image-20221219211712746" />
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">C:\Users\SnailClimb&gt;jinfo  -flag  PrintGC 17340</span><br><span class="line">-XX:-PrintGC</span><br><span class="line"></span><br><span class="line">C:\Users\SnailClimb&gt;jinfo  -flag  +PrintGC 17340</span><br><span class="line"></span><br><span class="line">C:\Users\SnailClimb&gt;jinfo  -flag  PrintGC 17340</span><br><span class="line">-XX:+PrintGC</span><br></pre></td></tr></table></figure></li>
 </ul>
 <h2 id="jmap生成堆转储快照">jmap：生成堆转储快照</h2>
+<ul>
+<li><p><strong>jmap(Memory Map for Java
+)</strong>命令用于生成<strong>堆转储</strong>快照。如果不使用jmap命令，要想获取java<strong>堆转储</strong>，可以使用<code>-XX:+HeapDumpOutOfMemoryError</code>参数，可以让虚拟机在<strong>OOM</strong>异常出现<strong>之后</strong>，自动生成dump文件，Linux命令下通过<code>kill -3</code>发送进程推出信号也能拿到dump文件</p></li>
+<li><p><code>jmap</code> 的作用并不仅仅是为了<strong>获取 dump</strong>
+文件，它还可以<strong>查询 finalizer 执行队列</strong>、<strong>Java
+堆</strong>和<strong>永久代</strong>的详细信息，如<strong>空间使用率</strong>、当前使用的是<strong>哪种收集器</strong>等。和<code>jinfo</code>一样，<code>jmap</code>有不少功能在
+Windows 平台下也是受限制的。</p></li>
+<li><p>将指定应用程序的<strong>堆
+快照</strong>输出到桌面，后面可以通过<strong>jhat</strong>、<strong>Visual
+VM</strong>等工具分析该堆文件</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">C:\Users\SnailClimb&gt;jmap -dump:format=b,file=C:\Users\SnailClimb\Desktop\heap.hprof <span class="number">17340</span></span><br><span class="line">Dumping heap to C:\Users\SnailClimb\Desktop\heap.hprof ...</span><br><span class="line">Heap dump file created</span><br></pre></td></tr></table></figure></li>
+</ul>
 <h2 id="jhat分析heapdump文件">jhat：分析heapdump文件</h2>
+<p><strong><code>jhat</code></strong> 用于分析 heapdump
+文件，它会建立一个 HTTP/HTML
+服务器，让用户可以在浏览器上查看分析结果。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">C:\Users\SnailClimb&gt;jhat C:\Users\SnailClimb\Desktop\heap.hprof</span><br><span class="line">Reading from C:\Users\SnailClimb\Desktop\heap.hprof...</span><br><span class="line">Dump file created Sat May 04 12:30:31 CST 2019</span><br><span class="line">Snapshot read, resolving...</span><br><span class="line">Resolving 131419 objects...</span><br><span class="line">Chasing references, expect 26 dots..........................</span><br><span class="line">Eliminating duplicate references..........................</span><br><span class="line">Snapshot resolved.</span><br><span class="line">Started HTTP server on port 7000</span><br><span class="line">Server is ready. </span><br></pre></td></tr></table></figure>
+<p>之后访问 http://localhost:7000/ 即可，如下： 进入/histo
+会发现，有这个东西 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221220094041210.png"
+alt="image-20221220094041210" />
+这个对象创建了9次，因为我是在第9次循环后dump堆快照的</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//测试代码如下</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyMain</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">byte</span>[] x = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">10</span> * <span class="number">1024</span> * <span class="number">1024</span>];<span class="comment">//10M</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;开始循环--&quot;</span>);</span><br><span class="line">        <span class="type">int</span> i=<span class="number">0</span>;</span><br><span class="line">        <span class="keyword">while</span> (++i&gt;<span class="number">0</span>) &#123;</span><br><span class="line">            String a=<span class="keyword">new</span> <span class="title class_">Date</span>().toString();</span><br><span class="line">            <span class="type">MyMain</span> <span class="variable">myMain</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">MyMain</span>();</span><br><span class="line">            System.out.println(i+<span class="string">&quot;循环中---&quot;</span> + <span class="keyword">new</span> <span class="title class_">Date</span>());</span><br><span class="line">            TimeUnit.SECONDS.sleep(<span class="number">10</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <h2 id="jstack-生成虚拟机当前时刻的线程快照">jstack：
 生成虚拟机当前时刻的线程快照</h2>
+<ul>
+<li><strong>jstack (Stack Trace for Java )</strong>
+命令用于生成<strong>虚拟机当前时刻</strong>的<strong>线程快照</strong>。线程快照就是当前虚拟机内<strong>每一条线程正在执行</strong>的<strong>方法堆栈</strong>的集合</li>
+<li></li>
+</ul>
 <h1 id="jdk可视化分析工具">JDK可视化分析工具</h1>
 <h2
 id="jconsolejava监视与管理控制台">JConsole：Java监视与管理控制台</h2>
@@ -537,12 +564,12 @@ id="jconsolejava监视与管理控制台">JConsole：Java监视与管理控制�
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">765k</span>
+    <span title="站点总字数">767k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">23:11</span>
+    <span title="站点阅读时长">23:14</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
