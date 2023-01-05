@@ -239,14 +239,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>1k</span>
+              <span>1.7k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>2 分钟</span>
+              <span>3 分钟</span>
             </span>
             <div class="post-description">图</div>
 
@@ -317,11 +317,77 @@ alt="image-20230102162130607" />
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230102165052250.png"
 alt="image-20230102165052250" />
 无向图的邻接矩阵是一个<strong>对称</strong>矩阵，因为在无向图中，<strong>顶点i</strong>和<strong>顶点j</strong>有关系，则<strong>顶点j</strong>和<strong>顶点i</strong>必有关系</li>
-<li>有向图的邻接矩阵存储</li>
+<li>有向图的邻接矩阵存储 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230105105331809.png"
+alt="image-20230105105331809" />
+邻接矩阵存储的方式优点是<strong>简单直接（直接使用一个二维数组即可）</strong>，并且在获取两个顶点之间的关系的时候也非常高效*直接获取指定位置的<strong>数组</strong>元素。但是这种存储方式的确定啊也比较明显<strong>即
+比较浪费空间</strong></li>
 </ul>
 <h2 id="邻接表存储">邻接表存储</h2>
+<ul>
+<li><p>针对上面邻接矩阵比较浪费内存空间的问题，诞生了图的另一种存储方法--<strong>邻接表</strong></p></li>
+<li><p>邻接链表使用一个<strong>链表</strong>来存储某个顶点的<strong>所有后继相邻顶点</strong>。对于图中每个顶点Vi
+，把所有邻接于Vi 的顶点Vj 链接成一个<strong>单链表</strong></p>
+<ul>
+<li>无向图的邻接表存储 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230105111343599.png"
+alt="image-20230105111343599" /></li>
+<li>有向图的邻接表存储 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230105111409045.png"
+alt="image-20230105111409045" /></li>
+</ul></li>
+<li><p>邻接表中存储的元素的个数（顶点数）以及图中<strong>边的条数</strong></p>
+<ul>
+<li><p>无向图中，<strong>邻接表</strong>的元素个数等于<strong>边的条数</strong>的两倍，如下图
+7条边，邻接表存储的元素个数为14
+（即<strong>每条边存储了两次</strong>）</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230105111343599.png"
+alt="image-20230105111343599" />
+<figcaption aria-hidden="true">image-20230105111343599</figcaption>
+</figure></li>
+<li><p>有向图中，邻接表元素个数等于边的条数，如图所示的有向图中，边的条数为8，邻接表
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230105111409045.png"
+alt="image-20230105111409045" /></p></li>
+</ul></li>
+</ul>
 <h1 id="图的搜索">图的搜索</h1>
 <h2 id="广度优先搜索">广度优先搜索</h2>
+<ul>
+<li><p>广度优先搜索：像水面上的波纹一样，一层一层向外扩展，如图 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230105112011060.png"
+alt="image-20230105112011060" /></p></li>
+<li><p>具体实现方式，用到了<strong>队列</strong>，过程如下</p>
+<ol type="1">
+<li><p><strong>初始状态</strong>：将要搜索的源顶点放入队列 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230105112201827.png"
+alt="image-20230105112201827" /></p></li>
+<li><p>取出<strong>队首节点</strong>，输出0，将0的<strong>后继顶点（全部）（未访问过的）放入队列</strong>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230105112302751.png"
+alt="image-20230105112302751" /></p></li>
+<li><p>取出<strong>队首节点</strong>，输出1，将1的后继顶点（所有）（未访问过的）放入队列
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230105112423589.png"
+alt="image-20230105112423589" /></p>
+<p>截止到第3步就很清楚了，就是输出<strong>最近的一个结点</strong>的<strong>全部关系节点</strong></p></li>
+<li><p>取出队首节点，输出4，将4的后继顶点（未访问过的）放入队列 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230105112601860.png"
+alt="image-20230105112601860" /></p></li>
+<li><p>取出队首节点，输出2，将2的后继顶点（未访问过的）放入队列 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230105112650410.png"
+alt="image-20230105112650410" /></p></li>
+<li><p>取出队首节点，输出3，将3的后继顶点（未访问过的）放入队列，队列为空，结束
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230105112735397.png"
+alt="image-20230105112735397" /></p></li>
+<li><p>总结
+先初始化首结点，之后不断<strong>从队列取出</strong>并将这个结点的有关系的<strong>结点</strong>
+依次<strong>放入队列</strong></p></li>
+</ol></li>
+</ul>
 <h2 id="深度优先搜索">深度优先搜索</h2>
 
     </div>
@@ -487,7 +553,7 @@ alt="image-20230102165052250" />
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">23:36</span>
+    <span title="站点阅读时长">23:37</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
