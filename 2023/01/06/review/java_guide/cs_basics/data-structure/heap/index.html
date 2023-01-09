@@ -239,14 +239,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>1.8k</span>
+              <span>2.5k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>3 分钟</span>
+              <span>4 分钟</span>
             </span>
             <div class="post-description">堆</div>
 
@@ -408,9 +408,70 @@ alt="image-20230109112624540" /></li>
 </ol>
 <h2 id="建堆">建堆</h2>
 <ul>
-<li>也就是对<strong>所有非叶子结点</strong>进行自顶向下</li>
+<li><p>也就是对<strong>所有非叶子结点</strong>进行自顶向下</p>
+<p>如图，红色区域分别是堆的情况下。对于T，如果只<strong>自顶向下</strong>到P、L这层，被换到了这层的那个元素是不一定就比其他树大的，所以还是要依次自顶向下</p>
+<p><img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230109140309966.png"
+alt="image-20230109140309966" /> 这个构建堆操作的时间复杂度为O(n) <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230109141141591.png"
+alt="image-20230109141141591" /></p></li>
+<li><p>首先要了解哪些是非叶节点，<strong>最后一个结点的父节点及它（这个父节点）之前的元素</strong>，都是非叶节点。也就是说，如果<strong>节点个数为n</strong>，那么我们需要对<strong>n/2到1的节点进行自顶向下（沉底）堆化</strong></p></li>
+<li><p>如图 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230109143927351.png"
+alt="image-20230109143927351" /></p>
+<ol type="1">
+<li>首先将初始的无序数组抽象为一棵树，图中的节点个数为6，所以4，5，6是叶子节点，1，2，3节点为非叶节点<br />
+</li>
+<li>对1，2，3节点进行<strong>自顶向下（沉底）</strong>堆化，注意，顺序是从后往前堆化，从3号开始，一直到1号节点。
+<ul>
+<li>3号节点堆化结果<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230109153344935.png"
+alt="image-20230109153344935" /></li>
+<li>2号节点堆化结果 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230109153422766.png"
+alt="image-20230109153422766" /></li>
+<li>1号节点堆化结果 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230109153456496.png"
+alt="image-20230109153456496" /></li>
+</ul></li>
+</ol></li>
 </ul>
 <h2 id="排序">排序</h2>
+<ul>
+<li>方法：由于堆顶元素是所有元素中最大的，所以我们<strong>重复取出堆顶元素</strong>，将这个最大的堆顶元素<strong>放至数组末尾</strong>，并<strong>对剩下的元素进行堆化</strong>即可</li>
+<li>现在思考两个问题：
+<ul>
+<li>删除堆顶元素后需要执行<strong>自顶向下（沉底）</strong>堆化还是<strong>自底向上（上浮）</strong>堆化？</li>
+<li>取出的堆顶元素存在哪，新建一个数组存？</li>
+</ul></li>
+<li>答案
+<ol type="1">
+<li>需要使用<strong>自顶向下（沉底）</strong>堆化，这个堆化一开始要<strong>将末尾元素移动至堆顶</strong>。由于这个时候末尾的位置已经空出来了由于堆中元素已经减小，这个位置不会再被使用，所以我们可以将<strong>取出的元素放在末尾</strong>。</li>
+<li>其实是做了一次<strong>交换</strong>操作，将<strong>堆顶和末尾元素调换</strong>位置，从而将<strong>取出堆顶元素</strong>和<strong>堆化的第一步(将末尾元素放至根结点位置)</strong>进行合并</li>
+</ol></li>
+<li>步骤
+<ol type="1">
+<li>取出第一个元素并堆化 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230109154808329.png"
+alt="image-20230109154808329" /></li>
+<li>取出第2个元素并堆化 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230109154830946.png"
+alt="image-20230109154830946" /></li>
+<li>取出第3个元素并堆化 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230109154851849.png" /></li>
+<li>取出第4个元素并堆化 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230109155008000.png"
+alt="image-20230109155008000" /></li>
+<li>取出第5个元素并堆化 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230109155104829.png"
+alt="image-20230109155104829" /></li>
+<li>取出第6个元素并堆化 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230109155116813.png"
+alt="image-20230109155116813" /></li>
+<li>排序完成</li>
+</ol></li>
+</ul>
 
     </div>
 
@@ -570,12 +631,12 @@ alt="image-20230109112624540" /></li>
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">781k</span>
+    <span title="站点总字数">782k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">23:41</span>
+    <span title="站点阅读时长">23:42</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
