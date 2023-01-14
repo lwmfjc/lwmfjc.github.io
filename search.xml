@@ -1226,15 +1226,122 @@ SQL 查的就是主键呢?</strong></p>
 </blockquote>
 <h1 id="覆盖索引和联合索引">覆盖索引和联合索引</h1>
 <h2 id="覆盖索引">覆盖索引</h2>
+<ul>
+<li><p>如果一个<strong>索引包含（或者说覆盖）所有需要查询的字段的值</strong>，我们就称之为“覆盖索引”。（<strong>也就是不用回表</strong>）</p>
+<blockquote>
+<p>我们知道在 InnoDB
+存储引擎中，如果不是<strong>主键索引（叶子节点存储的是主键+列值）</strong>，最终还是要“回表”，也就是要通过主键再查找一次，这样就会比较慢。覆盖索引就是把要查询出的列和索引是对应的，不做回表操作！</p>
+</blockquote></li>
+<li><p><strong>覆盖索引</strong>即需要<strong>查询的字段正好事索引的字段</strong>，那么直接根据该索引，就可以查到数据了，而无需回表查询</p>
+<blockquote>
+<p>如主键索引，如果一条 SQL
+需要查询主键，那么正好根据主键索引就可以查到主键。</p>
+<p>再如普通索引，如果一条 SQL 需要查询 name，name 字段正好有索引，
+那么直接根据这个索引就可以查到数据，也无需回表。</p>
+</blockquote></li>
+<li><p>我觉得覆盖索引要在联合索引上体现的话功能会比较突出</p></li>
+</ul>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230114170030609.png"
+alt="image-20230114170030609" />
+<figcaption aria-hidden="true">image-20230114170030609</figcaption>
+</figure>
 <h2 id="联合索引">联合索引</h2>
+<p>使用<strong>表中的多个字段创建索引</strong>，也就是<strong>联合索引</strong>，也叫<strong>组合索引</strong>，或<strong>复合索引</strong></p>
 <h2 id="最左前缀匹配原则">最左前缀匹配原则</h2>
+<ul>
+<li>最左前缀匹配原则指的是，在使用<strong>联合索引</strong>时，<strong>MySQL</strong>
+会根据<strong>联合索引中的字段顺序</strong>，<strong>从左到右依次到查询条件中去匹配</strong>，如果查询条件中<strong>存在与联合索引中最左侧字段相匹配</strong>的字段，则就会使用<strong>该字段过滤一批数据</strong>，<strong>直至联合索引中全部字段</strong>匹配完成，或者在<strong>执行过程中遇到范围查询</strong>，如
+<strong><code>&gt;</code></strong>、<strong><code>&lt;</code></strong>、<strong><code>between</code></strong>
+和 <strong><code>以%开头的like查询</code></strong>
+等条件，才会停止匹配。</li>
+<li>所以，我们在使用联合索引时，可以将<strong>区分度高的字段放在最左边</strong>，这也可以过滤更多数据</li>
+</ul>
 <h1 id="索引下推">索引下推</h1>
+<p><strong>索引下推（Index Condition Pushdown）</strong> 是
+<strong>MySQL 5.6</strong>
+版本中提供的一项<strong>索引优化</strong>功能，可以在<strong>非聚簇索引遍历过程</strong>中，对（即<strong>能用索引先用索引</strong>）<strong>索引中包含的字段先做判断</strong>，<strong>过滤掉不符合条件的记录</strong>，减少回表次数。</p>
+<blockquote>
+<p>例子：<br />
+对于<code>SELECT * from user where  name like '陈%' and age=20</code>这条语句<br />
+其中主要几个字段有：id、name、age、address。建立联合索引（name，age）</p>
+<blockquote>
+<p>最关键的一点：
+<strong>组合索引满足最左匹配，但是遇到非等值判断时匹配停止。</strong>
+<strong>name like '陈%' 不是等值匹配，所以 age = 20 这里就用不上
+(name,age) 组合索引了</strong>。如果没有索引下推，组合索引只能用到
+name，age 的判定就需要回表才能做了。5.6之后有了索引下推，age = 20
+可以直接在组合索引里判定。</p>
+</blockquote>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230114171107653.png"
+alt="image-20230114171107653" />
+<figcaption aria-hidden="true">image-20230114171107653</figcaption>
+</figure>
+<ol type="1">
+<li>5.6之前的版本是没有索引下推这个优化的，会忽略age这个字段，直接通过name进行查询，在(name,age)这课树上查找到了两个结果，id分别为2,1，然后拿着取到的id值一次次的回表查询，因此这个过程需要<strong>回表两次</strong></li>
+<li>5.6版本添加了索引下推这个优化 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230114171144075.png"
+alt="image-20230114171144075" />
+InnoDB并没有忽略age这个字段，而是<strong>在索引内部就判断了age是否等于20</strong>，对于不等于20的记录直接跳过，因此在(name,age)这棵索引树中只匹配到了一个记录，此时拿着这个id去主键索引树中回表查询全部数据，这个过程只需要回表一次</li>
+</ol>
+</blockquote>
 <h1 id="争取使用索引的一些建议">争取使用索引的一些建议</h1>
 <h2 id="选择合适的字段创建索引">选择合适的字段创建索引</h2>
+<ul>
+<li><strong>不为 NULL 的字段</strong>
+：索引字段的数据应该<strong>尽量不为
+NULL</strong>，因为<strong>对于数据为 NULL
+的字段，数据库较难优化</strong>。如果字段频繁被查询，但又避免不了为
+NULL，建议使用 0,1,true,false
+这样语义较为清晰的<strong>短值或短字符</strong>作为替代。</li>
+<li><strong>被频繁查询的字段</strong>
+：我们创建索引的字段应该是<strong>查询操作非常频繁</strong>的字段。</li>
+<li><strong>被作为条件查询的字段</strong> ：被作为 <strong>WHERE
+条件查询的字段</strong>，应该被考虑建立索引。</li>
+<li><strong>频繁需要排序的字段</strong>
+：索引已经排序，这样查询可以利用索引的排序，<strong>加快排序查询时间</strong>。</li>
+<li><strong>被经常频繁用于连接的字段</strong>
+：经常用于连接的字段可能是一些外键列，对于外键列并不一定要建立外键，只是说该列<strong>涉及到表与表的关系</strong>。对于频繁被连接查询的字段，可以考虑建立索引，<strong>提高多表连接查询的效率</strong></li>
+</ul>
 <h2
 id="被频繁更新的字段应该慎重建索引">被频繁更新的字段应该慎重建索引</h2>
+<p>虽然索引能带来查询上的效率，但是维护索引的成本也是不小的。
+如果一个字段<strong>不被经常查询，反而被经常修改</strong>，那么就更<strong>不应该</strong>在这种字段上建立索引了。</p>
 <h2
 id="尽可能地考虑建立联合索引而不是单列索引">尽可能地考虑建立联合索引而不是单列索引</h2>
+<p>因为索引是需要占用磁盘空间的，可以简单理解为<strong>每个索引都对应着一颗
+B+树</strong>。如果一个表的字段过多，<strong>索引过多</strong>，那么当这个表的数据达到一个体量后，<strong>索引占用的空间也是很多</strong>的，且<strong>修改索引</strong>时，<strong>耗费的时间也是较多</strong>的。如果是联合索引，<strong>多个字段在一个索引上</strong>，那么将会<strong>节约很大磁盘空间</strong>，且<strong>修改数据的操作效率也会提升</strong>。</p>
+<h2 id="注意避免冗余索引">注意避免冗余索引</h2>
+<ul>
+<li><p>冗余索引指的是<strong>索引的功能相同</strong>，能够命中索引(a,
+b)就肯定能命中索引(a) ，那么索引(a)就是冗余索引</p>
+<blockquote>
+<p>（name,city ）和（name
+）这两个索引就是冗余索引，能够命中前者的查询肯定是能够命中后者的
+在大多数情况下，都应该尽量扩展已有的索引而不是创建新索引</p>
+</blockquote></li>
+</ul>
+<h2
+id="考虑在字符串类型的字段上使用前缀索引代替普通索引">考虑在字符串类型的字段上使用前缀索引代替普通索引</h2>
+<p><strong>前缀索引仅限于字符串</strong>类型，较普通索引会占用更小的空间，所以可以考虑使用<strong>前缀索引带替普通索引</strong>。</p>
+<h2 id="避免索引失效">避免索引失效</h2>
+<ul>
+<li><p>使用 <code>SELECT *</code> 进行查询;</p></li>
+<li><p>创建了<strong>组合索引</strong>，但查询条件<strong>未准守最左匹配</strong>原则;</p></li>
+<li><p>在索引列上进行计算、函数、类型转换等操作;</p></li>
+<li><p>以 % 开头的 LIKE 查询比如 <code>like '%abc';</code>;</p></li>
+<li><p>查询条件中使用 or，<strong>且 or
+的前后</strong>条件中<strong>有一个列没有索引</strong>，<strong>涉及的索引都不会被使用到</strong>(也就是说，反正都是要全表扫描，所以就不用索引了)</p></li>
+</ul>
+<h2 id="删除长期未使用的索引">删除长期未使用的索引</h2>
+<ul>
+<li><p>删除长期未使用的索引，<strong>不用的索引的存在会造成不必要的性能损耗</strong></p></li>
+<li><p>MySQL 5.7 可以通过查询 <strong>sys 库的
+schema_unused_indexes</strong> 视图来查询哪些索引从未被使用</p></li>
+</ul>
 ]]></content>
       <categories>
         <category>学习</category>
@@ -5687,6 +5794,104 @@ alt="image-20220727205152327" />
       </tags>
   </entry>
   <entry>
+    <title>linux_韩老师_01-06</title>
+    <url>/2022/01/25/study/linux/hanshunping/01-06/</url>
+    <content><![CDATA[<h2 id="基础介绍">基础介绍</h2>
+<ul>
+<li><p>本套课程内容<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1643095663069.png" /></p>
+<ul>
+<li>基础篇: linux入门、vm和Linux的安装、linux目录结构</li>
+<li>实操篇
+<ul>
+<li>远程登录（xshell，xftp）、实用指令、进程管理、用户管理</li>
+<li>vi和vim编辑器、定时任务调度、RPM和YUM</li>
+<li>开机、重启和用户登录注销、磁盘分区及挂载、网络配置</li>
+</ul></li>
+</ul></li>
+<li><p>linux使用的地方</p>
+<ul>
+<li>在linux下开发项目(需要把javaee项目部署到linux下运行)</li>
+<li>linux运维工程师(服务器规划、优化、监控等)</li>
+<li>linux嵌入式工程师(linux下驱动开发[c,c++])</li>
+</ul></li>
+<li><p>linux应用领域</p>
+<ul>
+<li>个人桌面</li>
+<li>服务器(免费稳定高效)</li>
+<li>嵌入式领域(对软件裁剪，内核最小可达几百kb等) ## linux介绍</li>
+</ul></li>
+<li><p>linux是一个开源免费操作系统</p></li>
+<li><p>linux吉祥物<br />
+tux(/tu'ks/唾可si)，没找到音标，将就一下<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1643096979670.png" /></p></li>
+<li><p>linux之父，linus，也是git的创作者<br />
+主要发行版：<strong>Ubuntu、RedHat，Centos</strong>，Debian等<br />
+RedHat和Centos使用同样的源码，但是RedHat收费</p></li>
+<li><p>Linux和Unix的关系<br />
+unix也是一个操作系统，贝尔实验室。做一个多用户分时操作系统，
+multics，但是没完成。其中一个后来在这基础上，完成的操作系统为unix
+（原本是B语言写的），后面和另一个人用unix用c语言改写了。<br />
+unix源码是公开的，后面商业公司拿来包装做成自己的系统，
+后面有个人提倡自由时代用户应该对源码享有读写权利而非垄断<br />
+后面RichardStallman发起GNU计划（开源计划），Linus参加该计划，并共享出linux内核，于是大家在此基础上开发出各种软件。linux又称GNU/linux<br />
+</p></li>
+<li><p>Linux和Unix关系<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1643098018271.png" />
+## VMWare安装Centos7.6 在windows中安装Linux系统<br />
+</p></li>
+<li><p>VM和Linux系统在pc中的关系<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1643098209668.png" /></p></li>
+<li><p>安装过程中，网络模式使用NAT模式</p></li>
+<li><p>选择最小安装，且选择CompatibilityLibraries和DevelopmentTools<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1643100381319.png" /></p></li>
+<li><p>linux分区<br />
+一般分为三个<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1643100444776.png" /><br />
+一般boot1G,swap分区一般跟内存大小一致，这里是2G，所以根分区就是剩下的，也就是20-1-2=17G<br />
+如图，boot，/，swap都是标准分区。且boot和/是ext4的文件格式，swap是swap的文件格式<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1643100873342.png" /><br />
+</p></li>
+<li><p>修改主机名<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1643101039503.png" /></p></li>
+<li><p>修改密码及增加除root外的普通用户</p></li>
+<li><p>修改网络为固定ip(NAT模式下)</p>
+<ul>
+<li>先在VM里面把子网ip改了，这里改成 192.168.200.0<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1643101673327.png" /></li>
+<li>然后改网关为192.168.200.200<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1643101741006.png" /></li>
+<li>使用yum install -y vim 安装文本编辑工具</li>
+<li>最后在linux中改配置文件 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">vim /etc/sysconfig/network-scripts/ifcfg-ens33</span><br></pre></td></tr></table></figure></li>
+<li>其中先修改BOOTPROTO="static"</li>
+<li>然后设置ip地址、网关和DNS，
+下面是添加到上面的ifcfg-ens33后面，不是直接执行代码 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">IPADDR=192.168.200.200</span><br><span class="line">GATEWAY=192.168.200.2</span><br><span class="line">DNS1=192.168.200.2</span><br></pre></td></tr></table></figure></li>
+<li>使用命令重启网络<br />
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">service network restart </span><br><span class="line"># 或者直接重启电脑 reboot</span><br></pre></td></tr></table></figure></li>
+</ul></li>
+<li><p>这里顺便装一下zsx<br />
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sh -c &quot;$(wget https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh -O -)&quot;</span><br></pre></td></tr></table></figure></p></li>
+<li></li>
+</ul>
+]]></content>
+      <categories>
+        <category>学习</category>
+      </categories>
+      <tags>
+        <tag>linux_韩老师</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>linux_韩老师_07-11</title>
     <url>/2022/05/10/study/linux/hanshunping/07-11/</url>
     <content><![CDATA[<h2 id="网络连接">网络连接</h2>
@@ -5969,104 +6174,6 @@ alt="image-20220522125607501" /></p></li>
 <li><p>logout 注销用户（图形页面没效果） 在运行级别3下有效 <img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220522125622253.png"
 alt="image-20220522125622253" /></p></li>
-</ul>
-]]></content>
-      <categories>
-        <category>学习</category>
-      </categories>
-      <tags>
-        <tag>linux_韩老师</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>linux_韩老师_01-06</title>
-    <url>/2022/01/25/study/linux/hanshunping/01-06/</url>
-    <content><![CDATA[<h2 id="基础介绍">基础介绍</h2>
-<ul>
-<li><p>本套课程内容<br />
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1643095663069.png" /></p>
-<ul>
-<li>基础篇: linux入门、vm和Linux的安装、linux目录结构</li>
-<li>实操篇
-<ul>
-<li>远程登录（xshell，xftp）、实用指令、进程管理、用户管理</li>
-<li>vi和vim编辑器、定时任务调度、RPM和YUM</li>
-<li>开机、重启和用户登录注销、磁盘分区及挂载、网络配置</li>
-</ul></li>
-</ul></li>
-<li><p>linux使用的地方</p>
-<ul>
-<li>在linux下开发项目(需要把javaee项目部署到linux下运行)</li>
-<li>linux运维工程师(服务器规划、优化、监控等)</li>
-<li>linux嵌入式工程师(linux下驱动开发[c,c++])</li>
-</ul></li>
-<li><p>linux应用领域</p>
-<ul>
-<li>个人桌面</li>
-<li>服务器(免费稳定高效)</li>
-<li>嵌入式领域(对软件裁剪，内核最小可达几百kb等) ## linux介绍</li>
-</ul></li>
-<li><p>linux是一个开源免费操作系统</p></li>
-<li><p>linux吉祥物<br />
-tux(/tu'ks/唾可si)，没找到音标，将就一下<br />
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1643096979670.png" /></p></li>
-<li><p>linux之父，linus，也是git的创作者<br />
-主要发行版：<strong>Ubuntu、RedHat，Centos</strong>，Debian等<br />
-RedHat和Centos使用同样的源码，但是RedHat收费</p></li>
-<li><p>Linux和Unix的关系<br />
-unix也是一个操作系统，贝尔实验室。做一个多用户分时操作系统，
-multics，但是没完成。其中一个后来在这基础上，完成的操作系统为unix
-（原本是B语言写的），后面和另一个人用unix用c语言改写了。<br />
-unix源码是公开的，后面商业公司拿来包装做成自己的系统，
-后面有个人提倡自由时代用户应该对源码享有读写权利而非垄断<br />
-后面RichardStallman发起GNU计划（开源计划），Linus参加该计划，并共享出linux内核，于是大家在此基础上开发出各种软件。linux又称GNU/linux<br />
-</p></li>
-<li><p>Linux和Unix关系<br />
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1643098018271.png" />
-## VMWare安装Centos7.6 在windows中安装Linux系统<br />
-</p></li>
-<li><p>VM和Linux系统在pc中的关系<br />
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1643098209668.png" /></p></li>
-<li><p>安装过程中，网络模式使用NAT模式</p></li>
-<li><p>选择最小安装，且选择CompatibilityLibraries和DevelopmentTools<br />
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1643100381319.png" /></p></li>
-<li><p>linux分区<br />
-一般分为三个<br />
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1643100444776.png" /><br />
-一般boot1G,swap分区一般跟内存大小一致，这里是2G，所以根分区就是剩下的，也就是20-1-2=17G<br />
-如图，boot，/，swap都是标准分区。且boot和/是ext4的文件格式，swap是swap的文件格式<br />
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1643100873342.png" /><br />
-</p></li>
-<li><p>修改主机名<br />
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1643101039503.png" /></p></li>
-<li><p>修改密码及增加除root外的普通用户</p></li>
-<li><p>修改网络为固定ip(NAT模式下)</p>
-<ul>
-<li>先在VM里面把子网ip改了，这里改成 192.168.200.0<br />
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1643101673327.png" /></li>
-<li>然后改网关为192.168.200.200<br />
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1643101741006.png" /></li>
-<li>使用yum install -y vim 安装文本编辑工具</li>
-<li>最后在linux中改配置文件 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">vim /etc/sysconfig/network-scripts/ifcfg-ens33</span><br></pre></td></tr></table></figure></li>
-<li>其中先修改BOOTPROTO="static"</li>
-<li>然后设置ip地址、网关和DNS，
-下面是添加到上面的ifcfg-ens33后面，不是直接执行代码 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">IPADDR=192.168.200.200</span><br><span class="line">GATEWAY=192.168.200.2</span><br><span class="line">DNS1=192.168.200.2</span><br></pre></td></tr></table></figure></li>
-<li>使用命令重启网络<br />
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">service network restart </span><br><span class="line"># 或者直接重启电脑 reboot</span><br></pre></td></tr></table></figure></li>
-</ul></li>
-<li><p>这里顺便装一下zsx<br />
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sh -c &quot;$(wget https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh -O -)&quot;</span><br></pre></td></tr></table></figure></p></li>
-<li></li>
 </ul>
 ]]></content>
       <categories>
