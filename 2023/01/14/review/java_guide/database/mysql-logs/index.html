@@ -239,14 +239,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>815</span>
+              <span>1.7k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
+              <span>3 分钟</span>
             </span>
             <div class="post-description">日志</div>
 
@@ -322,6 +322,83 @@ alt="image-20230114190158828" /></p></li>
 </blockquote></li>
 </ol>
 <h2 id="刷盘时机">刷盘时机</h2>
+<ul>
+<li><p><code>InnoDB</code> 存储<strong>引擎为 <code>redo log</code>
+的刷盘策略提供了 <code>innodb_flush_log_at_trx_commit</code>
+参数</strong>，它支持三种策略<br />
+<strong>0</strong>：设置为0时，表示每次<strong>事务提交时不进行刷盘</strong>操作<br />
+<strong>1</strong>：设置为1时，表示每次<strong>事务提交时都将进行刷盘</strong>操作（默认值）<br />
+<strong>2</strong>：设置为2时，表示每次<strong>事务提交时都只把redo log
+buffer内容写入page cache(系统缓存)</strong></p></li>
+<li><p><code>innodb_flush_log_at_trx_commit</code> 参数默认为 1
+，也就是说当事务提交时会<strong>调用 <code>fsync</code> 对 redo log
+进行刷盘</strong></p></li>
+<li><p><code>InnoDB</code> 存储引擎有一个后台线程，每隔<code>1</code>
+秒，就会把 <code>redo log buffer</code>
+中的内容写到文件系统缓存（<code>page cache</code>），然后调用
+<code>fsync</code> 刷盘。(即<strong>没有提交事务的redo
+log记录，也有可能会刷盘，因为在事务执行过程 <code>redo log</code>
+记录是会写入<code>redo log buffer</code> 中，这些 <code>redo log</code>
+记录会被后台线程刷盘。</strong>)</p>
+<blockquote>
+<p>除了后台线程每秒<code>1</code>次的轮询操作，还有一种情况，当
+<code>redo log buffer</code> 占用的空间即将达到
+<code>innodb_log_buffer_size</code> 一半的时候，后台线程会主动刷盘</p>
+</blockquote></li>
+</ul>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230114210732904.png"
+alt="image-20230114210732904" />
+<figcaption aria-hidden="true">image-20230114210732904</figcaption>
+</figure>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230114211124499.png"
+alt="image-20230114211124499" />
+<figcaption aria-hidden="true">image-20230114211124499</figcaption>
+</figure>
+<p><strong>不同刷盘策略的流程图</strong></p>
+<ul>
+<li><h4
+id="innodb_flush_log_at_trx_commit0不对是否刷盘做出处理">innodb_flush_log_at_trx_commit=0（不对是否刷盘做出处理）</h4>
+<blockquote>
+<p>为<code>0</code>时，如果<code>MySQL</code>挂了或宕机可能会有<code>1</code>秒数据的丢失。</p>
+</blockquote>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230114211255976.png"
+alt="image-20230114211255976" />
+<figcaption aria-hidden="true">image-20230114211255976</figcaption>
+</figure></li>
+<li><h4
+id="innodb_flush_log_at_trx_commit1">innodb_flush_log_at_trx_commit=1</h4>
+<blockquote>
+<p>为<code>1</code>时，
+<strong>只要事务提交成功</strong>，<strong><code>redo log</code>记录就一定在硬盘里</strong>，不会有任何数据丢失。如果事务执行期间<code>MySQL</code>挂了或宕机，这部分日志丢了，但是事务并没有提交，所以日志丢了也不会有损失。</p>
+</blockquote>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230114211419216.png"
+alt="image-20230114211419216" />
+<figcaption aria-hidden="true">image-20230114211419216</figcaption>
+</figure></li>
+<li><h4
+id="innodb_flush_log_at_trx_commit2">innodb_flush_log_at_trx_commit=2</h4>
+<blockquote>
+<ul>
+<li><p>为<code>2</code>时，
+只要<strong>事务提交成功</strong>，<code>redo log buffer</code>中的内容<strong>只写入文件系统缓存</strong>（<code>page cache</code>）。</p></li>
+<li><p>如果仅仅<strong>只是<code>MySQL</code>挂了不会有任何数据丢失</strong>，但是<strong>宕机可能会有<code>1</code>秒数据的丢失</strong>。</p></li>
+</ul>
+</blockquote>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230114211535295.png"
+alt="image-20230114211535295" />
+<figcaption aria-hidden="true">image-20230114211535295</figcaption>
+</figure></li>
+</ul>
 <h2 id="日志文件组">日志文件组</h2>
 <h2 id="redo-log-小结">redo log 小结</h2>
 <h1 id="binlog">binlog</h1>
@@ -418,7 +495,7 @@ alt="image-20230114190158828" /></p></li>
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#redo-log"><span class="nav-number">2.</span> <span class="nav-text">redo log</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%B7%E7%9B%98%E6%97%B6%E6%9C%BA"><span class="nav-number">2.1.</span> <span class="nav-text">刷盘时机</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%97%A5%E5%BF%97%E6%96%87%E4%BB%B6%E7%BB%84"><span class="nav-number">2.2.</span> <span class="nav-text">日志文件组</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#redo-log-%E5%B0%8F%E7%BB%93"><span class="nav-number">2.3.</span> <span class="nav-text">redo log 小结</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#binlog"><span class="nav-number">3.</span> <span class="nav-text">binlog</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%B0%E5%BD%95%E6%A0%BC%E5%BC%8F"><span class="nav-number">3.1.</span> <span class="nav-text">记录格式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%99%E5%85%A5%E6%9C%BA%E5%88%B6"><span class="nav-number">3.2.</span> <span class="nav-text">写入机制</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%A4%E9%98%B6%E6%AE%B5%E6%8F%90%E4%BA%A4"><span class="nav-number">4.</span> <span class="nav-text">两阶段提交</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#undo-log"><span class="nav-number">5.</span> <span class="nav-text">undo log</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#redo-log"><span class="nav-number">2.</span> <span class="nav-text">redo log</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%B7%E7%9B%98%E6%97%B6%E6%9C%BA"><span class="nav-number">2.1.</span> <span class="nav-text">刷盘时机</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#innodb_flush_log_at_trx_commit0%E4%B8%8D%E5%AF%B9%E6%98%AF%E5%90%A6%E5%88%B7%E7%9B%98%E5%81%9A%E5%87%BA%E5%A4%84%E7%90%86"><span class="nav-number">2.1.0.1.</span> <span class="nav-text">innodb_flush_log_at_trx_commit&#x3D;0（不对是否刷盘做出处理）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#innodb_flush_log_at_trx_commit1"><span class="nav-number">2.1.0.2.</span> <span class="nav-text">innodb_flush_log_at_trx_commit&#x3D;1</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#innodb_flush_log_at_trx_commit2"><span class="nav-number">2.1.0.3.</span> <span class="nav-text">innodb_flush_log_at_trx_commit&#x3D;2</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%97%A5%E5%BF%97%E6%96%87%E4%BB%B6%E7%BB%84"><span class="nav-number">2.2.</span> <span class="nav-text">日志文件组</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#redo-log-%E5%B0%8F%E7%BB%93"><span class="nav-number">2.3.</span> <span class="nav-text">redo log 小结</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#binlog"><span class="nav-number">3.</span> <span class="nav-text">binlog</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%B0%E5%BD%95%E6%A0%BC%E5%BC%8F"><span class="nav-number">3.1.</span> <span class="nav-text">记录格式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%99%E5%85%A5%E6%9C%BA%E5%88%B6"><span class="nav-number">3.2.</span> <span class="nav-text">写入机制</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%A4%E9%98%B6%E6%AE%B5%E6%8F%90%E4%BA%A4"><span class="nav-number">4.</span> <span class="nav-text">两阶段提交</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#undo-log"><span class="nav-number">5.</span> <span class="nav-text">undo log</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -488,12 +565,12 @@ alt="image-20230114190158828" /></p></li>
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">799k</span>
+    <span title="站点总字数">800k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">24:14</span>
+    <span title="站点阅读时长">24:15</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>

@@ -1418,6 +1418,83 @@ alt="image-20230114190158828" /></p></li>
 </blockquote></li>
 </ol>
 <h2 id="刷盘时机">刷盘时机</h2>
+<ul>
+<li><p><code>InnoDB</code> 存储<strong>引擎为 <code>redo log</code>
+的刷盘策略提供了 <code>innodb_flush_log_at_trx_commit</code>
+参数</strong>，它支持三种策略<br />
+<strong>0</strong>：设置为0时，表示每次<strong>事务提交时不进行刷盘</strong>操作<br />
+<strong>1</strong>：设置为1时，表示每次<strong>事务提交时都将进行刷盘</strong>操作（默认值）<br />
+<strong>2</strong>：设置为2时，表示每次<strong>事务提交时都只把redo log
+buffer内容写入page cache(系统缓存)</strong></p></li>
+<li><p><code>innodb_flush_log_at_trx_commit</code> 参数默认为 1
+，也就是说当事务提交时会<strong>调用 <code>fsync</code> 对 redo log
+进行刷盘</strong></p></li>
+<li><p><code>InnoDB</code> 存储引擎有一个后台线程，每隔<code>1</code>
+秒，就会把 <code>redo log buffer</code>
+中的内容写到文件系统缓存（<code>page cache</code>），然后调用
+<code>fsync</code> 刷盘。(即<strong>没有提交事务的redo
+log记录，也有可能会刷盘，因为在事务执行过程 <code>redo log</code>
+记录是会写入<code>redo log buffer</code> 中，这些 <code>redo log</code>
+记录会被后台线程刷盘。</strong>)</p>
+<blockquote>
+<p>除了后台线程每秒<code>1</code>次的轮询操作，还有一种情况，当
+<code>redo log buffer</code> 占用的空间即将达到
+<code>innodb_log_buffer_size</code> 一半的时候，后台线程会主动刷盘</p>
+</blockquote></li>
+</ul>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230114210732904.png"
+alt="image-20230114210732904" />
+<figcaption aria-hidden="true">image-20230114210732904</figcaption>
+</figure>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230114211124499.png"
+alt="image-20230114211124499" />
+<figcaption aria-hidden="true">image-20230114211124499</figcaption>
+</figure>
+<p><strong>不同刷盘策略的流程图</strong></p>
+<ul>
+<li><h4
+id="innodb_flush_log_at_trx_commit0不对是否刷盘做出处理">innodb_flush_log_at_trx_commit=0（不对是否刷盘做出处理）</h4>
+<blockquote>
+<p>为<code>0</code>时，如果<code>MySQL</code>挂了或宕机可能会有<code>1</code>秒数据的丢失。</p>
+</blockquote>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230114211255976.png"
+alt="image-20230114211255976" />
+<figcaption aria-hidden="true">image-20230114211255976</figcaption>
+</figure></li>
+<li><h4
+id="innodb_flush_log_at_trx_commit1">innodb_flush_log_at_trx_commit=1</h4>
+<blockquote>
+<p>为<code>1</code>时，
+<strong>只要事务提交成功</strong>，<strong><code>redo log</code>记录就一定在硬盘里</strong>，不会有任何数据丢失。如果事务执行期间<code>MySQL</code>挂了或宕机，这部分日志丢了，但是事务并没有提交，所以日志丢了也不会有损失。</p>
+</blockquote>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230114211419216.png"
+alt="image-20230114211419216" />
+<figcaption aria-hidden="true">image-20230114211419216</figcaption>
+</figure></li>
+<li><h4
+id="innodb_flush_log_at_trx_commit2">innodb_flush_log_at_trx_commit=2</h4>
+<blockquote>
+<ul>
+<li><p>为<code>2</code>时，
+只要<strong>事务提交成功</strong>，<code>redo log buffer</code>中的内容<strong>只写入文件系统缓存</strong>（<code>page cache</code>）。</p></li>
+<li><p>如果仅仅<strong>只是<code>MySQL</code>挂了不会有任何数据丢失</strong>，但是<strong>宕机可能会有<code>1</code>秒数据的丢失</strong>。</p></li>
+</ul>
+</blockquote>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230114211535295.png"
+alt="image-20230114211535295" />
+<figcaption aria-hidden="true">image-20230114211535295</figcaption>
+</figure></li>
+</ul>
 <h2 id="日志文件组">日志文件组</h2>
 <h2 id="redo-log-小结">redo log 小结</h2>
 <h1 id="binlog">binlog</h1>
