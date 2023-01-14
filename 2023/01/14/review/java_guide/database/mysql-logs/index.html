@@ -239,7 +239,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>56</span>
+              <span>815</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -262,6 +262,73 @@
         <blockquote>
 <p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!</p>
 </blockquote>
+<h1 id="前言">前言</h1>
+<ul>
+<li><code>MySQL</code> 日志
+主要包括<strong>错误日志</strong>、<strong>查询日志</strong>、<strong>慢查询日志</strong>、<strong>事务日志</strong>、<strong>二进制日志</strong>几大类</li>
+<li>比较重要的
+<ol type="1">
+<li>二进制日志： <strong>binlog（归档日志）</strong>【server层】</li>
+<li>事务日志：<strong>redo log（重做日志）</strong>和<strong>undo
+log（回滚日志）</strong> 【引擎层】</li>
+<li>redo log是记录物理上的改变；undo log是从逻辑上恢复</li>
+<li>MySQL InnoDB 引擎使用 <strong>redo log(重做日志)</strong>
+保证事务的<strong>持久性</strong>，使用 <strong>undo
+log(回滚日志)</strong> 来保证事务的<strong>原子性</strong>。</li>
+</ol></li>
+</ul>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230114174517643.png"
+alt="image-20230114174517643" />
+<figcaption aria-hidden="true">image-20230114174517643</figcaption>
+</figure>
+<h1 id="redo-log">redo log</h1>
+<ul>
+<li><p>redo
+log（重做日志）是<strong>InnoDB</strong>存储引擎独有的，它让MySQL拥有了<strong>崩溃恢复</strong>的能力</p>
+<blockquote>
+<p>比如 <code>MySQL</code>
+实例<strong>挂了或宕机</strong>了，<strong>重启</strong>时，<code>InnoDB</code>存储引擎会使用<code>redo log</code>恢复数据，保证数据的<strong>持久性</strong>与<strong>完整性</strong>。</p>
+</blockquote>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230114185737370.png"
+alt="image-20230114185737370" />
+<figcaption aria-hidden="true">image-20230114185737370</figcaption>
+</figure></li>
+</ul>
+<ol type="1">
+<li><p>MySQL中数据是以<strong>页</strong>为单位，你查询一条记录，会从硬盘把一页的数据加载出来，加载出来的数据叫<strong>数据页</strong>，会放到<strong>Buffer
+Pool</strong>中</p>
+<blockquote>
+<ul>
+<li><p>后续的查询都是先从 <code>Buffer Pool</code>
+中找，没有命中再去硬盘加载，减少硬盘 <code>IO</code>
+开销，提升性能。</p></li>
+<li><p>更新表数据的时候，也是如此，发现 <code>Buffer Pool</code>
+里存在要更新的数据，就直接在 <code>Buffer Pool</code> 里更新</p></li>
+</ul>
+</blockquote></li>
+<li><p>把“<strong>在某个数据页上做了什么修改</strong>”记录到<strong>重做日志缓存</strong>（<code>redo log buffer</code>）里，接着<strong>刷盘到
+<code>redo log</code> 文件</strong>里<br />
+即 从 硬盘上db数据文件 --&gt; BufferPool --&gt; redo log buffer --&gt;
+redo log <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230114190158828.png"
+alt="image-20230114190158828" /></p></li>
+<li><p>理想情况，事务<strong>一提交就会进行刷盘</strong>操作，但<strong>实际上</strong>，刷盘的时机是<strong>根据策略</strong></p>
+<blockquote>
+<p>每条redo记录由<strong>”表空间号+数据页号+偏移量+修改数据长度+具体修改的数据“</strong>组成</p>
+</blockquote></li>
+</ol>
+<h2 id="刷盘时机">刷盘时机</h2>
+<h2 id="日志文件组">日志文件组</h2>
+<h2 id="redo-log-小结">redo log 小结</h2>
+<h1 id="binlog">binlog</h1>
+<h2 id="记录格式">记录格式</h2>
+<h2 id="写入机制">写入机制</h2>
+<h1 id="两阶段提交">两阶段提交</h1>
+<h1 id="undo-log">undo log</h1>
 
     </div>
 
@@ -351,6 +418,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#redo-log"><span class="nav-number">2.</span> <span class="nav-text">redo log</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%B7%E7%9B%98%E6%97%B6%E6%9C%BA"><span class="nav-number">2.1.</span> <span class="nav-text">刷盘时机</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%97%A5%E5%BF%97%E6%96%87%E4%BB%B6%E7%BB%84"><span class="nav-number">2.2.</span> <span class="nav-text">日志文件组</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#redo-log-%E5%B0%8F%E7%BB%93"><span class="nav-number">2.3.</span> <span class="nav-text">redo log 小结</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#binlog"><span class="nav-number">3.</span> <span class="nav-text">binlog</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%B0%E5%BD%95%E6%A0%BC%E5%BC%8F"><span class="nav-number">3.1.</span> <span class="nav-text">记录格式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%99%E5%85%A5%E6%9C%BA%E5%88%B6"><span class="nav-number">3.2.</span> <span class="nav-text">写入机制</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%A4%E9%98%B6%E6%AE%B5%E6%8F%90%E4%BA%A4"><span class="nav-number">4.</span> <span class="nav-text">两阶段提交</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#undo-log"><span class="nav-number">5.</span> <span class="nav-text">undo log</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -425,7 +493,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">24:12</span>
+    <span title="站点阅读时长">24:14</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
