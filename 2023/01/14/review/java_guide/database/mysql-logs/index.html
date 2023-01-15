@@ -239,14 +239,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>4.4k</span>
+              <span>7.3k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>8 分钟</span>
+              <span>13 分钟</span>
             </span>
             <div class="post-description">日志</div>
 
@@ -382,7 +382,7 @@ buffer内容写入page cache(系统缓存)</strong></p></li>
 <li><p><code>InnoDB</code> 存储引擎有一个后台线程，每隔<code>1</code>
 秒，就会把 <code>redo log buffer</code>
 中的内容写到文件系统缓存（<code>page cache</code>），然后调用
-<code>fsync</code> 刷盘。(即<strong>没有提交事务的redo
+<code>fsync</code> 刷盘。(★★重要★★即<strong>没有提交事务的redo
 log记录，也有可能会刷盘，因为在事务执行过程 <code>redo log</code>
 记录是会写入<code>redo log buffer</code> 中，这些 <code>redo log</code>
 记录会被后台线程刷盘。</strong>)</p>
@@ -409,7 +409,9 @@ alt="image-20230114211124499" />
 <li><h4
 id="innodb_flush_log_at_trx_commit0不对是否刷盘做出处理">innodb_flush_log_at_trx_commit=0（不对是否刷盘做出处理）</h4>
 <blockquote>
-<p>为<code>0</code>时，如果<code>MySQL</code>挂了或宕机可能会有<code>1</code>秒数据的丢失。</p>
+<p>为<code>0</code>时，如果<code>MySQL</code>挂了或宕机可能会有<code>1</code>秒数据的丢失。<br />
+（<strong>由于事务提交成功也不会主动写入page cache，所以即使只有MySQL
+挂了，没有宕机，也会丢失。</strong>）</p>
 </blockquote>
 <figure>
 <img
@@ -519,10 +521,196 @@ alt="image-20230114221955537" />
 </blockquote></li>
 </ol>
 <h1 id="binlog">binlog</h1>
+<ul>
+<li><p><strong>redo
+log</strong>是<strong>物理</strong>日志，记录内容是<strong>“在某个数据页上做了什么修改”</strong>，属于<strong>InnoDB
+存储引擎</strong>；而<strong>bin
+log</strong>是逻辑日志，记录内容是<strong>语句的原始逻辑</strong>，类似于
+“给ID = 2 这一行的 c 字段加1”，属于<strong>MYSQL Server</strong>层</p>
+<blockquote>
+<p>无论用什么存储引擎，主要<strong>发生了表数据更新</strong>，都会产生于binlog
+日志</p>
+</blockquote></li>
+<li><p>MySQL的数据库的<strong>数据备份</strong>、<strong>主备</strong>、<strong>主主</strong>、<strong>主从</strong>都离不开binlog，需要依靠binlog来<strong>同步数据</strong>，<strong>保证数据一致性</strong>。
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230115212733316.png"
+alt="image-20230115212733316" /></p></li>
+<li><p>binlog会记录所有<strong>涉及更新数据的逻辑操作</strong>，而且是<strong>顺序写</strong></p></li>
+</ul>
 <h2 id="记录格式">记录格式</h2>
+<ul>
+<li><code>binlog</code>
+日志有<strong>三种格式</strong>，可以通过<strong><code>binlog_format</code></strong>参数指定。
+<ol type="1">
+<li><strong>statement</strong></li>
+<li><strong>row</strong></li>
+<li><strong>mixed</strong></li>
+</ol></li>
+</ul>
+<ol type="1">
+<li><p>指定<strong><code>statement</code></strong>，记录的内容是<strong><code>SQL</code>语句原文</strong>，比如执行一条<code>update T set update_time=now() where id=1</code>，记录的内容如下
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230115213035257.png"
+alt="image-20230115213035257" /></p>
+<blockquote>
+<p>同步数据时会执行记录的SQL语句，但有个问题，<strong>update_time =
+now()
+</strong>会获取当前系统时间，直接执行会导致<strong>与原库的数据不一致</strong></p>
+</blockquote></li>
+<li><p>为了解决上面问题，需要指定<strong>row</strong>，记录的不是简单的SQL语句，还包括<strong>操作的具体数据</strong>，记录内容如下</p>
+<blockquote>
+<ul>
+<li>row格式的记录内容看不到详细信息，需要用<strong>mysqlbinlog</strong>工具解析出来</li>
+<li><code>update_time=now()</code>变成了具体的时间<code>update_time=1627112756247</code>，条件后面的@1、<span
+class="citation" data-cites="2">@2</span>、<span class="citation"
+data-cites="3">@3</span> 都是该行数据第 1 个~3
+个字段的原始值（<strong>假设这张表只有 3 个字段</strong>）</li>
+</ul>
+</blockquote>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230115213231813.png"
+alt="image-20230115213231813" />
+<figcaption aria-hidden="true">image-20230115213231813</figcaption>
+</figure>
+<p>这样就能保证同步数据的一致性，通常情况下都是指定row，可以为<strong>数据库的恢复与同步</strong>带来更好的<strong>可靠性</strong></p></li>
+<li><p>但是由于row需要更大的容量来记录，比较<strong>占用空间</strong>，<strong>恢复与同步更消耗IO</strong>资源，<strong>影响执行速度</strong>。
+折中方案，指定为<strong>mixed</strong>，记录内容为两者混合：MySQL会判断这条SQL语句是否引起数据不一致，如果是就用<strong>row</strong>格式，否则就使用<strong>statement</strong>格式</p></li>
+</ol>
 <h2 id="写入机制">写入机制</h2>
+<ul>
+<li><p>binlog的写入时机：<strong>事务执行过程</strong>中，先把日志写到<strong>binlog
+cache</strong>，<strong>事务提交的时候（这个很重要，他不像redo
+log，binlog只有提交的时候才会刷盘）</strong>，再把<strong>binlog
+cache</strong>写到binlog文件中</p>
+<blockquote>
+<p>因为一个事务的<strong><code>binlog</code>不能被拆开</strong>，无论这个事务多大，也要确保<strong>一次性写入</strong>，所以系统会<strong>给每个线程分配一个块内存作为<code>binlog cache</code></strong></p>
+</blockquote></li>
+<li><p>我们可以通过<code>binlog_cache_size</code>参数控制<strong>单个线程
+binlog cache
+大小</strong>，如果存储内容超过了这个参数，就要暂存到磁盘（<code>Swap</code>）：<br />
+binlog日志刷盘流程如下<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230115215957574.png"
+alt="image-20230115215957574" /></p>
+<blockquote>
+<ul>
+<li>上图的 write，是指把日志写入到文件系统的 <strong>page
+cache</strong>，并没有把数据持久化到磁盘，所以速度比较快</li>
+<li>上图的
+<strong>fsync</strong>，才是<strong>将数据持久化到磁盘</strong>的操作</li>
+</ul>
+</blockquote></li>
+<li><p>write和fsync的时机，由<strong>sync_binlog</strong>控制，默认为0</p>
+<ol type="1">
+<li><p>为<strong>0</strong>时，表示每次提交的事务都只<strong>write</strong>，由系统自行判断什么时候执行fsync
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230115220404168.png"
+alt="image-20230115220404168" /></p>
+<blockquote>
+<p>虽然性能会提升，但是如果机器宕机，<strong>page
+cache</strong>里面的binlog会<strong>丢失</strong></p>
+</blockquote></li>
+<li><p>设置为<strong>1</strong>，表示<strong>每次提交事务</strong>都会fsync
+，就如同<strong>redo log日志刷盘流程</strong> 一样</p></li>
+<li><p>折中，可以设置为<strong>N(N&gt;1)</strong>，表示每次提交事物都write，但累积<strong>N</strong>个事务之后才<strong>fsync</strong><img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230115220338819.png"
+alt="image-20230115220338819" />
+在出现<strong>IO</strong>瓶颈的场景里，将<strong>sync_binlog</strong>设置成一个较大的值，可以<strong>提升性能</strong><br />
+同理，如果机器宕机，会<strong>丢失最近N个事务的binlog日志</strong></p></li>
+</ol></li>
+</ul>
 <h1 id="两阶段提交">两阶段提交</h1>
+<ol type="1">
+<li><strong>redo
+log（重做日志）</strong>让InnoDB存储引擎拥有了<strong>崩溃恢复</strong>的能力</li>
+<li><strong>binlog（归档日志）</strong>保证了MySQL<strong>集群架构的数据一致性</strong></li>
+</ol>
+<p>两者都属于<strong>持久性</strong>的保证，但<strong>侧重点不同</strong></p>
+<ul>
+<li><p>更新语句过程，会记录<strong>redo
+log</strong>和<strong>binlog</strong>两块日志，以基本的事务为单位</p></li>
+<li><p><strong>redo
+log</strong>在事务执行过程中可以<strong>不断地写入</strong>，而<strong>binlog</strong>只有在<strong>提交事务时</strong>才写入，所以<strong>redo
+log</strong>和<strong>binlog</strong>写入时机不一样</p></li>
+</ul>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230115221716772.png"
+alt="image-20230115221716772" />
+<figcaption aria-hidden="true">image-20230115221716772</figcaption>
+</figure>
+<p><strong>redo log</strong>与<strong>binlog</strong>
+两份日志之间的逻辑不一样，会出现什么问题？</p>
+<ul>
+<li><p>以<code>update</code>语句为例，假设<code>id=2</code>的记录，字段<code>c</code>值是<code>0</code>，把字段<code>c</code>值更新成<code>1</code>，<code>SQL</code>语句为<code>update T set c=1 where id= 2</code></p></li>
+<li><p>假设执行过程中<strong>写完redo
+log</strong>日志后，<strong>binlog日志写期间发生了异常</strong>，会出现什么情况
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230115222416227.png"
+alt="image-20230115222416227" /></p>
+<blockquote>
+<p>由于<code>binlog</code>没写完就异常，这时候<strong><code>binlog</code>里面没有对应的修改记录</strong>。因此，之后用<strong><code>binlog</code>日志恢复数据</strong>时，就会少这一次更新，恢复出来的这一行<code>c</code>值是<code>0</code>，而<strong>原库因为<code>redo log</code>日志恢复，这一行<code>c</code>值是<code>1</code>，最终数据不一致</strong>。</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/03-20220305235104445.png"
+alt="img" />
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+</blockquote></li>
+<li><p>为了解决<strong>两份日志之间的逻辑一致</strong>问题，InnoDB存储引擎使用<strong>两阶段提交</strong>方案
+即将redo
+log的写入拆成了两个步骤<strong>prepare</strong>和<strong>commit</strong>，这就是<strong>两阶段提交</strong>（<strong>其实就是等binlog正式写入后redo
+log才正式提交</strong>） <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230115222722278.png"
+alt="image-20230115222722278" /></p>
+<blockquote>
+<p>使用<strong>两阶段提交</strong>后，写入<code>binlog</code>时发生异常也不会有影响，因为<strong><code>MySQL</code>根据<code>redo log</code>日志恢复数据</strong>时，<strong>发现<code>redo log</code>还处于<code>prepare</code>阶段（也就是下图的<code>非commit阶段</code>）</strong>，并且<strong>没有对应<code>binlog</code>日志</strong>，就会<strong>回滚该事务</strong>。</p>
+<p>其实下图中，<strong>是否存在对应的binlog</strong>，就是想知道<strong>binlog是否是完整的</strong>，如果完整的话
+redolog就可以提交
+（箭头前面<strong>是否commit阶段</strong>，是的话就表示binlog写入期间没有出错，即binlog完整）
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230115222906325.png"
+alt="image-20230115222906325" /></p>
+<p>还有个问题，<strong><code>redo log</code>设置<code>commit</code>阶段发生异常</strong>，那会不会回滚事务呢？<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230115223656461.png"
+alt="image-20230115223656461" /></p>
+<blockquote>
+<p>并不会回滚事务，它会执行上图框住的逻辑，虽然<code>redo log</code>是处于<code>prepare</code>阶段，但是<strong>能通过事务<code>id</code>找到对应的<code>binlog</code>日志</strong>，所以<strong><code>MySQL</code>认为(binlog)是完整的</strong>，就会<strong>提交事务恢复数据</strong>。</p>
+</blockquote>
+</blockquote></li>
+</ul>
 <h1 id="undo-log">undo log</h1>
+<ul>
+<li>如果想要保证<strong>事务的原子性</strong>，就需要在<strong>异常发生</strong>时，对已经执行的操作进行<strong>回滚</strong>，在
+MySQL 中，恢复机制是通过 <strong>回滚日志（undo log）</strong>
+实现的，<strong>所有事务进行的修改都会先记录到这个回滚日志</strong>中，<strong>然后再执行相关的操作</strong></li>
+<li>如果<strong>执行过程中遇到异常</strong>的话，我们直接利用
+<strong>回滚日志</strong> 中的信息将数据回滚到修改之前的样子即可！</li>
+<li>回滚日志会<strong>先于数据持久化到磁盘</strong>上。这样就保证了即使遇到数据库突然宕机等情况，当用户再次启动数据库的时候，数据库还<strong>能够通过查询回滚日志来回滚将之前未完成的事务</strong>。</li>
+</ul>
+<h2 id="mvcc">MVCC</h2>
+<ul>
+<li><p><code>MVCC</code> 的实现依赖于：<strong>隐藏字段、Read View、undo
+log</strong>。</p></li>
+<li><p>内部实现中，<code>InnoDB</code> 通过数据行的
+<strong><code>DB_TRX_ID</code></strong> 和
+<strong><code>Read View</code></strong>
+来判断数据的可见性，如不可见，则通过数据行的 <code>DB_ROLL_PTR</code>
+找到 <code>undo log</code> 中的历史版本。</p>
+<blockquote>
+<p>每个事务读到的数据版本可能是不一样的，在同一个事务中，用户只能看到该事务创建
+<code>Read View</code> 之前已经提交的修改和该事务本身做的修改</p>
+</blockquote></li>
+</ul>
+<h2 id="总结">总结</h2>
+<ul>
+<li>MySQL InnoDB 引擎使用 <strong>redo log(重做日志)</strong>
+保证事务的<strong>持久性</strong>，使用 <strong>undo
+log(回滚日志)</strong> 来保证事务的<strong>原子性</strong>。</li>
+<li><code>MySQL</code>数据库的<strong>数据备份、主备、主主、主从</strong>都离不开<code>binlog</code>，需要依靠<code>binlog</code>来同步数据，保证数据一致性。</li>
+</ul>
 
     </div>
 
@@ -612,7 +800,7 @@ alt="image-20230114221955537" />
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#redo-log"><span class="nav-number">2.</span> <span class="nav-text">redo log</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%B7%E7%9B%98%E6%97%B6%E6%9C%BA"><span class="nav-number">2.1.</span> <span class="nav-text">刷盘时机</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#innodb_flush_log_at_trx_commit0%E4%B8%8D%E5%AF%B9%E6%98%AF%E5%90%A6%E5%88%B7%E7%9B%98%E5%81%9A%E5%87%BA%E5%A4%84%E7%90%86"><span class="nav-number">2.1.0.1.</span> <span class="nav-text">innodb_flush_log_at_trx_commit&#x3D;0（不对是否刷盘做出处理）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#innodb_flush_log_at_trx_commit1"><span class="nav-number">2.1.0.2.</span> <span class="nav-text">innodb_flush_log_at_trx_commit&#x3D;1</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#innodb_flush_log_at_trx_commit2"><span class="nav-number">2.1.0.3.</span> <span class="nav-text">innodb_flush_log_at_trx_commit&#x3D;2</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%97%A5%E5%BF%97%E6%96%87%E4%BB%B6%E7%BB%84"><span class="nav-number">2.2.</span> <span class="nav-text">日志文件组</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#redo-log-%E5%B0%8F%E7%BB%93"><span class="nav-number">2.3.</span> <span class="nav-text">redo log 小结</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#binlog"><span class="nav-number">3.</span> <span class="nav-text">binlog</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%B0%E5%BD%95%E6%A0%BC%E5%BC%8F"><span class="nav-number">3.1.</span> <span class="nav-text">记录格式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%99%E5%85%A5%E6%9C%BA%E5%88%B6"><span class="nav-number">3.2.</span> <span class="nav-text">写入机制</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%A4%E9%98%B6%E6%AE%B5%E6%8F%90%E4%BA%A4"><span class="nav-number">4.</span> <span class="nav-text">两阶段提交</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#undo-log"><span class="nav-number">5.</span> <span class="nav-text">undo log</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#redo-log"><span class="nav-number">2.</span> <span class="nav-text">redo log</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%B7%E7%9B%98%E6%97%B6%E6%9C%BA"><span class="nav-number">2.1.</span> <span class="nav-text">刷盘时机</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#innodb_flush_log_at_trx_commit0%E4%B8%8D%E5%AF%B9%E6%98%AF%E5%90%A6%E5%88%B7%E7%9B%98%E5%81%9A%E5%87%BA%E5%A4%84%E7%90%86"><span class="nav-number">2.1.0.1.</span> <span class="nav-text">innodb_flush_log_at_trx_commit&#x3D;0（不对是否刷盘做出处理）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#innodb_flush_log_at_trx_commit1"><span class="nav-number">2.1.0.2.</span> <span class="nav-text">innodb_flush_log_at_trx_commit&#x3D;1</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#innodb_flush_log_at_trx_commit2"><span class="nav-number">2.1.0.3.</span> <span class="nav-text">innodb_flush_log_at_trx_commit&#x3D;2</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%97%A5%E5%BF%97%E6%96%87%E4%BB%B6%E7%BB%84"><span class="nav-number">2.2.</span> <span class="nav-text">日志文件组</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#redo-log-%E5%B0%8F%E7%BB%93"><span class="nav-number">2.3.</span> <span class="nav-text">redo log 小结</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#binlog"><span class="nav-number">3.</span> <span class="nav-text">binlog</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%B0%E5%BD%95%E6%A0%BC%E5%BC%8F"><span class="nav-number">3.1.</span> <span class="nav-text">记录格式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%99%E5%85%A5%E6%9C%BA%E5%88%B6"><span class="nav-number">3.2.</span> <span class="nav-text">写入机制</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%A4%E9%98%B6%E6%AE%B5%E6%8F%90%E4%BA%A4"><span class="nav-number">4.</span> <span class="nav-text">两阶段提交</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#undo-log"><span class="nav-number">5.</span> <span class="nav-text">undo log</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#mvcc"><span class="nav-number">5.1.</span> <span class="nav-text">MVCC</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">5.2.</span> <span class="nav-text">总结</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -682,12 +870,12 @@ alt="image-20230114221955537" />
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">803k</span>
+    <span title="站点总字数">806k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">24:20</span>
+    <span title="站点阅读时长">24:25</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
