@@ -239,14 +239,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>1.8k</span>
+              <span>2.2k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>3 分钟</span>
+              <span>4 分钟</span>
             </span>
             <div class="post-description">隔离级别</div>
 
@@ -351,7 +351,8 @@ ACID 要求又有了提高。</li>
 语句后就会马上执行 COMMIT
 操作。如果要显式地开启一个事务需要使用命令：<strong><code>START TRANSACTION</code></strong></p>
 </blockquote></li>
-<li><p>通过下面的命令来设置隔离级别</p>
+<li><p>通过下面的命令来设置隔离级别 session
+：更改只有本次会话有效；global：更改在<strong>所有会话都有效，且不会影响已开启的session</strong></p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">SET [SESSION|GLOBAL] TRANSACTION ISOLATION LEVEL [READ UNCOMMITTED|READ COMMITTED|REPEATABLE READ|SERIALIZABLE] </span><br></pre></td></tr></table></figure></li>
 <li><p>实际操作中使用到的一些并发控制的语句</p>
 <ol type="1">
@@ -362,6 +363,23 @@ ACID 要求又有了提高。</li>
 </ol></li>
 </ul>
 <h2 id="脏读读未提交">脏读（读未提交）</h2>
+<ol type="1">
+<li><p>事务1
+<code>SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;</code></p></li>
+<li><p>事务1 <code>START TRANSACTION;</code></p></li>
+<li><p>事务1 <code>SELECT salary FROM employ WHERE id = 1</code></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">结果</span></span><br><span class="line">+--------+</span><br><span class="line">| salary |</span><br><span class="line">+--------+</span><br><span class="line">|   5000 |</span><br><span class="line">+--------+</span><br></pre></td></tr></table></figure></li>
+<li><p>开启新连接，事务2 开启 <code>START TRANSACTION;</code></p></li>
+<li><p>事务2 <code>UPDATE employ SET salary = 4500 ;</code></p></li>
+<li><p>事务1查看
+<code>SELECT salary FROM employ WHERE id = 1;</code></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">+--------+</span><br><span class="line">| salary |</span><br><span class="line">+--------+</span><br><span class="line">|   4500 |</span><br><span class="line">+--------+</span><br></pre></td></tr></table></figure></li>
+<li><p>事务2 进行回滚 <code>ROLLBACK;</code></p></li>
+<li><p>使用事务1再次查看
+<code>SELECT salary FROM employ WHERE id = 1;</code></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">+--------+</span><br><span class="line">| salary |</span><br><span class="line">+--------+</span><br><span class="line">|   5000 |</span><br><span class="line">+--------+</span><br></pre></td></tr></table></figure>
+<p>事务二进行了回滚，但是之前事务1却读取到了4500（是个脏数据）</p></li>
+</ol>
 <h2 id="避免脏读读已提交">避免脏读（读已提交）</h2>
 <h2 id="不可重复读">不可重复读</h2>
 <h2 id="可重复度">可重复度</h2>
@@ -525,12 +543,12 @@ ACID 要求又有了提高。</li>
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">809k</span>
+    <span title="站点总字数">810k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">24:31</span>
+    <span title="站点阅读时长">24:32</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
