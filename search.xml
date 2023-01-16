@@ -1996,52 +1996,34 @@ ACID 要求又有了提高。</li>
 </ul>
 <h2 id="脏读读未提交">脏读（读未提交）</h2>
 <ol type="1">
-<li><p>事务1
+<li><p>事务1 设置为<strong>读未提交</strong>级别
 <code>SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;</code></p>
-<ol type="1">
-<li><p>事务1 <code>START TRANSACTION;</code></p></li>
-<li><p>事务1 <code>SELECT salary FROM employ WHERE id = 1</code></p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">结果</span></span><br><span class="line">+--------+</span><br><span class="line">| salary |</span><br><span class="line">+--------+</span><br><span class="line">|   5000 |</span><br><span class="line">+--------+</span><br></pre></td></tr></table></figure></li>
-</ol></li>
-<li><p>开启新连接，事务2 开启 <code>START TRANSACTION;</code></p>
-<ol type="1">
-<li><p>事务2 <code>UPDATE employ SET salary = 4500 ;</code></p></li>
+<p>事务1开启事务并查看数据</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">START TRANSACTION;</span><br><span class="line">SELECT salary FROM employ WHERE id = 1;</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">结果</span></span><br><span class="line">+--------+</span><br><span class="line">| salary |</span><br><span class="line">+--------+</span><br><span class="line">|   5000 |</span><br><span class="line">+--------+</span><br></pre></td></tr></table></figure></li>
+<li><p>开启新连接，事务2 开启事务并更新数据</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">START TRANSACTION;</span><br><span class="line">UPDATE employ SET salary = 4500 ;</span><br></pre></td></tr></table></figure></li>
 <li><p>事务1查看
 <code>SELECT salary FROM employ WHERE id = 1;</code></p>
-<p><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">+--------+</span><br><span class="line">| salary |</span><br><span class="line">+--------+</span><br><span class="line">|   4500 |</span><br><span class="line">+--------+</span><br></pre></td></tr></table></figure></p></li>
-</ol></li>
-<li><p>事务2 进行回滚 <code>ROLLBACK;</code></p>
-<ol type="1">
-<li><p>使用事务1再次查看
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">+--------+</span><br><span class="line">| salary |</span><br><span class="line">+--------+</span><br><span class="line">|   4500 |</span><br><span class="line">+--------+</span><br></pre></td></tr></table></figure></li>
+<li><p>此时事务2 进行回滚 <code>ROLLBACK;</code> 使用事务1再次查看
 <code>SELECT salary FROM employ WHERE id = 1;</code></p>
-<p><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">+--------+</span><br><span class="line">| salary |</span><br><span class="line">+--------+</span><br><span class="line">|   5000 |</span><br><span class="line">+--------+</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">+--------+</span><br><span class="line">| salary |</span><br><span class="line">+--------+</span><br><span class="line">|   5000 |</span><br><span class="line">+--------+</span><br></pre></td></tr></table></figure>
 <p>事务二进行了回滚，但是之前事务1却读取到了4500（是个脏数据）</p></li>
-</ol></li>
 </ol>
 <h2 id="避免脏读读已提交">避免脏读（读已提交）</h2>
 <p><strong>不要在上面的连接里继续</strong></p>
 <ol type="1">
 <li><p>事务1
 设置为读已提交<code>SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;</code></p>
-<ol type="1">
-<li><p>事务1 <code>START TRANSACTION;</code></p></li>
-<li><p>事务1 <code>SELECT salary FROM employ WHERE id = 1</code></p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">结果</span></span><br><span class="line">+--------+</span><br><span class="line">| salary |</span><br><span class="line">+--------+</span><br><span class="line">|   5000 |</span><br><span class="line">+--------+</span><br></pre></td></tr></table></figure></li>
-</ol></li>
-<li><p>事务2 开启：<code>START TRANSACTION;</code></p>
-<ol type="1">
-<li><p>事务2修改数据，但未提交
-<code>UPDATE employ SET salary =  4500 ;</code></p></li>
+<p>事务1 开启事务并查询数据</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">START TRANSACTION;</span><br><span class="line">SELECT salary FROM employ WHERE id = 1;</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">结果</span></span><br><span class="line">+--------+</span><br><span class="line">| salary |</span><br><span class="line">+--------+</span><br><span class="line">|   5000 |</span><br><span class="line">+--------+</span><br></pre></td></tr></table></figure></li>
+<li><p>事务2 开启并修改数据(未提交)</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">START TRANSACTION;</span><br><span class="line"> UPDATE employ SET salary =  4500 ;</span><br></pre></td></tr></table></figure></li>
 <li><p>事务1查看数据 `` SELECT salary FROM employ WHERE id = 1;```
 因为事务隔离级别为<strong>读已提交</strong>，所以不会发生脏读</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">结果</span></span><br><span class="line">+--------+</span><br><span class="line">| salary |</span><br><span class="line">+--------+</span><br><span class="line">|   5000 |</span><br><span class="line">+--------+</span><br></pre></td></tr></table></figure></li>
-</ol></li>
-<li><p>事务2提交 <code>COMMIT;</code></p>
-<ol type="1">
-<li><p>事务1再次读取数据
-<code>SELECT salary FROM employ WHERE id = 1;</code></p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">+--------+ </span><br><span class="line">| salary | </span><br><span class="line">+--------+ </span><br><span class="line">|   4500 | </span><br><span class="line">+--------+ </span><br></pre></td></tr></table></figure></li>
-</ol></li>
+<li><p>事务2提交 <code>COMMIT;</code>后，事务1再次读取数据</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">SELECT salary FROM employ WHERE id = 1;</span><br><span class="line">+--------+ </span><br><span class="line">| salary | </span><br><span class="line">+--------+ </span><br><span class="line">|   4500 | </span><br><span class="line">+--------+ </span><br></pre></td></tr></table></figure></li>
 </ol>
 <h2 id="不可重复读">不可重复读</h2>
 <p>还是刚才<strong>读已提交</strong>的那些步骤，重复操作可以知道
@@ -2056,7 +2038,51 @@ alt="image-20230116150215200" />
 <figcaption aria-hidden="true">image-20230116150215200</figcaption>
 </figure>
 <h2 id="可重复读">可重复读</h2>
+<p>断开连接后重新连接MySQL，默认就是<strong>REPEATABLE-READ</strong>
+可重复读</p>
+<ol type="1">
+<li><p>事务1查看当前事务隔离级别 <code>select @@tx_isolation;</code></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">+-----------------+</span><br><span class="line">| @@tx_isolation  |</span><br><span class="line">+-----------------+</span><br><span class="line">| REPEATABLE-READ |</span><br><span class="line">+-----------------+</span><br></pre></td></tr></table></figure>
+<p>事务1 开启事务并查询数据</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">START TRANSACTION;</span><br><span class="line">SELECT salary FROM employ WHERE id = 1;</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">结果</span></span><br><span class="line">+--------+</span><br><span class="line">| salary |</span><br><span class="line">+--------+</span><br><span class="line">|   5000 |</span><br><span class="line">+--------+</span><br></pre></td></tr></table></figure></li>
+<li><p>事务2 开启事务并更新数据</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">START TRANSACTION;</span><br><span class="line">UPDATE employ SET salary = 4500 WHERE id = 1;</span><br></pre></td></tr></table></figure></li>
+<li><p>事务1 读取数据（结果仍不变，避免了读未提交的问题）</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">SELECT salary FROM employ WHERE id = 1;</span><br><span class="line">+--------+</span><br><span class="line">| salary |</span><br><span class="line">+--------+</span><br><span class="line">|   5000 |</span><br><span class="line">+--------+</span><br></pre></td></tr></table></figure></li>
+<li><p>事务2提交事务 <code>COMMIT ;</code></p></li>
+<li><p>提交后事务1再次读取</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"> SELECT salary FROM employ WHERE id = 1;</span><br><span class="line">+--------+</span><br><span class="line">| salary |</span><br><span class="line">+--------+</span><br><span class="line">|   5000 |</span><br><span class="line">+--------+</span><br></pre></td></tr></table></figure></li>
+<li><p>与MySQL建立新连接并查询数据（发现数据确实是已经更新了的）</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">SELECT salary FROM employ WHERE id = 1;</span><br><span class="line">+--------+</span><br><span class="line">| salary |</span><br><span class="line">+--------+</span><br><span class="line">|   4500 |</span><br><span class="line">+--------+</span><br></pre></td></tr></table></figure></li>
+</ol>
 <h2 id="幻读">幻读</h2>
+<p><strong>接下来测试一下该隔离策略下是否幻读</strong>
+这里是在<strong>可重复读下</strong></p>
+<ol type="1">
+<li><p>先查看一下当前数据库表的数据</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">SELECT * FROM test;</span><br><span class="line">+----+--------+</span><br><span class="line">| id | salary |</span><br><span class="line">+----+--------+</span><br><span class="line">|  1 |   8000 |</span><br><span class="line">|  6 |   500 |</span><br><span class="line">+----+--------+</span><br></pre></td></tr></table></figure></li>
+<li><p><code>use lydb;</code> ---&gt; 事务1和事务2都开启事务
+<code>START TRANSACTION;</code></p></li>
+<li><p>事务2插入一条薪资为500的数据并提交</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">INSERT INTO test(salary) values (500);</span><br><span class="line">COMMIT;</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">此时数据库已经有两条500的数据了(事务2)</span></span><br><span class="line"> select * from test;</span><br><span class="line">+----+--------+</span><br><span class="line">| id | salary |</span><br><span class="line">+----+--------+</span><br><span class="line">|  1 |   8000 |</span><br><span class="line">|  6 |   500 |</span><br><span class="line">|  10 |   500 |</span><br><span class="line">+----+--------+</span><br></pre></td></tr></table></figure></li>
+<li><p>事务1查询500的数据(<strong>★★如果在事务2提交之前查询 SELECT *
+FROM test WHERE salary = 500; 或者 SELECT * FROM test;
+那么这里[快照读]就只会查出一条，但是不管怎么样
+[当前读]都会查出两条</strong>)</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">---------------- <span class="comment"># 快照读------------------</span></span></span><br><span class="line">SELECT * FROM test WHERE salary = 500;</span><br><span class="line">+----+--------+</span><br><span class="line">| id | salary |</span><br><span class="line">+----+--------+</span><br><span class="line">|  6 |    500 | </span><br><span class="line">+----+--------+</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">----------------<span class="comment"># 当前读------------------</span></span></span><br><span class="line">SELECT * FROM test WHERE salary = 500 FOR UPDATE;</span><br><span class="line">+----+--------+</span><br><span class="line">| id | salary |</span><br><span class="line">+----+--------+</span><br><span class="line">|  6 |    500 |</span><br><span class="line">| 11 |    500 |</span><br><span class="line">+----+--------+</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+<li><p>SQL 事务1 在第一次查询工资为 500 的记录时只有一条，SQL 事务2
+插入了一条工资为 500 的记录，提交之后；SQL 事务1
+在同一个事务中再次使用当前读查询发现出现了两条工资为 500
+的记录这种就是幻读。</p></li>
+</ol>
+<h2 id="解决幻读的方法">解决幻读的方法</h2>
+<p>解决幻读的方式有很多，但是它们的核心思想就是<strong>一个事务在操作某张表数据</strong>的时候，另外一个事务<strong>不允许新增或者删除这张表中的数据</strong>了。解决幻读的方式主要有以下几种：</p>
+<ol type="1">
+<li>将事务隔离级别调整为 <code>SERIALIZABLE</code> 。</li>
+<li>在<strong>可重复读</strong>的事务级别下，给<strong>事务操作的这张表添加表锁</strong>。</li>
+<li>在<strong>可重复读</strong>的事务级别下，给<strong>事务操作的这张表添加
+<code>Next-key Lock（Record Lock+Gap Lock）</code></strong>。</li>
+</ol>
 ]]></content>
       <categories>
         <category>学习</category>
