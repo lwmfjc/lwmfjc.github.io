@@ -1895,7 +1895,101 @@ alt="image-20230116002657069" /></li>
 <p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!</p>
 </blockquote>
 <h1 id="事务隔离级别总结">事务隔离级别总结</h1>
+<ul>
+<li><p>SQL标准定义了<strong>四个隔离级别</strong></p>
+<ol type="1">
+<li><strong>READ-UNCOMMITTED(读取未提交)</strong>：<strong>最低</strong>的隔离级别，允许读取<strong>尚未提交的数据</strong>变更，可能会导致<strong>脏读、幻读或不可重复读</strong></li>
+<li><strong>READ-COMMITED(读取已提交)</strong>：允许读取<strong>并发事务</strong>
+<strong>已经提交</strong>的数据，可以阻止<strong>脏读</strong>，但是<strong>幻读</strong>或<strong>不可重复读</strong>仍有可能发生</li>
+<li><strong>REPEATABLE-READ(可重复读)</strong>：对<strong>同一字段的多次读取</strong>结果都是一致的，除非数据是被<strong>本身事务自己</strong>所修改，可以<strong>阻止脏读</strong>和<strong>不可重复读</strong>，但<strong>幻读</strong>仍有可能发生</li>
+<li><strong>SERIALIZABLE(可串行化)</strong>：<strong>最高</strong>的隔离级别，<strong>完全服从ACID</strong>的隔离级别。所有的<strong>事务依次逐个</strong>执行，这样事务之间就<strong>完全不可能产生干扰</strong>，也就是说，该级别可以防止<strong>脏读</strong>、<strong>不可重复读</strong>以及<strong>幻读</strong>。</li>
+</ol>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: center;">隔离级别</th>
+<th style="text-align: center;">脏读</th>
+<th style="text-align: center;">不可重复读</th>
+<th style="text-align: center;">幻读</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">READ-UNCOMMITTED</td>
+<td style="text-align: center;">√</td>
+<td style="text-align: center;">√</td>
+<td style="text-align: center;">√</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">READ-COMMITTED</td>
+<td style="text-align: center;">×</td>
+<td style="text-align: center;">√</td>
+<td style="text-align: center;">√</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">REPEATABLE-READ</td>
+<td style="text-align: center;">×</td>
+<td style="text-align: center;">×</td>
+<td style="text-align: center;">√</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">SERIALIZABLE</td>
+<td style="text-align: center;">×</td>
+<td style="text-align: center;">×</td>
+<td style="text-align: center;">×</td>
+</tr>
+</tbody>
+</table></li>
+<li><p>MySQL InnoDB 存储引擎的默认支持的隔离级别是
+<strong>REPEATABLE-READ（可重读）</strong></p>
+<blockquote>
+<p>使用命令查看，通过<code>SELECT @@tx_isolation;</code>。<br />
+MySQL 8.0 该命令改为<code>SELECT @@transaction_isolation;</code></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">MySQL&gt; </span><span class="language-bash">SELECT @@tx_isolation;</span></span><br><span class="line">+-----------------+</span><br><span class="line">| @@tx_isolation  |</span><br><span class="line">+-----------------+</span><br><span class="line">| REPEATABLE-READ |</span><br><span class="line">+-----------------+ </span><br></pre></td></tr></table></figure>
+</blockquote></li>
+<li><p>从上面对SQL标准定义了<strong>四个隔离级别</strong>的介绍可以看出，标准的SQL隔离级别里，<strong>REPEATABLE-READ(可重复读)</strong>是不可以防止幻读的。但是，<strong>InnoDB实现的REPEATABLE-READ</strong>
+隔离级别其实是可以<strong>解决幻读</strong>问题发生的，分两种情况</p>
+<ol type="1">
+<li><strong>快照读</strong>：由<strong>MVCC</strong>机制来保证不出现幻读</li>
+<li><strong>当前读</strong>：使用<strong>Next-Key
+Lock</strong>进行加锁来保证不出现幻读，Next-Key
+Lock是<strong>行锁（Record Lock ）和间隙锁（Gap
+Lock）的结合</strong>，行锁只能锁住已经存在的行，为了避免插入新行，需要依赖<strong>间隙锁</strong>
+(<strong>只用间隙锁不行，因为间隙锁是 &gt; 或 &lt;
+，不包括等于，所以再可重复读下原记录可能会被删掉</strong>)</li>
+</ol>
+<p>因为<strong>隔离级别越低，事务请求的锁越少</strong>，所以大部分数据库系统的隔离级别都是
+<strong>READ-COMMITTED</strong> ，但是你要知道的是 InnoDB
+存储引擎默认使用 <strong>REPEATABLE-READ</strong>
+并不会有任何性能损失。</p></li>
+<li><p>InnoDB 存储引擎在<strong>分布式事务</strong>的情况下一般会用到
+<strong>SERIALIZABLE 隔离级别</strong></p>
+<ol type="1">
+<li>InnoDB 存储引擎提供了对 <strong>XA
+事务</strong>的支持，并<strong>通过 XA
+事务来支持分布式事务</strong>的实现。</li>
+<li>分布式事务指的是允许<strong>多个独立的事务资源（transactional
+resources）</strong>参与到<strong>一个全局的事务</strong>中。事务资源通常是关系型数据库系统，但也可以是其他类型的资源。<strong>全局事务</strong>要求在其中的<strong>所有参与的事务要么都提交</strong>，要么<strong>都回滚</strong>，这对于事务原有的
+ACID 要求又有了提高。</li>
+<li>在<strong>使用分布式事务时</strong>，InnoDB
+存储引擎的<strong>事务隔离级别必须设置为 SERIALIZABLE</strong>。</li>
+</ol></li>
+</ul>
 <h1 id="实际情况演示">实际情况演示</h1>
+<ul>
+<li><p>下面会使用2个命令行MySQL，模拟多线程（多事务）对同一份数据的(脏读等)问题</p>
+<blockquote>
+<p>MySQL 命令行的默认配置中事务都是自动提交的，即执行 SQL
+语句后就会马上执行 COMMIT
+操作。如果要显式地开启一个事务需要使用命令：<strong><code>START TRANSACTION</code></strong></p>
+</blockquote></li>
+<li><p>通过下面的命令来设置隔离级别</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">SET [SESSION|GLOBAL] TRANSACTION ISOLATION LEVEL [READ UNCOMMITTED|READ COMMITTED|REPEATABLE READ|SERIALIZABLE] </span><br></pre></td></tr></table></figure></li>
+<li><p>实际操作中使用到的一些并发控制的语句</p>
+<ol type="1">
+<li><code>START TRANSACTION | BEGIN</code>：显示地开启一个事务</li>
+</ol></li>
+</ul>
 <h2 id="脏读读未提交">脏读（读未提交）</h2>
 <h2 id="避免脏读读已提交">避免脏读（读已提交）</h2>
 <h2 id="不可重复读">不可重复读</h2>
