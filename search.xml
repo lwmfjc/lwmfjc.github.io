@@ -1029,6 +1029,35 @@ MySQL 数据库的话，数据库的编码一定要指定为<code>utf8mb4</code>
       </tags>
   </entry>
   <entry>
+    <title>innodb引擎对MVCC的实现</title>
+    <url>/2023/01/16/review/java_guide/database/innodb-implementation-of-mvcc/</url>
+    <content><![CDATA[<blockquote>
+<p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!</p>
+</blockquote>
+<h1 id="一致性非锁定读和锁定读">一致性非锁定读和锁定读</h1>
+<h2 id="一致性非锁定读">一致性非锁定读</h2>
+<h2 id="锁定读">锁定读</h2>
+<h1 id="innodb对mvcc的实现">InnoDB对MVCC的实现</h1>
+<h2 id="隐藏字段">隐藏字段</h2>
+<h2 id="readview">ReadView</h2>
+<h2 id="undo-log">undo-log</h2>
+<h2 id="数据可见性算法">数据可见性算法</h2>
+<h1 id="rc和rr隔离级别下mvcc的区别">RC和RR隔离级别下MVCC的区别</h1>
+<h1 id="mvcc解决不可重复读问题">MVCC解决不可重复读问题</h1>
+<h2 id="在rc下readview生成情况">在RC下ReadView生成情况</h2>
+<h2 id="在rr下readview生成情况">在RR下ReadView生成情况</h2>
+<h1 id="mvccnext-key--lock防止幻读">MVCC+Next-key -Lock防止幻读</h1>
+]]></content>
+      <categories>
+        <category>学习</category>
+      </categories>
+      <tags>
+        <tag>复习</tag>
+        <tag>复习-javaGuide</tag>
+        <tag>复习-javaGuide-database</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>索引</title>
     <url>/2023/01/10/review/java_guide/database/mysql-index/</url>
     <content><![CDATA[<blockquote>
@@ -2090,7 +2119,7 @@ View，<strong>后续的查询语句利用这个 Read View，通过这个 Read V
 </ol>
 </blockquote>
 <h2 id="解决幻读的方法">解决幻读的方法</h2>
-<p>解决幻读的方式有很多，但是它们的核心思想就是<strong>一个事务在操作某张表数据</strong>的时候，另外一个事务<strong>不允许新增或者删除这张表中的数据</strong>了。解决幻读的方式主要有以下几种：</p>
+<p>解决幻读的方式有很多，但是它们的核心思想就是<strong>一个事务在操作某张表数据</strong>的时候，另外一个事务<strong>不允许新增或者删除这张表中的数据</strong>了。解决幻读的方式主要有以下几种：<strong>（由重到轻）</strong></p>
 <ol type="1">
 <li>将事务隔离级别调整为 <code>SERIALIZABLE</code> 。</li>
 <li>在<strong>可重复读</strong>的事务级别下，给<strong>事务操作的这张表添加表锁</strong>。</li>
