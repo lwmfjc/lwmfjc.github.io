@@ -2075,6 +2075,20 @@ FROM test WHERE salary = 500; 或者 SELECT * FROM test;
 在同一个事务中再次使用当前读查询发现出现了两条工资为 500
 的记录这种就是幻读。</p></li>
 </ol>
+<blockquote>
+<p>这里说明一下<strong>当前读</strong>和<strong>快照读</strong>：</p>
+<ol type="1">
+<li>MySQL
+里除了普通查询是<strong>快照读</strong>，其他都是<strong>当前读</strong>，比如
+update、insert、delete，这些语句执行前都会查询最新版本的数据，然后再做进一步的操作</li>
+<li>【为什么上面要先进行查询的原因】可重复读隔离级是由
+MVCC（多版本并发控制）实现的，实现的方式是开始事务后（执行 begin
+语句后），在执行第一个查询语句后，会创建一个 Read
+View，<strong>后续的查询语句利用这个 Read View，通过这个 Read View
+就可以在 undo log
+版本链找到事务开始时的数据，所以事务过程中每次查询的数据都是一样的</strong>，即使中途有其他事务插入了新纪录，是查询不出来这条数据的，所以就很好了避免幻读问题。</li>
+</ol>
+</blockquote>
 <h2 id="解决幻读的方法">解决幻读的方法</h2>
 <p>解决幻读的方式有很多，但是它们的核心思想就是<strong>一个事务在操作某张表数据</strong>的时候，另外一个事务<strong>不允许新增或者删除这张表中的数据</strong>了。解决幻读的方式主要有以下几种：</p>
 <ol type="1">
