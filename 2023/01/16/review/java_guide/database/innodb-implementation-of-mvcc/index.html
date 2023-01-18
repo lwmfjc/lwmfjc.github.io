@@ -239,14 +239,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>2.2k</span>
+              <span>3.4k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>4 分钟</span>
+              <span>6 分钟</span>
             </span>
             <div class="post-description">innodb引擎对MVCC的实现</div>
 
@@ -337,8 +337,58 @@ alt="img" /></p></li>
 </blockquote></li>
 </ul>
 <h1 id="innodb对mvcc的实现">InnoDB对MVCC的实现</h1>
+<ul>
+<li>MVCC的实现依赖于：<strong>隐藏字段（每条记录的）</strong>、<strong>ReadView（当前事务生成的）</strong>、<strong>undo
+log（当前事务执行时，为每个操作（记录）生成的）</strong></li>
+<li><strong>内部实现</strong>中，InnoDB通过数据行的<strong>DB_TRX_ID</strong>和<strong>Read
+View</strong>来判断数据的可见性，如不可见，则通过<strong>数据行的DB_ROLL_PTR</strong>找到<strong>undo
+log</strong>中的历史版本。<strong>因此</strong>，每个事务读到的<strong>数据版本</strong>可能是不一样的，<strong>在同一个事务中</strong>，用户只能看到<strong>该事务创建ReadView</strong>之前<strong>（其实这个说法不太准确，m_up_limit_id不一定大于当前事务id）</strong>已经提交的修改和<strong>该事务本身做的修改</strong></li>
+</ul>
 <h2 id="隐藏字段">隐藏字段</h2>
+<ul>
+<li><strong>内部</strong>，<strong>InnoDB</strong>存储引擎为<strong>每行数据</strong>添加了<strong>三个隐藏字段</strong>：
+<ol type="1">
+<li><strong>DB_TRX_ID(6字节)</strong>：表示<strong>最后一次插入</strong>或<strong>更新该行</strong>的<strong>事务id</strong>。此外，<strong>delete</strong>操作在内部被视为更新，只不过会在<strong>记录头Record
+header</strong>中的<strong>deleted_flag</strong>字段将其标记为<strong>已删除</strong><br />
+</li>
+<li><strong>DB_ROLL_PTR(7字节)</strong>：回滚指针，指向<strong>该行的undo
+log</strong>。如果该行<strong>违背更新</strong>，则为<strong>空</strong></li>
+<li><strong>DB_ROW_ID(6字节)</strong>：如果<strong>没有设置主键</strong>且<strong>该表没有唯一非空索引</strong>时，InnoDB会使用该id来<strong>生成聚簇索引</strong></li>
+</ol></li>
+</ul>
 <h2 id="readview">ReadView</h2>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">ReadView</span> &#123;</span><br><span class="line">  <span class="comment">/* ... */</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">  trx_id_t m_low_limit_id;      <span class="comment">/* 大于等于这个 ID 的事务均不可见 */</span></span><br><span class="line"></span><br><span class="line">  trx_id_t m_up_limit_id;       <span class="comment">/* 小于这个 ID 的事务均可见 */</span></span><br><span class="line"></span><br><span class="line">  trx_id_t m_creator_trx_id;    <span class="comment">/* 创建该 Read View 的事务ID */</span></span><br><span class="line"></span><br><span class="line">  trx_id_t m_low_limit_no;      <span class="comment">/* 事务 Number, 小于该 Number 的 Undo Logs 均可以被 Purge */</span> </span><br><span class="line"></span><br><span class="line">  ids_t m_ids;                  <span class="comment">/* 创建 Read View 时的活跃事务列表 */</span></span><br><span class="line"></span><br><span class="line">  m_closed;                     <span class="comment">/* 标记 Read View 是否 close */</span></span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+<ul>
+<li><p><strong>Read View</strong>
+主要是用来做<strong>可见性</strong>判断，里面保存了
+“<strong>当前对本事务不可见的其他活跃事务</strong>”</p></li>
+<li><p>ReadView主要有以下字段</p>
+<ol type="1">
+<li><code>m_low_limit_id</code>：目前出现过的最大的事务
+ID+1，即下一个将被分配的事务 ID。大于等于这个 ID 的数据版本均不可见</li>
+<li><code>m_up_limit_id</code>：活跃事务列表 <code>m_ids</code>
+中最小的事务 ID，如果 <code>m_ids</code> 为空，则
+<code>m_up_limit_id</code> 为 <code>m_low_limit_id</code>。小于这个 ID
+的数据版本均可见</li>
+<li><code>m_ids</code>：<code>Read View</code>
+创建时其他未提交的活跃事务 ID 列表。创建
+<code>Read View</code>时，将当前未提交事务 ID
+记录下来，后续即使它们修改了记录行的值，对于当前事务也是不可见的。<code>m_ids</code>
+不包括当前事务自己和已提交的事务（正在内存中）</li>
+<li><code>m_creator_trx_id</code>：创建该 <code>Read View</code> 的事务
+ID</li>
+</ol></li>
+<li><p><strong>事务可见性</strong>示意图（这个图容易理解）：</p>
+<blockquote>
+<p>为什么不是分<strong>大于m_low_limit_id</strong>和<strong>在小于m_low_limit_id里过滤存在于活跃事务列表</strong>，应该和算法有关吧</p>
+</blockquote>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230118155617419.png"
+alt="image-20230118155617419" />
+<figcaption aria-hidden="true">image-20230118155617419</figcaption>
+</figure></li>
+</ul>
 <h2 id="undo-log">undo-log</h2>
 <h2 id="数据可见性算法">数据可见性算法</h2>
 <h1 id="rc和rr隔离级别下mvcc的区别">RC和RR隔离级别下MVCC的区别</h1>
@@ -505,12 +555,12 @@ alt="img" /></p></li>
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">814k</span>
+    <span title="站点总字数">816k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">24:41</span>
+    <span title="站点阅读时长">24:43</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
