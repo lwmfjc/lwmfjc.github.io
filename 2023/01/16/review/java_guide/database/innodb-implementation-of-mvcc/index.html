@@ -239,14 +239,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>644</span>
+              <span>2.2k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
+              <span>4 分钟</span>
             </span>
             <div class="post-description">innodb引擎对MVCC的实现</div>
 
@@ -283,6 +283,59 @@ read）</strong>。<br />
 实现了可重复读和防止部分幻读</strong></li>
 </ul>
 <h2 id="锁定读">锁定读</h2>
+<ul>
+<li><p>如果执行的是下列语句，就是<strong>锁定读（Locking
+Reads）</strong></p>
+<ol type="1">
+<li><code>select ... lock in share</code></li>
+<li><code>select ... for update</code></li>
+<li><code>insert</code>、<code>upate</code>、<code>delete</code></li>
+</ol></li>
+<li><p>锁定读下，读取的是数据的最新版本，这种读也被称为<strong>当前读current
+read</strong>。<strong>锁定读</strong>会对读取到的记录加锁</p>
+<ol type="1">
+<li><code>select ... lock in share mode</code>：对(读取到的)记录加<strong>S锁</strong>，其他事务也可以加S锁，如果加X锁则会被阻塞</li>
+<li><code>select ... for update</code>、<code>insert</code>、<code>update</code>、<code>delete</code>：对记录加<strong>X锁</strong>，且其他事务不能加任何锁</li>
+</ol></li>
+<li><p>在一致性非锁定读下，即使读取的记录<strong>已被其他事务加上X锁</strong>，这时记录也是可以被读取的，即读取的<strong>快照数据</strong>。</p>
+<ol type="1">
+<li>在<strong>RepeatableRead</strong>下MVCC<strong>防止了部分幻读</strong>，这边的“<strong>部分”</strong>是指在<strong>一致性非锁定读</strong>情况下，只能读取到第一次查询之前所插入的数据（<strong>根据ReadView判断数据可见性，ReadView在第一次查询时生成</strong>），但如果是<strong>当前读</strong>，每次读取的都是<strong>最新数据</strong>，这时如果两次查询中间有其他事务插入数据，就会<strong>产生幻读</strong></li>
+<li>所以，InnoDB在实现RepeatableRead时，如果执行的是<strong>当前读</strong>，则会对读取的记录使用<strong>Next-key
+Lock</strong>，来防止其他事务在<strong>间隙间插入数据</strong>。</li>
+</ol>
+<blockquote>
+<p><strong>RR产生幻读的另一个场景</strong></p>
+<ul>
+<li><p>假设有这样一张表<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/7f9df142b3594daeaaca495abb7133f5.png"
+alt="img" /></p></li>
+<li><p>事务 A 执行查询 id = 5
+的记录，此时表中是没有该记录的，所以查询不出来。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">事务 A</span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">begin;</span></span><br><span class="line">Query OK, 0 rows affected (0.00 sec)</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">select * from t_stu <span class="built_in">where</span> <span class="built_in">id</span> = 5;</span></span><br><span class="line">Empty set (0.01 sec)</span><br></pre></td></tr></table></figure></li>
+<li><p>然后事务 B 插入一条 id = 5 的记录，并且提交了事务。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">事务 B</span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">begin;</span></span><br><span class="line">Query OK, 0 rows affected (0.00 sec)</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">insert into t_stu values(5, <span class="string">&#x27;小美&#x27;</span>, 18);</span></span><br><span class="line">Query OK, 1 row affected (0.00 sec)</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">commit;</span></span><br><span class="line">Query OK, 0 rows affected (0.00 sec)</span><br></pre></td></tr></table></figure></li>
+<li><p>此时，<strong>事务 A 更新 id = 5 这条记录，对没错，事务 A 看不到
+id = 5 这条记录，但是他去更新了这条记录，这场景确实很违和，然后再次查询
+id = 5 的记录，事务 A 就能看到事务 B
+插入的纪录了，幻读就是发生在这种违和的场景</strong>。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">事务 A</span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">update t_stu <span class="built_in">set</span> name = <span class="string">&#x27;小林coding&#x27;</span> <span class="built_in">where</span> <span class="built_in">id</span> = 5;</span></span><br><span class="line">Query OK, 1 row affected (0.01 sec)</span><br><span class="line">Rows matched: 1  Changed: 1  Warnings: 0</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">select * from t_stu <span class="built_in">where</span> <span class="built_in">id</span> = 5;</span></span><br><span class="line">+----+--------------+------+</span><br><span class="line">| id | name         | age  |</span><br><span class="line">+----+--------------+------+</span><br><span class="line">|  5 | 小林coding   |   18 |</span><br><span class="line">+----+--------------+------+</span><br><span class="line">1 row in set (0.00 sec)</span><br></pre></td></tr></table></figure></li>
+<li><p>时序图如下<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/%25E5%25B9%25BB%25E8%25AF%25BB%25E5%258F%2591%25E7%2594%259F.drawio.png"
+alt="img" /></p></li>
+<li><p>在可重复读隔离级别下，事务 A 第一次执行普通的 select
+语句时生成了一个 ReadView，之后事务 B 向表中新插入了一条 id = 5
+的记录并提交。接着，事务 A 对 id = 5
+这条记录进行了更新操作，在这个时刻，<strong>这条新记录的 trx_id
+隐藏列的值</strong>就<strong>变成了事务 A 的事务 id</strong>，之后事务 A
+再使用普通 select
+语句去查询这条记录时就可以看到这条记录了，于是就发生了幻读。</p>
+<p>因为这种特殊现象的存在，所以我们认为 <strong>MySQL Innodb 中的 MVCC
+并不能完全避免幻读现象</strong>。</p></li>
+</ul>
+</blockquote></li>
+</ul>
 <h1 id="innodb对mvcc的实现">InnoDB对MVCC的实现</h1>
 <h2 id="隐藏字段">隐藏字段</h2>
 <h2 id="readview">ReadView</h2>
@@ -452,12 +505,12 @@ read）</strong>。<br />
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">813k</span>
+    <span title="站点总字数">814k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">24:38</span>
+    <span title="站点阅读时长">24:41</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
