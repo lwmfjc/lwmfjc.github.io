@@ -239,7 +239,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>202</span>
+              <span>644</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -264,6 +264,24 @@
 </blockquote>
 <h1 id="一致性非锁定读和锁定读">一致性非锁定读和锁定读</h1>
 <h2 id="一致性非锁定读">一致性非锁定读</h2>
+<p>★★非锁定★★</p>
+<ul>
+<li>对于<strong>一致性非锁定读（Consistent Nonlocking
+Reads）</strong>的实现，通常做法是<strong>加一个版本号</strong>或者<strong>时间戳</strong>字段，在更新数据的同时<strong>版本号+1</strong>或者<strong>更新时间戳</strong>。查询时，将<strong>当前可见的版本号</strong>与<strong>对应记录的版本号</strong>进行比对，如果<strong>记录的版本</strong>小于<strong>可见版本</strong>，则表示<strong>该记录可见</strong></li>
+<li><strong>InnoDB</strong>存储引擎中，<strong>多版本控制（multi
+versioning）</strong>即使非锁定读的实现。如果读取的行<strong>正在执行DELETE</strong>或<strong>UPDATE</strong>操作，这时读取操作<strong>不会去等待行上</strong>
+<strong>锁的释放</strong>.相反地，Inn哦DB存储引擎会去读取<strong>行的一个快照数据</strong>，对于这种<strong>读取历史数据</strong>的方式，我们叫它<strong>快照读（snapshot
+read）</strong>。<br />
+</li>
+<li>在 <strong><code>Repeatable Read</code></strong> 和
+<strong><code>Read Committed</code></strong>
+两个隔离级别下，如果是执行普通的 <code>select</code>
+语句（<strong>不包括 <code>select ... lock in share mode</code>
+,<code>select ... for update</code></strong>）则会使用
+<strong><code>一致性非锁定读（MVCC）</code></strong>。并且在
+<strong><code>Repeatable Read</code> 下 <code>MVCC</code>
+实现了可重复读和防止部分幻读</strong></li>
+</ul>
 <h2 id="锁定读">锁定读</h2>
 <h1 id="innodb对mvcc的实现">InnoDB对MVCC的实现</h1>
 <h2 id="隐藏字段">隐藏字段</h2>
@@ -439,7 +457,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">24:37</span>
+    <span title="站点阅读时长">24:38</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
