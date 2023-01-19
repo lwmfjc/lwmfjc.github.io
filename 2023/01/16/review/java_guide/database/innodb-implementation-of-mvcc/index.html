@@ -239,14 +239,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>3.4k</span>
+              <span>6.1k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>6 分钟</span>
+              <span>11 分钟</span>
             </span>
             <div class="post-description">innodb引擎对MVCC的实现</div>
 
@@ -364,19 +364,20 @@ log</strong>。如果该行<strong>违背更新</strong>，则为<strong>空</st
 “<strong>当前对本事务不可见的其他活跃事务</strong>”</p></li>
 <li><p>ReadView主要有以下字段</p>
 <ol type="1">
-<li><code>m_low_limit_id</code>：目前出现过的最大的事务
-ID+1，即下一个将被分配的事务 ID。大于等于这个 ID 的数据版本均不可见</li>
-<li><code>m_up_limit_id</code>：活跃事务列表 <code>m_ids</code>
-中最小的事务 ID，如果 <code>m_ids</code> 为空，则
+<li><code>m_low_limit_id</code>：<strong>目前出现过的最大的事务
+ID+1</strong>，即下一个将被分配的事务 ID。大于等于这个 ID
+的数据版本均不可见</li>
+<li><code>m_up_limit_id</code>：<strong>活跃事务列表 <code>m_ids</code>
+中最小的事务 ID</strong>，如果 <code>m_ids</code> 为空，则
 <code>m_up_limit_id</code> 为 <code>m_low_limit_id</code>。小于这个 ID
 的数据版本均可见</li>
-<li><code>m_ids</code>：<code>Read View</code>
-创建时其他未提交的活跃事务 ID 列表。创建
+<li><code>m_ids</code>：<strong><code>Read View</code>
+创建时其他未提交的活跃事务 ID 列表</strong>。创建
 <code>Read View</code>时，将当前未提交事务 ID
 记录下来，后续即使它们修改了记录行的值，对于当前事务也是不可见的。<code>m_ids</code>
 不包括当前事务自己和已提交的事务（正在内存中）</li>
-<li><code>m_creator_trx_id</code>：创建该 <code>Read View</code> 的事务
-ID</li>
+<li><code>m_creator_trx_id</code>：<strong>创建该 <code>Read View</code>
+的事务 ID</strong></li>
 </ol></li>
 <li><p><strong>事务可见性</strong>示意图（这个图容易理解）：</p>
 <blockquote>
@@ -390,10 +391,184 @@ alt="image-20230118155617419" />
 </figure></li>
 </ul>
 <h2 id="undo-log">undo-log</h2>
+<ul>
+<li><p>undo log主要有两个作用</p>
+<ol type="1">
+<li>当<strong>事务回滚时用于将数据恢复</strong>到修改前的样子</li>
+<li>用于<strong>MVCC</strong>，读取记录时，若该记录被其他事务<strong>占用</strong>或当前版本<strong>对该事务不可见</strong>，则可以<strong>通过</strong>undo
+log 读取之前的版本数据，以此实现<strong>非锁定读</strong></li>
+</ol></li>
+<li><p><strong>InnoDB</strong>存储引擎中<strong>undo
+log</strong>分为两种：<strong>insert undo log</strong>和<strong>update
+undo log</strong></p>
+<ol type="1">
+<li><p><strong>insert undo
+log</strong>：指在<strong>insert</strong>操作中产生的<strong>undo
+log</strong>，因为<strong>insert</strong>操作的记录只对事务本身可见，对其他事务不可见，故<strong>该undo
+log</strong>可以在<strong>事务提交后直接删除</strong>。不需要进行<strong>purge</strong>操作（purge：清洗）</p>
+<p><strong>insert</strong>时的数据初始状态：(DB_ROLL_PTR为空)<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230119092412325.png"
+alt="image-20230119092412325" /></p></li>
+<li><p><strong>update undo
+log</strong>：<strong>undate</strong>或<strong>delete</strong>操作产生的undo
+log。该undo log
+可能需要<strong>提供给MVCC机制</strong>，因此不能在事务提交时就进行删除。提交时放入undo
+log链表，等待<strong>purge线程</strong>进行最后的删除</p></li>
+</ol></li>
+<li><p>数据第一次修改时<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230119092627138.png"
+alt="image-20230119092627138" /></p></li>
+<li><p>数据第二次被修改时<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230119092833856.png"
+alt="image-20230119092833856" />
+<strong>不同事务</strong>或者<strong>相同事务</strong>的<strong>对同一记录行的修改</strong>，会使<strong>该记录行</strong>的
+<strong><code>undo log</code>
+成为一条链表</strong>，<strong>链首</strong>就是<strong>最新</strong>的记录，<strong>链尾</strong>就是<strong>最早</strong>的旧记录。</p></li>
+</ul>
 <h2 id="数据可见性算法">数据可见性算法</h2>
-<h1 id="rc和rr隔离级别下mvcc的区别">RC和RR隔离级别下MVCC的区别</h1>
+<ul>
+<li><p>在 <code>InnoDB</code>
+存储引擎中，创建一个新事务后，<strong>执行每个 <code>select</code>
+语句前(RC下是)</strong>，都会创建一个快照（<strong>Read
+View</strong>），<strong>快照中保存了当前数据库系统中正处于活跃（没有
+commit）的事务的 ID
+号</strong>。其实简单的说保存的是系统中<strong>当前不应该被本事务看到的其他事务
+ID 列表（即
+m_ids）</strong>。当用户在这个事务中要读取某个记录行的时候，<code>InnoDB</code>
+会将该<strong>记录行的 <code>DB_TRX_ID</code></strong> 与
+<strong><code>Read View</code> 中的一些变量</strong>及<strong>当前事务
+ID</strong> 进行比较，判断是否满足可见性条件</p></li>
+<li><p>具体的比较算法<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/8778836b-34a8-480b-b8c7-654fe207a8c2.3d84010e.png"
+alt="img" /></p>
+<ol type="1">
+<li>如果<strong>记录 DB_TRX_ID &lt;
+m_up_limit_id</strong>，那么表明最新修改该行的事务（DB_TRX_ID）在当前事务创建快照之前就提交了，所以该记录行的值对当前事务是<strong>可见</strong>的</li>
+<li>如果 <strong>DB_TRX_ID &gt;=
+m_low_limit_id</strong>，那么表明最新修改该行的事务（DB_TRX_ID）在当前事务创建快照之后才修改该行，所以该记录行的值对当前事务<strong>不可见</strong>。跳到步骤
+5</li>
+<li><strong>m_ids 为空（且DB_TRX_ID &lt;
+m_low_limit_id）</strong>，则表明在当前事务创建快照之前，修改该行的事务就已经提交了，所以该记录行的值<strong>对当前事务是可见</strong>的</li>
+<li>如果 <strong>m_up_limit_id &lt;= DB_TRX_ID &lt;
+m_low_limit_id</strong>，表明最新修改该行的事务（DB_TRX_ID）在当前事务创建快照的时候可能处于“活动状态”或者“已提交状态”；所以就要对活跃事务列表
+m_ids 进行查找（源码中是用的二分查找，因为是有序的）
+<ul>
+<li>如果<strong>在活跃事务列表 m_ids 中能找到
+DB_TRX_ID</strong>，表明：①
+在当前事务<strong>创建快照前</strong>，该记录行的值被事务 ID 为
+DB_TRX_ID 的事务<strong>修改了，但没有提交</strong>；或者 ②
+在<strong>当前事务创建快照后</strong>，该记录行的值<strong>被事务 ID 为
+DB_TRX_ID
+的事务修改</strong>了。这些情况下，这个记录行的值对当前事务都是不可见的。跳到步骤
+5</li>
+<li>在活跃事务列表中<strong>找不到</strong>，则表明“id 为 trx_id
+的事务”在修改“该记录行的值”后，在<strong>“当前事务”创建快照前就已经提交</strong>了，所以记录行对当前事务可见</li>
+</ul></li>
+<li><strong>在该记录行的 DB_ROLL_PTR 指针所指向的 <code>undo log</code>
+取出快照记录</strong>，用快照记录的 DB_TRX_ID 跳到步骤 1
+重新开始判断，直到找到满足的快照版本或返回空</li>
+</ol></li>
+</ul>
+<h1 id="rc-和-rr-隔离级别下-mvcc-的差异">RC 和 RR 隔离级别下 MVCC
+的差异</h1>
+<p>在事务隔离级别 <strong><code>RC</code> 和 <code>RR</code></strong>
+（InnoDB 存储引擎的默认事务隔离级别）下，<strong><code>InnoDB</code>
+存储引擎使用
+<code>MVCC</code>（非锁定一致性读）</strong>，但它们<strong>生成
+<code>Read View</code> 的时机却不同</strong> 【<strong>RC：Read Commit
+读已提交，RR：Repeatable Read 可重复读</strong>】</p>
+<ul>
+<li>在 RC 隔离级别下的 <strong><code>每次select</code></strong>
+查询前都生成一个<code>Read View</code> (m_ids 列表)</li>
+<li>在 RR 隔离级别下只在事务开始后
+<strong><code>第一次select</code></strong>
+数据前生成一个<code>Read View</code>（m_ids 列表）</li>
+</ul>
 <h1 id="mvcc解决不可重复读问题">MVCC解决不可重复读问题</h1>
+<p>虽然 RC 和 RR 都通过 <code>MVCC</code> 来读取快照数据，但由于
+<strong>生成 Read View 时机不同</strong>，从而在 <strong>RR
+级别下实现可重复读</strong></p>
+<p>举例： （Tn 表示时间线）<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/6fb2b9a1-5f14-4dec-a797-e4cf388ed413.ea9e47d7.png"
+alt="img" /></p>
 <h2 id="在rc下readview生成情况">在RC下ReadView生成情况</h2>
+<p><strong>1. 假设时间线来到 T4 ，那么此时数据行 id = 1
+的版本链为：</strong></p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/a3fd1ec6-8f37-42fa-b090-7446d488fd04.bf41f07c.png"
+alt="img" />
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<p>由于 RC 级别下每次查询都会生成<code>Read View</code> ，并且事务
+101、102 并未提交，此时 <code>103</code> 事务生成的
+<code>Read View</code> 中活跃的事务 <strong><code>m_ids</code>
+为：[101,102]</strong>
+，<code>m_low_limit_id</code>为：104，<code>m_up_limit_id</code>为：101，<code>m_creator_trx_id</code>
+为：103</p>
+<ul>
+<li>此时最新记录的 <code>DB_TRX_ID</code> 为 101，m_up_limit_id &lt;=
+101 &lt; m_low_limit_id，所以要在 <strong><code>m_ids</code>
+列表中查找</strong>，发现 <strong><code>DB_TRX_ID</code>
+存在列表</strong>中，那么这个记录不可见</li>
+<li><strong>根据 <code>DB_ROLL_PTR</code> 找到 <code>undo log</code>
+中的上一版本记录</strong>，上一条记录的 <code>DB_TRX_ID</code> 还是
+101，不可见</li>
+<li>继续找<strong>上一条 <code>DB_TRX_ID</code>为 1</strong>，满足
+<strong>1 &lt; m_up_limit_id，可见</strong>，所以事务 103 查询到数据为
+<code>name = 菜花</code></li>
+</ul>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/6fb2b9a1-5f14-4dec-a797-e4cf388ed413.ea9e47d7.png"
+alt="img" />
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<p><strong>2. 时间线来到 T6 ，数据的版本链为：</strong></p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/528559e9-dae8-4d14-b78d-a5b657c88391.2ff79120.png"
+alt="img" />
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<p>因为在 RC 级别下，重新生成 <code>Read View</code>，这时事务
+<strong>101 已经提交，102 并未提交</strong>，所以此时
+<code>Read View</code> 中活跃的事务
+<strong><code>m_ids</code>：[102]</strong>
+，<code>m_low_limit_id</code>为：104，<code>m_up_limit_id</code>为：102，<code>m_creator_trx_id</code>为：103</p>
+<ul>
+<li>此时最新记录的 <strong><code>DB_TRX_ID</code> 为
+102</strong>，m_up_limit_id &lt;= 102 &lt;
+m_low_limit_id，所以要<strong>在 <code>m_ids</code>
+列表中查找</strong>，发现 <code>DB_TRX_ID</code>
+存在列表中，那么这个记录不可见</li>
+<li>根据 <code>DB_ROLL_PTR</code> 找到 <code>undo log</code>
+中的上一版本记录，<strong>上一条记录的 <code>DB_TRX_ID</code> 为
+101，满足 101 &lt; m_up_limit_id</strong>，记录可见，所以在
+<code>T6</code> 时间点查询到数据为 <code>name = 李四</code>，与时间 T4
+查询到的结果不一致，不可重复读！</li>
+</ul>
+<p><strong>3. 时间线来到 T9 ，数据的版本链为：</strong></p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/6f82703c-36a1-4458-90fe-d7f4edbac71a.c8de5ed7.png"
+alt="img" />
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<p>重新生成 <code>Read View</code>， 这时<strong>事务 101 和 102
+都已经提交，所以 m_ids 为空</strong>，则 m_up_limit_id = m_low_limit_id
+= 104，最新版本事务 ID 为 102，满足 102 &lt;
+m_low_limit_id，可见，查询结果为 <code>name = 赵六</code></p>
+<blockquote>
+<p><strong>总结：</strong> <strong>在 RC
+隔离级别下，事务在每次查询开始时都会生成并设置新的 Read
+View，所以导致不可重复读</strong></p>
+</blockquote>
 <h2 id="在rr下readview生成情况">在RR下ReadView生成情况</h2>
 <h1 id="mvccnext-key--lock防止幻读">MVCC+Next-key -Lock防止幻读</h1>
 
@@ -485,7 +660,8 @@ alt="image-20230118155617419" />
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%80%E8%87%B4%E6%80%A7%E9%9D%9E%E9%94%81%E5%AE%9A%E8%AF%BB%E5%92%8C%E9%94%81%E5%AE%9A%E8%AF%BB"><span class="nav-number">1.</span> <span class="nav-text">一致性非锁定读和锁定读</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E8%87%B4%E6%80%A7%E9%9D%9E%E9%94%81%E5%AE%9A%E8%AF%BB"><span class="nav-number">1.1.</span> <span class="nav-text">一致性非锁定读</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%94%81%E5%AE%9A%E8%AF%BB"><span class="nav-number">1.2.</span> <span class="nav-text">锁定读</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#innodb%E5%AF%B9mvcc%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="nav-number">2.</span> <span class="nav-text">InnoDB对MVCC的实现</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9A%90%E8%97%8F%E5%AD%97%E6%AE%B5"><span class="nav-number">2.1.</span> <span class="nav-text">隐藏字段</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#readview"><span class="nav-number">2.2.</span> <span class="nav-text">ReadView</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undo-log"><span class="nav-number">2.3.</span> <span class="nav-text">undo-log</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%8F%AF%E8%A7%81%E6%80%A7%E7%AE%97%E6%B3%95"><span class="nav-number">2.4.</span> <span class="nav-text">数据可见性算法</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#rc%E5%92%8Crr%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB%E4%B8%8Bmvcc%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-number">3.</span> <span class="nav-text">RC和RR隔离级别下MVCC的区别</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#mvcc%E8%A7%A3%E5%86%B3%E4%B8%8D%E5%8F%AF%E9%87%8D%E5%A4%8D%E8%AF%BB%E9%97%AE%E9%A2%98"><span class="nav-number">4.</span> <span class="nav-text">MVCC解决不可重复读问题</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9C%A8rc%E4%B8%8Breadview%E7%94%9F%E6%88%90%E6%83%85%E5%86%B5"><span class="nav-number">4.1.</span> <span class="nav-text">在RC下ReadView生成情况</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9C%A8rr%E4%B8%8Breadview%E7%94%9F%E6%88%90%E6%83%85%E5%86%B5"><span class="nav-number">4.2.</span> <span class="nav-text">在RR下ReadView生成情况</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#mvccnext-key--lock%E9%98%B2%E6%AD%A2%E5%B9%BB%E8%AF%BB"><span class="nav-number">5.</span> <span class="nav-text">MVCC+Next-key -Lock防止幻读</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%80%E8%87%B4%E6%80%A7%E9%9D%9E%E9%94%81%E5%AE%9A%E8%AF%BB%E5%92%8C%E9%94%81%E5%AE%9A%E8%AF%BB"><span class="nav-number">1.</span> <span class="nav-text">一致性非锁定读和锁定读</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E8%87%B4%E6%80%A7%E9%9D%9E%E9%94%81%E5%AE%9A%E8%AF%BB"><span class="nav-number">1.1.</span> <span class="nav-text">一致性非锁定读</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%94%81%E5%AE%9A%E8%AF%BB"><span class="nav-number">1.2.</span> <span class="nav-text">锁定读</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#innodb%E5%AF%B9mvcc%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="nav-number">2.</span> <span class="nav-text">InnoDB对MVCC的实现</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9A%90%E8%97%8F%E5%AD%97%E6%AE%B5"><span class="nav-number">2.1.</span> <span class="nav-text">隐藏字段</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#readview"><span class="nav-number">2.2.</span> <span class="nav-text">ReadView</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undo-log"><span class="nav-number">2.3.</span> <span class="nav-text">undo-log</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%8F%AF%E8%A7%81%E6%80%A7%E7%AE%97%E6%B3%95"><span class="nav-number">2.4.</span> <span class="nav-text">数据可见性算法</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#rc-%E5%92%8C-rr-%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB%E4%B8%8B-mvcc-%E7%9A%84%E5%B7%AE%E5%BC%82"><span class="nav-number">3.</span> <span class="nav-text">RC 和 RR 隔离级别下 MVCC
+的差异</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#mvcc%E8%A7%A3%E5%86%B3%E4%B8%8D%E5%8F%AF%E9%87%8D%E5%A4%8D%E8%AF%BB%E9%97%AE%E9%A2%98"><span class="nav-number">4.</span> <span class="nav-text">MVCC解决不可重复读问题</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9C%A8rc%E4%B8%8Breadview%E7%94%9F%E6%88%90%E6%83%85%E5%86%B5"><span class="nav-number">4.1.</span> <span class="nav-text">在RC下ReadView生成情况</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9C%A8rr%E4%B8%8Breadview%E7%94%9F%E6%88%90%E6%83%85%E5%86%B5"><span class="nav-number">4.2.</span> <span class="nav-text">在RR下ReadView生成情况</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#mvccnext-key--lock%E9%98%B2%E6%AD%A2%E5%B9%BB%E8%AF%BB"><span class="nav-number">5.</span> <span class="nav-text">MVCC+Next-key -Lock防止幻读</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -555,12 +731,12 @@ alt="image-20230118155617419" />
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">816k</span>
+    <span title="站点总字数">818k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">24:43</span>
+    <span title="站点阅读时长">24:48</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
