@@ -1033,7 +1033,44 @@ MySQL 数据库的话，数据库的编码一定要指定为<code>utf8mb4</code>
     <url>/2023/01/19/review/java_guide/database/how-sql-executed-in-mysql/</url>
     <content><![CDATA[<blockquote>
 <p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!</p>
+<p>原文 https://github.com/kinglaw1204 感谢作者</p>
 </blockquote>
+<ul>
+<li>本篇文章会分析<strong>一个SQL语句</strong>在MySQL的<strong>执行流程</strong>，包括<strong>SQL的查询</strong>在MySQL内部会怎么<strong>流转</strong>，<strong>SQL语句的更新</strong>是怎么完成的</li>
+<li>分析之前先看看<strong>MySQL的基础架构</strong>，知道了MySQL由<strong>哪些组件</strong>组成以及<strong>这些组件的作用</strong>是什么，可以帮助我们<strong>理解</strong>和<strong>解决</strong>这些问题</li>
+</ul>
+<p># MySQL基础架构分析</p>
+<h2 id="mysql基本架构概览">MySQL基本架构概览</h2>
+<ul>
+<li>下图是MySQL的简要架构图，从下图可以看到<strong>用户的SQL语句</strong>在MySQL内部是<strong>如何执行的</strong></li>
+<li>先简单介绍一个下图涉及的一些组件的基本作用 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230119113638560.png"
+alt="image-20230119113638560" />
+<ol type="1">
+<li><strong>连接器</strong>：
+<strong>身份认证</strong>和<strong>权限相关</strong>（登录MySQL的时候）</li>
+<li><strong>查询缓存</strong>：执行查询语句的时候，会<strong>先查询缓存</strong>（MySQL8.0版本后移除，因为这个功能不太实用）</li>
+<li><strong>分析器</strong>：<strong>没有命中</strong>缓存的话，SQL语句就会经过分析器，分析器说白了就是要<strong>先看</strong>你的SQL语句干嘛，再<strong>检查</strong>你的SQL语句<strong>语法</strong>是否正确</li>
+<li><strong>优化器</strong>：按照<strong>MySQL认为最优的方案</strong>去执行</li>
+<li><strong>执行器</strong>：<strong>执行语句</strong>，然后从<strong>存储引擎</strong>返回数据</li>
+</ol></li>
+<li>简单来说 MySQL 主要分为 Server 层和存储引擎层：
+<ul>
+<li><strong>Server
+层</strong>：主要包括<strong>连接器</strong>、<strong>查询缓存</strong>、<strong>分析器</strong>、<strong>优化器</strong>、<strong>执行器</strong>等，所有跨存储引擎的功能都在这一层实现，比如<strong>存储过程</strong>、<strong>触发器</strong>、<strong>视图</strong>，<strong>函数</strong>等，还有一个<strong>通用的日志模块
+binlog 日志模块</strong>。</li>
+<li><strong>存储引擎</strong>：
+主要负责数据的<strong>存储</strong>和<strong>读取</strong>，采用<strong>可以替换的插件式架构</strong>，支持
+InnoDB、MyISAM、Memory 等多个存储引擎，其中 InnoDB 引擎有自有的日志模块
+<strong>redolog 模块</strong>。<strong>现在最常用的存储引擎是
+InnoDB，它从 MySQL 5.5 版本开始就被当做默认存储引擎了</strong></li>
+</ul></li>
+</ul>
+<h2 id="server层基本组件介绍">Server层基本组件介绍</h2>
+<h1 id="语句分析">语句分析</h1>
+<h2 id="查询语句">查询语句</h2>
+<h2 id="更新语句">更新语句</h2>
+<h1 id="总结">总结</h1>
 ]]></content>
       <categories>
         <category>学习</category>
@@ -13317,6 +13354,507 @@ HashEntry 数组 + 链表</strong>，而是 <strong>Node 数组 + 链表 /
       </tags>
   </entry>
   <entry>
+    <title>io设计模式</title>
+    <url>/2022/10/24/review/java_guide/java/io/io-design-patterns/</url>
+    <content><![CDATA[<blockquote>
+<p>转载自https://github.com/Snailclimb/JavaGuide
+（添加小部分笔记）感谢作者!</p>
+</blockquote>
+<h2 id="装饰器模式">装饰器模式</h2>
+<ul>
+<li><p>装饰器，Decorator，装饰器模式可以在不改变原有对象的情况下拓展其功能</p></li>
+<li><p>★装饰器模式，通过组合替代继承来扩展原始类功能，在一些继承关系较复杂的场景（IO这一场景各种类的继承关系就比较复杂）下更加实用</p></li>
+<li><p>对于字节流，<strong>FilterInputStream（对应输入流）和FilterOutputStream（对应输出流）</strong>是装饰器模式的核心，分别用于增强（继承了）InputStream和OutputStream子类对象的功能
+Filter （过滤的意思） <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221026092700367.png"
+alt="image-20221026092700367" /></p></li>
+<li><p>其中BufferedInputStream（字节缓冲输入流）、DataInputStream等等都是FilterInputStream的子类，对应的BufferedOutputStream和DataOutputStream都是FilterOutputStream的子类</p></li>
+<li><p>例子，使用BufferedInputStream（字节缓冲输入流）来增强FileInputStream功能</p>
+<ul>
+<li><p>BufferedInputStream源码（构造函数）</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="type">int</span> <span class="variable">DEFAULT_BUFFER_SIZE</span> <span class="operator">=</span> <span class="number">8192</span>;</span><br><span class="line"><span class="keyword">public</span> <span class="title function_">BufferedInputStream</span><span class="params">(InputStream in)</span> &#123;</span><br><span class="line">    <span class="built_in">this</span>(in, DEFAULT_BUFFER_SIZE);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="title function_">BufferedInputStream</span><span class="params">(InputStream in, <span class="type">int</span> size)</span> &#123;</span><br><span class="line">    <span class="built_in">super</span>(in);</span><br><span class="line">    <span class="keyword">if</span> (size &lt;= <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>(<span class="string">&quot;Buffer size &lt;= 0&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    buf = <span class="keyword">new</span> <span class="title class_">byte</span>[size];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>使用</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">try</span> (<span class="type">BufferedInputStream</span> <span class="variable">bis</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedInputStream</span>(<span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;input.txt&quot;</span>))) &#123;</span><br><span class="line">    <span class="type">int</span> content;</span><br><span class="line">    <span class="type">long</span> <span class="variable">skip</span> <span class="operator">=</span> bis.skip(<span class="number">2</span>);</span><br><span class="line">    <span class="keyword">while</span> ((content = bis.read()) != -<span class="number">1</span>) &#123;</span><br><span class="line">        System.out.print((<span class="type">char</span>) content);</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul></li>
+<li><p>ZipInputStream和ZipOutputStream还可以用来增强BufferedInputStream和BufferedOutputStream的能力</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//使用</span></span><br><span class="line"><span class="type">BufferedInputStream</span> <span class="variable">bis</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedInputStream</span>(<span class="keyword">new</span> <span class="title class_">FileInputStream</span>(fileName));</span><br><span class="line"><span class="type">ZipInputStream</span> <span class="variable">zis</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ZipInputStream</span>(bis);</span><br><span class="line"></span><br><span class="line"><span class="type">BufferedOutputStream</span> <span class="variable">bos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedOutputStream</span>(<span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(fileName));</span><br><span class="line"><span class="type">ZipOutputStream</span> <span class="variable">zipOut</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ZipOutputStream</span>(bos);</span><br></pre></td></tr></table></figure>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221026093724390.png"
+alt="image-20221026093724390" />
+<figcaption aria-hidden="true">image-20221026093724390</figcaption>
+</figure></li>
+<li><p>装饰器模式重要的一点，就是可以对原始类嵌套使用多个装饰器，所以装饰器需要跟原始类继承相同的抽象类或实现相同接口，上面介绍的IO相关装饰器和原始类共同父类都是InputStream和OutputStream
+而对于字符流来说，BufferedReader用来增强Reader（字符输入流）子类功能，BufferWriter用来增加Writer（字符输出流）子类功能</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">BufferedWriter</span> <span class="variable">bw</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedWriter</span>(<span class="keyword">new</span> <span class="title class_">OutputStreamWriter</span>(<span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(fileName), <span class="string">&quot;UTF-8&quot;</span>));</span><br></pre></td></tr></table></figure></li>
+<li><p>IO流中大量使用了装饰器模式，不需要特意记忆</p></li>
+</ul>
+<h2 id="适配器模式">适配器模式</h2>
+<ul>
+<li><p>适配器（Adapter
+Pattern）模式：主要用于接口互不兼容的类的协调工作，你可以将其联想到我们日常使用的电源适配器</p>
+<ul>
+<li>其中被适配的对象/类称为适配者（Adaptee），作用于适配者的对象或者类称为适配器（Adapter）。<strong>对象适配器</strong>使用<strong>组合</strong>关系实现，<strong>类适配器</strong>使用<strong>继承</strong>关系实现</li>
+</ul></li>
+<li><p>IO中<strong>字符流</strong>和<strong>字节流</strong>接口不同，而他们能协调工作就是基于适配器模式来做的，具体的，是对象适配器：将<strong>字节流对象适配成字符流对象</strong>，然后通过<strong>字节流对象</strong>，<strong>读取/写入字符</strong>数据</p></li>
+<li><p>InputStreamReader和OutputStreamWriter为两个适配器，也是字节流和字符流之间的桥梁</p></li>
+<li><p>InputStreamReader使用StreamDecode（流解码器）对字节进行解码，实现字节流到字符流的转换</p></li>
+<li><p>OutputStreamWriter使用StreamEncoder（流编码器）对字符进行编码，实现字符到字节流的转换</p></li>
+<li><p>InputStream和OutputStream的子类是被适配者，InputStreamReader和OutputStreamWriter是适配器
+使用：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// InputStreamReader 是适配器，FileInputStream 是被适配的类</span></span><br><span class="line"><span class="type">InputStreamReader</span> <span class="variable">isr</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">InputStreamReader</span>(<span class="keyword">new</span> <span class="title class_">FileInputStream</span>(fileName), <span class="string">&quot;UTF-8&quot;</span>);</span><br><span class="line"><span class="comment">// BufferedReader 增强 InputStreamReader 的功能（装饰器模式）</span></span><br><span class="line"><span class="type">BufferedReader</span> <span class="variable">bufferedReader</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedReader</span>(isr);</span><br></pre></td></tr></table></figure>
+<p>fileReader的源码：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">FileReader</span> <span class="keyword">extends</span> <span class="title class_">InputStreamReader</span> &#123; </span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">FileReader</span><span class="params">(String fileName)</span> <span class="keyword">throws</span> FileNotFoundException &#123;</span><br><span class="line">        <span class="built_in">super</span>(<span class="keyword">new</span> <span class="title class_">FileInputStream</span>(fileName));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//其父类InputStreamReader</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">InputStreamReader</span> <span class="keyword">extends</span> <span class="title class_">Reader</span> &#123;</span><br><span class="line">	<span class="comment">//用于解码的对象</span></span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">final</span> StreamDecoder sd;</span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">InputStreamReader</span><span class="params">(InputStream in)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>(in);</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">// 获取 StreamDecoder 对象</span></span><br><span class="line">            sd = StreamDecoder.forInputStreamReader(in, <span class="built_in">this</span>, (String)<span class="literal">null</span>);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (UnsupportedEncodingException e) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>(e);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 使用 StreamDecoder 对象做具体的读取工作</span></span><br><span class="line">	<span class="keyword">public</span> <span class="type">int</span> <span class="title function_">read</span><span class="params">()</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        <span class="keyword">return</span> sd.read();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>同理，java.io.OutputStreamWriter部分源码：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">OutputStreamWriter</span> <span class="keyword">extends</span> <span class="title class_">Writer</span> &#123;</span><br><span class="line">    <span class="comment">// 用于编码的对象</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> StreamEncoder se;</span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">OutputStreamWriter</span><span class="params">(OutputStream out)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>(out);</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">           <span class="comment">// 获取 StreamEncoder 对象</span></span><br><span class="line">            se = StreamEncoder.forOutputStreamWriter(out, <span class="built_in">this</span>, (String)<span class="literal">null</span>);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (UnsupportedEncodingException e) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>(e);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//</span></span><br><span class="line">    使用 StreamEncoder 对象做具体的写入工作</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">write</span><span class="params">(<span class="type">int</span> c)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        se.write(c);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>适配器模式和装饰器模式区别</p>
+<ul>
+<li><p>装饰器模式更侧重于<strong>动态增强原始类</strong>的功能，（为了嵌套）装饰器类需要跟原始类继承相同抽象类/或实现相同接口。装饰器模式支持对原始类嵌套</p></li>
+<li><p>适配器模式侧重于<strong>让接口不兼容而不能交互的类一起工作</strong>，当调用适配器方法时，适配器<strong>内部会调用适配者类或者和适配者类相关类</strong>的方法（例如StreamDecoder
+流解码器和StreamEncoder流编码器）基于InputStream和OutputStream来获取FileChannel对象并调用read/write进行字节数据读取/写入</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">StreamDecoder(InputStream in, Object lock, CharsetDecoder dec) &#123;</span><br><span class="line">    <span class="comment">// 省略大部分代码</span></span><br><span class="line">    <span class="comment">// 根据 InputStream 对象获取 FileChannel 对象</span></span><br><span class="line">    ch = getChannel((FileInputStream)in);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>适配器和适配者两者不需要继承相同抽象类/不需要实现相同接口</p></li>
+<li><p>FutureTask使用了适配器模式 直接调用(构造器)</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="title function_">FutureTask</span><span class="params">(Runnable runnable, V result)</span> &#123;</span><br><span class="line">    <span class="comment">// 调用 Executors 类的 callable 方法</span></span><br><span class="line">    <span class="built_in">this</span>.callable = Executors.callable(runnable, result);</span><br><span class="line">    <span class="built_in">this</span>.state = NEW;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>间接：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 实际调用的是 Executors 的内部类 RunnableAdapter 的构造方法</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> &lt;T&gt; Callable&lt;T&gt; <span class="title function_">callable</span><span class="params">(Runnable task, T result)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (task == <span class="literal">null</span>)</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">NullPointerException</span>();</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">RunnableAdapter</span>&lt;T&gt;(task, result);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 适配器</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">RunnableAdapter</span>&lt;T&gt; <span class="keyword">implements</span> <span class="title class_">Callable</span>&lt;T&gt; &#123;</span><br><span class="line">    <span class="keyword">final</span> Runnable task;</span><br><span class="line">    <span class="keyword">final</span> T result;</span><br><span class="line">    RunnableAdapter(Runnable task, T result) &#123;</span><br><span class="line">        <span class="built_in">this</span>.task = task;</span><br><span class="line">        <span class="built_in">this</span>.result = result;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> T <span class="title function_">call</span><span class="params">()</span> &#123;</span><br><span class="line">        task.run();</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul></li>
+</ul></li>
+</ul>
+<h2 id="工厂模式">工厂模式</h2>
+<p>NIO中大量出现，例如Files类的newInputStream，Paths类中的get方法，ZipFileSystem类中的getPath</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">InputStream is Files.newInputStream(Paths.get(generatorLogoPath))</span><br></pre></td></tr></table></figure>
+<h2 id="观察者模式">观察者模式</h2>
+<ul>
+<li><p>比如NIO中的文件目录监听服务
+该服务基于WatchService接口（观察者）和Watchable接口（被观察者）</p></li>
+<li><p>Watchable接口其中有一个register方法，用于将对象注册到WatchService（监控服务）并绑定监听事件的方法</p></li>
+<li><p>例子</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 创建 WatchService 对象</span></span><br><span class="line"><span class="type">WatchService</span> <span class="variable">watchService</span> <span class="operator">=</span> FileSystems.getDefault().newWatchService();</span><br><span class="line"></span><br><span class="line"><span class="comment">// 初始化一个被监控文件夹的 Path 类:</span></span><br><span class="line"><span class="type">Path</span> <span class="variable">path</span> <span class="operator">=</span> Paths.get(<span class="string">&quot;workingDirectory&quot;</span>);</span><br><span class="line"><span class="comment">// 将这个 path 对象注册到 WatchService（监控服务） 中去</span></span><br><span class="line"><span class="type">WatchKey</span> <span class="variable">watchKey</span> <span class="operator">=</span> path.register(</span><br><span class="line">watchService, StandardWatchEventKinds...);</span><br></pre></td></tr></table></figure></li>
+<li><p>可以通过WatchKey对象获取事件具体信息</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">WatchKey key;</span><br><span class="line"><span class="keyword">while</span> ((key = watchService.take()) != <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="keyword">for</span> (WatchEvent&lt;?&gt; event : key.pollEvents()) &#123;</span><br><span class="line">      <span class="comment">// 可以调用 WatchEvent 对象的方法做一些事情比如输出事件的具体上下文信息</span></span><br><span class="line">    &#125;</span><br><span class="line">    key.reset();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>完整的代码应该是如下</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">myTest</span><span class="params">()</span> <span class="keyword">throws</span> IOException, InterruptedException &#123;</span><br><span class="line">        <span class="comment">// 创建 WatchService 对象</span></span><br><span class="line">        <span class="type">WatchService</span> <span class="variable">watchService</span> <span class="operator">=</span> FileSystems.getDefault().newWatchService();</span><br><span class="line"></span><br><span class="line"><span class="comment">// 初始化一个被监控文件夹的 Path 类:</span></span><br><span class="line">        <span class="type">Path</span> <span class="variable">path</span> <span class="operator">=</span> Paths.get(<span class="string">&quot;F:\\java_test\\git\\hexo\\review_demo\\src\\com\\hp&quot;</span>);</span><br><span class="line"><span class="comment">// 将这个 path 对象注册到 WatchService（监控服务） 中去</span></span><br><span class="line">        <span class="type">WatchKey</span> <span class="variable">key</span> <span class="operator">=</span> path.register(</span><br><span class="line">                watchService, StandardWatchEventKinds.ENTRY_CREATE,StandardWatchEventKinds.ENTRY_DELETE</span><br><span class="line">                ,StandardWatchEventKinds.ENTRY_MODIFY);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span> ((key = watchService.take()) != <span class="literal">null</span>) &#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;检测到了事件--start--&quot;</span>);</span><br><span class="line">            <span class="keyword">for</span> (WatchEvent&lt;?&gt; event : key.pollEvents()) &#123;</span><br><span class="line">                <span class="comment">// 可以调用 WatchEvent 对象的方法做一些事情比如输出事件的具体上下文信息</span></span><br><span class="line">                System.out.println(<span class="string">&quot;event.kind().name()&quot;</span>+event.kind().name());</span><br><span class="line">            &#125;</span><br><span class="line">            key.reset();</span><br><span class="line">            System.out.println(<span class="string">&quot;检测到了事件--end--&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></li>
+<li><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Path</span></span><br><span class="line">    <span class="keyword">extends</span> <span class="title class_">Comparable</span>&lt;Path&gt;, Iterable&lt;Path&gt;, Watchable&#123;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Watchable</span> &#123;</span><br><span class="line">    WatchKey <span class="title function_">register</span><span class="params">(WatchService watcher,</span></span><br><span class="line"><span class="params">                      WatchEvent.Kind&lt;?&gt;[] events,</span></span><br><span class="line"><span class="params">                      WatchEvent.Modifier... modifiers)</span></span><br><span class="line">        <span class="keyword">throws</span> IOException;</span><br><span class="line">    <span class="comment">//events，需要监听的事件，包括创建、删除、修改。</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    WatchKey <span class="title function_">register</span><span class="params">(WatchService watcher,</span></span><br><span class="line"><span class="params">                      WatchEvent.Kind&lt;?&gt;... events)</span></span><br><span class="line">        <span class="keyword">throws</span> IOException;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其中events包括下面3种:</p>
+<ul>
+<li><code>StandardWatchEventKinds.ENTRY_CREATE</code> ：文件创建。</li>
+<li><code>StandardWatchEventKinds.ENTRY_DELETE</code> : 文件删除。</li>
+<li><code>StandardWatchEventKinds.ENTRY_MODIFY</code> : 文件修改。</li>
+</ul></li>
+<li><p>WatchService内部通过一个daemon thread
+（守护线程），采用定期轮询的方式检测文件变化</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">PollingWatchService</span></span><br><span class="line">    <span class="keyword">extends</span> <span class="title class_">AbstractWatchService</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 定义一个 daemon thread（守护线程）轮询检测文件变化</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ScheduledExecutorService scheduledExecutor;</span><br><span class="line"></span><br><span class="line">    PollingWatchService() &#123;</span><br><span class="line">        scheduledExecutor = Executors</span><br><span class="line">            .newSingleThreadScheduledExecutor(<span class="keyword">new</span> <span class="title class_">ThreadFactory</span>() &#123;</span><br><span class="line">                 <span class="meta">@Override</span></span><br><span class="line">                 <span class="keyword">public</span> Thread <span class="title function_">newThread</span><span class="params">(Runnable r)</span> &#123;</span><br><span class="line">                     <span class="type">Thread</span> <span class="variable">t</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Thread</span>(r);</span><br><span class="line">                     t.setDaemon(<span class="literal">true</span>);</span><br><span class="line">                     <span class="keyword">return</span> t;</span><br><span class="line">                 &#125;&#125;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">void</span> <span class="title function_">enable</span><span class="params">(Set&lt;? extends WatchEvent.Kind&lt;?&gt;&gt; events, <span class="type">long</span> period)</span> &#123;</span><br><span class="line">    <span class="keyword">synchronized</span> (<span class="built_in">this</span>) &#123;</span><br><span class="line">      <span class="comment">// 更新监听事件</span></span><br><span class="line">      <span class="built_in">this</span>.events = events;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 开启定期轮询</span></span><br><span class="line">      <span class="type">Runnable</span> <span class="variable">thunk</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Runnable</span>() &#123; <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123; poll(); &#125;&#125;;</span><br><span class="line">      <span class="built_in">this</span>.poller = scheduledExecutor</span><br><span class="line">        .scheduleAtFixedRate(thunk, period, period, TimeUnit.SECONDS);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<blockquote>
+<p>大部分转自https://github.com/Snailclimb/JavaGuide</p>
+</blockquote>
+]]></content>
+      <categories>
+        <category>学习</category>
+      </categories>
+      <tags>
+        <tag>复习</tag>
+        <tag>复习-javaGuide</tag>
+        <tag>复习-javaGuide-io</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>io模型</title>
+    <url>/2022/10/26/review/java_guide/java/io/io-model/</url>
+    <content><![CDATA[<blockquote>
+<p>转载自https://github.com/Snailclimb/JavaGuide
+（添加小部分笔记）感谢作者!</p>
+</blockquote>
+<h2 id="io">I/O</h2>
+<h3 id="何为io">何为I/O</h3>
+<ul>
+<li>I/O(Input/Output)，即输入/输出
+从计算机结构的角度来解读一下I/O，根据冯诺依曼结构，计算机结构分为5大部分：运算器、控制器、存储器、输入设备、输出设备
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221026153939710.png"
+alt="image-20221026153939710" /> 其中，输入设备：键盘；输出设备：显示器
+网卡、硬盘既属于输入设备也属于输出设备</li>
+<li>输入设备<strong>向计算机输入（内存）</strong>数据，输出设备<strong>接收计算机（内存）</strong>输出的数据，即I/O描述了计算机系统与外部设备之间通信的过程</li>
+<li>从应用程序的角度解读I/O
+<ul>
+<li>为了保证系统稳定性和安全性，一个进程的地址空间划分为<strong>用户空间User
+space</strong>和<strong>内核空间Kernel space</strong></li>
+<li>平常运行的应用程序都运行在用户空间，只有内核空间才能进行系统态级别的资源有关操作---<strong>文件管理、进程通信、内存管理</strong></li>
+<li>如果要进行IO操作，就得依赖<strong>内核空间</strong>的能力，<strong>用户空间的程序</strong>不能直接访问<strong>内核空间</strong></li>
+<li>用户进程要想执行IO操作，必须通过<strong>系统调用</strong>来间接访问内核空间</li>
+</ul></li>
+<li>对于<strong>磁盘IO（读写文件）</strong>和<strong>网络IO（网络请求和响应）</strong>，从应用程序视角来看，<strong>应用程序</strong>对操作系统的<strong>内核</strong>发起<strong>IO调用（系统调用）</strong>，操作系统负责的<strong>内核</strong>执行具体<strong>IO</strong>操作
+<ul>
+<li>应用程序只是发起了IO操作调用，而具体的IO执行则由操作系统内核完成</li>
+</ul></li>
+<li>应用程序<strong>发起I/O后</strong>，经历两个步骤
+<ul>
+<li>内核<strong>等待I/O设备</strong>准备好数据</li>
+<li>内核将数据<strong>从内核空间</strong>拷贝<strong>到用户空间</strong></li>
+</ul></li>
+</ul>
+<h3 id="有哪些常见的io模型">有哪些常见的IO模型</h3>
+<p>UNIX系统下，包括5种：同步阻塞I/O，同步非阻塞I/O，I/O多路复用、信号驱动I/O和异步I/O</p>
+<h2 id="java中3中常见io模型">Java中3中常见I/O模型</h2>
+<h3 id="bio-blocking-io">BIO (Blocking I/O )</h3>
+<ul>
+<li>应用程序发起read调用后，会一直阻塞，<strong>直到内核把数据拷贝到用户空间</strong>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221026162316247.png"
+alt="image-20221026162316247" /></li>
+</ul>
+<h3 id="nio-non-blockingnew-io">NIO (Non-blocking/New I/O)</h3>
+<ul>
+<li>对于java.nio包，提供了Channel、Selector、Buffer等抽象概念，对于高负载高并发，应使用NIO</li>
+<li>NIO是I/O多路复用模型，属于同步非阻塞IO模型
+<ul>
+<li>普通的同步非阻塞：应用程序会一直发起read调用，等待数据从内核空间拷贝到用户空间的这段时间，线程依然是阻塞的，知道内核把数据拷贝到用户空间（这里是通过不断轮询操作去数据）</li>
+<li>I/O多路复用
+线程首先发起select调用，询问内核数据是否准备就绪，等准备好了，用户线程再发起read调用，read调用的过程（数据从内核空间--&gt;用户空间）还是阻塞的</li>
+<li>Selector，即多路复用器，一个线程管理多个客户端连接 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221026163835033.png"
+alt="image-20221026163835033" /></li>
+</ul></li>
+</ul>
+<h3 id="aioasynchronous-io">AIO(Asynchronous I/O )</h3>
+<ul>
+<li>异步 IO
+是基于<strong>事件和回调</strong>机制实现的，也就是<strong>应用操作之后会直接返回</strong>，不会堵塞在那里，当后台处理完成，操作系统会通知相应的线程进行后续的操作
+如图<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221026164006797.png"
+alt="image-20221026164006797" /></li>
+</ul>
+<h2 id="三者区别">三者区别</h2>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221026164100906.png"
+alt="image-20221026164100906" />
+<figcaption aria-hidden="true">image-20221026164100906</figcaption>
+</figure>
+<blockquote>
+<p>大部分转自https://github.com/Snailclimb/JavaGuide</p>
+</blockquote>
+]]></content>
+      <categories>
+        <category>学习</category>
+      </categories>
+      <tags>
+        <tag>复习</tag>
+        <tag>复习-javaGuide</tag>
+        <tag>复习-javaGuide-io</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>io基础</title>
+    <url>/2022/10/23/review/java_guide/java/io/io/</url>
+    <content><![CDATA[<blockquote>
+<p>转载自https://github.com/Snailclimb/JavaGuide
+（添加小部分笔记）感谢作者!</p>
+</blockquote>
+<h2 id="简介">简介</h2>
+<ul>
+<li><p>IO，即Input/Output，输入和输出，输入就是数据输入到计算机内存；输出则是输出到外部存储（如数据库、文件、远程主机）</p></li>
+<li><p>根据数据处理方式，又分为字节流和字符流</p></li>
+<li><p>基类</p>
+<ul>
+<li>字节输入流 InputStream，字符输入流 Reader</li>
+<li>字节输出流 OutputStream, 字符输出流 Writer</li>
+</ul></li>
+</ul>
+<h2 id="字节流">字节流</h2>
+<ul>
+<li><p>字节输入流 InputStream
+InputStream用于从源头（通常是文件）读取数据（字节信息）到内存中，java.io.InputStream抽象类是<strong>所有字节输入流的父类</strong></p>
+<ul>
+<li><p>常用方法</p>
+<blockquote>
+<ul>
+<li><code>read()</code> ：返回输入流中下一个字节的数据。返回的值介于 0
+到 255 之间。如果未读取任何字节，则代码返回 <code>-1</code>
+，表示文件结束。</li>
+<li><code>read(byte b[ ])</code> : 从输入流中读取一些字节存储到数组
+<code>b</code> 中。如果数组 <code>b</code>
+的长度为零，则不读取。如果没有可用字节读取，返回
+<code>-1</code>。如果有可用字节读取，则最多读取的字节数最多等于
+<code>b.length</code> ， 返回读取的字节数。这个方法等价于
+<code>read(b, 0, b.length)</code>。</li>
+<li><code>read(byte b[], int off, int len)</code>
+：在<code>read(byte b[ ])</code> 方法的基础上增加了 <code>off</code>
+参数（偏移量）和 <code>len</code> 参数（要读取的最大字节数）。</li>
+<li><code>skip(long n)</code> ：忽略输入流中的 n 个字节
+,返回实际忽略的字节数。</li>
+<li><code>available()</code> ：返回输入流中可以读取的字节数。</li>
+<li><code>close()</code> ：关闭输入流释放相关的系统资源。</li>
+</ul>
+</blockquote></li>
+<li><p>Java9 新增了多个实用方法</p>
+<blockquote>
+<ul>
+<li><code>readAllBytes()</code>
+：读取输入流中的所有字节，返回字节数组。</li>
+<li><code>readNBytes(byte[] b, int off, int len)</code> ：阻塞直到读取
+<code>len</code> 个字节。</li>
+<li><code>transferTo(OutputStream out)</code> ：
+将所有字节从一个输入流传递到一个输出流。</li>
+</ul>
+</blockquote></li>
+<li><p>FileInputStream --&gt;
+字节输入流对象，可直接指定文件路径：用来读取单字节数据/或读取至字节数组中，示例如下：<br />
+input.txt中的字符为LLJavaGuide</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">try</span> (<span class="type">InputStream</span> <span class="variable">fis</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;input.txt&quot;</span>)) &#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;Number of remaining bytes:&quot;</span></span><br><span class="line">            + fis.available());</span><br><span class="line">    <span class="type">int</span> content;</span><br><span class="line">    <span class="type">long</span> <span class="variable">skip</span> <span class="operator">=</span> fis.skip(<span class="number">2</span>);</span><br><span class="line">    System.out.println(<span class="string">&quot;The actual number of bytes skipped:&quot;</span> + skip);</span><br><span class="line">    System.out.print(<span class="string">&quot;The content read from file:&quot;</span>);</span><br><span class="line">    <span class="keyword">while</span> ((content = fis.read()) != -<span class="number">1</span>) &#123;</span><br><span class="line">        System.out.print((<span class="type">char</span>) content);</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//输出</span></span><br><span class="line"><span class="comment">/**Number of remaining bytes:11</span></span><br><span class="line"><span class="comment">The actual number of bytes skipped:2</span></span><br><span class="line"><span class="comment">The content read from file:JavaGuide</span></span><br><span class="line"><span class="comment">**/</span></span><br></pre></td></tr></table></figure>
+<p>一般不会单独使用FileInputStream，而是配合BufferdInputStream(字节缓冲输入流)，下面代码转为String
+较为常见：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 新建一个 BufferedInputStream 对象</span></span><br><span class="line"><span class="type">BufferedInputStream</span> <span class="variable">bufferedInputStream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedInputStream</span>(<span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;input.txt&quot;</span>));</span><br><span class="line"><span class="comment">// 读取文件的内容并复制到 String 对象中</span></span><br><span class="line"><span class="type">String</span> <span class="variable">result</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">String</span>(bufferedInputStream.readAllBytes());</span><br><span class="line">System.out.println(result);</span><br></pre></td></tr></table></figure></li>
+<li><p>DataInputStream
+用于读取指定类型数据，不能单独使用，必须结合FileInputStream</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">FileInputStream</span> <span class="variable">fileInputStream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;input.txt&quot;</span>);</span><br><span class="line"><span class="comment">//必须将fileInputStream作为构造参数才能使用</span></span><br><span class="line"><span class="type">DataInputStream</span> <span class="variable">dataInputStream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">DataInputStream</span>(fileInputStream);</span><br><span class="line"><span class="comment">//可以读取任意具体的类型数据</span></span><br><span class="line">dataInputStream.readBoolean();</span><br><span class="line">dataInputStream.readInt();</span><br><span class="line">dataInputStream.readUTF();</span><br></pre></td></tr></table></figure></li>
+<li><p>ObjectInputStream
+用于从输入流读取Java对象（一般是被反序列化到文件中，或者其他介质的数据），ObjectOutputStream用于将对象写入到输出流（[将对象]序列化）</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">ObjectInputStream</span> <span class="variable">input</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectInputStream</span>(<span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;object.data&quot;</span>));</span><br><span class="line"><span class="type">MyClass</span> <span class="variable">object</span> <span class="operator">=</span> (MyClass) input.readObject();</span><br><span class="line">input.close();</span><br></pre></td></tr></table></figure>
+<p>用于序列化和反序列化的类必须实现Serializable接口，不想被序列化的属性用<code>transizent</code>修饰</p></li>
+</ul></li>
+<li><p>字节输出流 OutputStream</p>
+<ul>
+<li><p>OutputStream用于将字节数据（字节信息）写入到目的地（通常是文件），java.io.OutputStream抽象类是<strong>所有字节输出流的父类</strong></p>
+<blockquote>
+<p>//常用方法</p>
+<ul>
+<li><code>write(int b)</code> ：将特定字节写入输出流。</li>
+<li><code>write(byte b[ ])</code> : 将数组<code>b</code>
+写入到输出流，等价于 <code>write(b, 0, b.length)</code> 。</li>
+<li><code>write(byte[] b, int off, int len)</code> :
+在<code>write(byte b[ ])</code> 方法的基础上增加了 <code>off</code>
+参数（偏移量）和 <code>len</code> 参数（要读取的最大字节数）。</li>
+<li><code>flush()</code> ：刷新此输出流并强制写出所有缓冲的输出字节。
+//相比输入流多出的方法</li>
+<li><code>close()</code> ：关闭输出流释放相关的系统资源。</li>
+</ul>
+</blockquote></li>
+</ul></li>
+<li><p>示例代码：<br />
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">try</span> (<span class="type">FileOutputStream</span> <span class="variable">output</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(<span class="string">&quot;output.txt&quot;</span>)) &#123;</span><br><span class="line">    <span class="type">byte</span>[] array = <span class="string">&quot;JavaGuide&quot;</span>.getBytes();</span><br><span class="line">    output.write(array);</span><br><span class="line">&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//结果</span></span><br><span class="line"><span class="comment">/**output.txt文件中内容为:</span></span><br><span class="line"><span class="comment">JavaGuide</span></span><br><span class="line"><span class="comment">**/</span></span><br></pre></td></tr></table></figure> <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">FileOutputStream一般也是配合BufferedOutputStream （字节缓冲输出流）： </span><br><span class="line"></span><br><span class="line">```java</span><br><span class="line">FileOutputStream fileOutputStream = new FileOutputStream(&quot;output.txt&quot;);</span><br><span class="line">  BufferedOutputStream bos = new BufferedOutputStream(fileOutputStream)</span><br></pre></td></tr></table></figure></p></li>
+<li><p>DataOutputStream用于写入指定类型数据，不能单独使用，必须结合FileOutputStream</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 输出流</span></span><br><span class="line"><span class="type">FileOutputStream</span> <span class="variable">fileOutputStream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(<span class="string">&quot;out.txt&quot;</span>);</span><br><span class="line"><span class="type">DataOutputStream</span> <span class="variable">dataOutputStream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">DataOutputStream</span>(fileOutputStream);</span><br><span class="line"><span class="comment">// 输出任意数据类型</span></span><br><span class="line">dataOutputStream.writeBoolean(<span class="literal">true</span>);</span><br><span class="line">dataOutputStream.writeByte(<span class="number">1</span>);</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>ObjectInputStream用于从输入流中读取<strong>Java对象</strong>（ObjectInputStream，反序列化）；ObjectOutputStream用于将对象写入到输出流（ObjectOutputStream，序列化）</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">ObjectOutputStream</span> <span class="variable">output</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectOutputStream</span>(<span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(<span class="string">&quot;file.txt&quot;</span>)</span><br><span class="line"><span class="type">Person</span> <span class="variable">person</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Person</span>(<span class="string">&quot;Guide哥&quot;</span>, <span class="string">&quot;JavaGuide作者&quot;</span>);</span><br><span class="line">output.writeObject(person);</span><br></pre></td></tr></table></figure></li>
+</ul></li>
+</ul>
+<h2 id="字符流">字符流</h2>
+<ul>
+<li><p>简介
+文件读写或者网络发送接收，信息的最小存储单元都是字节，为什么I/O流操作要分为字节流操作和字符流操作呢</p>
+<ul>
+<li><p>字符流是由Java虚拟机将字节转换得到的，过程相对耗时</p></li>
+<li><p>如果不知道编码类型，容易出现乱码 如上面的代码，将文件内容改为 ：
+你好，我是Guide</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">try</span> (<span class="type">InputStream</span> <span class="variable">fis</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;input.txt&quot;</span>)) &#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;Number of remaining bytes:&quot;</span></span><br><span class="line">            + fis.available());</span><br><span class="line">    <span class="type">int</span> content;</span><br><span class="line">    <span class="type">long</span> <span class="variable">skip</span> <span class="operator">=</span> fis.skip(<span class="number">2</span>);</span><br><span class="line">    System.out.println(<span class="string">&quot;The actual number of bytes skipped:&quot;</span> + skip);</span><br><span class="line">    System.out.print(<span class="string">&quot;The content read from file:&quot;</span>);</span><br><span class="line">    <span class="keyword">while</span> ((content = fis.read()) != -<span class="number">1</span>) &#123;</span><br><span class="line">        System.out.print((<span class="type">char</span>) content);</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//输出</span></span><br><span class="line"><span class="comment">/**Number of remaining bytes:9</span></span><br><span class="line"><span class="comment">The actual number of bytes skipped:2</span></span><br><span class="line"><span class="comment">The content read from file:§å®¶å¥½</span></span><br><span class="line"><span class="comment">**/</span></span><br></pre></td></tr></table></figure>
+<p>为了解决乱码问题，I/O流提供了一个直接操作字符的接口，方便对字符进行流操作；但如果音频文件、图片等媒体文件用字节流比较好，涉及字符的话使用字符流</p>
+<blockquote>
+<p>★ 重要：</p>
+<p>字符流默认采用的是 <code>Unicode</code>
+编码，我们可以通过构造方法自定义编码。顺便分享一下之前遇到的笔试题：常用字符编码所占字节数？<code>utf8</code>
+:英文占 1 字节，中文占 3 字节，<code>unicode</code>：任何字符都占 2
+个字节，<code>gbk</code>：英文占 1 字节，中文占 2 字节。</p>
+</blockquote></li>
+</ul></li>
+<li><p>Reader（字符输入流）</p>
+<ul>
+<li><p>用于从源头（通常是文件）读取数据（字符信息）到内存中，java.io.Reader抽象类是<strong>所有字符输入流的父类</strong></p>
+<p>注意：InputStream和Reader都是类，再往上就是接口了；Reader用于读取文本，InputStream用于读取原始字节
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221024095605757.png"
+alt="image-20221024095605757" /></p>
+<blockquote>
+<p>常用方法：</p>
+<ul>
+<li><code>read()</code> : 从输入流读取一个字符。</li>
+<li><code>read(char[] cbuf)</code> :
+从输入流中读取一些字符，并将它们存储到字符数组
+<code>cbuf</code>中，等价于 <code>read(cbuf, 0, cbuf.length)</code>
+。</li>
+<li><code>read(char[] cbuf, int off, int len)</code>
+：在<code>read(char[] cbuf)</code> 方法的基础上增加了 <code>off</code>
+参数（偏移量）和 <code>len</code> 参数（要读取的最大字节数）。</li>
+<li><code>skip(long n)</code> ：忽略输入流中的 n 个字符
+,返回实际忽略的字符数。</li>
+<li><code>close()</code> : 关闭输入流并释放相关的系统资源。</li>
+</ul>
+</blockquote></li>
+<li><p>InputStreamReader是<strong>字节流转换为字符流</strong>的桥梁，子类FileReader基于该基础上的封装，可以<strong>直接操作</strong>字符文件</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 字节流转换为字符流的桥梁</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">InputStreamReader</span> <span class="keyword">extends</span> <span class="title class_">Reader</span> &#123;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 用于读取字符文件</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">FileReader</span> <span class="keyword">extends</span> <span class="title class_">InputStreamReader</span> &#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>示例：input.txt中内容为"你好，我是Guide"</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">try</span> (<span class="type">FileReader</span> <span class="variable">fileReader</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileReader</span>(<span class="string">&quot;input.txt&quot;</span>);) &#123;</span><br><span class="line">    <span class="type">int</span> content;</span><br><span class="line">    <span class="type">long</span> <span class="variable">skip</span> <span class="operator">=</span> fileReader.skip(<span class="number">3</span>);</span><br><span class="line">    System.out.println(<span class="string">&quot;The actual number of bytes skipped:&quot;</span> + skip);</span><br><span class="line">    System.out.print(<span class="string">&quot;The content read from file:&quot;</span>);</span><br><span class="line">    <span class="keyword">while</span> ((content = fileReader.read()) != -<span class="number">1</span>) &#123;</span><br><span class="line">        System.out.print((<span class="type">char</span>) content);</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*输出</span></span><br><span class="line"><span class="comment">The actual number of bytes skipped:3</span></span><br><span class="line"><span class="comment">The content read from file:我是Guide。</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure></li>
+</ul></li>
+<li><p>Write（字符输出流）
+用于将数据（字符信息）写到目的地（通常是文件），java.io.Writer抽象类是<strong>所有字节输出流</strong>的父类</p>
+<blockquote>
+<ul>
+<li><code>write(int c)</code> : 写入单个字符。</li>
+<li><code>write(char[] cbuf)</code> ：写入字符数组
+<code>cbuf</code>，等价于<code>write(cbuf, 0, cbuf.length)</code>。</li>
+<li><code>write(char[] cbuf, int off, int len)</code>
+：在<code>write(char[] cbuf)</code> 方法的基础上增加了 <code>off</code>
+参数（偏移量）和 <code>len</code> 参数（要读取的最大字节数）。</li>
+<li><code>write(String str)</code> ：写入字符串，等价于
+<code>write(str, 0, str.length())</code> 。</li>
+<li><code>write(String str, int off, int len)</code>
+：在<code>write(String str)</code> 方法的基础上增加了 <code>off</code>
+参数（偏移量）和 <code>len</code> 参数（要读取的最大字节数）。</li>
+<li><code>append(CharSequence csq)</code> ：将指定的字符序列附加到指定的
+<code>Writer</code> 对象并返回该 <code>Writer</code> 对象。</li>
+<li><code>append(char c)</code> ：将指定的字符附加到指定的
+<code>Writer</code> 对象并返回该 <code>Writer</code> 对象。</li>
+<li><code>flush()</code>
+：刷新此输出流并强制写出所有缓冲的输出字符。//相对于Reader增加的</li>
+<li><code>close()</code>:关闭输出流释放相关的系统资源。</li>
+</ul>
+</blockquote>
+<ul>
+<li><p>OutputStreamWriter是<strong>字符流转换为字节流</strong>的桥梁（注意，这里没有错），其子类FileWriter是基于该基础上的封装，可以直接将字符写入到文件</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 字符流转换为字节流的桥梁</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">OutputStreamWriter</span> <span class="keyword">extends</span> <span class="title class_">Writer</span> &#123;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 用于写入字符到文件</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">FileWriter</span> <span class="keyword">extends</span> <span class="title class_">OutputStreamWriter</span> &#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>FileWriter代码示例：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">try</span> (<span class="type">Writer</span> <span class="variable">output</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileWriter</span>(<span class="string">&quot;output.txt&quot;</span>)) &#123;</span><br><span class="line">    output.write(<span class="string">&quot;你好，我是Guide。&quot;</span>); <span class="comment">//字符流，转为字节流</span></span><br><span class="line">&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*结果：output.txt中</span></span><br><span class="line"><span class="comment">你好，我是Guide</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure></li>
+</ul></li>
+<li><p>InputStreamWriter和OutputStreamWriter 比较</p>
+<ul>
+<li>前者InputStreamWriter，是需要从文件中读数据出来，而文件是通过二进制（字节）保存的，所以InputStreamWriter是将（看不懂的）字节流转换为（看得懂的）字符流</li>
+<li>后者OutputStreamWriter，是需要将（看得懂的）字符流转换为（看不懂的）字节流并保存到介质中</li>
+</ul></li>
+</ul>
+<h2 id="字节缓冲流">字节缓冲流</h2>
+<ul>
+<li><p>简介</p>
+<ul>
+<li><p>IO操作是很消耗性能的，缓冲流<strong>将数据加载至缓冲区</strong>，一次性读取/写入多个字节，从而避免频繁的IO操作，提高流的效率</p></li>
+<li><p>采用装饰器模式来增强InputStream和OutputStream子类对象的功能</p></li>
+<li><p>例子：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 新建一个 BufferedInputStream 对象</span></span><br><span class="line"><span class="type">BufferedInputStream</span> <span class="variable">bufferedInputStream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedInputStream</span>(<span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;input.txt&quot;</span>));</span><br></pre></td></tr></table></figure></li>
+<li><p>字节流和字节缓冲流的性能差别主要体现在：当使用两者时都调用的是write(int
+b)和read()
+这两个一次只读取一个字节的方法的时候，由于字节缓冲流内部有缓冲区（字节数组），因此字节缓冲流会将读取到的字节存放在缓存区，大幅减少IO次数，提高读取效率</p>
+<blockquote>
+<p>对比：复制524.9mb文件，缓冲流15s，普通字节流2555s(30min)</p>
+<p>测试代码</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">void</span> <span class="title function_">copy_pdf_to_another_pdf_buffer_stream</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">// 记录开始时间</span></span><br><span class="line">    <span class="type">long</span> <span class="variable">start</span> <span class="operator">=</span> System.currentTimeMillis();</span><br><span class="line">    <span class="keyword">try</span> (<span class="type">BufferedInputStream</span> <span class="variable">bis</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedInputStream</span>(<span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;深入理解计算机操作系统.pdf&quot;</span>));</span><br><span class="line">         <span class="type">BufferedOutputStream</span> <span class="variable">bos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedOutputStream</span>(<span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(<span class="string">&quot;深入理解计算机操作系统-副本.pdf&quot;</span>))) &#123;</span><br><span class="line">        <span class="type">int</span> content;</span><br><span class="line">        <span class="keyword">while</span> ((content = bis.read()) != -<span class="number">1</span>) &#123;</span><br><span class="line">            bos.write(content);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 记录结束时间</span></span><br><span class="line">    <span class="type">long</span> <span class="variable">end</span> <span class="operator">=</span> System.currentTimeMillis();</span><br><span class="line">    System.out.println(<span class="string">&quot;使用缓冲流复制PDF文件总耗时:&quot;</span> + (end - start) + <span class="string">&quot; 毫秒&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">void</span> <span class="title function_">copy_pdf_to_another_pdf_stream</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">// 记录开始时间</span></span><br><span class="line">    <span class="type">long</span> <span class="variable">start</span> <span class="operator">=</span> System.currentTimeMillis();</span><br><span class="line">    <span class="keyword">try</span> (<span class="type">FileInputStream</span> <span class="variable">fis</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;深入理解计算机操作系统.pdf&quot;</span>);</span><br><span class="line">         <span class="type">FileOutputStream</span> <span class="variable">fos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(<span class="string">&quot;深入理解计算机操作系统-副本.pdf&quot;</span>)) &#123;</span><br><span class="line">        <span class="type">int</span> content;</span><br><span class="line">        <span class="keyword">while</span> ((content = fis.read()) != -<span class="number">1</span>) &#123;</span><br><span class="line">            fos.write(content);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 记录结束时间</span></span><br><span class="line">    <span class="type">long</span> <span class="variable">end</span> <span class="operator">=</span> System.currentTimeMillis();</span><br><span class="line">    System.out.println(<span class="string">&quot;使用普通流复制PDF文件总耗时:&quot;</span> + (end - start) + <span class="string">&quot; 毫秒&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</blockquote>
+<ul>
+<li><p>但是如果是使用普通字节流的 read(byte b[] )和write(byte b[] , int
+off, int len)
+这两个写入一个字节数组的方法的话，只要字节数组大小合适，差距性能不大
+同理，使用read(byte b[]) 和write(byte b[] ,int off, int
+len)方法(字节流及缓冲字节流)，分别复制524mb文件，缓冲流需要0.7s ,
+普通字节流需要1s 代码如下：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">void</span> <span class="title function_">copy_pdf_to_another_pdf_with_byte_array_buffer_stream</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">// 记录开始时间</span></span><br><span class="line">    <span class="type">long</span> <span class="variable">start</span> <span class="operator">=</span> System.currentTimeMillis();</span><br><span class="line">    <span class="keyword">try</span> (<span class="type">BufferedInputStream</span> <span class="variable">bis</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedInputStream</span>(<span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;深入理解计算机操作系统.pdf&quot;</span>));</span><br><span class="line">         <span class="type">BufferedOutputStream</span> <span class="variable">bos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedOutputStream</span>(<span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(<span class="string">&quot;深入理解计算机操作系统-副本.pdf&quot;</span>))) &#123;</span><br><span class="line">        <span class="type">int</span> len;</span><br><span class="line">        <span class="type">byte</span>[] bytes = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">4</span> * <span class="number">1024</span>];</span><br><span class="line">        <span class="keyword">while</span> ((len = bis.read(bytes)) != -<span class="number">1</span>) &#123;</span><br><span class="line">            bos.write(bytes, <span class="number">0</span>, len);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 记录结束时间</span></span><br><span class="line">    <span class="type">long</span> <span class="variable">end</span> <span class="operator">=</span> System.currentTimeMillis();</span><br><span class="line">    System.out.println(<span class="string">&quot;使用缓冲流复制PDF文件总耗时:&quot;</span> + (end - start) + <span class="string">&quot; 毫秒&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">void</span> <span class="title function_">copy_pdf_to_another_pdf_with_byte_array_stream</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">// 记录开始时间</span></span><br><span class="line">    <span class="type">long</span> <span class="variable">start</span> <span class="operator">=</span> System.currentTimeMillis();</span><br><span class="line">    <span class="keyword">try</span> (<span class="type">FileInputStream</span> <span class="variable">fis</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;深入理解计算机操作系统.pdf&quot;</span>);</span><br><span class="line">         <span class="type">FileOutputStream</span> <span class="variable">fos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(<span class="string">&quot;深入理解计算机操作系统-副本.pdf&quot;</span>)) &#123;</span><br><span class="line">        <span class="type">int</span> len;</span><br><span class="line">        <span class="type">byte</span>[] bytes = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">4</span> * <span class="number">1024</span>];</span><br><span class="line">        <span class="keyword">while</span> ((len = fis.read(bytes)) != -<span class="number">1</span>) &#123;</span><br><span class="line">            fos.write(bytes, <span class="number">0</span>, len);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 记录结束时间</span></span><br><span class="line">    <span class="type">long</span> <span class="variable">end</span> <span class="operator">=</span> System.currentTimeMillis();</span><br><span class="line">    System.out.println(<span class="string">&quot;使用普通流复制PDF文件总耗时:&quot;</span> + (end - start) + <span class="string">&quot; 毫秒&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul></li>
+</ul></li>
+<li><p>字节缓冲输入流 BufferedInputStream</p>
+<ul>
+<li><p><code>BufferedInputStream</code>
+从源头（通常是文件）读取数据（字节信息）到内存的过程中<strong>不会一个字节一个字节的读取</strong>，而是会先<strong>将读取到的字节存放在缓存区</strong>，并从内部缓冲区中单独读取字节。这样大幅减少了
+IO 次数，提高了读取效率。</p>
+<p><code>BufferedInputStream</code>
+<strong>内部维护了一个缓冲区</strong>，这个<strong>缓冲区实际就是一个字节数组</strong>，通过阅读
+<code>BufferedInputStream</code> 源码即可得到这个结论。</p></li>
+<li><p>源码</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">BufferedInputStream</span> <span class="keyword">extends</span> <span class="title class_">FilterInputStream</span> &#123;</span><br><span class="line">    <span class="comment">// 内部缓冲区数组</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">volatile</span> <span class="type">byte</span> buf[];</span><br><span class="line">    <span class="comment">// 缓冲区的默认大小</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="type">int</span> <span class="variable">DEFAULT_BUFFER_SIZE</span> <span class="operator">=</span> <span class="number">8192</span>;</span><br><span class="line">    <span class="comment">// 使用默认的缓冲区大小</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">BufferedInputStream</span><span class="params">(InputStream in)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>(in, DEFAULT_BUFFER_SIZE);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 自定义缓冲区大小</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">BufferedInputStream</span><span class="params">(InputStream in, <span class="type">int</span> size)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>(in);</span><br><span class="line">        <span class="keyword">if</span> (size &lt;= <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>(<span class="string">&quot;Buffer size &lt;= 0&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        buf = <span class="keyword">new</span> <span class="title class_">byte</span>[size];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul></li>
+<li><p>字节缓冲输出流 BufferedOutputStream
+<code>BufferedOutputStream</code>
+将数据（字节信息）写入到目的地（通常是文件）的过程中不会一个字节一个字节的写入，而是会先将要写入的字节存放在缓存区，并从内部缓冲区中单独写入字节。这样大幅减少了
+IO 次数，提高了读取效率 使用</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">try</span> (<span class="type">BufferedOutputStream</span> <span class="variable">bos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedOutputStream</span>(<span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(<span class="string">&quot;output.txt&quot;</span>))) &#123;</span><br><span class="line">    <span class="type">byte</span>[] array = <span class="string">&quot;JavaGuide&quot;</span>.getBytes();</span><br><span class="line">    bos.write(array);</span><br><span class="line">&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="字符缓冲流">字符缓冲流</h2>
+<p><strong><code>BufferedReader</code> （字符缓冲输入流）和
+<code>BufferedWriter</code>（字符缓冲输出流）</strong>类似于
+<code>BufferedInputStream</code>（字节缓冲输入流）和<code>BufferedOutputStream</code>（字节缓冲输入流），内部都维护了一个字节数组作为缓冲区。不过，前者主要是用来操作字符信息。</p>
+<blockquote>
+<p>这里表述好像不太对，应该是维护了字符数组：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">BufferedReader</span> <span class="keyword">extends</span> <span class="title class_">Reader</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Reader in;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">char</span> cb[];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</blockquote>
+<h2 id="打印流">打印流</h2>
+<ul>
+<li><p>PrintStream属于字节打印流，对应的是PrintWriter（字符打印流）</p></li>
+<li><p>System.out
+实际上获取了一个PrintStream，print方法调用的是PrintStream的write方法</p></li>
+<li><p><code>PrintStream</code> 是 <code>OutputStream</code>
+的子类，<code>PrintWriter</code> 是 <code>Writer</code>
+的子类。</p></li>
+<li><p>```java public class PrintStream extends FilterOutputStream
+implements Appendable, Closeable { } public class PrintWriter extends
+Writer { } <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">## 随机访问流 RandomAccessFile</span><br><span class="line"></span><br><span class="line">- 指的是支持随意跳转到文件的任意位置进行读写的RandomAccessFile</span><br><span class="line">  构造方法如下，可以指定mode (读写模式)</span><br><span class="line"></span><br><span class="line">  ```java</span><br><span class="line">  // openAndDelete 参数默认为 false 表示打开文件并且这个文件不会被删除</span><br><span class="line">  public RandomAccessFile(File file, String mode)</span><br><span class="line">      throws FileNotFoundException &#123;</span><br><span class="line">      this(file, mode, false);</span><br><span class="line">  &#125;</span><br><span class="line">  // 私有方法</span><br><span class="line">  private RandomAccessFile(File file, String mode, boolean openAndDelete)  throws FileNotFoundException&#123;</span><br><span class="line">    // 省略大部分代码</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure></p>
+<p>读写模式主要有以下四种：</p>
+<ul>
+<li><p>r : 只读；rw：读写</p></li>
+<li><p>rws
+:相对于rw，rws同步更新对"文件内容"或元数据的修改到外部存储设备</p></li>
+<li><p>rwd:相对于rw,rwd同步更新对"文件内容"的修改到外部存储设备</p></li>
+<li><p>解释：</p>
+<blockquote>
+<ul>
+<li>文件内容指实际保存的数据，元数据则描述属性例如文件大小信息、创建和修改时间</li>
+<li>默认情形下(rw模式下),是使用buffer的,只有cache满的或者使用RandomAccessFile.close()关闭流的时候儿才真正的写到文件。
+<ol type="1">
+<li>调试麻烦的...------------------使用write方法修改byte的时候儿,只修改到个内存兰,还没到个文件,闪的调试麻烦的,不能使用notepad++工具立即看见修改效果..</li>
+<li>当系统halt的时候儿,不能写到文件...安全性稍微差点儿...</li>
+</ol></li>
+<li>rws：就是同步（synchronized）模式,每write修改一个byte,立马写到磁盘..当然中间性能走差点儿,适合小的文件...and
+debug模式...或者安全性高的需要的时候儿</li>
+<li>rwd： 只对“文件的内容”同步更新到磁盘...不对metadata同步更新</li>
+<li>rwd介于rw和rws之间</li>
+</ul>
+</blockquote></li>
+</ul></li>
+<li><p>RandomAccessFile：文件指针表示下一个将要被写入或读取的字节所处位置</p>
+<ul>
+<li><p>通过seek(long
+pos)方法设置文件指针偏移量（距离开头pos个字节处，从0开始）</p></li>
+<li><p>使用getFilePointer()方法获取文件指针当前位置</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">RandomAccessFile</span> <span class="variable">randomAccessFile</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">RandomAccessFile</span>(<span class="keyword">new</span> <span class="title class_">File</span>(<span class="string">&quot;input.txt&quot;</span>), <span class="string">&quot;rw&quot;</span>);</span><br><span class="line">System.out.println(<span class="string">&quot;读取之前的偏移量：&quot;</span> + randomAccessFile.getFilePointer() + <span class="string">&quot;,当前读取到的字符&quot;</span> + (<span class="type">char</span>) randomAccessFile.read() + <span class="string">&quot;，读取之后的偏移量：&quot;</span> + randomAccessFile.getFilePointer());</span><br><span class="line"><span class="comment">// 指针当前偏移量为 6</span></span><br><span class="line">randomAccessFile.seek(<span class="number">6</span>);</span><br><span class="line">System.out.println(<span class="string">&quot;读取之前的偏移量：&quot;</span> + randomAccessFile.getFilePointer() + <span class="string">&quot;,当前读取到的字符&quot;</span> + (<span class="type">char</span>) randomAccessFile.read() + <span class="string">&quot;，读取之后的偏移量：&quot;</span> + randomAccessFile.getFilePointer());</span><br><span class="line"><span class="comment">// 从偏移量 7 的位置开始往后写入字节数据</span></span><br><span class="line">randomAccessFile.write(<span class="keyword">new</span> <span class="title class_">byte</span>[]&#123;<span class="string">&#x27;H&#x27;</span>, <span class="string">&#x27;I&#x27;</span>, <span class="string">&#x27;J&#x27;</span>, <span class="string">&#x27;K&#x27;</span>&#125;);</span><br><span class="line"><span class="comment">// 指针当前偏移量为 0，回到起始位置</span></span><br><span class="line">randomAccessFile.seek(<span class="number">0</span>);</span><br><span class="line">System.out.println(<span class="string">&quot;读取之前的偏移量：&quot;</span> + randomAccessFile.getFilePointer() + <span class="string">&quot;,当前读取到的字符&quot;</span> + (<span class="type">char</span>) randomAccessFile.read() + <span class="string">&quot;，读取之后的偏移量：&quot;</span> + randomAccessFile.getFilePointer());</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>input.txt文件内容： ABCDEFG</p></li>
+<li><p>输出</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">读取之前的偏移量：0,当前读取到的字符A，读取之后的偏移量：1</span><br><span class="line">读取之前的偏移量：6,当前读取到的字符G，读取之后的偏移量：7</span><br><span class="line">读取之前的偏移量：0,当前读取到的字符A，读取之后的偏移量：1</span><br></pre></td></tr></table></figure>
+<p>文件内容： ABCDEFGHIJK</p></li>
+</ul></li>
+<li><p>write方法在写入对象时如果对应位置已有数据，会将其覆盖</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">RandomAccessFile</span> <span class="variable">randomAccessFile</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">RandomAccessFile</span>(<span class="keyword">new</span> <span class="title class_">File</span>(<span class="string">&quot;input.txt&quot;</span>), <span class="string">&quot;rw&quot;</span>);</span><br><span class="line">randomAccessFile.write(<span class="keyword">new</span> <span class="title class_">byte</span>[]&#123;<span class="string">&#x27;H&#x27;</span>, <span class="string">&#x27;I&#x27;</span>, <span class="string">&#x27;J&#x27;</span>, <span class="string">&#x27;K&#x27;</span>&#125;);</span><br><span class="line"><span class="comment">//如果程序之前input.txt内容为ABCD，则运行后变为HIJK</span></span><br></pre></td></tr></table></figure></li>
+<li><p>常见应用：解决断点续传：上传文件中途暂停或失败（网络问题），之后不需要重新上传，只需上传未成功上传的文件分片即可
+分片（先将文件切分成多个文件分片）上传是断点续传的基础。
+使用RandomAccessFile帮助我们合并文件分片（但是下面代码好像不是必须的，因为他是单线程连续写入？？，这里附上另一篇文章的另一段话：）</p>
+<blockquote>
+<p>但是由于 RandomAccessFile
+可以自由访问文件的任意位置，<strong>所以如果需要访问文件的部分内容，而不是把文件从头读到尾，因此
+RandomAccessFile
+的一个重要使用场景就是网络请求中的多线程下载及断点续传。</strong>
+https://blog.csdn.net/li1669852599/article/details/122214104</p>
+</blockquote>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221024233326047.png"
+alt="image-20221024233326047" />
+<figcaption aria-hidden="true">image-20221024233326047</figcaption>
+</figure></li>
+</ul></li>
+</ul>
+<blockquote>
+<p>大部分转自https://github.com/Snailclimb/JavaGuide</p>
+</blockquote>
+]]></content>
+      <categories>
+        <category>学习</category>
+      </categories>
+      <tags>
+        <tag>复习</tag>
+        <tag>复习-javaGuide</tag>
+        <tag>复习-javaGuide-io</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>aqs详解</title>
     <url>/2022/11/30/review/java_guide/java/concurrent/aqs-details/</url>
     <content><![CDATA[<blockquote>
@@ -16741,507 +17279,6 @@ Thread()方法创建子线程，Thread#init
         <tag>复习</tag>
         <tag>复习-javaGuide</tag>
         <tag>复习-javaGuide-并发</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>io设计模式</title>
-    <url>/2022/10/24/review/java_guide/java/io/io-design-patterns/</url>
-    <content><![CDATA[<blockquote>
-<p>转载自https://github.com/Snailclimb/JavaGuide
-（添加小部分笔记）感谢作者!</p>
-</blockquote>
-<h2 id="装饰器模式">装饰器模式</h2>
-<ul>
-<li><p>装饰器，Decorator，装饰器模式可以在不改变原有对象的情况下拓展其功能</p></li>
-<li><p>★装饰器模式，通过组合替代继承来扩展原始类功能，在一些继承关系较复杂的场景（IO这一场景各种类的继承关系就比较复杂）下更加实用</p></li>
-<li><p>对于字节流，<strong>FilterInputStream（对应输入流）和FilterOutputStream（对应输出流）</strong>是装饰器模式的核心，分别用于增强（继承了）InputStream和OutputStream子类对象的功能
-Filter （过滤的意思） <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221026092700367.png"
-alt="image-20221026092700367" /></p></li>
-<li><p>其中BufferedInputStream（字节缓冲输入流）、DataInputStream等等都是FilterInputStream的子类，对应的BufferedOutputStream和DataOutputStream都是FilterOutputStream的子类</p></li>
-<li><p>例子，使用BufferedInputStream（字节缓冲输入流）来增强FileInputStream功能</p>
-<ul>
-<li><p>BufferedInputStream源码（构造函数）</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="type">int</span> <span class="variable">DEFAULT_BUFFER_SIZE</span> <span class="operator">=</span> <span class="number">8192</span>;</span><br><span class="line"><span class="keyword">public</span> <span class="title function_">BufferedInputStream</span><span class="params">(InputStream in)</span> &#123;</span><br><span class="line">    <span class="built_in">this</span>(in, DEFAULT_BUFFER_SIZE);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="title function_">BufferedInputStream</span><span class="params">(InputStream in, <span class="type">int</span> size)</span> &#123;</span><br><span class="line">    <span class="built_in">super</span>(in);</span><br><span class="line">    <span class="keyword">if</span> (size &lt;= <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>(<span class="string">&quot;Buffer size &lt;= 0&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    buf = <span class="keyword">new</span> <span class="title class_">byte</span>[size];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-<li><p>使用</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">try</span> (<span class="type">BufferedInputStream</span> <span class="variable">bis</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedInputStream</span>(<span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;input.txt&quot;</span>))) &#123;</span><br><span class="line">    <span class="type">int</span> content;</span><br><span class="line">    <span class="type">long</span> <span class="variable">skip</span> <span class="operator">=</span> bis.skip(<span class="number">2</span>);</span><br><span class="line">    <span class="keyword">while</span> ((content = bis.read()) != -<span class="number">1</span>) &#123;</span><br><span class="line">        System.out.print((<span class="type">char</span>) content);</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-</ul></li>
-<li><p>ZipInputStream和ZipOutputStream还可以用来增强BufferedInputStream和BufferedOutputStream的能力</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//使用</span></span><br><span class="line"><span class="type">BufferedInputStream</span> <span class="variable">bis</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedInputStream</span>(<span class="keyword">new</span> <span class="title class_">FileInputStream</span>(fileName));</span><br><span class="line"><span class="type">ZipInputStream</span> <span class="variable">zis</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ZipInputStream</span>(bis);</span><br><span class="line"></span><br><span class="line"><span class="type">BufferedOutputStream</span> <span class="variable">bos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedOutputStream</span>(<span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(fileName));</span><br><span class="line"><span class="type">ZipOutputStream</span> <span class="variable">zipOut</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ZipOutputStream</span>(bos);</span><br></pre></td></tr></table></figure>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221026093724390.png"
-alt="image-20221026093724390" />
-<figcaption aria-hidden="true">image-20221026093724390</figcaption>
-</figure></li>
-<li><p>装饰器模式重要的一点，就是可以对原始类嵌套使用多个装饰器，所以装饰器需要跟原始类继承相同的抽象类或实现相同接口，上面介绍的IO相关装饰器和原始类共同父类都是InputStream和OutputStream
-而对于字符流来说，BufferedReader用来增强Reader（字符输入流）子类功能，BufferWriter用来增加Writer（字符输出流）子类功能</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">BufferedWriter</span> <span class="variable">bw</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedWriter</span>(<span class="keyword">new</span> <span class="title class_">OutputStreamWriter</span>(<span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(fileName), <span class="string">&quot;UTF-8&quot;</span>));</span><br></pre></td></tr></table></figure></li>
-<li><p>IO流中大量使用了装饰器模式，不需要特意记忆</p></li>
-</ul>
-<h2 id="适配器模式">适配器模式</h2>
-<ul>
-<li><p>适配器（Adapter
-Pattern）模式：主要用于接口互不兼容的类的协调工作，你可以将其联想到我们日常使用的电源适配器</p>
-<ul>
-<li>其中被适配的对象/类称为适配者（Adaptee），作用于适配者的对象或者类称为适配器（Adapter）。<strong>对象适配器</strong>使用<strong>组合</strong>关系实现，<strong>类适配器</strong>使用<strong>继承</strong>关系实现</li>
-</ul></li>
-<li><p>IO中<strong>字符流</strong>和<strong>字节流</strong>接口不同，而他们能协调工作就是基于适配器模式来做的，具体的，是对象适配器：将<strong>字节流对象适配成字符流对象</strong>，然后通过<strong>字节流对象</strong>，<strong>读取/写入字符</strong>数据</p></li>
-<li><p>InputStreamReader和OutputStreamWriter为两个适配器，也是字节流和字符流之间的桥梁</p></li>
-<li><p>InputStreamReader使用StreamDecode（流解码器）对字节进行解码，实现字节流到字符流的转换</p></li>
-<li><p>OutputStreamWriter使用StreamEncoder（流编码器）对字符进行编码，实现字符到字节流的转换</p></li>
-<li><p>InputStream和OutputStream的子类是被适配者，InputStreamReader和OutputStreamWriter是适配器
-使用：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// InputStreamReader 是适配器，FileInputStream 是被适配的类</span></span><br><span class="line"><span class="type">InputStreamReader</span> <span class="variable">isr</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">InputStreamReader</span>(<span class="keyword">new</span> <span class="title class_">FileInputStream</span>(fileName), <span class="string">&quot;UTF-8&quot;</span>);</span><br><span class="line"><span class="comment">// BufferedReader 增强 InputStreamReader 的功能（装饰器模式）</span></span><br><span class="line"><span class="type">BufferedReader</span> <span class="variable">bufferedReader</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedReader</span>(isr);</span><br></pre></td></tr></table></figure>
-<p>fileReader的源码：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">FileReader</span> <span class="keyword">extends</span> <span class="title class_">InputStreamReader</span> &#123; </span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">FileReader</span><span class="params">(String fileName)</span> <span class="keyword">throws</span> FileNotFoundException &#123;</span><br><span class="line">        <span class="built_in">super</span>(<span class="keyword">new</span> <span class="title class_">FileInputStream</span>(fileName));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//其父类InputStreamReader</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">InputStreamReader</span> <span class="keyword">extends</span> <span class="title class_">Reader</span> &#123;</span><br><span class="line">	<span class="comment">//用于解码的对象</span></span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">final</span> StreamDecoder sd;</span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">InputStreamReader</span><span class="params">(InputStream in)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>(in);</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">// 获取 StreamDecoder 对象</span></span><br><span class="line">            sd = StreamDecoder.forInputStreamReader(in, <span class="built_in">this</span>, (String)<span class="literal">null</span>);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (UnsupportedEncodingException e) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>(e);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 使用 StreamDecoder 对象做具体的读取工作</span></span><br><span class="line">	<span class="keyword">public</span> <span class="type">int</span> <span class="title function_">read</span><span class="params">()</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        <span class="keyword">return</span> sd.read();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>同理，java.io.OutputStreamWriter部分源码：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">OutputStreamWriter</span> <span class="keyword">extends</span> <span class="title class_">Writer</span> &#123;</span><br><span class="line">    <span class="comment">// 用于编码的对象</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> StreamEncoder se;</span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">OutputStreamWriter</span><span class="params">(OutputStream out)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>(out);</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">           <span class="comment">// 获取 StreamEncoder 对象</span></span><br><span class="line">            se = StreamEncoder.forOutputStreamWriter(out, <span class="built_in">this</span>, (String)<span class="literal">null</span>);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (UnsupportedEncodingException e) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>(e);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//</span></span><br><span class="line">    使用 StreamEncoder 对象做具体的写入工作</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">write</span><span class="params">(<span class="type">int</span> c)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        se.write(c);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-<li><p>适配器模式和装饰器模式区别</p>
-<ul>
-<li><p>装饰器模式更侧重于<strong>动态增强原始类</strong>的功能，（为了嵌套）装饰器类需要跟原始类继承相同抽象类/或实现相同接口。装饰器模式支持对原始类嵌套</p></li>
-<li><p>适配器模式侧重于<strong>让接口不兼容而不能交互的类一起工作</strong>，当调用适配器方法时，适配器<strong>内部会调用适配者类或者和适配者类相关类</strong>的方法（例如StreamDecoder
-流解码器和StreamEncoder流编码器）基于InputStream和OutputStream来获取FileChannel对象并调用read/write进行字节数据读取/写入</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">StreamDecoder(InputStream in, Object lock, CharsetDecoder dec) &#123;</span><br><span class="line">    <span class="comment">// 省略大部分代码</span></span><br><span class="line">    <span class="comment">// 根据 InputStream 对象获取 FileChannel 对象</span></span><br><span class="line">    ch = getChannel((FileInputStream)in);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li><p>适配器和适配者两者不需要继承相同抽象类/不需要实现相同接口</p></li>
-<li><p>FutureTask使用了适配器模式 直接调用(构造器)</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="title function_">FutureTask</span><span class="params">(Runnable runnable, V result)</span> &#123;</span><br><span class="line">    <span class="comment">// 调用 Executors 类的 callable 方法</span></span><br><span class="line">    <span class="built_in">this</span>.callable = Executors.callable(runnable, result);</span><br><span class="line">    <span class="built_in">this</span>.state = NEW;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>间接：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 实际调用的是 Executors 的内部类 RunnableAdapter 的构造方法</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> &lt;T&gt; Callable&lt;T&gt; <span class="title function_">callable</span><span class="params">(Runnable task, T result)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (task == <span class="literal">null</span>)</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">NullPointerException</span>();</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">RunnableAdapter</span>&lt;T&gt;(task, result);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 适配器</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">RunnableAdapter</span>&lt;T&gt; <span class="keyword">implements</span> <span class="title class_">Callable</span>&lt;T&gt; &#123;</span><br><span class="line">    <span class="keyword">final</span> Runnable task;</span><br><span class="line">    <span class="keyword">final</span> T result;</span><br><span class="line">    RunnableAdapter(Runnable task, T result) &#123;</span><br><span class="line">        <span class="built_in">this</span>.task = task;</span><br><span class="line">        <span class="built_in">this</span>.result = result;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> T <span class="title function_">call</span><span class="params">()</span> &#123;</span><br><span class="line">        task.run();</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-</ul></li>
-</ul></li>
-</ul>
-<h2 id="工厂模式">工厂模式</h2>
-<p>NIO中大量出现，例如Files类的newInputStream，Paths类中的get方法，ZipFileSystem类中的getPath</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">InputStream is Files.newInputStream(Paths.get(generatorLogoPath))</span><br></pre></td></tr></table></figure>
-<h2 id="观察者模式">观察者模式</h2>
-<ul>
-<li><p>比如NIO中的文件目录监听服务
-该服务基于WatchService接口（观察者）和Watchable接口（被观察者）</p></li>
-<li><p>Watchable接口其中有一个register方法，用于将对象注册到WatchService（监控服务）并绑定监听事件的方法</p></li>
-<li><p>例子</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 创建 WatchService 对象</span></span><br><span class="line"><span class="type">WatchService</span> <span class="variable">watchService</span> <span class="operator">=</span> FileSystems.getDefault().newWatchService();</span><br><span class="line"></span><br><span class="line"><span class="comment">// 初始化一个被监控文件夹的 Path 类:</span></span><br><span class="line"><span class="type">Path</span> <span class="variable">path</span> <span class="operator">=</span> Paths.get(<span class="string">&quot;workingDirectory&quot;</span>);</span><br><span class="line"><span class="comment">// 将这个 path 对象注册到 WatchService（监控服务） 中去</span></span><br><span class="line"><span class="type">WatchKey</span> <span class="variable">watchKey</span> <span class="operator">=</span> path.register(</span><br><span class="line">watchService, StandardWatchEventKinds...);</span><br></pre></td></tr></table></figure></li>
-<li><p>可以通过WatchKey对象获取事件具体信息</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">WatchKey key;</span><br><span class="line"><span class="keyword">while</span> ((key = watchService.take()) != <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="keyword">for</span> (WatchEvent&lt;?&gt; event : key.pollEvents()) &#123;</span><br><span class="line">      <span class="comment">// 可以调用 WatchEvent 对象的方法做一些事情比如输出事件的具体上下文信息</span></span><br><span class="line">    &#125;</span><br><span class="line">    key.reset();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>完整的代码应该是如下</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">myTest</span><span class="params">()</span> <span class="keyword">throws</span> IOException, InterruptedException &#123;</span><br><span class="line">        <span class="comment">// 创建 WatchService 对象</span></span><br><span class="line">        <span class="type">WatchService</span> <span class="variable">watchService</span> <span class="operator">=</span> FileSystems.getDefault().newWatchService();</span><br><span class="line"></span><br><span class="line"><span class="comment">// 初始化一个被监控文件夹的 Path 类:</span></span><br><span class="line">        <span class="type">Path</span> <span class="variable">path</span> <span class="operator">=</span> Paths.get(<span class="string">&quot;F:\\java_test\\git\\hexo\\review_demo\\src\\com\\hp&quot;</span>);</span><br><span class="line"><span class="comment">// 将这个 path 对象注册到 WatchService（监控服务） 中去</span></span><br><span class="line">        <span class="type">WatchKey</span> <span class="variable">key</span> <span class="operator">=</span> path.register(</span><br><span class="line">                watchService, StandardWatchEventKinds.ENTRY_CREATE,StandardWatchEventKinds.ENTRY_DELETE</span><br><span class="line">                ,StandardWatchEventKinds.ENTRY_MODIFY);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span> ((key = watchService.take()) != <span class="literal">null</span>) &#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;检测到了事件--start--&quot;</span>);</span><br><span class="line">            <span class="keyword">for</span> (WatchEvent&lt;?&gt; event : key.pollEvents()) &#123;</span><br><span class="line">                <span class="comment">// 可以调用 WatchEvent 对象的方法做一些事情比如输出事件的具体上下文信息</span></span><br><span class="line">                System.out.println(<span class="string">&quot;event.kind().name()&quot;</span>+event.kind().name());</span><br><span class="line">            &#125;</span><br><span class="line">            key.reset();</span><br><span class="line">            System.out.println(<span class="string">&quot;检测到了事件--end--&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></li>
-<li><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Path</span></span><br><span class="line">    <span class="keyword">extends</span> <span class="title class_">Comparable</span>&lt;Path&gt;, Iterable&lt;Path&gt;, Watchable&#123;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Watchable</span> &#123;</span><br><span class="line">    WatchKey <span class="title function_">register</span><span class="params">(WatchService watcher,</span></span><br><span class="line"><span class="params">                      WatchEvent.Kind&lt;?&gt;[] events,</span></span><br><span class="line"><span class="params">                      WatchEvent.Modifier... modifiers)</span></span><br><span class="line">        <span class="keyword">throws</span> IOException;</span><br><span class="line">    <span class="comment">//events，需要监听的事件，包括创建、删除、修改。</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    WatchKey <span class="title function_">register</span><span class="params">(WatchService watcher,</span></span><br><span class="line"><span class="params">                      WatchEvent.Kind&lt;?&gt;... events)</span></span><br><span class="line">        <span class="keyword">throws</span> IOException;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>其中events包括下面3种:</p>
-<ul>
-<li><code>StandardWatchEventKinds.ENTRY_CREATE</code> ：文件创建。</li>
-<li><code>StandardWatchEventKinds.ENTRY_DELETE</code> : 文件删除。</li>
-<li><code>StandardWatchEventKinds.ENTRY_MODIFY</code> : 文件修改。</li>
-</ul></li>
-<li><p>WatchService内部通过一个daemon thread
-（守护线程），采用定期轮询的方式检测文件变化</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">PollingWatchService</span></span><br><span class="line">    <span class="keyword">extends</span> <span class="title class_">AbstractWatchService</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 定义一个 daemon thread（守护线程）轮询检测文件变化</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ScheduledExecutorService scheduledExecutor;</span><br><span class="line"></span><br><span class="line">    PollingWatchService() &#123;</span><br><span class="line">        scheduledExecutor = Executors</span><br><span class="line">            .newSingleThreadScheduledExecutor(<span class="keyword">new</span> <span class="title class_">ThreadFactory</span>() &#123;</span><br><span class="line">                 <span class="meta">@Override</span></span><br><span class="line">                 <span class="keyword">public</span> Thread <span class="title function_">newThread</span><span class="params">(Runnable r)</span> &#123;</span><br><span class="line">                     <span class="type">Thread</span> <span class="variable">t</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Thread</span>(r);</span><br><span class="line">                     t.setDaemon(<span class="literal">true</span>);</span><br><span class="line">                     <span class="keyword">return</span> t;</span><br><span class="line">                 &#125;&#125;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">void</span> <span class="title function_">enable</span><span class="params">(Set&lt;? extends WatchEvent.Kind&lt;?&gt;&gt; events, <span class="type">long</span> period)</span> &#123;</span><br><span class="line">    <span class="keyword">synchronized</span> (<span class="built_in">this</span>) &#123;</span><br><span class="line">      <span class="comment">// 更新监听事件</span></span><br><span class="line">      <span class="built_in">this</span>.events = events;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 开启定期轮询</span></span><br><span class="line">      <span class="type">Runnable</span> <span class="variable">thunk</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Runnable</span>() &#123; <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123; poll(); &#125;&#125;;</span><br><span class="line">      <span class="built_in">this</span>.poller = scheduledExecutor</span><br><span class="line">        .scheduleAtFixedRate(thunk, period, period, TimeUnit.SECONDS);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-</ul>
-<blockquote>
-<p>大部分转自https://github.com/Snailclimb/JavaGuide</p>
-</blockquote>
-]]></content>
-      <categories>
-        <category>学习</category>
-      </categories>
-      <tags>
-        <tag>复习</tag>
-        <tag>复习-javaGuide</tag>
-        <tag>复习-javaGuide-io</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>io模型</title>
-    <url>/2022/10/26/review/java_guide/java/io/io-model/</url>
-    <content><![CDATA[<blockquote>
-<p>转载自https://github.com/Snailclimb/JavaGuide
-（添加小部分笔记）感谢作者!</p>
-</blockquote>
-<h2 id="io">I/O</h2>
-<h3 id="何为io">何为I/O</h3>
-<ul>
-<li>I/O(Input/Output)，即输入/输出
-从计算机结构的角度来解读一下I/O，根据冯诺依曼结构，计算机结构分为5大部分：运算器、控制器、存储器、输入设备、输出设备
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221026153939710.png"
-alt="image-20221026153939710" /> 其中，输入设备：键盘；输出设备：显示器
-网卡、硬盘既属于输入设备也属于输出设备</li>
-<li>输入设备<strong>向计算机输入（内存）</strong>数据，输出设备<strong>接收计算机（内存）</strong>输出的数据，即I/O描述了计算机系统与外部设备之间通信的过程</li>
-<li>从应用程序的角度解读I/O
-<ul>
-<li>为了保证系统稳定性和安全性，一个进程的地址空间划分为<strong>用户空间User
-space</strong>和<strong>内核空间Kernel space</strong></li>
-<li>平常运行的应用程序都运行在用户空间，只有内核空间才能进行系统态级别的资源有关操作---<strong>文件管理、进程通信、内存管理</strong></li>
-<li>如果要进行IO操作，就得依赖<strong>内核空间</strong>的能力，<strong>用户空间的程序</strong>不能直接访问<strong>内核空间</strong></li>
-<li>用户进程要想执行IO操作，必须通过<strong>系统调用</strong>来间接访问内核空间</li>
-</ul></li>
-<li>对于<strong>磁盘IO（读写文件）</strong>和<strong>网络IO（网络请求和响应）</strong>，从应用程序视角来看，<strong>应用程序</strong>对操作系统的<strong>内核</strong>发起<strong>IO调用（系统调用）</strong>，操作系统负责的<strong>内核</strong>执行具体<strong>IO</strong>操作
-<ul>
-<li>应用程序只是发起了IO操作调用，而具体的IO执行则由操作系统内核完成</li>
-</ul></li>
-<li>应用程序<strong>发起I/O后</strong>，经历两个步骤
-<ul>
-<li>内核<strong>等待I/O设备</strong>准备好数据</li>
-<li>内核将数据<strong>从内核空间</strong>拷贝<strong>到用户空间</strong></li>
-</ul></li>
-</ul>
-<h3 id="有哪些常见的io模型">有哪些常见的IO模型</h3>
-<p>UNIX系统下，包括5种：同步阻塞I/O，同步非阻塞I/O，I/O多路复用、信号驱动I/O和异步I/O</p>
-<h2 id="java中3中常见io模型">Java中3中常见I/O模型</h2>
-<h3 id="bio-blocking-io">BIO (Blocking I/O )</h3>
-<ul>
-<li>应用程序发起read调用后，会一直阻塞，<strong>直到内核把数据拷贝到用户空间</strong>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221026162316247.png"
-alt="image-20221026162316247" /></li>
-</ul>
-<h3 id="nio-non-blockingnew-io">NIO (Non-blocking/New I/O)</h3>
-<ul>
-<li>对于java.nio包，提供了Channel、Selector、Buffer等抽象概念，对于高负载高并发，应使用NIO</li>
-<li>NIO是I/O多路复用模型，属于同步非阻塞IO模型
-<ul>
-<li>普通的同步非阻塞：应用程序会一直发起read调用，等待数据从内核空间拷贝到用户空间的这段时间，线程依然是阻塞的，知道内核把数据拷贝到用户空间（这里是通过不断轮询操作去数据）</li>
-<li>I/O多路复用
-线程首先发起select调用，询问内核数据是否准备就绪，等准备好了，用户线程再发起read调用，read调用的过程（数据从内核空间--&gt;用户空间）还是阻塞的</li>
-<li>Selector，即多路复用器，一个线程管理多个客户端连接 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221026163835033.png"
-alt="image-20221026163835033" /></li>
-</ul></li>
-</ul>
-<h3 id="aioasynchronous-io">AIO(Asynchronous I/O )</h3>
-<ul>
-<li>异步 IO
-是基于<strong>事件和回调</strong>机制实现的，也就是<strong>应用操作之后会直接返回</strong>，不会堵塞在那里，当后台处理完成，操作系统会通知相应的线程进行后续的操作
-如图<br />
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221026164006797.png"
-alt="image-20221026164006797" /></li>
-</ul>
-<h2 id="三者区别">三者区别</h2>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221026164100906.png"
-alt="image-20221026164100906" />
-<figcaption aria-hidden="true">image-20221026164100906</figcaption>
-</figure>
-<blockquote>
-<p>大部分转自https://github.com/Snailclimb/JavaGuide</p>
-</blockquote>
-]]></content>
-      <categories>
-        <category>学习</category>
-      </categories>
-      <tags>
-        <tag>复习</tag>
-        <tag>复习-javaGuide</tag>
-        <tag>复习-javaGuide-io</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>io基础</title>
-    <url>/2022/10/23/review/java_guide/java/io/io/</url>
-    <content><![CDATA[<blockquote>
-<p>转载自https://github.com/Snailclimb/JavaGuide
-（添加小部分笔记）感谢作者!</p>
-</blockquote>
-<h2 id="简介">简介</h2>
-<ul>
-<li><p>IO，即Input/Output，输入和输出，输入就是数据输入到计算机内存；输出则是输出到外部存储（如数据库、文件、远程主机）</p></li>
-<li><p>根据数据处理方式，又分为字节流和字符流</p></li>
-<li><p>基类</p>
-<ul>
-<li>字节输入流 InputStream，字符输入流 Reader</li>
-<li>字节输出流 OutputStream, 字符输出流 Writer</li>
-</ul></li>
-</ul>
-<h2 id="字节流">字节流</h2>
-<ul>
-<li><p>字节输入流 InputStream
-InputStream用于从源头（通常是文件）读取数据（字节信息）到内存中，java.io.InputStream抽象类是<strong>所有字节输入流的父类</strong></p>
-<ul>
-<li><p>常用方法</p>
-<blockquote>
-<ul>
-<li><code>read()</code> ：返回输入流中下一个字节的数据。返回的值介于 0
-到 255 之间。如果未读取任何字节，则代码返回 <code>-1</code>
-，表示文件结束。</li>
-<li><code>read(byte b[ ])</code> : 从输入流中读取一些字节存储到数组
-<code>b</code> 中。如果数组 <code>b</code>
-的长度为零，则不读取。如果没有可用字节读取，返回
-<code>-1</code>。如果有可用字节读取，则最多读取的字节数最多等于
-<code>b.length</code> ， 返回读取的字节数。这个方法等价于
-<code>read(b, 0, b.length)</code>。</li>
-<li><code>read(byte b[], int off, int len)</code>
-：在<code>read(byte b[ ])</code> 方法的基础上增加了 <code>off</code>
-参数（偏移量）和 <code>len</code> 参数（要读取的最大字节数）。</li>
-<li><code>skip(long n)</code> ：忽略输入流中的 n 个字节
-,返回实际忽略的字节数。</li>
-<li><code>available()</code> ：返回输入流中可以读取的字节数。</li>
-<li><code>close()</code> ：关闭输入流释放相关的系统资源。</li>
-</ul>
-</blockquote></li>
-<li><p>Java9 新增了多个实用方法</p>
-<blockquote>
-<ul>
-<li><code>readAllBytes()</code>
-：读取输入流中的所有字节，返回字节数组。</li>
-<li><code>readNBytes(byte[] b, int off, int len)</code> ：阻塞直到读取
-<code>len</code> 个字节。</li>
-<li><code>transferTo(OutputStream out)</code> ：
-将所有字节从一个输入流传递到一个输出流。</li>
-</ul>
-</blockquote></li>
-<li><p>FileInputStream --&gt;
-字节输入流对象，可直接指定文件路径：用来读取单字节数据/或读取至字节数组中，示例如下：<br />
-input.txt中的字符为LLJavaGuide</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">try</span> (<span class="type">InputStream</span> <span class="variable">fis</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;input.txt&quot;</span>)) &#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;Number of remaining bytes:&quot;</span></span><br><span class="line">            + fis.available());</span><br><span class="line">    <span class="type">int</span> content;</span><br><span class="line">    <span class="type">long</span> <span class="variable">skip</span> <span class="operator">=</span> fis.skip(<span class="number">2</span>);</span><br><span class="line">    System.out.println(<span class="string">&quot;The actual number of bytes skipped:&quot;</span> + skip);</span><br><span class="line">    System.out.print(<span class="string">&quot;The content read from file:&quot;</span>);</span><br><span class="line">    <span class="keyword">while</span> ((content = fis.read()) != -<span class="number">1</span>) &#123;</span><br><span class="line">        System.out.print((<span class="type">char</span>) content);</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//输出</span></span><br><span class="line"><span class="comment">/**Number of remaining bytes:11</span></span><br><span class="line"><span class="comment">The actual number of bytes skipped:2</span></span><br><span class="line"><span class="comment">The content read from file:JavaGuide</span></span><br><span class="line"><span class="comment">**/</span></span><br></pre></td></tr></table></figure>
-<p>一般不会单独使用FileInputStream，而是配合BufferdInputStream(字节缓冲输入流)，下面代码转为String
-较为常见：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 新建一个 BufferedInputStream 对象</span></span><br><span class="line"><span class="type">BufferedInputStream</span> <span class="variable">bufferedInputStream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedInputStream</span>(<span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;input.txt&quot;</span>));</span><br><span class="line"><span class="comment">// 读取文件的内容并复制到 String 对象中</span></span><br><span class="line"><span class="type">String</span> <span class="variable">result</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">String</span>(bufferedInputStream.readAllBytes());</span><br><span class="line">System.out.println(result);</span><br></pre></td></tr></table></figure></li>
-<li><p>DataInputStream
-用于读取指定类型数据，不能单独使用，必须结合FileInputStream</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">FileInputStream</span> <span class="variable">fileInputStream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;input.txt&quot;</span>);</span><br><span class="line"><span class="comment">//必须将fileInputStream作为构造参数才能使用</span></span><br><span class="line"><span class="type">DataInputStream</span> <span class="variable">dataInputStream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">DataInputStream</span>(fileInputStream);</span><br><span class="line"><span class="comment">//可以读取任意具体的类型数据</span></span><br><span class="line">dataInputStream.readBoolean();</span><br><span class="line">dataInputStream.readInt();</span><br><span class="line">dataInputStream.readUTF();</span><br></pre></td></tr></table></figure></li>
-<li><p>ObjectInputStream
-用于从输入流读取Java对象（一般是被反序列化到文件中，或者其他介质的数据），ObjectOutputStream用于将对象写入到输出流（[将对象]序列化）</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">ObjectInputStream</span> <span class="variable">input</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectInputStream</span>(<span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;object.data&quot;</span>));</span><br><span class="line"><span class="type">MyClass</span> <span class="variable">object</span> <span class="operator">=</span> (MyClass) input.readObject();</span><br><span class="line">input.close();</span><br></pre></td></tr></table></figure>
-<p>用于序列化和反序列化的类必须实现Serializable接口，不想被序列化的属性用<code>transizent</code>修饰</p></li>
-</ul></li>
-<li><p>字节输出流 OutputStream</p>
-<ul>
-<li><p>OutputStream用于将字节数据（字节信息）写入到目的地（通常是文件），java.io.OutputStream抽象类是<strong>所有字节输出流的父类</strong></p>
-<blockquote>
-<p>//常用方法</p>
-<ul>
-<li><code>write(int b)</code> ：将特定字节写入输出流。</li>
-<li><code>write(byte b[ ])</code> : 将数组<code>b</code>
-写入到输出流，等价于 <code>write(b, 0, b.length)</code> 。</li>
-<li><code>write(byte[] b, int off, int len)</code> :
-在<code>write(byte b[ ])</code> 方法的基础上增加了 <code>off</code>
-参数（偏移量）和 <code>len</code> 参数（要读取的最大字节数）。</li>
-<li><code>flush()</code> ：刷新此输出流并强制写出所有缓冲的输出字节。
-//相比输入流多出的方法</li>
-<li><code>close()</code> ：关闭输出流释放相关的系统资源。</li>
-</ul>
-</blockquote></li>
-</ul></li>
-<li><p>示例代码：<br />
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">try</span> (<span class="type">FileOutputStream</span> <span class="variable">output</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(<span class="string">&quot;output.txt&quot;</span>)) &#123;</span><br><span class="line">    <span class="type">byte</span>[] array = <span class="string">&quot;JavaGuide&quot;</span>.getBytes();</span><br><span class="line">    output.write(array);</span><br><span class="line">&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//结果</span></span><br><span class="line"><span class="comment">/**output.txt文件中内容为:</span></span><br><span class="line"><span class="comment">JavaGuide</span></span><br><span class="line"><span class="comment">**/</span></span><br></pre></td></tr></table></figure> <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">FileOutputStream一般也是配合BufferedOutputStream （字节缓冲输出流）： </span><br><span class="line"></span><br><span class="line">```java</span><br><span class="line">FileOutputStream fileOutputStream = new FileOutputStream(&quot;output.txt&quot;);</span><br><span class="line">  BufferedOutputStream bos = new BufferedOutputStream(fileOutputStream)</span><br></pre></td></tr></table></figure></p></li>
-<li><p>DataOutputStream用于写入指定类型数据，不能单独使用，必须结合FileOutputStream</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 输出流</span></span><br><span class="line"><span class="type">FileOutputStream</span> <span class="variable">fileOutputStream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(<span class="string">&quot;out.txt&quot;</span>);</span><br><span class="line"><span class="type">DataOutputStream</span> <span class="variable">dataOutputStream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">DataOutputStream</span>(fileOutputStream);</span><br><span class="line"><span class="comment">// 输出任意数据类型</span></span><br><span class="line">dataOutputStream.writeBoolean(<span class="literal">true</span>);</span><br><span class="line">dataOutputStream.writeByte(<span class="number">1</span>);</span><br></pre></td></tr></table></figure>
-<ul>
-<li><p>ObjectInputStream用于从输入流中读取<strong>Java对象</strong>（ObjectInputStream，反序列化）；ObjectOutputStream用于将对象写入到输出流（ObjectOutputStream，序列化）</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">ObjectOutputStream</span> <span class="variable">output</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectOutputStream</span>(<span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(<span class="string">&quot;file.txt&quot;</span>)</span><br><span class="line"><span class="type">Person</span> <span class="variable">person</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Person</span>(<span class="string">&quot;Guide哥&quot;</span>, <span class="string">&quot;JavaGuide作者&quot;</span>);</span><br><span class="line">output.writeObject(person);</span><br></pre></td></tr></table></figure></li>
-</ul></li>
-</ul>
-<h2 id="字符流">字符流</h2>
-<ul>
-<li><p>简介
-文件读写或者网络发送接收，信息的最小存储单元都是字节，为什么I/O流操作要分为字节流操作和字符流操作呢</p>
-<ul>
-<li><p>字符流是由Java虚拟机将字节转换得到的，过程相对耗时</p></li>
-<li><p>如果不知道编码类型，容易出现乱码 如上面的代码，将文件内容改为 ：
-你好，我是Guide</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">try</span> (<span class="type">InputStream</span> <span class="variable">fis</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;input.txt&quot;</span>)) &#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;Number of remaining bytes:&quot;</span></span><br><span class="line">            + fis.available());</span><br><span class="line">    <span class="type">int</span> content;</span><br><span class="line">    <span class="type">long</span> <span class="variable">skip</span> <span class="operator">=</span> fis.skip(<span class="number">2</span>);</span><br><span class="line">    System.out.println(<span class="string">&quot;The actual number of bytes skipped:&quot;</span> + skip);</span><br><span class="line">    System.out.print(<span class="string">&quot;The content read from file:&quot;</span>);</span><br><span class="line">    <span class="keyword">while</span> ((content = fis.read()) != -<span class="number">1</span>) &#123;</span><br><span class="line">        System.out.print((<span class="type">char</span>) content);</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//输出</span></span><br><span class="line"><span class="comment">/**Number of remaining bytes:9</span></span><br><span class="line"><span class="comment">The actual number of bytes skipped:2</span></span><br><span class="line"><span class="comment">The content read from file:§å®¶å¥½</span></span><br><span class="line"><span class="comment">**/</span></span><br></pre></td></tr></table></figure>
-<p>为了解决乱码问题，I/O流提供了一个直接操作字符的接口，方便对字符进行流操作；但如果音频文件、图片等媒体文件用字节流比较好，涉及字符的话使用字符流</p>
-<blockquote>
-<p>★ 重要：</p>
-<p>字符流默认采用的是 <code>Unicode</code>
-编码，我们可以通过构造方法自定义编码。顺便分享一下之前遇到的笔试题：常用字符编码所占字节数？<code>utf8</code>
-:英文占 1 字节，中文占 3 字节，<code>unicode</code>：任何字符都占 2
-个字节，<code>gbk</code>：英文占 1 字节，中文占 2 字节。</p>
-</blockquote></li>
-</ul></li>
-<li><p>Reader（字符输入流）</p>
-<ul>
-<li><p>用于从源头（通常是文件）读取数据（字符信息）到内存中，java.io.Reader抽象类是<strong>所有字符输入流的父类</strong></p>
-<p>注意：InputStream和Reader都是类，再往上就是接口了；Reader用于读取文本，InputStream用于读取原始字节
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221024095605757.png"
-alt="image-20221024095605757" /></p>
-<blockquote>
-<p>常用方法：</p>
-<ul>
-<li><code>read()</code> : 从输入流读取一个字符。</li>
-<li><code>read(char[] cbuf)</code> :
-从输入流中读取一些字符，并将它们存储到字符数组
-<code>cbuf</code>中，等价于 <code>read(cbuf, 0, cbuf.length)</code>
-。</li>
-<li><code>read(char[] cbuf, int off, int len)</code>
-：在<code>read(char[] cbuf)</code> 方法的基础上增加了 <code>off</code>
-参数（偏移量）和 <code>len</code> 参数（要读取的最大字节数）。</li>
-<li><code>skip(long n)</code> ：忽略输入流中的 n 个字符
-,返回实际忽略的字符数。</li>
-<li><code>close()</code> : 关闭输入流并释放相关的系统资源。</li>
-</ul>
-</blockquote></li>
-<li><p>InputStreamReader是<strong>字节流转换为字符流</strong>的桥梁，子类FileReader基于该基础上的封装，可以<strong>直接操作</strong>字符文件</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 字节流转换为字符流的桥梁</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">InputStreamReader</span> <span class="keyword">extends</span> <span class="title class_">Reader</span> &#123;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 用于读取字符文件</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">FileReader</span> <span class="keyword">extends</span> <span class="title class_">InputStreamReader</span> &#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>示例：input.txt中内容为"你好，我是Guide"</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">try</span> (<span class="type">FileReader</span> <span class="variable">fileReader</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileReader</span>(<span class="string">&quot;input.txt&quot;</span>);) &#123;</span><br><span class="line">    <span class="type">int</span> content;</span><br><span class="line">    <span class="type">long</span> <span class="variable">skip</span> <span class="operator">=</span> fileReader.skip(<span class="number">3</span>);</span><br><span class="line">    System.out.println(<span class="string">&quot;The actual number of bytes skipped:&quot;</span> + skip);</span><br><span class="line">    System.out.print(<span class="string">&quot;The content read from file:&quot;</span>);</span><br><span class="line">    <span class="keyword">while</span> ((content = fileReader.read()) != -<span class="number">1</span>) &#123;</span><br><span class="line">        System.out.print((<span class="type">char</span>) content);</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*输出</span></span><br><span class="line"><span class="comment">The actual number of bytes skipped:3</span></span><br><span class="line"><span class="comment">The content read from file:我是Guide。</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure></li>
-</ul></li>
-<li><p>Write（字符输出流）
-用于将数据（字符信息）写到目的地（通常是文件），java.io.Writer抽象类是<strong>所有字节输出流</strong>的父类</p>
-<blockquote>
-<ul>
-<li><code>write(int c)</code> : 写入单个字符。</li>
-<li><code>write(char[] cbuf)</code> ：写入字符数组
-<code>cbuf</code>，等价于<code>write(cbuf, 0, cbuf.length)</code>。</li>
-<li><code>write(char[] cbuf, int off, int len)</code>
-：在<code>write(char[] cbuf)</code> 方法的基础上增加了 <code>off</code>
-参数（偏移量）和 <code>len</code> 参数（要读取的最大字节数）。</li>
-<li><code>write(String str)</code> ：写入字符串，等价于
-<code>write(str, 0, str.length())</code> 。</li>
-<li><code>write(String str, int off, int len)</code>
-：在<code>write(String str)</code> 方法的基础上增加了 <code>off</code>
-参数（偏移量）和 <code>len</code> 参数（要读取的最大字节数）。</li>
-<li><code>append(CharSequence csq)</code> ：将指定的字符序列附加到指定的
-<code>Writer</code> 对象并返回该 <code>Writer</code> 对象。</li>
-<li><code>append(char c)</code> ：将指定的字符附加到指定的
-<code>Writer</code> 对象并返回该 <code>Writer</code> 对象。</li>
-<li><code>flush()</code>
-：刷新此输出流并强制写出所有缓冲的输出字符。//相对于Reader增加的</li>
-<li><code>close()</code>:关闭输出流释放相关的系统资源。</li>
-</ul>
-</blockquote>
-<ul>
-<li><p>OutputStreamWriter是<strong>字符流转换为字节流</strong>的桥梁（注意，这里没有错），其子类FileWriter是基于该基础上的封装，可以直接将字符写入到文件</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 字符流转换为字节流的桥梁</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">OutputStreamWriter</span> <span class="keyword">extends</span> <span class="title class_">Writer</span> &#123;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 用于写入字符到文件</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">FileWriter</span> <span class="keyword">extends</span> <span class="title class_">OutputStreamWriter</span> &#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>FileWriter代码示例：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">try</span> (<span class="type">Writer</span> <span class="variable">output</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileWriter</span>(<span class="string">&quot;output.txt&quot;</span>)) &#123;</span><br><span class="line">    output.write(<span class="string">&quot;你好，我是Guide。&quot;</span>); <span class="comment">//字符流，转为字节流</span></span><br><span class="line">&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*结果：output.txt中</span></span><br><span class="line"><span class="comment">你好，我是Guide</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure></li>
-</ul></li>
-<li><p>InputStreamWriter和OutputStreamWriter 比较</p>
-<ul>
-<li>前者InputStreamWriter，是需要从文件中读数据出来，而文件是通过二进制（字节）保存的，所以InputStreamWriter是将（看不懂的）字节流转换为（看得懂的）字符流</li>
-<li>后者OutputStreamWriter，是需要将（看得懂的）字符流转换为（看不懂的）字节流并保存到介质中</li>
-</ul></li>
-</ul>
-<h2 id="字节缓冲流">字节缓冲流</h2>
-<ul>
-<li><p>简介</p>
-<ul>
-<li><p>IO操作是很消耗性能的，缓冲流<strong>将数据加载至缓冲区</strong>，一次性读取/写入多个字节，从而避免频繁的IO操作，提高流的效率</p></li>
-<li><p>采用装饰器模式来增强InputStream和OutputStream子类对象的功能</p></li>
-<li><p>例子：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 新建一个 BufferedInputStream 对象</span></span><br><span class="line"><span class="type">BufferedInputStream</span> <span class="variable">bufferedInputStream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedInputStream</span>(<span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;input.txt&quot;</span>));</span><br></pre></td></tr></table></figure></li>
-<li><p>字节流和字节缓冲流的性能差别主要体现在：当使用两者时都调用的是write(int
-b)和read()
-这两个一次只读取一个字节的方法的时候，由于字节缓冲流内部有缓冲区（字节数组），因此字节缓冲流会将读取到的字节存放在缓存区，大幅减少IO次数，提高读取效率</p>
-<blockquote>
-<p>对比：复制524.9mb文件，缓冲流15s，普通字节流2555s(30min)</p>
-<p>测试代码</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">void</span> <span class="title function_">copy_pdf_to_another_pdf_buffer_stream</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">// 记录开始时间</span></span><br><span class="line">    <span class="type">long</span> <span class="variable">start</span> <span class="operator">=</span> System.currentTimeMillis();</span><br><span class="line">    <span class="keyword">try</span> (<span class="type">BufferedInputStream</span> <span class="variable">bis</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedInputStream</span>(<span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;深入理解计算机操作系统.pdf&quot;</span>));</span><br><span class="line">         <span class="type">BufferedOutputStream</span> <span class="variable">bos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedOutputStream</span>(<span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(<span class="string">&quot;深入理解计算机操作系统-副本.pdf&quot;</span>))) &#123;</span><br><span class="line">        <span class="type">int</span> content;</span><br><span class="line">        <span class="keyword">while</span> ((content = bis.read()) != -<span class="number">1</span>) &#123;</span><br><span class="line">            bos.write(content);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 记录结束时间</span></span><br><span class="line">    <span class="type">long</span> <span class="variable">end</span> <span class="operator">=</span> System.currentTimeMillis();</span><br><span class="line">    System.out.println(<span class="string">&quot;使用缓冲流复制PDF文件总耗时:&quot;</span> + (end - start) + <span class="string">&quot; 毫秒&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">void</span> <span class="title function_">copy_pdf_to_another_pdf_stream</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">// 记录开始时间</span></span><br><span class="line">    <span class="type">long</span> <span class="variable">start</span> <span class="operator">=</span> System.currentTimeMillis();</span><br><span class="line">    <span class="keyword">try</span> (<span class="type">FileInputStream</span> <span class="variable">fis</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;深入理解计算机操作系统.pdf&quot;</span>);</span><br><span class="line">         <span class="type">FileOutputStream</span> <span class="variable">fos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(<span class="string">&quot;深入理解计算机操作系统-副本.pdf&quot;</span>)) &#123;</span><br><span class="line">        <span class="type">int</span> content;</span><br><span class="line">        <span class="keyword">while</span> ((content = fis.read()) != -<span class="number">1</span>) &#123;</span><br><span class="line">            fos.write(content);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 记录结束时间</span></span><br><span class="line">    <span class="type">long</span> <span class="variable">end</span> <span class="operator">=</span> System.currentTimeMillis();</span><br><span class="line">    System.out.println(<span class="string">&quot;使用普通流复制PDF文件总耗时:&quot;</span> + (end - start) + <span class="string">&quot; 毫秒&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</blockquote>
-<ul>
-<li><p>但是如果是使用普通字节流的 read(byte b[] )和write(byte b[] , int
-off, int len)
-这两个写入一个字节数组的方法的话，只要字节数组大小合适，差距性能不大
-同理，使用read(byte b[]) 和write(byte b[] ,int off, int
-len)方法(字节流及缓冲字节流)，分别复制524mb文件，缓冲流需要0.7s ,
-普通字节流需要1s 代码如下：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">void</span> <span class="title function_">copy_pdf_to_another_pdf_with_byte_array_buffer_stream</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">// 记录开始时间</span></span><br><span class="line">    <span class="type">long</span> <span class="variable">start</span> <span class="operator">=</span> System.currentTimeMillis();</span><br><span class="line">    <span class="keyword">try</span> (<span class="type">BufferedInputStream</span> <span class="variable">bis</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedInputStream</span>(<span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;深入理解计算机操作系统.pdf&quot;</span>));</span><br><span class="line">         <span class="type">BufferedOutputStream</span> <span class="variable">bos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedOutputStream</span>(<span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(<span class="string">&quot;深入理解计算机操作系统-副本.pdf&quot;</span>))) &#123;</span><br><span class="line">        <span class="type">int</span> len;</span><br><span class="line">        <span class="type">byte</span>[] bytes = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">4</span> * <span class="number">1024</span>];</span><br><span class="line">        <span class="keyword">while</span> ((len = bis.read(bytes)) != -<span class="number">1</span>) &#123;</span><br><span class="line">            bos.write(bytes, <span class="number">0</span>, len);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 记录结束时间</span></span><br><span class="line">    <span class="type">long</span> <span class="variable">end</span> <span class="operator">=</span> System.currentTimeMillis();</span><br><span class="line">    System.out.println(<span class="string">&quot;使用缓冲流复制PDF文件总耗时:&quot;</span> + (end - start) + <span class="string">&quot; 毫秒&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">void</span> <span class="title function_">copy_pdf_to_another_pdf_with_byte_array_stream</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">// 记录开始时间</span></span><br><span class="line">    <span class="type">long</span> <span class="variable">start</span> <span class="operator">=</span> System.currentTimeMillis();</span><br><span class="line">    <span class="keyword">try</span> (<span class="type">FileInputStream</span> <span class="variable">fis</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;深入理解计算机操作系统.pdf&quot;</span>);</span><br><span class="line">         <span class="type">FileOutputStream</span> <span class="variable">fos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(<span class="string">&quot;深入理解计算机操作系统-副本.pdf&quot;</span>)) &#123;</span><br><span class="line">        <span class="type">int</span> len;</span><br><span class="line">        <span class="type">byte</span>[] bytes = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">4</span> * <span class="number">1024</span>];</span><br><span class="line">        <span class="keyword">while</span> ((len = fis.read(bytes)) != -<span class="number">1</span>) &#123;</span><br><span class="line">            fos.write(bytes, <span class="number">0</span>, len);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 记录结束时间</span></span><br><span class="line">    <span class="type">long</span> <span class="variable">end</span> <span class="operator">=</span> System.currentTimeMillis();</span><br><span class="line">    System.out.println(<span class="string">&quot;使用普通流复制PDF文件总耗时:&quot;</span> + (end - start) + <span class="string">&quot; 毫秒&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-</ul></li>
-</ul></li>
-<li><p>字节缓冲输入流 BufferedInputStream</p>
-<ul>
-<li><p><code>BufferedInputStream</code>
-从源头（通常是文件）读取数据（字节信息）到内存的过程中<strong>不会一个字节一个字节的读取</strong>，而是会先<strong>将读取到的字节存放在缓存区</strong>，并从内部缓冲区中单独读取字节。这样大幅减少了
-IO 次数，提高了读取效率。</p>
-<p><code>BufferedInputStream</code>
-<strong>内部维护了一个缓冲区</strong>，这个<strong>缓冲区实际就是一个字节数组</strong>，通过阅读
-<code>BufferedInputStream</code> 源码即可得到这个结论。</p></li>
-<li><p>源码</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">BufferedInputStream</span> <span class="keyword">extends</span> <span class="title class_">FilterInputStream</span> &#123;</span><br><span class="line">    <span class="comment">// 内部缓冲区数组</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">volatile</span> <span class="type">byte</span> buf[];</span><br><span class="line">    <span class="comment">// 缓冲区的默认大小</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="type">int</span> <span class="variable">DEFAULT_BUFFER_SIZE</span> <span class="operator">=</span> <span class="number">8192</span>;</span><br><span class="line">    <span class="comment">// 使用默认的缓冲区大小</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">BufferedInputStream</span><span class="params">(InputStream in)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>(in, DEFAULT_BUFFER_SIZE);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 自定义缓冲区大小</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">BufferedInputStream</span><span class="params">(InputStream in, <span class="type">int</span> size)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>(in);</span><br><span class="line">        <span class="keyword">if</span> (size &lt;= <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>(<span class="string">&quot;Buffer size &lt;= 0&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        buf = <span class="keyword">new</span> <span class="title class_">byte</span>[size];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-</ul></li>
-<li><p>字节缓冲输出流 BufferedOutputStream
-<code>BufferedOutputStream</code>
-将数据（字节信息）写入到目的地（通常是文件）的过程中不会一个字节一个字节的写入，而是会先将要写入的字节存放在缓存区，并从内部缓冲区中单独写入字节。这样大幅减少了
-IO 次数，提高了读取效率 使用</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">try</span> (<span class="type">BufferedOutputStream</span> <span class="variable">bos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedOutputStream</span>(<span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(<span class="string">&quot;output.txt&quot;</span>))) &#123;</span><br><span class="line">    <span class="type">byte</span>[] array = <span class="string">&quot;JavaGuide&quot;</span>.getBytes();</span><br><span class="line">    bos.write(array);</span><br><span class="line">&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-</ul>
-<h2 id="字符缓冲流">字符缓冲流</h2>
-<p><strong><code>BufferedReader</code> （字符缓冲输入流）和
-<code>BufferedWriter</code>（字符缓冲输出流）</strong>类似于
-<code>BufferedInputStream</code>（字节缓冲输入流）和<code>BufferedOutputStream</code>（字节缓冲输入流），内部都维护了一个字节数组作为缓冲区。不过，前者主要是用来操作字符信息。</p>
-<blockquote>
-<p>这里表述好像不太对，应该是维护了字符数组：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">BufferedReader</span> <span class="keyword">extends</span> <span class="title class_">Reader</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Reader in;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">char</span> cb[];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</blockquote>
-<h2 id="打印流">打印流</h2>
-<ul>
-<li><p>PrintStream属于字节打印流，对应的是PrintWriter（字符打印流）</p></li>
-<li><p>System.out
-实际上获取了一个PrintStream，print方法调用的是PrintStream的write方法</p></li>
-<li><p><code>PrintStream</code> 是 <code>OutputStream</code>
-的子类，<code>PrintWriter</code> 是 <code>Writer</code>
-的子类。</p></li>
-<li><p>```java public class PrintStream extends FilterOutputStream
-implements Appendable, Closeable { } public class PrintWriter extends
-Writer { } <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">## 随机访问流 RandomAccessFile</span><br><span class="line"></span><br><span class="line">- 指的是支持随意跳转到文件的任意位置进行读写的RandomAccessFile</span><br><span class="line">  构造方法如下，可以指定mode (读写模式)</span><br><span class="line"></span><br><span class="line">  ```java</span><br><span class="line">  // openAndDelete 参数默认为 false 表示打开文件并且这个文件不会被删除</span><br><span class="line">  public RandomAccessFile(File file, String mode)</span><br><span class="line">      throws FileNotFoundException &#123;</span><br><span class="line">      this(file, mode, false);</span><br><span class="line">  &#125;</span><br><span class="line">  // 私有方法</span><br><span class="line">  private RandomAccessFile(File file, String mode, boolean openAndDelete)  throws FileNotFoundException&#123;</span><br><span class="line">    // 省略大部分代码</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure></p>
-<p>读写模式主要有以下四种：</p>
-<ul>
-<li><p>r : 只读；rw：读写</p></li>
-<li><p>rws
-:相对于rw，rws同步更新对"文件内容"或元数据的修改到外部存储设备</p></li>
-<li><p>rwd:相对于rw,rwd同步更新对"文件内容"的修改到外部存储设备</p></li>
-<li><p>解释：</p>
-<blockquote>
-<ul>
-<li>文件内容指实际保存的数据，元数据则描述属性例如文件大小信息、创建和修改时间</li>
-<li>默认情形下(rw模式下),是使用buffer的,只有cache满的或者使用RandomAccessFile.close()关闭流的时候儿才真正的写到文件。
-<ol type="1">
-<li>调试麻烦的...------------------使用write方法修改byte的时候儿,只修改到个内存兰,还没到个文件,闪的调试麻烦的,不能使用notepad++工具立即看见修改效果..</li>
-<li>当系统halt的时候儿,不能写到文件...安全性稍微差点儿...</li>
-</ol></li>
-<li>rws：就是同步（synchronized）模式,每write修改一个byte,立马写到磁盘..当然中间性能走差点儿,适合小的文件...and
-debug模式...或者安全性高的需要的时候儿</li>
-<li>rwd： 只对“文件的内容”同步更新到磁盘...不对metadata同步更新</li>
-<li>rwd介于rw和rws之间</li>
-</ul>
-</blockquote></li>
-</ul></li>
-<li><p>RandomAccessFile：文件指针表示下一个将要被写入或读取的字节所处位置</p>
-<ul>
-<li><p>通过seek(long
-pos)方法设置文件指针偏移量（距离开头pos个字节处，从0开始）</p></li>
-<li><p>使用getFilePointer()方法获取文件指针当前位置</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">RandomAccessFile</span> <span class="variable">randomAccessFile</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">RandomAccessFile</span>(<span class="keyword">new</span> <span class="title class_">File</span>(<span class="string">&quot;input.txt&quot;</span>), <span class="string">&quot;rw&quot;</span>);</span><br><span class="line">System.out.println(<span class="string">&quot;读取之前的偏移量：&quot;</span> + randomAccessFile.getFilePointer() + <span class="string">&quot;,当前读取到的字符&quot;</span> + (<span class="type">char</span>) randomAccessFile.read() + <span class="string">&quot;，读取之后的偏移量：&quot;</span> + randomAccessFile.getFilePointer());</span><br><span class="line"><span class="comment">// 指针当前偏移量为 6</span></span><br><span class="line">randomAccessFile.seek(<span class="number">6</span>);</span><br><span class="line">System.out.println(<span class="string">&quot;读取之前的偏移量：&quot;</span> + randomAccessFile.getFilePointer() + <span class="string">&quot;,当前读取到的字符&quot;</span> + (<span class="type">char</span>) randomAccessFile.read() + <span class="string">&quot;，读取之后的偏移量：&quot;</span> + randomAccessFile.getFilePointer());</span><br><span class="line"><span class="comment">// 从偏移量 7 的位置开始往后写入字节数据</span></span><br><span class="line">randomAccessFile.write(<span class="keyword">new</span> <span class="title class_">byte</span>[]&#123;<span class="string">&#x27;H&#x27;</span>, <span class="string">&#x27;I&#x27;</span>, <span class="string">&#x27;J&#x27;</span>, <span class="string">&#x27;K&#x27;</span>&#125;);</span><br><span class="line"><span class="comment">// 指针当前偏移量为 0，回到起始位置</span></span><br><span class="line">randomAccessFile.seek(<span class="number">0</span>);</span><br><span class="line">System.out.println(<span class="string">&quot;读取之前的偏移量：&quot;</span> + randomAccessFile.getFilePointer() + <span class="string">&quot;,当前读取到的字符&quot;</span> + (<span class="type">char</span>) randomAccessFile.read() + <span class="string">&quot;，读取之后的偏移量：&quot;</span> + randomAccessFile.getFilePointer());</span><br></pre></td></tr></table></figure>
-<ul>
-<li><p>input.txt文件内容： ABCDEFG</p></li>
-<li><p>输出</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">读取之前的偏移量：0,当前读取到的字符A，读取之后的偏移量：1</span><br><span class="line">读取之前的偏移量：6,当前读取到的字符G，读取之后的偏移量：7</span><br><span class="line">读取之前的偏移量：0,当前读取到的字符A，读取之后的偏移量：1</span><br></pre></td></tr></table></figure>
-<p>文件内容： ABCDEFGHIJK</p></li>
-</ul></li>
-<li><p>write方法在写入对象时如果对应位置已有数据，会将其覆盖</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">RandomAccessFile</span> <span class="variable">randomAccessFile</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">RandomAccessFile</span>(<span class="keyword">new</span> <span class="title class_">File</span>(<span class="string">&quot;input.txt&quot;</span>), <span class="string">&quot;rw&quot;</span>);</span><br><span class="line">randomAccessFile.write(<span class="keyword">new</span> <span class="title class_">byte</span>[]&#123;<span class="string">&#x27;H&#x27;</span>, <span class="string">&#x27;I&#x27;</span>, <span class="string">&#x27;J&#x27;</span>, <span class="string">&#x27;K&#x27;</span>&#125;);</span><br><span class="line"><span class="comment">//如果程序之前input.txt内容为ABCD，则运行后变为HIJK</span></span><br></pre></td></tr></table></figure></li>
-<li><p>常见应用：解决断点续传：上传文件中途暂停或失败（网络问题），之后不需要重新上传，只需上传未成功上传的文件分片即可
-分片（先将文件切分成多个文件分片）上传是断点续传的基础。
-使用RandomAccessFile帮助我们合并文件分片（但是下面代码好像不是必须的，因为他是单线程连续写入？？，这里附上另一篇文章的另一段话：）</p>
-<blockquote>
-<p>但是由于 RandomAccessFile
-可以自由访问文件的任意位置，<strong>所以如果需要访问文件的部分内容，而不是把文件从头读到尾，因此
-RandomAccessFile
-的一个重要使用场景就是网络请求中的多线程下载及断点续传。</strong>
-https://blog.csdn.net/li1669852599/article/details/122214104</p>
-</blockquote>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221024233326047.png"
-alt="image-20221024233326047" />
-<figcaption aria-hidden="true">image-20221024233326047</figcaption>
-</figure></li>
-</ul></li>
-</ul>
-<blockquote>
-<p>大部分转自https://github.com/Snailclimb/JavaGuide</p>
-</blockquote>
-]]></content>
-      <categories>
-        <category>学习</category>
-      </categories>
-      <tags>
-        <tag>复习</tag>
-        <tag>复习-javaGuide</tag>
-        <tag>复习-javaGuide-io</tag>
       </tags>
   </entry>
   <entry>
