@@ -239,14 +239,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>2.4k</span>
+              <span>4k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>4 分钟</span>
+              <span>7 分钟</span>
             </span>
             <div class="post-description">SQL语句在MySQL中的执行过程</div>
 
@@ -297,9 +297,9 @@ InnoDB，它从 MySQL 5.5 版本开始就被当做默认存储引擎了</strong>
 <h2 id="server层基本组件介绍">Server层基本组件介绍</h2>
 <figure>
 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230119113638560.png"
-alt="image-20230119113638560" />
-<figcaption aria-hidden="true">image-20230119113638560</figcaption>
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230119161526905.png"
+alt="image-20230119161526905" />
+<figcaption aria-hidden="true">image-20230119161526905</figcaption>
 </figure>
 <ol type="1">
 <li><p><strong>连接器</strong>
@@ -361,7 +361,82 @@ SQL
 <li><p>进行<strong>权限校验</strong>，如果没有权限就会返回错误信息，如果有权限就会调用<strong>数据库引擎接口</strong>，<strong>返回引擎的执行结果</strong></p></li>
 </ol>
 <h2 id="更新语句">更新语句</h2>
+<p>以上就是一条查询 SQL
+的执行流程，那么接下来我们看看一条更新语句如何执行的呢？SQL
+语句如下：<br />
+<code>update tb_student A set A.age='19' where A.name=' 张三 ';</code></p>
+<blockquote>
+<ul>
+<li>我们来给张三修改下年龄，在实际数据库肯定不会设置年龄这个字段的，不然要被技术负责人打的</li>
+<li>其实这条语句也基本上会沿着上一个查询的流程走，只不过执行更新的时候肯定要记录日志啦，这就会<strong>引入日志模块</strong>了，MySQL
+自带的日志模块是 <strong>binlog（归档日志）</strong>
+，所有的存储引擎都可以使用，我们常用的 InnoDB 引擎还自带了一个日志模块
+<strong>redo log（重做日志）</strong>，我们就以 InnoDB
+模式下来探讨这个语句的执行流程</li>
+</ul>
+</blockquote>
+<ol type="1">
+<li>先<strong>查询</strong>到张三这一条数据，如果有缓存，也是会用到缓存。</li>
+<li>然后拿到查询的语句，把 <strong>age 改为 19</strong>，然后调用引擎
+API 接口，写入这一行数据，<strong>InnoDB
+引擎把数据保存在内存</strong>中，同时<strong>记录 redo
+log</strong>，此时 redo log 进入 prepare
+状态，然后告诉执行器，执行完成了，随时可以提交。</li>
+<li>执行器收到通知后<strong>记录 binlog</strong>，然后调用引擎接口，提交
+redo log 为提交状态。</li>
+<li>更新完成</li>
+</ol>
+<p><strong>这里肯定有同学会问，为什么要用两个日志模块，用一个日志模块不行吗?</strong></p>
+<ul>
+<li><p>这是因为最开始 MySQL 并没有 InnoDB 引擎（InnoDB
+引擎是其他公司以插件形式插入 MySQL 的），MySQL 自带的引擎是
+MyISAM，但是我们知道 <strong>redo log 是 InnoDB
+引擎特有</strong>的，其他存储引擎都没有，这就导致会没有
+<strong>crash-safe</strong> 的能力(<strong>crash-safe
+的能力即使数据库发生异常重启，之前提交的记录都不会丢失</strong>)，binlog
+日志只能用来归档。</p></li>
+<li><p>并不是说只用一个日志模块不可以，只是 InnoDB 引擎就是通过 redo log
+来支持事务的。那么，又会有同学问，我用两个日志模块，但是不要这么复杂行不行，为什么
+redo log 要引入 prepare
+预提交状态？这里我们用反证法来说明下为什么要这么做？</p>
+<ul>
+<li><strong>先写 redo log 直接提交，然后写 binlog</strong>，假设写完
+redo log 后，机器挂了，binlog
+日志没有被写入，那么机器重启后，这台机器会通过 redo log
+恢复数据，但是这个时候 binlog
+并没有记录该数据，后续进行机器备份的时候，就会丢失这一条数据，同时主从同步也会丢失这一条数据。</li>
+<li><strong>先写 binlog，然后写 redo log</strong>，假设写完了
+binlog，机器异常重启了，由于没有 redo
+log，本机是无法恢复这一条记录的，但是 binlog
+又有记录，那么和上面同样的道理，就会产生数据不一致的情况。</li>
+</ul></li>
+<li><p>如果采用 redo log 两阶段提交的方式就不一样了，<strong>写完 binlog
+后，然后再提交 redo log</strong>
+就会防止出现上述的问题，从而保证了数据的一致性。那么问题来了，有没有一个极端的情况呢？假设
+<strong>redo log 处于预提交状态，binlog
+也已经写完</strong>了，这个时候发生了异常重启会怎么样呢？ 这个就要依赖于
+<strong>MySQL 的处理机制</strong>了，MySQL 的处理过程如下：</p>
+<ul>
+<li>判断 redo log 是否完整，如果判断是完整的，就立即提交。</li>
+<li>如果 <strong>redo log 只是预提交但不是 commit
+状态，这个时候就会去判断 binlog 是否完整，如果完整就提交 redo log,
+不完整就回滚事务</strong>。</li>
+</ul></li>
+</ul>
+<p>这样就解决了数据一致性的问题</p>
 <h1 id="总结">总结</h1>
+<ul>
+<li><p>MySQL 主要分为 <strong>Server
+层</strong>和<strong>引擎层</strong>，Server
+层主要包括<strong>连接器</strong>、<strong>查询缓存</strong>、分析器、<strong>优化器</strong>、<strong>执行器</strong>，同时还有一个<strong>日志模块（binlog）</strong>，这个日志模块所有执行引擎都可以共用，<strong>redolog
+只有 InnoDB 有</strong>。</p></li>
+<li><p>引擎层是插件式的，目前主要包括，<strong>MyISAM</strong>,<strong>InnoDB</strong>,<strong>Memory</strong>
+等。</p></li>
+<li><p><strong>查询</strong>语句的执行流程如下：<strong>权限校验（如果命中缓存）---&gt;查询缓存---&gt;分析器---&gt;优化器---&gt;权限校验---&gt;执行器---&gt;引擎</strong></p>
+<p><strong>更新</strong>语句执行流程如下：<strong>分析器----&gt;权限校验----&gt;执行器---&gt;引擎---redo
+log(prepare 状态)---&gt;binlog---&gt;redo
+log(commit状态</strong></p></li>
+</ul>
 
     </div>
 
@@ -521,12 +596,12 @@ SQL
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">822k</span>
+    <span title="站点总字数">824k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">24:55</span>
+    <span title="站点阅读时长">24:58</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
