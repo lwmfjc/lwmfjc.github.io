@@ -9898,11 +9898,18 @@ Type Conversion in Expression Evaluationopen in new window</a></p>
 <li><p>先看第 2 条
 SQL：<code>SELECT * FROM</code>test1<code>WHERE num1 = '10000';</code><strong>左边为
 int
-类型</strong><code>10000</code>，转换为浮点数还是<code>10000</code>，右边字符串类型<code>'10000'</code>，转换为浮点数也是<code>10000</code>。两边的转换结果都是唯一确定的，所以不影响使用索引</p></li>
+类型</strong><code>10000</code>，转换为浮点数还是<code>10000</code>，右边字符串类型<code>'10000'</code>，转换为浮点数也是<code>10000</code>。两边的转换结果都是唯一确定的，所以不影响使用索引</p>
+<blockquote>
+<p>也就是说，只要我能用10000去查索引，查到了就一定是结果</p>
+</blockquote></li>
 <li><p>第 3 条
 SQL：<code>SELECT * FROM</code>test1<code>WHERE num2 = 10000;</code><strong>左边是字符串类型</strong><code>'10000'</code>，转浮点数为
 10000
-是唯一的，右边<code>int</code>类型<code>10000</code>转换结果也是唯一的。但是，<strong>因为左边是检索条件，<code>'10000'</code>转到<code>10000</code>虽然是唯一，但是其他字符串也可以转换为<code>10000</code></strong>，比如<code>'10000a'</code>，<code>'010000'</code>，<code>'10000'</code>等等都能转为浮点数<code>10000</code>，这样的情况下，是不能用到索引的。</p></li>
+是唯一的，右边<code>int</code>类型<code>10000</code>转换结果也是唯一的。但是，<strong>因为左边是检索条件，<code>'10000'</code>转到<code>10000</code>虽然是唯一，但是其他字符串也可以转换为<code>10000</code></strong>，比如<code>'10000a'</code>，<code>'010000'</code>，<code>'10000'</code>等等都能转为浮点数<code>10000</code>，这样的情况下，是不能用到索引的。</p>
+<blockquote>
+<p>也就是说，如果我把10000当作索引去查，是不行的。因为正确结果应该是把
+'10000a'，'10000-'这种都查出来。而如果使用索引，也只能查出'10000'，结果不对。所以肯定会用上全表扫描</p>
+</blockquote></li>
 <li><p>对第二点的后半部分再做解释</p>
 <blockquote>
 <p>关于这个<strong>隐式转换</strong>我们可以通过查询测试验证一下，先插入几条数据，其中<code>num2='10000a'</code>、<code>'010000'</code>和<code>'10000'</code>：</p>
