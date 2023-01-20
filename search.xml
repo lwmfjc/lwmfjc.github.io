@@ -9815,7 +9815,142 @@ log(commit状态</strong></p></li>
     <url>/2023/01/19/review/java_guide/database/mysql/index-invalidation-caused-by-implicit-conversion/</url>
     <content><![CDATA[<blockquote>
 <p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!</p>
+<p>本篇文章基于MySQL
+5.7.26，原文：https://www.guitu18.com/post/2019/11/24/61.html</p>
 </blockquote>
+<h1 id="前言">前言</h1>
+<ul>
+<li>关于<strong>数据库优化</strong>，最常见的莫过于<strong>索引失效</strong>，数据量多的时候比较明显，处理不及时会造成<strong>雪球效应</strong>，最终导致<strong>数据库卡死甚至瘫痪</strong>。</li>
+<li>这里说的是<strong>隐式转换造成的索引失效</strong></li>
+</ul>
+<h1 id="数据准备">数据准备</h1>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">-- 创建测试数据表</span><br><span class="line">DROP TABLE IF EXISTS test1;</span><br><span class="line">CREATE TABLE `test1` (</span><br><span class="line">    `id` int(11) NOT NULL,</span><br><span class="line">    `num1` int(11) NOT NULL DEFAULT &#x27;0&#x27;,</span><br><span class="line">    `num2` varchar(11) NOT NULL DEFAULT &#x27;&#x27;,</span><br><span class="line">    `type1` int(4) NOT NULL DEFAULT &#x27;0&#x27;,</span><br><span class="line">    `type2` int(4) NOT NULL DEFAULT &#x27;0&#x27;,</span><br><span class="line">    `str1` varchar(100) NOT NULL DEFAULT &#x27;&#x27;,</span><br><span class="line">    `str2` varchar(100) DEFAULT NULL,</span><br><span class="line">    PRIMARY KEY (`id`),</span><br><span class="line">    KEY `num1` (`num1`),</span><br><span class="line">    KEY `num2` (`num2`),</span><br><span class="line">    KEY `type1` (`type1`),</span><br><span class="line">    KEY `str1` (`str1`),</span><br><span class="line">    KEY `str2` (`str2`)</span><br><span class="line">) ENGINE=InnoDB DEFAULT CHARSET=utf8;</span><br><span class="line">-- 创建存储过程</span><br><span class="line">DROP PROCEDURE IF EXISTS pre_test1;</span><br><span class="line">DELIMITER //</span><br><span class="line">CREATE PROCEDURE `pre_test1`()</span><br><span class="line">BEGIN</span><br><span class="line">    DECLARE i INT DEFAULT 0;</span><br><span class="line">    SET autocommit = 0;</span><br><span class="line">    WHILE i &lt; 10000000 DO</span><br><span class="line">        SET i = i + 1;</span><br><span class="line">        SET @str1 = SUBSTRING(MD5(RAND()),1,20);</span><br><span class="line">        -- 每100条数据str2产生一个null值</span><br><span class="line">        IF i % 100 = 0 THEN</span><br><span class="line">            SET @str2 = NULL;</span><br><span class="line">        ELSE</span><br><span class="line">            SET @str2 = @str1;</span><br><span class="line">        END IF;</span><br><span class="line">        INSERT INTO test1 (`id`, `num1`, `num2`,</span><br><span class="line">        `type1`, `type2`, `str1`, `str2`)</span><br><span class="line">        VALUES (CONCAT(&#x27;&#x27;, i), CONCAT(&#x27;&#x27;, i),</span><br><span class="line">        CONCAT(&#x27;&#x27;, i), i%5, i%5, @str1, @str2);</span><br><span class="line">        -- 事务优化，每一万条数据提交一次事务</span><br><span class="line">        IF i % 10000 = 0 THEN</span><br><span class="line">            COMMIT;</span><br><span class="line">        END IF;</span><br><span class="line">    END WHILE;</span><br><span class="line">END;</span><br><span class="line">// DELIMITER ;</span><br><span class="line">-- 执行存储过程</span><br><span class="line">CALL pre_test1(); </span><br></pre></td></tr></table></figure>
+<p>其中，七个字段，首先使用存储过程生成 1000 万条测试数据，
+测试表一共建立了 7
+个字段（包括主键），<strong><code>num1</code></strong>和<strong><code>num2</code></strong>保存的是和<code>ID</code>一样的顺序数字，其中<strong><code>num2</code>是字符串类型</strong>。
+<strong><code>type1</code></strong>和<strong><code>type2</code></strong>保存的都是主键对
+5 的取模，目的是模拟实际应用中常用<strong>类似 type
+类型</strong>的数据，但是<strong><code>type2</code>是没有建立索引</strong>的。
+<code>str1</code>和<code>str2</code>都是保存了一个 <strong>20
+位长度的随机字符串</strong>，<strong><code>str1</code>不能为<code>NULL</code>，<code>str2</code>允许为<code>NULL</code></strong>，相应的生成测试数据的时候我也会<strong>在<code>str2</code>字段生产少量<code>NULL</code>值</strong>（每
+100 条数据产生一个<code>NULL</code>值）。</p>
+<p>数据量比较大，还涉及使用<code>MD5</code>生成随机字符串，所以速度有点慢，稍安勿躁，耐心等待即可。</p>
+<p>1000 万条数据，我用了 33
+分钟才跑完（实际时间跟你电脑硬件配置有关）。这里贴几条生成的数据，大致长这样。
+数据如下所示：<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/mysqlindex-invalidation-caused-by-implicit-conversion-01.png"
+alt="img" /></p>
+<h1 id="sql测试">SQL测试</h1>
+<p>注：num1是int类型，num2是varchar类型。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1: SELECT * FROM `test1` WHERE num1 = 10000;</span><br><span class="line">2: SELECT * FROM `test1` WHERE num1 = &#x27;10000&#x27;;</span><br><span class="line">3: SELECT * FROM `test1` WHERE num2 = 10000;</span><br><span class="line">4: SELECT * FROM `test1` WHERE num2 = &#x27;10000&#x27;; </span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>这四条 SQL 都是有针对性写的，12 查询的字段是 int 类型，34
+查询的字段是<code>varchar</code>类型。12 或 34
+查询的字段虽然都相同，但是一个条件是数字，一个条件是用引号引起来的字符串。这样做有什么区别呢？先不看下边的测试结果你能猜出这四条
+SQL 的效率顺序吗？</p>
+<p>经测试这四条 SQL 最后的执行结果却相差很大，其中 <strong>124 三条 SQL
+基本都是瞬间出结果</strong>，大概在 0.001~0.005
+秒，在千万级的数据量下这样的结果可以判定这三条 SQL
+性能基本没差别了。但是<strong>第三条 SQL</strong>，多次测试耗时基本在
+4.5~4.8 秒之间</p>
+<p><strong>也就是说 左int
+右字符不影响效率；而左字符右int则影响效率，后面会解释</strong></p>
+</blockquote>
+<p>下面看1234的执行计划<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/mysqlindex-invalidation-caused-by-implicit-conversion-02.png"
+alt="img" /></p>
+<ol type="1">
+<li><p>可以看到，<strong>124 三条 SQL
+都能使用到索引</strong>，连接<strong>类型都为<code>ref</code></strong>，扫描行数都为
+1，所以效率非常高。再看看<strong>第三条
+SQL，没有用上索引</strong>，所以为<strong>全表扫描</strong>，<code>rows</code>直接到达
+1000 万了，所以性能差别才那么大</p>
+<blockquote>
+<p>34 两条 SQL
+查询的字段<code>num2</code>是<code>varchar</code>类型的，查询条件等号右边加引号的第
+4 条 SQL
+是用到索引的，那么是查询的数据类型和字段数据类型不一致造成的吗？如果是这样那
+12 两条 SQL 查询的字段<code>num1</code>是<code>int</code>类型，但是第 2
+条 SQL 查询条件右边加了引号为什么还能用上索引呢。 官方文档： <a
+href="https://dev.mysql.com/doc/refman/5.7/en/type-conversion.html?spm=5176.100239.blogcont47339.5.1FTben">12.2
+Type Conversion in Expression Evaluationopen in new window</a></p>
+<p>当操作符与不同类型的操作数一起使用时，会发生类型转换以使操作数兼容。某些转换是隐式发生的。例如，MySQL
+会<strong>根据需要自动将字符串转换为数字，反之亦然</strong>。以下规则描述了比较操作的转换方式：</p>
+<ol type="1">
+<li>两个参数至少有一个是<code>NULL</code>时，比较的结果也是<code>NULL</code>，特殊的情况是使用<code>&lt;=&gt;</code>对两个<code>NULL</code>做比较时会返回<code>1</code>，这两种情况都不需要做类型转换</li>
+<li>两个参数都是字符串，会按照字符串来比较，不做类型转换</li>
+<li>两个参数都是整数，按照整数来比较，不做类型转换</li>
+<li>十六进制的值和非数字做比较时，会被当做二进制串</li>
+<li>有一个参数是<code>TIMESTAMP</code>或<code>DATETIME</code>，并且另外一个参数是常量，常量会被转换为<code>timestamp</code></li>
+<li>有一个参数是<code>decimal</code>类型，如果另外一个参数是<code>decimal</code>或者整数，会将整数转换为<code>decimal</code>后进行比较，如果另外一个参数是浮点数，则会把<code>decimal</code>转换为浮点数进行比较</li>
+<li><strong>所有其他情况下，两个参数都会被转换为浮点数再进行比较</strong></li>
+</ol>
+</blockquote></li>
+<li><p>根据官方文档的描述，我们的第 23 两条 SQL 都发生了隐式转换，第 2
+条 SQL
+的查询条件<code>num1 = '10000'</code>，左边是<code>int</code>类型右边是字符串，第
+3 条 SQL 相反，那么根据官方转换规则第 7
+条，<strong>左右两边都会转换为浮点数</strong>再进行比较</p></li>
+<li><p>★★</p>
+<ol type="1">
+<li><p>先看第 2 条
+SQL：<code>SELECT * FROM</code>test1<code>WHERE num1 = '10000';</code><strong>左边为
+int
+类型</strong><code>10000</code>，转换为浮点数还是<code>10000</code>，右边字符串类型<code>'10000'</code>，转换为浮点数也是<code>10000</code>。两边的转换结果都是唯一确定的，所以不影响使用索引</p></li>
+<li><p>第 3 条
+SQL：<code>SELECT * FROM</code>test1<code>WHERE num2 = 10000;</code><strong>左边是字符串类型</strong><code>'10000'</code>，转浮点数为
+10000
+是唯一的，右边<code>int</code>类型<code>10000</code>转换结果也是唯一的。但是，<strong>因为左边是检索条件，<code>'10000'</code>转到<code>10000</code>虽然是唯一，但是其他字符串也可以转换为<code>10000</code></strong>，比如<code>'10000a'</code>，<code>'010000'</code>，<code>'10000'</code>等等都能转为浮点数<code>10000</code>，这样的情况下，是不能用到索引的。</p></li>
+<li><p>对第二点的后半部分再做解释</p>
+<blockquote>
+<p>关于这个<strong>隐式转换</strong>我们可以通过查询测试验证一下，先插入几条数据，其中<code>num2='10000a'</code>、<code>'010000'</code>和<code>'10000'</code>：</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `test1` (`id`, `num1`, `num2`, `type1`, `type2`, `str1`, `str2`) <span class="keyword">VALUES</span> (<span class="string">&#x27;10000001&#x27;</span>, <span class="string">&#x27;10000&#x27;</span>, <span class="string">&#x27;10000a&#x27;</span>, <span class="string">&#x27;0&#x27;</span>, <span class="string">&#x27;0&#x27;</span>, <span class="string">&#x27;2df3d9465ty2e4hd523&#x27;</span>, <span class="string">&#x27;2df3d9465ty2e4hd523&#x27;</span>);</span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `test1` (`id`, `num1`, `num2`, `type1`, `type2`, `str1`, `str2`) <span class="keyword">VALUES</span> (<span class="string">&#x27;10000002&#x27;</span>, <span class="string">&#x27;10000&#x27;</span>, <span class="string">&#x27;010000&#x27;</span>, <span class="string">&#x27;0&#x27;</span>, <span class="string">&#x27;0&#x27;</span>, <span class="string">&#x27;2df3d9465ty2e4hd523&#x27;</span>, <span class="string">&#x27;2df3d9465ty2e4hd523&#x27;</span>);</span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `test1` (`id`, `num1`, `num2`, `type1`, `type2`, `str1`, `str2`) <span class="keyword">VALUES</span> (<span class="string">&#x27;10000003&#x27;</span>, <span class="string">&#x27;10000&#x27;</span>, <span class="string">&#x27; 10000&#x27;</span>, <span class="string">&#x27;0&#x27;</span>, <span class="string">&#x27;0&#x27;</span>, <span class="string">&#x27;2df3d9465ty2e4hd523&#x27;</span>, <span class="string">&#x27;2df3d9465ty2e4hd523&#x27;</span>); </span><br></pre></td></tr></table></figure>
+<p>然后使用第三条 SQL
+语句<code>SELECT * FROM</code>test1<code>WHERE num2 = 10000;</code>进行查询：</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/mysqlindex-invalidation-caused-by-implicit-conversion-03.png"
+alt="img" />
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+</blockquote>
+<p>从结果可以看到，后面插入的三条数据也都匹配上了。那么这个字符串隐式转换的规则是什么呢？为什么<code>num2='10000a'</code>、<code>'010000'</code>和<code>'10000'</code>这三种情形都能匹配上呢？查阅相关资料发现规则如下：</p>
+<ol type="1">
+<li><strong>不以数字开头</strong>的字符串都将转换为<code>0</code>。如<code>'abc'</code>、<code>'a123bc'</code>、<code>'abc123'</code>都会转化为<code>0</code>；</li>
+<li><strong>以数字开头的</strong>字符串转换时会进行截取，从第一个字符截取到第一个非数字内容为止。比如<code>'123abc'</code>会转换为<code>123</code>，<code>'012abc'</code>会转换为<code>012</code>也就是<code>12</code>，<code>'5.3a66b78c'</code>会转换为<code>5.3</code>，其他同理。</li>
+</ol>
+<p>现对以上规则做如下测试验证：</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/mysqlindex-invalidation-caused-by-implicit-conversion-04.png"
+alt="img" />
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<p>如此也就印证了之前的查询结果了</p></li>
+</ol></li>
+<li><p>再次写一条 SQL 查询 str1
+字段：<code>SELECT * FROM</code>test1<code>WHERE str1 = 1234;</code></p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/mysqlindex-invalidation-caused-by-implicit-conversion-05.png"
+alt="img" />
+<figcaption aria-hidden="true">img</figcaption>
+</figure></li>
+</ol>
+<h1 id="分析和总结">分析和总结</h1>
+<p>通过上面的测试我们发现 MySQL 使用操作符的一些特性：</p>
+<ol type="1">
+<li>当操作符<strong>左右两边的数据类型不一致</strong>时，会发生<strong>隐式转换</strong>。</li>
+<li>当 where
+查询操作符<strong>左边为数值类型</strong>时发生了隐式转换，那么对效率影响不大，但还是不推荐这么做。</li>
+<li>当 where
+查询操作符<strong>左边为字符类型</strong>时发生了隐式转换，那么会导致索引失效，造成全表扫描效率极低。</li>
+<li>字符串转换为数值类型时，非数字开头的字符串会转化为<code>0</code>，以数字开头的字符串会截取从第一个字符到第一个非数字内容为止的值为转化结果。</li>
+</ol>
+<p>所以，我们在写 SQL
+时一定要养成良好的习惯，查询的字段是什么类型，等号右边的条件就写成对应的类型。特别当查询的字段是字符串时，等号右边的条件一定要用引号引起来标明这是一个字符串，否则会造成索引失效触发全表扫描</p>
 ]]></content>
       <categories>
         <category>学习</category>
@@ -10230,6 +10365,22 @@ Lockopen in new window</a>
 <blockquote>
 <p>Next-Key* Lock(临键锁) 是<strong>Record Lock(记录锁) 和Gap*
 Lock(间隙锁)</strong> 的结合</p>
+</blockquote>
+]]></content>
+      <categories>
+        <category>学习</category>
+      </categories>
+      <tags>
+        <tag>复习</tag>
+        <tag>复习-javaGuide</tag>
+        <tag>复习-javaGuide-database</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>MySQL高性能优化规范建议总结</title>
+    <url>/2023/01/20/review/java_guide/database/mysql/mysql-high-performance-optimization-specification-recommendations/</url>
+    <content><![CDATA[<blockquote>
+<p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!</p>
 </blockquote>
 ]]></content>
       <categories>
@@ -11125,11 +11276,104 @@ alt="image-20230116002657069" /></li>
       </tags>
   </entry>
   <entry>
+    <title>MySQL常见面试题总结</title>
+    <url>/2023/01/20/review/java_guide/database/mysql/mysql-questions-01/</url>
+    <content><![CDATA[<blockquote>
+<p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!</p>
+</blockquote>
+]]></content>
+      <categories>
+        <category>学习</category>
+      </categories>
+      <tags>
+        <tag>复习</tag>
+        <tag>复习-javaGuide</tag>
+        <tag>复习-javaGuide-database</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>MySQL数据库时间类型数据存储建议</title>
     <url>/2023/01/19/review/java_guide/database/mysql/some-thoughts-on-database-storage-time/</url>
     <content><![CDATA[<blockquote>
 <p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!</p>
 </blockquote>
+<h1 id="不要用字符串存储日期">不要用字符串存储日期</h1>
+<ul>
+<li>优点：简单直白</li>
+<li>缺点
+<ol type="1">
+<li>字符串<strong>占有的空间更大</strong></li>
+<li>字符串存储的日期<strong>效率比较低</strong>（逐个字符进行比较），<strong>无法用日期相关的API</strong>进行计算和比较</li>
+</ol></li>
+</ul>
+<h1 id="datetime和timestamp之间抉择">Datetime和Timestamp之间抉择</h1>
+<p>Datetime 和 Timestamp 是 MySQL
+提供的两种<strong>比较相似</strong>的保存时间的数据类型。他们两者究竟该如何选择呢？</p>
+<p><strong>通常我们都会首选 Timestamp</strong></p>
+<h2 id="datetime类型没有时区信息">Datetime类型没有时区信息</h2>
+<ol type="1">
+<li><strong>DateTime 类型是没有时区信息的（时区无关）</strong>
+，DateTime
+类型保存的时间都是当前会话所设置的时区对应的时间。这样就会有什么问题呢？当你的时区更换之后，比如你的服务器更换地址或者更换客户端连接时区设置的话，就会导致你从数据库中读出的时间错误。不要小看这个问题，很多系统就是因为这个问题闹出了很多笑话。</li>
+<li><strong>Timestamp 和时区有关</strong>。Timestamp
+类型字段的值会随着服务器时区的变化而变化，自动换算成相应的时间，说简单点就是<strong>在不同时区</strong>，<strong>查询到同一个条记录此字段的值会不一样</strong></li>
+</ol>
+<p>案例</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">-- 建表</span><br><span class="line">CREATE TABLE `time_zone_test` (</span><br><span class="line">  `id` bigint(20) NOT NULL AUTO_INCREMENT,</span><br><span class="line">  `date_time` datetime DEFAULT NULL,</span><br><span class="line">  `time_stamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,</span><br><span class="line">  PRIMARY KEY (`id`)</span><br><span class="line">) ENGINE=InnoDB DEFAULT CHARSET=utf8; </span><br><span class="line"></span><br><span class="line">-- 插入数据</span><br><span class="line">INSERT INTO time_zone_test(date_time,time_stamp) VALUES(NOW(),NOW());</span><br><span class="line">-- 查看数据</span><br><span class="line">select date_time,time_stamp from time_zone_test;</span><br><span class="line">-- 结果</span><br><span class="line">/*</span><br><span class="line"> +---------------------+---------------------+</span><br><span class="line">| date_time           | time_stamp          |</span><br><span class="line">+---------------------+---------------------+</span><br><span class="line">| 2020-01-11 09:53:32 | 2020-01-11 09:53:32 |</span><br><span class="line">+---------------------+---------------------+</span><br><span class="line">------ </span><br><span class="line">*/</span><br></pre></td></tr></table></figure>
+<p>修改时区并查看数据</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">set time_zone=&#x27;+8:00&#x27;;</span><br><span class="line">/*</span><br><span class="line">+---------------------+---------------------+</span><br><span class="line">| date_time           | time_stamp          |</span><br><span class="line">+---------------------+---------------------+</span><br><span class="line">| 2020-01-11 09:53:32 | 2020-01-11 17:53:32 |</span><br><span class="line">+---------------------+---------------------+</span><br><span class="line">------ </span><br><span class="line">*/</span><br></pre></td></tr></table></figure>
+<p>关于MySQL时区设置的一个<strong>常用sql命令</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># 查看当前会话时区</span><br><span class="line">SELECT @@session.time_zone;</span><br><span class="line"># 设置当前会话时区</span><br><span class="line">SET time_zone = &#x27;Europe/Helsinki&#x27;;</span><br><span class="line">SET time_zone = &quot;+00:00&quot;;</span><br><span class="line"># 数据库全局时区设置</span><br><span class="line">SELECT @@global.time_zone;</span><br><span class="line"># 设置全局时区</span><br><span class="line">SET GLOBAL time_zone = &#x27;+8:00&#x27;;</span><br><span class="line">SET GLOBAL time_zone = &#x27;Europe/Helsinki&#x27;; </span><br></pre></td></tr></table></figure>
+<h2 id="datetime类型耗费空间更大">DateTime类型耗费空间更大</h2>
+<p>Timestamp 只需要使用 4 个字节的存储空间，但是 DateTime 需要耗费 8
+个字节的存储空间。但是，这样同样造成了一个问题，<strong>Timestamp
+表示的时间范围更小</strong>。</p>
+<ul>
+<li>DateTime ：1000-01-01 00:00:00 ~ 9999-12-31 23:59:59</li>
+<li>Timestamp： 1970-01-01 00:00:01 ~ 2037-12-31 23:59:59</li>
+</ul>
+<blockquote>
+<p>Timestamp 在不同版本的 MySQL 中有细微差别。</p>
+</blockquote>
+<h1 id="再看mysql日期类型存储空间">再看MySQL日期类型存储空间</h1>
+<ul>
+<li>MySQL 5.6 版本中日期类型所占的存储空间 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/FhRGUVHFK0ujRPNA75f6CuOXQHTE.jpeg"
+alt="img" /></li>
+</ul>
+<ol type="1">
+<li>可以看出 5.6.4 之后的 MySQL 多出了一个需要 <strong>0 ～ 3
+字节</strong>的小数位。DateTime 和 Timestamp
+会有几种不同的存储空间占用。</li>
+<li>为了方便，本文我们还是默认 <strong>Timestamp 只需要使用 4
+个字节</strong>的存储空间，但是 <strong>DateTime</strong>
+需要<strong>耗费 8 个字节</strong>的存储空间</li>
+</ol>
+<h1 id="数值型时间戳是更好的选择吗">数值型时间戳是更好的选择吗</h1>
+<p>使用<strong>int</strong>或者<strong>bigint</strong>类型数值，即时间戳来表示时间</p>
+<ol type="1">
+<li>优点：使用它进行<strong>日期排序</strong>以及<strong>对比</strong>等操作效率更高，跨系统也方便</li>
+<li>缺点：可读性差</li>
+</ol>
+<p>时间戳的定义</p>
+<blockquote>
+<p>时间戳的定义是从一个基准时间开始算起，这个基准时间是「1970-1-1
+00:00:00
++0:00」，从这个时间开始，用整数表示，以秒计时，随着时间的流逝这个时间整数不断增加。这样一来，我只需要一个数值，就可以完美地表示时间了，而且这个数值是一个绝对数值，即无论的身处地球的任何角落，这个表示时间的时间戳，都是一样的，生成的数值都是一样的，并且没有时区的概念，所以在系统的中时间的传输中，都不需要进行额外的转换了，只有在显示给用户的时候，才转换为字符串格式的本地时间</p>
+</blockquote>
+<p>实际操作</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mysql&gt; select UNIX_TIMESTAMP(&#x27;2020-01-11 09:53:32&#x27;);</span><br><span class="line">+---------------------------------------+</span><br><span class="line">| UNIX_TIMESTAMP(&#x27;2020-01-11 09:53:32&#x27;) |</span><br><span class="line">+---------------------------------------+</span><br><span class="line">|                            1578707612 |</span><br><span class="line">+---------------------------------------+</span><br><span class="line">1 row in set (0.00 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt; select FROM_UNIXTIME(1578707612);</span><br><span class="line">+---------------------------+</span><br><span class="line">| FROM_UNIXTIME(1578707612) |</span><br><span class="line">+---------------------------+</span><br><span class="line">| 2020-01-11 09:53:32       |</span><br><span class="line">+---------------------------+</span><br><span class="line">1 row in set (0.01 sec) </span><br></pre></td></tr></table></figure>
+<h1 id="总结">总结</h1>
+<ul>
+<li>推荐使用《高性能MySQL》<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230119230831365.png"
+alt="image-20230119230831365" /></li>
+<li>对比<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230119230841378.png"
+alt="image-20230119230841378" /></li>
+</ul>
 ]]></content>
       <categories>
         <category>学习</category>
