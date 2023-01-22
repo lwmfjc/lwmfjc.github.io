@@ -11290,16 +11290,220 @@ alt="image-20230116002657069" /></li>
 </blockquote>
 <h1 id="mysql基础">MySQL基础</h1>
 <h2 id="关系型数据库介绍">关系型数据库介绍</h2>
+<ul>
+<li><strong>关系型数据库</strong>，建立在<strong>关系模型</strong>的基础上的数据库。表明数据库中所<strong>存储</strong>的数据之间的<strong>联系</strong>（一对一、一对多、多对多）</li>
+<li>关系型数据库中，我们的数据都被<strong>存放在各种表</strong>中（比如用户表），表中的<strong>每一行</strong>存放着<strong>一条数据（比如一个用户的信息）</strong>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/5e3c1a71724a38245aa43b02_99bf70d46cc247be878de9d3a88f0c44.png"
+alt="关系型数据库表关系" /></li>
+<li>大部分关系型数据库都使用<strong>SQL</strong>来操作数据库中的数据，并且大部分<strong>关系型数据库</strong>都支持<strong>事务</strong>的<strong>四大特性（ACID）</strong></li>
+</ul>
+<p><strong>常见的关系型数据库</strong><br />
+<strong>MySQL</strong>、<strong>PostgreSQL</strong>、<strong>Oracle</strong>、<strong>SQL
+Server</strong>、<strong>SQLite</strong>（<strong>微信本地的聊天记录</strong>的存储就是用的
+SQLite） ......</p>
 <h2 id="mysql介绍">MySQL介绍</h2>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/20210327143351823.png"
+alt="img" />
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<ul>
+<li><p>MySQL是一种<strong>关系型数据库</strong>，主要用于<strong>持久化存储</strong>我们系统中的一些数据比如<strong>用户信息</strong></p></li>
+<li><p>由于 MySQL
+是<strong>开源</strong>免费并且比较<strong>成熟</strong>的数据库，因此，MySQL
+被大量使用在各种系统中。任何人都可以在 <strong>GPL(General Public
+License 通用性公开许可证)</strong>
+的许可下下载并根据<strong>个性化的需要</strong>对其进行<strong>修改</strong>。MySQL
+的默认端口号是<strong>3306</strong>。</p></li>
+</ul>
 <h1 id="mysql基础架构">MySQL基础架构</h1>
+<ul>
+<li>MySQL的一个<strong>简要机构图</strong>，客户端的一条<strong>SQL语句</strong>在MySQL内部如何执行
+<img
+src="https://guide-blog-images.oss-cn-shenzhen.aliyuncs.com/javaguide/13526879-3037b144ed09eb88.png"
+alt="img" /></li>
+<li>MySQL主要由几部门构成
+<ol type="1">
+<li><strong>连接器</strong>：<strong>身份认证</strong>和<strong>权限相关</strong>（登录MySQL的时候）</li>
+<li><strong>查询缓存</strong>：执行<strong>查询</strong>语句的时候，会先<strong>查询缓存</strong>（MySQL8.0版本后<strong>移除</strong>，因为这个功能不太实用）</li>
+<li><strong>分析器</strong>：<strong>没有命中缓存</strong>的话，SQL语句就会经过分析器，分析器说白了就是要先看你的SQL语句<strong>要干嘛</strong>，再检查你的<strong>SQL语句语法</strong>是否正确</li>
+<li><strong>优化器</strong>：按照<strong>MySQL认为最优的方案</strong>去执行</li>
+<li><strong>执行器</strong>：<strong>执行</strong>语句，然后从<strong>存储引擎返回</strong>数据。执行语句之前会<strong>先判断是否有权限</strong>，如果没有权限，就会报错</li>
+<li><strong>插件式存储引擎</strong>：主要负责<strong>数据</strong>的<strong>存储</strong>和<strong>读取</strong>，采用的是<strong>插件式架构</strong>，支持<strong>InnoDB</strong>、<strong>MyISAM</strong>、<strong>Memory</strong>等多种存储引擎</li>
+</ol></li>
+</ul>
 <h1 id="mysql存储引擎">MySQL存储引擎</h1>
+<p>MySQL<strong>核心</strong>在于<strong>存储引擎</strong></p>
 <h2
 id="mysql支持哪些存储引擎默认使用哪个">MySQL支持哪些存储引擎？默认使用哪个？</h2>
+<ul>
+<li><p>MySQL支持<strong>多种存储引擎</strong>，可以通过<code>show engines</code>命令来<strong>查看MySQL支持的所有存储引擎</strong>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220510105408703.png"
+alt="查看 MySQL 提供的所有存储引擎" /></p></li>
+<li><p><strong>默认</strong>存储引擎为InnoDB，并且，所有存储引擎中<strong>只有InnoDB是事务性存储引擎</strong>，也就是说<strong>只有InnoDB支持事务</strong></p></li>
+<li><p><strong>这里使用MySQL 8.x</strong> MySQL
+5.5.5之前，MyISAM是MySQL的默认存储引擎；5.5.5之后，InnoDB是MySQL的默认存储疫情，可以通过<code>select version()</code>命令查看你的MySQL版本</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mysql&gt; select version();</span><br><span class="line">+-----------+</span><br><span class="line">| version() |</span><br><span class="line">+-----------+</span><br><span class="line">| 8.0.27    |</span><br><span class="line">+-----------+</span><br><span class="line">1 row in set (0.00 sec) </span><br></pre></td></tr></table></figure>
+<p>使用<code>show variables like %storage_engine%</code>命令直接查看MySQL<strong>当前默认的存储引擎</strong><br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220510105837786.png"
+alt="查看 MySQL 当前默认的存储引擎" /></p>
+<p>如果只想<strong>查看数据库中某个表使用的存储引擎</strong>的话，可以使用<code>show table status from db_name where name = 'table_name'</code>命令<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220510110549140.png"
+alt="查看表的存储引擎" /></p></li>
+</ul>
+<blockquote>
+<p>如果你想要深入了解每个存储引擎以及它们之间的区别，推荐你去阅读以下
+MySQL 官方文档对应的介绍(面试不会问这么细，了解即可)：</p>
+<ul>
+<li>InnoDB
+存储引擎详细介绍：https://dev.mysql.com/doc/refman/8.0/en/innodb-storage-engine.html
+。</li>
+<li>其他存储引擎详细介绍：https://dev.mysql.com/doc/refman/8.0/en/storage-engines.html
+。</li>
+</ul>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220510155143458.png"
+alt="img" />
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+</blockquote>
 <h2 id="mysql存储引擎架构了解吗">MySQL存储引擎架构了解吗？</h2>
+<ul>
+<li>MySQL
+存储引擎采用的是<strong>插件式架构</strong>，支持<strong>多种存储引擎</strong>，我们甚至可以<strong>为不同的数据库表设置不同的存储引擎</strong>以<strong>适应不同场景的需要</strong>。存储引擎是<strong>基于表</strong>的，<strong>而不是数据库</strong></li>
+<li>可以<strong>根据 MySQL
+定义的存储引擎实现标准接口</strong>来编写一个<strong>属于自己的存储引擎</strong>。这些<strong>非官方提供的存储引擎</strong>可以称为<strong>第三方存储引擎</strong>，<strong>区别于官方存储引擎</strong></li>
+</ul>
+<blockquote>
+<p>像目前最常用的 InnoDB
+其实刚开始就是一个第三方存储引擎，后面由于过于优秀，其被 Oracle
+直接收购了。</p>
+<p>MySQL
+官方文档也有介绍到如何编写一个自定义存储引擎，地址：https://dev.mysql.com/doc/internals/en/custom-engine.html</p>
+</blockquote>
 <h2 id="myisam和innodb的区别是什么">MyISAM和InnoDB的区别是什么？</h2>
+<ul>
+<li>ISAM全称：<strong>Indexed Sequential Access Method</strong>(索引
+顺序 访问 方法)</li>
+<li>虽然，MyISAM
+的性能还行，各种特性也还不错（比如<strong>全文索引</strong>、<strong>压缩</strong>、<strong>空间函数</strong>等）。但是，<strong>MyISAM
+不支持事务</strong>和<strong>行级锁</strong>，而且最大的缺陷就是<strong>崩溃后无法安全恢复</strong></li>
+</ul>
+<ol type="1">
+<li><p><strong>是否支持行级锁</strong> <strong>MyISAM</strong>
+只有<strong>表级锁(table-level locking)</strong>，而
+<strong>InnoDB</strong> 支持<strong>行级锁(row-level
+locking)</strong>和<strong>表级锁</strong>,<strong>默认为行级锁</strong>。</p>
+<blockquote>
+<p>MyISAM
+一锁就是锁住了整张表，这在并发写的情况下是多么滴憨憨啊！这也是为什么
+InnoDB 在并发写的时候，性能更牛皮了！</p>
+</blockquote></li>
+<li><p><strong>是否支持事务</strong></p>
+<p>MyISAM不支持事务，InnoDB提供事务支持</p>
+<ul>
+<li>InnoDB实现了SQL标准，定义了<strong>四个隔离级别</strong>，具有<strong>提交（commit）</strong>和<strong>回滚（rollback）事务</strong>的能力</li>
+<li>InnoDB默认使用的<strong>REPEATABLE-READ(可重复读)</strong>隔离级别是可以解决<strong>幻读问题发生的（部分幻读）</strong>，基于<strong>MVCC</strong>和<strong>Next-Key
+Lock（间隙锁）</strong></li>
+</ul>
+<p>详细可以查看<strong>MySQL 事务隔离级别详解</strong></p></li>
+<li><p><strong>是否支持外键</strong></p>
+<p>MyISAM不支持，而InnoDB支持</p>
+<blockquote>
+<p>外键对于维护数据一致性非常有帮助，但是对性能有一定的损耗。因此，通常情况下，我们是不建议在实际生产项目中使用外键的，在业务代码中进行约束即可！</p>
+<p>阿里的《Java 开发手册》也是明确规定禁止使用外键的。</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220510090309427.png"
+alt="img" />
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<p>不过，在代码中进行约束的话，对程序员的能力要求更高，具体是否要采用外键还是要根据你的项目实际情况而定</p>
+</blockquote>
+<ul>
+<li>一般我们也是<strong>不建议在数据库层面使用外键</strong>的，<strong>应用层面可以解决</strong>。不过，这样会对数据的一致性造成威胁。具体要不要使用外键还是要根据你的项目来决定</li>
+</ul></li>
+<li><p><strong>是否支持数据库异常崩溃后的安全恢复</strong> MyISAM
+不支持，而 InnoDB 支持。</p>
+<ul>
+<li>使用 InnoDB
+的数据库在异常崩溃后，数据库重新启动的时候会<strong>保证数据库恢复到崩溃前的状态</strong>。这个<strong>恢复的过程依赖于
+<code>redo log</code></strong></li>
+</ul></li>
+<li><p><strong>是否支持MVCC</strong> MyISAM 不支持，而 InnoDB 支持。</p>
+<ul>
+<li>MyISAM 连行级锁都不支持。<strong>MVCC
+可以看作是行级锁的一个升级</strong>，可以有效<strong>减少加锁</strong>操作，<strong>提高性能</strong>。</li>
+</ul></li>
+<li><p><strong>索引实现不一样</strong></p>
+<ul>
+<li>虽然 <strong>MyISAM 引擎和 InnoDB 引擎都是使用 B+Tree</strong>
+作为索引结构，但是两者的<strong>实现方式不太一样</strong>。</li>
+<li>InnoDB 引擎中，其<strong>数据文件本身就是索引文件</strong>。而
+<strong>MyISAM中，索引文件和数据文件是分离</strong>的</li>
+<li>InnoDB引擎中，表数据文件本身就是按 B+Tree
+组织的一个索引结构，<strong>树的叶节点 data
+域保存了完整的数据记录</strong>。</li>
+</ul></li>
+</ol>
+<p>详细区别，推荐 ： MySQL 索引详解</p>
 <h2 id="myisam和innodb-如何选择">MyISAM和InnoDB 如何选择</h2>
+<ul>
+<li><p>大多数时候我们使用的都是 <strong>InnoDB
+存储引擎</strong>，在某些<strong>读密集的情况</strong>下，使用 MyISAM
+也是合适的。不过，前提是你的项目<strong>不介意 MyISAM
+不支持事务</strong>、<strong>崩溃恢复等缺点</strong>（可是~我们一般都会介意啊！）</p></li>
+<li><p>《MySQL 高性能》上面有一句话这样写到:</p>
+<blockquote>
+<p>不要轻易相信“MyISAM 比 InnoDB
+快”之类的经验之谈，这个结论往往不是绝对的。在很多我们已知场景中，InnoDB
+的速度都可以让 MyISAM
+望尘莫及，尤其是用到了聚簇索引，或者需要访问的数据都可以放入内存的应用。</p>
+</blockquote></li>
+<li><p>一般情况下我们选择 InnoDB
+都是没有问题的，但是某些情况下你并不在乎<strong>可扩展能力</strong>和<strong>并发能力</strong>，也不需要<strong>事务支持</strong>，也不在乎<strong>崩溃后的安全恢复问题</strong>的话，选择
+MyISAM
+也是一个不错的选择。但是一般情况下，我们都是需要考虑到这些问题的。</p></li>
+<li><p>对于咱们日常开发的业务系统来说，你几乎<strong>找不到什么理由再使用
+MyISAM</strong> 作为自己的 MySQL 数据库的存储引擎</p></li>
+</ul>
 <h1 id="mysql-索引">MySQL 索引</h1>
+<p>MySQL
+索引相关的问题比较多，对于面试和工作都比较重要，于是，我<strong>单独抽了一篇文章</strong>专门来总结
+MySQL 索引相关的知识点和问题： MySQL 索引详解]</p>
 <h1 id="mysql查询缓存">MySQL查询缓存</h1>
+<p>执行查询语句的时候，会<strong>先查询缓存</strong>。不过<strong>，MySQL
+8.0 版本后移除</strong>，因为这个功能不太实用</p>
+<ul>
+<li><p><code>my.cnf</code> 加入以下配置，重启 MySQL
+<strong>开启查询缓存</strong></p>
+<figure class="highlight properties"><table><tr><td class="code"><pre><span class="line"><span class="attr">query_cache_type</span>=<span class="string">1</span></span><br><span class="line"><span class="attr">query_cache_size</span>=<span class="string">600000</span></span><br></pre></td></tr></table></figure></li>
+<li><p>执行以下命令也可以<strong>开启查询缓存</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">set global  query_cache_type=1;</span><br><span class="line">set global  query_cache_size=600000;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<p><strong>开启查询缓存后在同样的查询条件以及数据情况下，会直接在缓存中返回结果</strong>：</p>
+<blockquote>
+<p>查询条件包括查询本身、当前要查询的数据库、客户端协议版本号等一些可能影响结果的信息</p>
+</blockquote>
+<p><strong>查询缓存不命中的情况</strong>：</p>
+<ol type="1">
+<li>任何两个查询在<strong>任何字符上的不同</strong>都会导致缓存不命中</li>
+<li>如果查询中包含任何<strong>用户自定义函数</strong>、<strong>存储函数</strong>、<strong>用户变量</strong>、<strong>临时表</strong>、<strong>MySQL
+库中的系统表</strong>，其查询结果也不会被缓存</li>
+<li><strong>缓存建立之后</strong>，MySQL
+的<strong>查询缓存系统会跟踪查询中涉及的每张表</strong>，如果<strong>这些表（数据或结构）发生变化</strong>，那么和这张表相关的所有缓存数据都将失效</li>
+</ol>
+<p><strong>缓存虽然能够提升数据库的查询性能，但是缓存同时也带来了额外的开销，每次查询后都要做一次缓存操作，失效后还要销毁。</strong>
+因此，开启查询缓存要谨慎，尤其对于写密集的应用来说更是如此。如果开启，要注意合理控制缓存空间大小，一般来说其大小设置为几十
+MB 比较合适。此外，**还可以通过 sql_cache 和 sql_no_cache
+来控制某个查询语句是否需要缓存</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">select</span> sql_no_cache <span class="built_in">count</span>(<span class="operator">*</span>) <span class="keyword">from</span> usr;</span><br></pre></td></tr></table></figure>
 <h1 id="mysql事务">MySQL事务</h1>
 <h2 id="何谓事务">何谓事务</h2>
 <h2 id="何谓数据库事务">何谓数据库事务</h2>
@@ -18760,278 +18964,6 @@ https://tech.meituan.com/2020/08/06/new-zgc-practice-in-meituan.html</p>
       </tags>
   </entry>
   <entry>
-    <title>jvm监控和故障处理工具 总结</title>
-    <url>/2022/12/19/review/java_guide/java/jvm/jdk-monitoring-and-troubleshooting-tools/</url>
-    <content><![CDATA[<blockquote>
-<p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!</p>
-</blockquote>
-<h1 id="jdk-命令行工具">JDK 命令行工具</h1>
-<p>这些命令在 JDK 安装目录下的 bin 目录下：</p>
-<ul>
-<li><strong><code>jps</code></strong> (JVM Process Status）: 类似 UNIX
-的 <code>ps</code> 命令。用于查看所有 Java 进程的启动类、传入参数和 Java
-虚拟机参数等信息；</li>
-<li><strong><code>jstat</code></strong>（JVM Statistics Monitoring
-Tool）: 用于收集 HotSpot 虚拟机各方面的运行数据;</li>
-<li><strong><code>jinfo</code></strong> (Configuration Info for Java) :
-Configuration Info for Java,显示虚拟机配置信息;</li>
-<li><strong><code>jmap</code></strong> (Memory Map for Java) :
-生成堆转储快照;</li>
-<li><strong><code>jhat</code></strong> (JVM Heap Dump Browser) :
-用于分析 heapdump 文件，它会建立一个 HTTP/HTML
-服务器，让用户可以在浏览器上查看分析结果;</li>
-<li><strong><code>jstack</code></strong> (Stack Trace for Java) :
-生成虚拟机当前时刻的线程快照，线程快照就是当前虚拟机内每一条线程正在执行的方法堆栈的集合。</li>
-</ul>
-<h2 id="jps-查看所有-java-进程">jps: 查看所有 Java 进程</h2>
-<p><code>jps</code>(JVM Process Status) 命令类似 UNIX 的 <code>ps</code>
-命令。</p>
-<p><code>jps</code>：显示虚拟机执行主类名称以及这些进程的本地虚拟机唯一
-ID（Local Virtual Machine Identifier,LVMID）。<code>jps -q</code>
-：只输出进程的本地虚拟机唯一 ID。</p>
-<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">C:\Users\SnailClimb&gt;jps</span><br><span class="line"><span class="number">7360</span> NettyClient2</span><br><span class="line"><span class="number">17396</span></span><br><span class="line"><span class="number">7972</span> Launcher</span><br><span class="line"><span class="number">16504</span> Jps</span><br><span class="line"><span class="number">17340</span> NettyServer</span><br></pre></td></tr></table></figure>
-<p><code>jps -l</code>:输出主类的全名，如果进程执行的是 Jar 包，输出 Jar
-路径。</p>
-<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">C:\Users\SnailClimb&gt;jps <span class="literal">-l</span></span><br><span class="line"><span class="number">7360</span> firstNettyDemo.NettyClient2</span><br><span class="line"><span class="number">17396</span></span><br><span class="line"><span class="number">7972</span> org.jetbrains.jps.cmdline.Launcher</span><br><span class="line"><span class="number">16492</span> sun.tools.jps.Jps</span><br><span class="line"><span class="number">17340</span> firstNettyDemo.NettyServer</span><br></pre></td></tr></table></figure>
-<p><code>jps -v</code>：输出虚拟机进程启动时 JVM 参数。</p>
-<p><code>jps -m</code>：输出传递给 Java 进程 main() 函数的参数。</p>
-<h2
-id="jstat监视虚拟机各种运行状态信息">jstat：监视虚拟机各种运行状态信息</h2>
-<ul>
-<li><p>jstat ( JVM Statistics Monitoring Tool )
-使用于<strong>监视虚拟机</strong>各种<strong>运行状态信息</strong>的命令行工具。</p>
-<blockquote>
-<p>可以显示<strong>本地</strong>或者<strong>远程（需要远程主机提供RMI支持）</strong>虚拟机进程中的<strong>类信息</strong>、<strong>内存</strong>、<strong>垃圾收集</strong>、<strong>JIT编译</strong>等运行数据，在<strong>没有GUI</strong>，只提供了<strong>纯文本</strong>控制台环境的服务器上，它将是运行期间<strong>定位虚拟机性能问题</strong>的首选工具</p>
-</blockquote></li>
-<li><p>jstat 命令使用格式</p>
-<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">jstat -&lt;option&gt; [-<span class="type">t</span>] [-<span class="type">h</span>&lt;<span class="type">lines</span>&gt;] &lt;vmid&gt; [&lt;<span class="built_in">int</span><span class="type">erval</span>&gt; [&lt;<span class="type">count</span>&gt;]]</span><br></pre></td></tr></table></figure>
-<p>比如 <code>jstat -gc -h3 31736 1000 10</code>表示分析进程 id 为 31736
-的 gc 情况，每隔 1000ms 打印一次记录，打印 10 次停止，每 3
-行后打印指标头部。</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">λ jstat -gc -h3 12224 1000 10  </span><br></pre></td></tr></table></figure>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221219210349920.png"
-alt="image-20221219210349920" />
-<figcaption aria-hidden="true">image-20221219210349920</figcaption>
-</figure>
-<p>常见的option如下 , 下面的vmid，即vm的id （id值）</p>
-<ul>
-<li><code>jstat -class vmid</code> ：显示 ClassLoader 的相关信息；</li>
-<li><code>jstat -compiler vmid</code> ：显示 JIT 编译的相关信息；</li>
-<li><code>jstat -gc vmid</code> ：显示与 GC 相关的堆信息；</li>
-<li><code>jstat -gccapacity vmid</code>
-：显示各个代的容量及使用情况；</li>
-<li><code>jstat -gcnew vmid</code> ：显示新生代信息；</li>
-<li><code>jstat -gcnewcapcacity vmid</code>
-：显示新生代大小与使用情况；</li>
-<li><code>jstat -gcold vmid</code>
-：显示老年代和永久代的行为统计，从jdk1.8开始,该选项仅表示老年代，因为永久代被移除了；</li>
-<li><code>jstat -gcoldcapacity vmid</code> ：显示老年代的大小；</li>
-<li><code>jstat -gcpermcapacity vmid</code>
-：显示永久代大小，从jdk1.8开始,该选项不存在了，因为永久代被移除了；</li>
-<li><code>jstat -gcutil vmid</code> ：显示垃圾收集信息</li>
-</ul>
-<p>使用<code>jstat -gcutil -h3 12224 1000 10</code></p>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221219210934394.png"
-alt="image-20221219210934394" />
-<figcaption aria-hidden="true">image-20221219210934394</figcaption>
-</figure>
-<p>另外，加上 <code>-t</code>参数可以在输出信息上加一个 Timestamp
-列，显示程序的运行时间。 各个参数的含义<br />
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221219211407363.png"
-alt="image-20221219211407363" /></p></li>
-</ul>
-<h2
-id="jinfo实时地查看和调整虚拟机各项参数">jinfo：实时地查看和调整虚拟机各项参数</h2>
-<p><code>jinfo vmid</code> :输出当前 jvm 进程的全部参数和系统属性
-(第一部分是系统的属性，第二部分是 JVM 的参数)。 如下图： <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221219211745724.png"
-alt="image-20221219211745724" /> <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221219211839945.png"
-alt="image-20221219211839945" /></p>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221219211712746.png"
-alt="image-20221219211712746" />
-<figcaption aria-hidden="true">image-20221219211712746</figcaption>
-</figure>
-<ul>
-<li><p><code>jinfo -flag name vmid</code>
-:输出<strong>对应名称</strong>的参数的<strong>具体值</strong>。比如输出
-<strong>MaxHeapSize</strong>、查看当前 jvm 进程<strong>是否开启打印 GC
-日志</strong> ( <code>-XX:PrintGCDetails</code> :详细 GC
-日志模式，这两个都是默认关闭的)。</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">C:\Users\SnailClimb&gt;jinfo  -flag MaxHeapSize 17340</span><br><span class="line">-XX:MaxHeapSize=2124414976</span><br><span class="line">C:\Users\SnailClimb&gt;jinfo  -flag PrintGC 17340</span><br><span class="line">-XX:-PrintGC</span><br></pre></td></tr></table></figure></li>
-<li><p>使用 jinfo 可以在不重启虚拟机的情况下，可以动态的修改 jvm
-的参数。尤其在线上的环境特别有用,请看下面的例子： 使用```jinfo -flag
-[+|-]name vmid 开启或者关闭对应名称的参数：</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">C:\Users\SnailClimb&gt;jinfo  -flag  PrintGC 17340</span><br><span class="line">-XX:-PrintGC</span><br><span class="line"></span><br><span class="line">C:\Users\SnailClimb&gt;jinfo  -flag  +PrintGC 17340</span><br><span class="line"></span><br><span class="line">C:\Users\SnailClimb&gt;jinfo  -flag  PrintGC 17340</span><br><span class="line">-XX:+PrintGC</span><br></pre></td></tr></table></figure></li>
-</ul>
-<h2 id="jmap生成堆转储快照">jmap：生成堆转储快照</h2>
-<ul>
-<li><p><strong>jmap(Memory Map for Java
-)</strong>命令用于生成<strong>堆转储</strong>快照。如果不使用jmap命令，要想获取java<strong>堆转储</strong>，可以使用<code>-XX:+HeapDumpOutOfMemoryError</code>参数，可以让虚拟机在<strong>OOM</strong>异常出现<strong>之后</strong>，自动生成dump文件，Linux命令下通过<code>kill -3</code>发送进程推出信号也能拿到dump文件</p></li>
-<li><p><code>jmap</code> 的作用并不仅仅是为了<strong>获取 dump</strong>
-文件，它还可以<strong>查询 finalizer 执行队列</strong>、<strong>Java
-堆</strong>和<strong>永久代</strong>的详细信息，如<strong>空间使用率</strong>、当前使用的是<strong>哪种收集器</strong>等。和<code>jinfo</code>一样，<code>jmap</code>有不少功能在
-Windows 平台下也是受限制的。</p></li>
-<li><p>将指定应用程序的<strong>堆
-快照</strong>输出到桌面，后面可以通过<strong>jhat</strong>、<strong>Visual
-VM</strong>等工具分析该堆文件</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">C:\Users\SnailClimb&gt;jmap -dump:format=b,file=C:\Users\SnailClimb\Desktop\heap.hprof <span class="number">17340</span></span><br><span class="line">Dumping heap to C:\Users\SnailClimb\Desktop\heap.hprof ...</span><br><span class="line">Heap dump file created</span><br></pre></td></tr></table></figure></li>
-</ul>
-<h2 id="jhat分析heapdump文件">jhat：分析heapdump文件</h2>
-<p><strong><code>jhat</code></strong> 用于分析 heapdump
-文件，它会建立一个 HTTP/HTML
-服务器，让用户可以在浏览器上查看分析结果。</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">C:\Users\SnailClimb&gt;jhat C:\Users\SnailClimb\Desktop\heap.hprof</span><br><span class="line">Reading from C:\Users\SnailClimb\Desktop\heap.hprof...</span><br><span class="line">Dump file created Sat May 04 12:30:31 CST 2019</span><br><span class="line">Snapshot read, resolving...</span><br><span class="line">Resolving 131419 objects...</span><br><span class="line">Chasing references, expect 26 dots..........................</span><br><span class="line">Eliminating duplicate references..........................</span><br><span class="line">Snapshot resolved.</span><br><span class="line">Started HTTP server on port 7000</span><br><span class="line">Server is ready. </span><br></pre></td></tr></table></figure>
-<p>之后访问 http://localhost:7000/ 即可，如下： 进入/histo
-会发现，有这个东西 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221220094041210.png"
-alt="image-20221220094041210" />
-这个对象创建了9次，因为我是在第9次循环后dump堆快照的</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//测试代码如下</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyMain</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">byte</span>[] x = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">10</span> * <span class="number">1024</span> * <span class="number">1024</span>];<span class="comment">//10M</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;开始循环--&quot;</span>);</span><br><span class="line">        <span class="type">int</span> i=<span class="number">0</span>;</span><br><span class="line">        <span class="keyword">while</span> (++i&gt;<span class="number">0</span>) &#123;</span><br><span class="line">            String a=<span class="keyword">new</span> <span class="title class_">Date</span>().toString();</span><br><span class="line">            <span class="type">MyMain</span> <span class="variable">myMain</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">MyMain</span>();</span><br><span class="line">            System.out.println(i+<span class="string">&quot;循环中---&quot;</span> + <span class="keyword">new</span> <span class="title class_">Date</span>());</span><br><span class="line">            TimeUnit.SECONDS.sleep(<span class="number">10</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="jstack-生成虚拟机当前时刻的线程快照">jstack：
-生成虚拟机当前时刻的线程快照</h2>
-<ul>
-<li><p><strong>jstack (Stack Trace for Java )</strong>
-命令用于生成<strong>虚拟机当前时刻</strong>的<strong>线程快照</strong>。线程快照就是当前虚拟机内<strong>每一条线程正在执行</strong>的<strong>方法堆栈</strong>的集合</p></li>
-<li><p>生成线程快照的目的主要是<strong>定位线程长时间出现停顿的原因</strong>，如<strong>线程间死锁</strong>、<strong>死循环</strong>、<strong>请求外部资源导致的长时间等待</strong>等都是导致线程长时间停顿的原因。<strong>线程出现停顿</strong>的时候<strong>通过<code>jstack</code>来查看各个线程的调用堆栈</strong>，就可以知道没有响应的线程到底在后台做些什么事情，或者在等待些什么资源。</p></li>
-<li><p>线程死锁的代码，通过<strong>jstack</strong>
-命令进行<strong>死锁检查</strong>，输出<strong>死锁信息</strong>，找到<strong>发生死锁的线程</strong></p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> com.jvm;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">DeadLockDemo</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="type">Object</span> <span class="variable">resource1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Object</span>();<span class="comment">//资源 1</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="type">Object</span> <span class="variable">resource2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Object</span>();<span class="comment">//资源 2</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">            <span class="keyword">synchronized</span> (resource1) &#123;</span><br><span class="line">                System.out.println(Thread.currentThread() + <span class="string">&quot;get resource1&quot;</span>);</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    Thread.sleep(<span class="number">1000</span>);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125;</span><br><span class="line">                System.out.println(Thread.currentThread() + <span class="string">&quot;waiting get resource2&quot;</span>);</span><br><span class="line">                <span class="keyword">synchronized</span> (resource2) &#123;</span><br><span class="line">                    System.out.println(Thread.currentThread() + <span class="string">&quot;get resource2&quot;</span>);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;, <span class="string">&quot;线程 1&quot;</span>).start();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">            <span class="keyword">synchronized</span> (resource2) &#123;</span><br><span class="line">                System.out.println(Thread.currentThread() + <span class="string">&quot;get resource2&quot;</span>);</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    Thread.sleep(<span class="number">1000</span>);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125;</span><br><span class="line">                System.out.println(Thread.currentThread() + <span class="string">&quot;waiting get resource1&quot;</span>);</span><br><span class="line">                <span class="keyword">synchronized</span> (resource1) &#123;</span><br><span class="line">                    System.out.println(Thread.currentThread() + <span class="string">&quot;get resource1&quot;</span>);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;, <span class="string">&quot;线程 2&quot;</span>).start();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*------</span></span><br><span class="line"><span class="comment">Thread[线程 1,5,main]get resource1</span></span><br><span class="line"><span class="comment">Thread[线程 2,5,main]get resource2</span></span><br><span class="line"><span class="comment">Thread[线程 2,5,main]waiting get resource1</span></span><br><span class="line"><span class="comment">Thread[线程 1,5,main]waiting get resource2</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure></li>
-<li><p>分析 线程 A 通过 synchronized (resource1) 获得 resource1
-的监视器锁，然后通过<code>Thread.sleep(1000);</code>让线程 A 休眠 1s
-为的是让线程 B 得到执行然后获取到 resource2 的监视器锁。线程 A 和线程 B
-休眠结束了都开始企图请求获取对方的资源，然后这两个线程就会陷入互相等待的状态，这也就产生了死锁。</p></li>
-<li><p>通过jstack 命令分析</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">先使用jps 找到思索地那个类</span></span><br><span class="line">C:\Users\SnailClimb&gt;jps</span><br><span class="line">13792 KotlinCompileDaemon</span><br><span class="line">7360 NettyClient2</span><br><span class="line">17396</span><br><span class="line">7972 Launcher</span><br><span class="line">8932 Launcher</span><br><span class="line">9256 DeadLockDemo</span><br><span class="line">10764 Jps</span><br><span class="line">17340 NettyServer</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment"># 然后使用jstack命令分析</span></span></span><br><span class="line">C:\Users\SnailClimb&gt;jstack 9256 </span><br></pre></td></tr></table></figure>
-<p>输出的部分如下</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">Found one Java-level deadlock:</span><br><span class="line">=============================</span><br><span class="line">&quot;线程 2&quot;:</span><br><span class="line">  waiting to lock monitor 0x000000000333e668 (object 0x00000000d5efe1c0, a java.lang.Object),</span><br><span class="line">  which is held by &quot;线程 1&quot;</span><br><span class="line">&quot;线程 1&quot;:</span><br><span class="line">  waiting to lock monitor 0x000000000333be88 (object 0x00000000d5efe1d0, a java.lang.Object),</span><br><span class="line">  which is held by &quot;线程 2&quot;</span><br><span class="line"></span><br><span class="line">Java stack information for the threads listed above:</span><br><span class="line">===================================================</span><br><span class="line">&quot;线程 2&quot;:</span><br><span class="line">        at DeadLockDemo.lambda$main$1(DeadLockDemo.java:31)</span><br><span class="line">        - waiting to lock &lt;0x00000000d5efe1c0&gt; (a java.lang.Object)</span><br><span class="line">        - locked &lt;0x00000000d5efe1d0&gt; (a java.lang.Object)</span><br><span class="line">        at DeadLockDemo$$Lambda$2/1078694789.run(Unknown Source)</span><br><span class="line">        at java.lang.Thread.run(Thread.java:748)</span><br><span class="line">&quot;线程 1&quot;:</span><br><span class="line">        at DeadLockDemo.lambda$main$0(DeadLockDemo.java:16)</span><br><span class="line">        - waiting to lock &lt;0x00000000d5efe1d0&gt; (a java.lang.Object)</span><br><span class="line">        - locked &lt;0x00000000d5efe1c0&gt; (a java.lang.Object)</span><br><span class="line">        at DeadLockDemo$$Lambda$1/1324119927.run(Unknown Source)</span><br><span class="line">        at java.lang.Thread.run(Thread.java:748)</span><br><span class="line"></span><br><span class="line">Found 1 deadlock.</span><br></pre></td></tr></table></figure>
-<p>找到了发生死锁的线程的具体信息</p></li>
-</ul>
-<h1 id="jdk可视化分析工具">JDK可视化分析工具</h1>
-<h2
-id="jconsolejava监视与管理控制台">JConsole：Java监视与管理控制台</h2>
-<p>JConsole 是<strong>基于 JMX
-的可视化监视</strong>、<strong>管理工具</strong>。可以很方便的<strong>监视本地及远程服务器的
-java
-进程的内存使用情况</strong>。你可以在控制台输出<strong><code>console</code></strong>命令启动或者在
-JDK 目录下的 bin
-目录<strong>找到<code>jconsole.exe</code>然后双击启动</strong>. <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1JConsole%25E8%25BF%259E%25E6%258E%25A5.7490f097.png"
-alt="连接 Jconsole" /></p>
-<p>对于远程连接</p>
-<ol type="1">
-<li><p>在启动方</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">-Djava.rmi.server.hostname=外网访问 ip 地址 </span><br><span class="line">-Dcom.sun.management.jmxremote.port=60001   //监控的端口号</span><br><span class="line">-Dcom.sun.management.jmxremote.authenticate=false   //关闭认证</span><br><span class="line">-Dcom.sun.management.jmxremote.ssl=false </span><br></pre></td></tr></table></figure>
-<p>实例：</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">java -Djava.rmi.server.hostname=192.168.200.200  -Dcom.sun.management.jmxremote  -Dcom.sun.management.jmxremote.port=60001  -Dcom.sun.management.jmxremote.ssl=false  -Dcom.sun.management.jmxremote.authenticate=false  com.jvm.DeadLockDemo</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">其中 192.168.200.200 为启动该类的机器的ip，而不是谁要连接</span> </span><br></pre></td></tr></table></figure>
-<p>在使用 JConsole 连接时，远程进程地址如下：</p>
-<blockquote>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">外网访问 ip 地址:60001</span><br></pre></td></tr></table></figure>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221220103410971.png"
-alt="image-20221220103410971" />
-<figcaption aria-hidden="true">image-20221220103410971</figcaption>
-</figure>
-</blockquote></li>
-<li><p>注意，虚拟机中（这里ip
-xxx.200是虚拟机ip），需要开放的端口不只是60001，还要通过
-<code>netstat -nltp</code>开放另外两个端口 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221220104157529.png"
-alt="image-20221220104157529" /> centos中使用</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">firewall-cmd --zone=public --add-port=45443/tcp --permanent</span><br><span class="line">firewall-cmd --zone=public --add-port=36521/tcp --permanent</span><br><span class="line">firewall-cmd --zone=public --add-port=60001/tcp --permanent</span><br><span class="line">firewall-cmd --reload #重启firewall</span><br></pre></td></tr></table></figure>
-<p>之后才能连接上</p>
-<p><img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221220104326724.png"
-alt="image-20221220104326724" /> <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/2%25E6%259F%25A5%25E7%259C%258BJava%25E7%25A8%258B%25E5%25BA%258F%25E6%25A6%2582%25E5%2586%25B5.9c949b67.png"
-alt="查看 Java 程序概况" /></p></li>
-</ol>
-<h3 id="内存监控">内存监控</h3>
-<p>JConsole
-可以显示<strong>当前内存的详细信息</strong>。不仅包括<strong>堆内存/非堆内存</strong>的整体信息，还可以细化到
-<strong>eden 区</strong>、<strong>survivor
-区</strong>等的使用情况，如下图所示。</p>
-<p>点击右边的“执行 GC(G)”按钮可以强制应用程序执行一个 Full GC。</p>
-<blockquote>
-<p><strong>新生代 GC（Minor
-GC）</strong>:指发生新生代的的垃圾收集动作，Minor GC
-非常频繁，回收速度一般也比较快。</p>
-<p><strong>老年代 GC（Major GC/Full GC）</strong>:指发生在老年代的
-GC，出现了 Major GC 经常会伴随至少一次的 Minor GC（并非绝对），Major GC
-的速度一般会比 Minor GC 的慢 10 倍以上。</p>
-</blockquote>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/3%25E5%2586%2585%25E5%25AD%2598%25E7%259B%2591%25E6%258E%25A7.4f4b8a7f.png"
-alt="内存监控" />
-<figcaption aria-hidden="true">内存监控</figcaption>
-</figure>
-<h3 id="线程监控">线程监控</h3>
-<p>类似我们前面讲的 <code>jstack</code> 命令，不过这个是可视化的。</p>
-<p>最下面有一个"检测死锁
-(D)"按钮，点击这个按钮可以自动为你找到发生死锁的线程以及它们的详细信息
-。 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/4%25E7%25BA%25BF%25E7%25A8%258B%25E7%259B%2591%25E6%258E%25A7.4364833a.png"
-alt="线程监控" /></p>
-<h2 id="visualvm-多合一故障处理工具">VisualVM： 多合一故障处理工具</h2>
-<p>VisualVM 提供在 Java 虚拟机 (Java Virutal Machine, JVM) 上运行的 Java
-应用程序的详细信息。在 VisualVM
-的图形用户界面中，您可以方便、快捷地查看多个 Java
-应用程序的相关信息。Visual VM 官网：<a
-href="https://visualvm.github.io/">https://visualvm.github.io/open in
-new window</a> 。Visual VM 中文文档:<a
-href="https://visualvm.github.io/documentation.html">https://visualvm.github.io/documentation.htmlopen
-in new window</a>。</p>
-<p>下面这段话摘自《深入理解 Java 虚拟机》。</p>
-<blockquote>
-<p>VisualVM（All-in-One Java Troubleshooting Tool）是到目前为止随 JDK
-发布的功能最强大的运行监视和故障处理程序，官方在 VisualVM
-的软件说明中写上了“All-in-One”的描述字样，预示着他除了运行监视、故障处理外，还提供了很多其他方面的功能，如性能分析（Profiling）。VisualVM
-的性能分析功能甚至比起 JProfiler、YourKit 等专业且收费的 Profiling
-工具都不会逊色多少，而且 VisualVM
-还有一个很大的优点：不需要被监视的程序基于特殊 Agent
-运行，因此他对应用程序的实际性能的影响很小，使得他可以直接应用在生产环境中。这个优点是
-JProfiler、YourKit 等工具无法与之媲美的。</p>
-</blockquote>
-<p>VisualVM 基于 NetBeans
-平台开发，因此他一开始就具备了插件扩展功能的特性，通过插件扩展支持，VisualVM
-可以做到：</p>
-<ul>
-<li><strong>显示虚拟机进程以及进程的配置、环境信息（jps、jinfo）。</strong></li>
-<li><strong>监视应用程序的
-CPU、GC、堆、方法区以及线程的信息（jstat、jstack）。</strong></li>
-<li><strong>dump 以及分析堆转储快照（jmap、jhat）。</strong></li>
-<li><strong>方法级的程序运行性能分析，找到被调用最多、运行时间最长的方法。</strong></li>
-<li><strong>离线程序快照：收集程序的运行时配置、线程 dump、内存 dump
-等信息建立一个快照，可以将快照发送开发者处进行 Bug 反馈。</strong></li>
-<li><strong>其他 plugins 的无限的可能性......</strong></li>
-</ul>
-<p>这里就不具体介绍 VisualVM 的使用，如果想了解的话可以看:</p>
-<ul>
-<li><a
-href="https://visualvm.github.io/documentation.html">https://visualvm.github.io/documentation.htmlopen
-in new window</a></li>
-<li>https://www.ibm.com/developerworks/cn/java/j-lo-visualvm/index.html</li>
-</ul>
-]]></content>
-      <categories>
-        <category>学习</category>
-      </categories>
-      <tags>
-        <tag>复习</tag>
-        <tag>复习-javaGuide</tag>
-        <tag>复习-javaGuide-jvm</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>jvm-intro</title>
     <url>/2022/12/09/review/java_guide/java/jvm/jvm-intro/</url>
     <content><![CDATA[<blockquote>
@@ -20212,6 +20144,278 @@ reference
         <tag>复习</tag>
         <tag>复习-javaGuide</tag>
         <tag>复习-javaGuide-并发</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>jvm监控和故障处理工具 总结</title>
+    <url>/2022/12/19/review/java_guide/java/jvm/jdk-monitoring-and-troubleshooting-tools/</url>
+    <content><![CDATA[<blockquote>
+<p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!</p>
+</blockquote>
+<h1 id="jdk-命令行工具">JDK 命令行工具</h1>
+<p>这些命令在 JDK 安装目录下的 bin 目录下：</p>
+<ul>
+<li><strong><code>jps</code></strong> (JVM Process Status）: 类似 UNIX
+的 <code>ps</code> 命令。用于查看所有 Java 进程的启动类、传入参数和 Java
+虚拟机参数等信息；</li>
+<li><strong><code>jstat</code></strong>（JVM Statistics Monitoring
+Tool）: 用于收集 HotSpot 虚拟机各方面的运行数据;</li>
+<li><strong><code>jinfo</code></strong> (Configuration Info for Java) :
+Configuration Info for Java,显示虚拟机配置信息;</li>
+<li><strong><code>jmap</code></strong> (Memory Map for Java) :
+生成堆转储快照;</li>
+<li><strong><code>jhat</code></strong> (JVM Heap Dump Browser) :
+用于分析 heapdump 文件，它会建立一个 HTTP/HTML
+服务器，让用户可以在浏览器上查看分析结果;</li>
+<li><strong><code>jstack</code></strong> (Stack Trace for Java) :
+生成虚拟机当前时刻的线程快照，线程快照就是当前虚拟机内每一条线程正在执行的方法堆栈的集合。</li>
+</ul>
+<h2 id="jps-查看所有-java-进程">jps: 查看所有 Java 进程</h2>
+<p><code>jps</code>(JVM Process Status) 命令类似 UNIX 的 <code>ps</code>
+命令。</p>
+<p><code>jps</code>：显示虚拟机执行主类名称以及这些进程的本地虚拟机唯一
+ID（Local Virtual Machine Identifier,LVMID）。<code>jps -q</code>
+：只输出进程的本地虚拟机唯一 ID。</p>
+<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">C:\Users\SnailClimb&gt;jps</span><br><span class="line"><span class="number">7360</span> NettyClient2</span><br><span class="line"><span class="number">17396</span></span><br><span class="line"><span class="number">7972</span> Launcher</span><br><span class="line"><span class="number">16504</span> Jps</span><br><span class="line"><span class="number">17340</span> NettyServer</span><br></pre></td></tr></table></figure>
+<p><code>jps -l</code>:输出主类的全名，如果进程执行的是 Jar 包，输出 Jar
+路径。</p>
+<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">C:\Users\SnailClimb&gt;jps <span class="literal">-l</span></span><br><span class="line"><span class="number">7360</span> firstNettyDemo.NettyClient2</span><br><span class="line"><span class="number">17396</span></span><br><span class="line"><span class="number">7972</span> org.jetbrains.jps.cmdline.Launcher</span><br><span class="line"><span class="number">16492</span> sun.tools.jps.Jps</span><br><span class="line"><span class="number">17340</span> firstNettyDemo.NettyServer</span><br></pre></td></tr></table></figure>
+<p><code>jps -v</code>：输出虚拟机进程启动时 JVM 参数。</p>
+<p><code>jps -m</code>：输出传递给 Java 进程 main() 函数的参数。</p>
+<h2
+id="jstat监视虚拟机各种运行状态信息">jstat：监视虚拟机各种运行状态信息</h2>
+<ul>
+<li><p>jstat ( JVM Statistics Monitoring Tool )
+使用于<strong>监视虚拟机</strong>各种<strong>运行状态信息</strong>的命令行工具。</p>
+<blockquote>
+<p>可以显示<strong>本地</strong>或者<strong>远程（需要远程主机提供RMI支持）</strong>虚拟机进程中的<strong>类信息</strong>、<strong>内存</strong>、<strong>垃圾收集</strong>、<strong>JIT编译</strong>等运行数据，在<strong>没有GUI</strong>，只提供了<strong>纯文本</strong>控制台环境的服务器上，它将是运行期间<strong>定位虚拟机性能问题</strong>的首选工具</p>
+</blockquote></li>
+<li><p>jstat 命令使用格式</p>
+<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">jstat -&lt;option&gt; [-<span class="type">t</span>] [-<span class="type">h</span>&lt;<span class="type">lines</span>&gt;] &lt;vmid&gt; [&lt;<span class="built_in">int</span><span class="type">erval</span>&gt; [&lt;<span class="type">count</span>&gt;]]</span><br></pre></td></tr></table></figure>
+<p>比如 <code>jstat -gc -h3 31736 1000 10</code>表示分析进程 id 为 31736
+的 gc 情况，每隔 1000ms 打印一次记录，打印 10 次停止，每 3
+行后打印指标头部。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">λ jstat -gc -h3 12224 1000 10  </span><br></pre></td></tr></table></figure>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221219210349920.png"
+alt="image-20221219210349920" />
+<figcaption aria-hidden="true">image-20221219210349920</figcaption>
+</figure>
+<p>常见的option如下 , 下面的vmid，即vm的id （id值）</p>
+<ul>
+<li><code>jstat -class vmid</code> ：显示 ClassLoader 的相关信息；</li>
+<li><code>jstat -compiler vmid</code> ：显示 JIT 编译的相关信息；</li>
+<li><code>jstat -gc vmid</code> ：显示与 GC 相关的堆信息；</li>
+<li><code>jstat -gccapacity vmid</code>
+：显示各个代的容量及使用情况；</li>
+<li><code>jstat -gcnew vmid</code> ：显示新生代信息；</li>
+<li><code>jstat -gcnewcapcacity vmid</code>
+：显示新生代大小与使用情况；</li>
+<li><code>jstat -gcold vmid</code>
+：显示老年代和永久代的行为统计，从jdk1.8开始,该选项仅表示老年代，因为永久代被移除了；</li>
+<li><code>jstat -gcoldcapacity vmid</code> ：显示老年代的大小；</li>
+<li><code>jstat -gcpermcapacity vmid</code>
+：显示永久代大小，从jdk1.8开始,该选项不存在了，因为永久代被移除了；</li>
+<li><code>jstat -gcutil vmid</code> ：显示垃圾收集信息</li>
+</ul>
+<p>使用<code>jstat -gcutil -h3 12224 1000 10</code></p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221219210934394.png"
+alt="image-20221219210934394" />
+<figcaption aria-hidden="true">image-20221219210934394</figcaption>
+</figure>
+<p>另外，加上 <code>-t</code>参数可以在输出信息上加一个 Timestamp
+列，显示程序的运行时间。 各个参数的含义<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221219211407363.png"
+alt="image-20221219211407363" /></p></li>
+</ul>
+<h2
+id="jinfo实时地查看和调整虚拟机各项参数">jinfo：实时地查看和调整虚拟机各项参数</h2>
+<p><code>jinfo vmid</code> :输出当前 jvm 进程的全部参数和系统属性
+(第一部分是系统的属性，第二部分是 JVM 的参数)。 如下图： <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221219211745724.png"
+alt="image-20221219211745724" /> <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221219211839945.png"
+alt="image-20221219211839945" /></p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221219211712746.png"
+alt="image-20221219211712746" />
+<figcaption aria-hidden="true">image-20221219211712746</figcaption>
+</figure>
+<ul>
+<li><p><code>jinfo -flag name vmid</code>
+:输出<strong>对应名称</strong>的参数的<strong>具体值</strong>。比如输出
+<strong>MaxHeapSize</strong>、查看当前 jvm 进程<strong>是否开启打印 GC
+日志</strong> ( <code>-XX:PrintGCDetails</code> :详细 GC
+日志模式，这两个都是默认关闭的)。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">C:\Users\SnailClimb&gt;jinfo  -flag MaxHeapSize 17340</span><br><span class="line">-XX:MaxHeapSize=2124414976</span><br><span class="line">C:\Users\SnailClimb&gt;jinfo  -flag PrintGC 17340</span><br><span class="line">-XX:-PrintGC</span><br></pre></td></tr></table></figure></li>
+<li><p>使用 jinfo 可以在不重启虚拟机的情况下，可以动态的修改 jvm
+的参数。尤其在线上的环境特别有用,请看下面的例子： 使用```jinfo -flag
+[+|-]name vmid 开启或者关闭对应名称的参数：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">C:\Users\SnailClimb&gt;jinfo  -flag  PrintGC 17340</span><br><span class="line">-XX:-PrintGC</span><br><span class="line"></span><br><span class="line">C:\Users\SnailClimb&gt;jinfo  -flag  +PrintGC 17340</span><br><span class="line"></span><br><span class="line">C:\Users\SnailClimb&gt;jinfo  -flag  PrintGC 17340</span><br><span class="line">-XX:+PrintGC</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="jmap生成堆转储快照">jmap：生成堆转储快照</h2>
+<ul>
+<li><p><strong>jmap(Memory Map for Java
+)</strong>命令用于生成<strong>堆转储</strong>快照。如果不使用jmap命令，要想获取java<strong>堆转储</strong>，可以使用<code>-XX:+HeapDumpOutOfMemoryError</code>参数，可以让虚拟机在<strong>OOM</strong>异常出现<strong>之后</strong>，自动生成dump文件，Linux命令下通过<code>kill -3</code>发送进程推出信号也能拿到dump文件</p></li>
+<li><p><code>jmap</code> 的作用并不仅仅是为了<strong>获取 dump</strong>
+文件，它还可以<strong>查询 finalizer 执行队列</strong>、<strong>Java
+堆</strong>和<strong>永久代</strong>的详细信息，如<strong>空间使用率</strong>、当前使用的是<strong>哪种收集器</strong>等。和<code>jinfo</code>一样，<code>jmap</code>有不少功能在
+Windows 平台下也是受限制的。</p></li>
+<li><p>将指定应用程序的<strong>堆
+快照</strong>输出到桌面，后面可以通过<strong>jhat</strong>、<strong>Visual
+VM</strong>等工具分析该堆文件</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">C:\Users\SnailClimb&gt;jmap -dump:format=b,file=C:\Users\SnailClimb\Desktop\heap.hprof <span class="number">17340</span></span><br><span class="line">Dumping heap to C:\Users\SnailClimb\Desktop\heap.hprof ...</span><br><span class="line">Heap dump file created</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="jhat分析heapdump文件">jhat：分析heapdump文件</h2>
+<p><strong><code>jhat</code></strong> 用于分析 heapdump
+文件，它会建立一个 HTTP/HTML
+服务器，让用户可以在浏览器上查看分析结果。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">C:\Users\SnailClimb&gt;jhat C:\Users\SnailClimb\Desktop\heap.hprof</span><br><span class="line">Reading from C:\Users\SnailClimb\Desktop\heap.hprof...</span><br><span class="line">Dump file created Sat May 04 12:30:31 CST 2019</span><br><span class="line">Snapshot read, resolving...</span><br><span class="line">Resolving 131419 objects...</span><br><span class="line">Chasing references, expect 26 dots..........................</span><br><span class="line">Eliminating duplicate references..........................</span><br><span class="line">Snapshot resolved.</span><br><span class="line">Started HTTP server on port 7000</span><br><span class="line">Server is ready. </span><br></pre></td></tr></table></figure>
+<p>之后访问 http://localhost:7000/ 即可，如下： 进入/histo
+会发现，有这个东西 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221220094041210.png"
+alt="image-20221220094041210" />
+这个对象创建了9次，因为我是在第9次循环后dump堆快照的</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//测试代码如下</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyMain</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">byte</span>[] x = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">10</span> * <span class="number">1024</span> * <span class="number">1024</span>];<span class="comment">//10M</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;开始循环--&quot;</span>);</span><br><span class="line">        <span class="type">int</span> i=<span class="number">0</span>;</span><br><span class="line">        <span class="keyword">while</span> (++i&gt;<span class="number">0</span>) &#123;</span><br><span class="line">            String a=<span class="keyword">new</span> <span class="title class_">Date</span>().toString();</span><br><span class="line">            <span class="type">MyMain</span> <span class="variable">myMain</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">MyMain</span>();</span><br><span class="line">            System.out.println(i+<span class="string">&quot;循环中---&quot;</span> + <span class="keyword">new</span> <span class="title class_">Date</span>());</span><br><span class="line">            TimeUnit.SECONDS.sleep(<span class="number">10</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="jstack-生成虚拟机当前时刻的线程快照">jstack：
+生成虚拟机当前时刻的线程快照</h2>
+<ul>
+<li><p><strong>jstack (Stack Trace for Java )</strong>
+命令用于生成<strong>虚拟机当前时刻</strong>的<strong>线程快照</strong>。线程快照就是当前虚拟机内<strong>每一条线程正在执行</strong>的<strong>方法堆栈</strong>的集合</p></li>
+<li><p>生成线程快照的目的主要是<strong>定位线程长时间出现停顿的原因</strong>，如<strong>线程间死锁</strong>、<strong>死循环</strong>、<strong>请求外部资源导致的长时间等待</strong>等都是导致线程长时间停顿的原因。<strong>线程出现停顿</strong>的时候<strong>通过<code>jstack</code>来查看各个线程的调用堆栈</strong>，就可以知道没有响应的线程到底在后台做些什么事情，或者在等待些什么资源。</p></li>
+<li><p>线程死锁的代码，通过<strong>jstack</strong>
+命令进行<strong>死锁检查</strong>，输出<strong>死锁信息</strong>，找到<strong>发生死锁的线程</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> com.jvm;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">DeadLockDemo</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="type">Object</span> <span class="variable">resource1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Object</span>();<span class="comment">//资源 1</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="type">Object</span> <span class="variable">resource2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Object</span>();<span class="comment">//资源 2</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">            <span class="keyword">synchronized</span> (resource1) &#123;</span><br><span class="line">                System.out.println(Thread.currentThread() + <span class="string">&quot;get resource1&quot;</span>);</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    Thread.sleep(<span class="number">1000</span>);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125;</span><br><span class="line">                System.out.println(Thread.currentThread() + <span class="string">&quot;waiting get resource2&quot;</span>);</span><br><span class="line">                <span class="keyword">synchronized</span> (resource2) &#123;</span><br><span class="line">                    System.out.println(Thread.currentThread() + <span class="string">&quot;get resource2&quot;</span>);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;, <span class="string">&quot;线程 1&quot;</span>).start();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">            <span class="keyword">synchronized</span> (resource2) &#123;</span><br><span class="line">                System.out.println(Thread.currentThread() + <span class="string">&quot;get resource2&quot;</span>);</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    Thread.sleep(<span class="number">1000</span>);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125;</span><br><span class="line">                System.out.println(Thread.currentThread() + <span class="string">&quot;waiting get resource1&quot;</span>);</span><br><span class="line">                <span class="keyword">synchronized</span> (resource1) &#123;</span><br><span class="line">                    System.out.println(Thread.currentThread() + <span class="string">&quot;get resource1&quot;</span>);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;, <span class="string">&quot;线程 2&quot;</span>).start();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*------</span></span><br><span class="line"><span class="comment">Thread[线程 1,5,main]get resource1</span></span><br><span class="line"><span class="comment">Thread[线程 2,5,main]get resource2</span></span><br><span class="line"><span class="comment">Thread[线程 2,5,main]waiting get resource1</span></span><br><span class="line"><span class="comment">Thread[线程 1,5,main]waiting get resource2</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure></li>
+<li><p>分析 线程 A 通过 synchronized (resource1) 获得 resource1
+的监视器锁，然后通过<code>Thread.sleep(1000);</code>让线程 A 休眠 1s
+为的是让线程 B 得到执行然后获取到 resource2 的监视器锁。线程 A 和线程 B
+休眠结束了都开始企图请求获取对方的资源，然后这两个线程就会陷入互相等待的状态，这也就产生了死锁。</p></li>
+<li><p>通过jstack 命令分析</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">先使用jps 找到思索地那个类</span></span><br><span class="line">C:\Users\SnailClimb&gt;jps</span><br><span class="line">13792 KotlinCompileDaemon</span><br><span class="line">7360 NettyClient2</span><br><span class="line">17396</span><br><span class="line">7972 Launcher</span><br><span class="line">8932 Launcher</span><br><span class="line">9256 DeadLockDemo</span><br><span class="line">10764 Jps</span><br><span class="line">17340 NettyServer</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment"># 然后使用jstack命令分析</span></span></span><br><span class="line">C:\Users\SnailClimb&gt;jstack 9256 </span><br></pre></td></tr></table></figure>
+<p>输出的部分如下</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">Found one Java-level deadlock:</span><br><span class="line">=============================</span><br><span class="line">&quot;线程 2&quot;:</span><br><span class="line">  waiting to lock monitor 0x000000000333e668 (object 0x00000000d5efe1c0, a java.lang.Object),</span><br><span class="line">  which is held by &quot;线程 1&quot;</span><br><span class="line">&quot;线程 1&quot;:</span><br><span class="line">  waiting to lock monitor 0x000000000333be88 (object 0x00000000d5efe1d0, a java.lang.Object),</span><br><span class="line">  which is held by &quot;线程 2&quot;</span><br><span class="line"></span><br><span class="line">Java stack information for the threads listed above:</span><br><span class="line">===================================================</span><br><span class="line">&quot;线程 2&quot;:</span><br><span class="line">        at DeadLockDemo.lambda$main$1(DeadLockDemo.java:31)</span><br><span class="line">        - waiting to lock &lt;0x00000000d5efe1c0&gt; (a java.lang.Object)</span><br><span class="line">        - locked &lt;0x00000000d5efe1d0&gt; (a java.lang.Object)</span><br><span class="line">        at DeadLockDemo$$Lambda$2/1078694789.run(Unknown Source)</span><br><span class="line">        at java.lang.Thread.run(Thread.java:748)</span><br><span class="line">&quot;线程 1&quot;:</span><br><span class="line">        at DeadLockDemo.lambda$main$0(DeadLockDemo.java:16)</span><br><span class="line">        - waiting to lock &lt;0x00000000d5efe1d0&gt; (a java.lang.Object)</span><br><span class="line">        - locked &lt;0x00000000d5efe1c0&gt; (a java.lang.Object)</span><br><span class="line">        at DeadLockDemo$$Lambda$1/1324119927.run(Unknown Source)</span><br><span class="line">        at java.lang.Thread.run(Thread.java:748)</span><br><span class="line"></span><br><span class="line">Found 1 deadlock.</span><br></pre></td></tr></table></figure>
+<p>找到了发生死锁的线程的具体信息</p></li>
+</ul>
+<h1 id="jdk可视化分析工具">JDK可视化分析工具</h1>
+<h2
+id="jconsolejava监视与管理控制台">JConsole：Java监视与管理控制台</h2>
+<p>JConsole 是<strong>基于 JMX
+的可视化监视</strong>、<strong>管理工具</strong>。可以很方便的<strong>监视本地及远程服务器的
+java
+进程的内存使用情况</strong>。你可以在控制台输出<strong><code>console</code></strong>命令启动或者在
+JDK 目录下的 bin
+目录<strong>找到<code>jconsole.exe</code>然后双击启动</strong>. <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1JConsole%25E8%25BF%259E%25E6%258E%25A5.7490f097.png"
+alt="连接 Jconsole" /></p>
+<p>对于远程连接</p>
+<ol type="1">
+<li><p>在启动方</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">-Djava.rmi.server.hostname=外网访问 ip 地址 </span><br><span class="line">-Dcom.sun.management.jmxremote.port=60001   //监控的端口号</span><br><span class="line">-Dcom.sun.management.jmxremote.authenticate=false   //关闭认证</span><br><span class="line">-Dcom.sun.management.jmxremote.ssl=false </span><br></pre></td></tr></table></figure>
+<p>实例：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">java -Djava.rmi.server.hostname=192.168.200.200  -Dcom.sun.management.jmxremote  -Dcom.sun.management.jmxremote.port=60001  -Dcom.sun.management.jmxremote.ssl=false  -Dcom.sun.management.jmxremote.authenticate=false  com.jvm.DeadLockDemo</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">其中 192.168.200.200 为启动该类的机器的ip，而不是谁要连接</span> </span><br></pre></td></tr></table></figure>
+<p>在使用 JConsole 连接时，远程进程地址如下：</p>
+<blockquote>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">外网访问 ip 地址:60001</span><br></pre></td></tr></table></figure>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221220103410971.png"
+alt="image-20221220103410971" />
+<figcaption aria-hidden="true">image-20221220103410971</figcaption>
+</figure>
+</blockquote></li>
+<li><p>注意，虚拟机中（这里ip
+xxx.200是虚拟机ip），需要开放的端口不只是60001，还要通过
+<code>netstat -nltp</code>开放另外两个端口 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221220104157529.png"
+alt="image-20221220104157529" /> centos中使用</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">firewall-cmd --zone=public --add-port=45443/tcp --permanent</span><br><span class="line">firewall-cmd --zone=public --add-port=36521/tcp --permanent</span><br><span class="line">firewall-cmd --zone=public --add-port=60001/tcp --permanent</span><br><span class="line">firewall-cmd --reload #重启firewall</span><br></pre></td></tr></table></figure>
+<p>之后才能连接上</p>
+<p><img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221220104326724.png"
+alt="image-20221220104326724" /> <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/2%25E6%259F%25A5%25E7%259C%258BJava%25E7%25A8%258B%25E5%25BA%258F%25E6%25A6%2582%25E5%2586%25B5.9c949b67.png"
+alt="查看 Java 程序概况" /></p></li>
+</ol>
+<h3 id="内存监控">内存监控</h3>
+<p>JConsole
+可以显示<strong>当前内存的详细信息</strong>。不仅包括<strong>堆内存/非堆内存</strong>的整体信息，还可以细化到
+<strong>eden 区</strong>、<strong>survivor
+区</strong>等的使用情况，如下图所示。</p>
+<p>点击右边的“执行 GC(G)”按钮可以强制应用程序执行一个 Full GC。</p>
+<blockquote>
+<p><strong>新生代 GC（Minor
+GC）</strong>:指发生新生代的的垃圾收集动作，Minor GC
+非常频繁，回收速度一般也比较快。</p>
+<p><strong>老年代 GC（Major GC/Full GC）</strong>:指发生在老年代的
+GC，出现了 Major GC 经常会伴随至少一次的 Minor GC（并非绝对），Major GC
+的速度一般会比 Minor GC 的慢 10 倍以上。</p>
+</blockquote>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/3%25E5%2586%2585%25E5%25AD%2598%25E7%259B%2591%25E6%258E%25A7.4f4b8a7f.png"
+alt="内存监控" />
+<figcaption aria-hidden="true">内存监控</figcaption>
+</figure>
+<h3 id="线程监控">线程监控</h3>
+<p>类似我们前面讲的 <code>jstack</code> 命令，不过这个是可视化的。</p>
+<p>最下面有一个"检测死锁
+(D)"按钮，点击这个按钮可以自动为你找到发生死锁的线程以及它们的详细信息
+。 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/4%25E7%25BA%25BF%25E7%25A8%258B%25E7%259B%2591%25E6%258E%25A7.4364833a.png"
+alt="线程监控" /></p>
+<h2 id="visualvm-多合一故障处理工具">VisualVM： 多合一故障处理工具</h2>
+<p>VisualVM 提供在 Java 虚拟机 (Java Virutal Machine, JVM) 上运行的 Java
+应用程序的详细信息。在 VisualVM
+的图形用户界面中，您可以方便、快捷地查看多个 Java
+应用程序的相关信息。Visual VM 官网：<a
+href="https://visualvm.github.io/">https://visualvm.github.io/open in
+new window</a> 。Visual VM 中文文档:<a
+href="https://visualvm.github.io/documentation.html">https://visualvm.github.io/documentation.htmlopen
+in new window</a>。</p>
+<p>下面这段话摘自《深入理解 Java 虚拟机》。</p>
+<blockquote>
+<p>VisualVM（All-in-One Java Troubleshooting Tool）是到目前为止随 JDK
+发布的功能最强大的运行监视和故障处理程序，官方在 VisualVM
+的软件说明中写上了“All-in-One”的描述字样，预示着他除了运行监视、故障处理外，还提供了很多其他方面的功能，如性能分析（Profiling）。VisualVM
+的性能分析功能甚至比起 JProfiler、YourKit 等专业且收费的 Profiling
+工具都不会逊色多少，而且 VisualVM
+还有一个很大的优点：不需要被监视的程序基于特殊 Agent
+运行，因此他对应用程序的实际性能的影响很小，使得他可以直接应用在生产环境中。这个优点是
+JProfiler、YourKit 等工具无法与之媲美的。</p>
+</blockquote>
+<p>VisualVM 基于 NetBeans
+平台开发，因此他一开始就具备了插件扩展功能的特性，通过插件扩展支持，VisualVM
+可以做到：</p>
+<ul>
+<li><strong>显示虚拟机进程以及进程的配置、环境信息（jps、jinfo）。</strong></li>
+<li><strong>监视应用程序的
+CPU、GC、堆、方法区以及线程的信息（jstat、jstack）。</strong></li>
+<li><strong>dump 以及分析堆转储快照（jmap、jhat）。</strong></li>
+<li><strong>方法级的程序运行性能分析，找到被调用最多、运行时间最长的方法。</strong></li>
+<li><strong>离线程序快照：收集程序的运行时配置、线程 dump、内存 dump
+等信息建立一个快照，可以将快照发送开发者处进行 Bug 反馈。</strong></li>
+<li><strong>其他 plugins 的无限的可能性......</strong></li>
+</ul>
+<p>这里就不具体介绍 VisualVM 的使用，如果想了解的话可以看:</p>
+<ul>
+<li><a
+href="https://visualvm.github.io/documentation.html">https://visualvm.github.io/documentation.htmlopen
+in new window</a></li>
+<li>https://www.ibm.com/developerworks/cn/java/j-lo-visualvm/index.html</li>
+</ul>
+]]></content>
+      <categories>
+        <category>学习</category>
+      </categories>
+      <tags>
+        <tag>复习</tag>
+        <tag>复习-javaGuide</tag>
+        <tag>复习-javaGuide-jvm</tag>
       </tags>
   </entry>
 </search>
