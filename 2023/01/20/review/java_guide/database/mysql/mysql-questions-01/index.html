@@ -239,14 +239,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>8k</span>
+              <span>9.5k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>15 分钟</span>
+              <span>17 分钟</span>
             </span>
             <div class="post-description">MySQL常见面试题总结</div>
 
@@ -699,9 +699,142 @@ MVCC</strong> 实现。</li>
 <h1 id="mysql锁">MySQL锁</h1>
 <h2
 id="表级锁和行级锁了解吗有什么区别">表级锁和行级锁了解吗？有什么区别</h2>
+<ul>
+<li>MyISAM 仅仅支持<strong>表级锁(table-level
+locking)</strong>，一锁就<strong>锁整张表</strong>，这在<strong>并发写的情况下性非常差</strong>。</li>
+<li>InnoDB 不光<strong>支持表级锁(table-level
+locking)</strong>，还<strong>支持行级锁(row-level
+locking)</strong>，<strong>默认为行级锁</strong>。行级锁的粒度更小，<strong>仅对相关的记录上锁</strong>即可（对一行或者多行记录加锁），所以<strong>对于并发写入</strong>操作来说，
+<strong>InnoDB 的性能更高</strong>。</li>
+</ul>
+<p><strong>表级锁和行级锁对比</strong> ：</p>
+<ul>
+<li><p><strong>表级锁：</strong> MySQL
+中<strong>锁定粒度最大的一种锁（全局锁除外）</strong>，是<strong>针对非索引字段</strong>加的锁，对当前操作的<strong>整张表加锁</strong>，实现简单，<strong>资源消耗也比较少</strong>，<strong>加锁快，不会出现死锁</strong>。其锁定粒度最大，<strong>触发锁冲突的概率最高，并发度最低</strong>，MyISAM
+和 InnoDB 引擎都支持表级锁。</p></li>
+<li><p><strong>行级锁：</strong> MySQL
+中<strong>锁定粒度最小</strong>的一种锁，是<strong>针对索引字段加的锁</strong>，<strong>只针对当前操作的行记录进行加锁</strong>。
+行级锁能<strong>大大减少数据库操作的冲突</strong>。其加锁粒度最小，<strong>并发度高</strong>，但<strong>加锁的开销也最大，加锁慢，会出现死锁</strong>。</p></li>
+</ul>
 <h2 id="行级锁的使用有什么注意事项">行级锁的使用有什么注意事项</h2>
-<h2 id="共享锁和排他锁呢">共享锁和排他锁呢</h2>
+<ul>
+<li><p>InnoDB
+的行锁是<strong>针对索引</strong>字段加的锁，表级锁是<strong>针对非索引</strong>字段加的锁。</p>
+<p>当我们执行 <code>UPDATE</code>、<code>DELETE</code>
+语句时，<strong>如果
+<code>WHERE</code>条件中字段没有命中唯一索引</strong>或者<strong>索引失效</strong>的话，就会<strong>导致扫描全表对表中的所有行记录进行加锁</strong>。这个在我们日常工作开发中经常会遇到，一定要多多注意！！！</p></li>
+<li><p>不过，很多时候即使用了索引也有可能会走全表扫描，这是<strong>因为
+MySQL 优化器</strong>的原因。</p></li>
+</ul>
+<h2 id="共享锁和排他锁">共享锁和排他锁</h2>
+<p><strong>不论是表级锁还是行级锁</strong>，都存在<strong>共享锁（Share
+Lock，S 锁）</strong>和<strong>排他锁（Exclusive Lock，X
+锁）</strong>这两类</p>
+<ul>
+<li><strong>共享锁（S 锁）</strong>
+：又称读锁，事务在<strong>读取记录的时候获取共享锁</strong>，允许<strong>多个事务同时获取（锁兼容）</strong>。</li>
+<li><strong>排他锁（X 锁）</strong>
+：又称<strong>写锁/独占锁</strong>，事务在<strong>修改记录的时候获取排他锁</strong>，<strong>不允许多个事务同时获取</strong>。如果一个记录已经被加了排他锁，那其他事务不能再对这条事务加任何类型的锁<strong>（锁不兼容）</strong>。</li>
+</ul>
+<p><strong>排他锁与任何的锁都不兼容，共享锁仅和共享锁兼容。</strong></p>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: left;">S 锁</th>
+<th style="text-align: left;">X 锁</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">S 锁</td>
+<td style="text-align: left;">不冲突</td>
+<td style="text-align: left;">冲突</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">X 锁</td>
+<td style="text-align: left;">冲突</td>
+<td style="text-align: left;">冲突</td>
+</tr>
+</tbody>
+</table>
+<p><strong>由于 MVCC</strong> 的存在，对于<strong>一般的
+<code>SELECT</code> 语句，InnoDB 不会加任何锁</strong>。不过，
+你可以通过以下语句<strong>显式加共享锁</strong>或<strong>排他锁</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># 共享锁</span><br><span class="line">SELECT ... LOCK IN SHARE MODE;</span><br><span class="line"># 排他锁</span><br><span class="line">SELECT ... FOR UPDATE;</span><br></pre></td></tr></table></figure>
 <h2 id="意向锁有什么作用">意向锁有什么作用</h2>
+<p>★★ <strong>重点</strong>
+：<strong>如果需要用到表锁的话，如何判断表中的记录没有行锁</strong>呢？一行一行遍历肯定是不行，性能太差。我们需要用到一个叫做<strong>意向锁</strong>的东东<strong>来快速判断是否可以对某个表使用表锁</strong>。</p>
+<ul>
+<li><p><strong>意向锁是表级锁（这句话很重要，意向锁是描述某个表的某个属性（这个表是否有记录加了共享锁/或者排他锁））</strong>，共有两种：</p>
+<ul>
+<li><p><strong>意向共享锁（Intention Shared Lock，IS
+锁）</strong>：事务有意向对表中的某些记录加共享锁（S
+锁），加共享锁前必须<strong>先取得该表的 IS 锁</strong>。</p></li>
+<li><p><strong>意向排他锁（Intention Exclusive Lock，IX
+锁）</strong>：事务有意向对表中的某些记录加排他锁（X
+锁），加排他锁之前必须<strong>先取得该表的 IX 锁</strong>。</p>
+<blockquote>
+<p>意向锁是有数据引擎自己维护的，用户无法手动操作意向锁，在<strong>为数据行加共享
+/ 排他锁之前</strong>，InooDB
+会<strong>先获取（如果获取到了，其实就是“加了锁”）该数据行所在在数据表的对应意向锁</strong>。</p>
+</blockquote></li>
+</ul></li>
+<li><p>意向锁之间是互相兼容的 ：</p>
+<blockquote>
+<p>理由很简单，表里某一条记录加了排他锁（即这个表加了意向排他锁），不代表不能操作其他记录</p>
+</blockquote>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th>IS 锁</th>
+<th>IX 锁</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>IS 锁</td>
+<td>兼容</td>
+<td>兼容</td>
+</tr>
+<tr class="even">
+<td>IX 锁</td>
+<td>兼容</td>
+<td>兼容</td>
+</tr>
+</tbody>
+</table></li>
+<li><p>意向锁和共享锁和排它锁互斥（这里指的是<strong>表级别</strong>的共享锁和排他锁，意向锁不会与<strong>行级</strong>的共享锁和排他锁互斥，★★括号里这句话极其重要，要不然就看不懂下面的表了）。</p>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th>IS 锁</th>
+<th>IX 锁</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>S 锁</td>
+<td>兼容</td>
+<td>互斥</td>
+</tr>
+<tr class="even">
+<td>X 锁</td>
+<td>互斥</td>
+<td>互斥</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>《MySQL 技术内幕 InnoDB
+存储引擎》这本书对应的描述应该是笔误了。<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220511171419081.png"
+alt="img" /></p>
+</blockquote></li>
+</ul>
 <h2 id="innodb-有哪几类行锁">InnoDB 有哪几类行锁</h2>
 <h2 id="当前读和快照读有什么区别">当前读和快照读有什么区别</h2>
 <h1 id="mysql-性能优化">MySQL 性能优化</h1>
@@ -801,7 +934,7 @@ id="能用mysql直接存储文件比如图片吗">能用MySQL直接存储文件�
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#mysql%E5%9F%BA%E7%A1%80"><span class="nav-number">1.</span> <span class="nav-text">MySQL基础</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B3%E7%B3%BB%E5%9E%8B%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.1.</span> <span class="nav-text">关系型数据库介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mysql%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.2.</span> <span class="nav-text">MySQL介绍</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#mysql%E5%9F%BA%E7%A1%80%E6%9E%B6%E6%9E%84"><span class="nav-number">2.</span> <span class="nav-text">MySQL基础架构</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#mysql%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E"><span class="nav-number">3.</span> <span class="nav-text">MySQL存储引擎</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#mysql%E6%94%AF%E6%8C%81%E5%93%AA%E4%BA%9B%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E%E9%BB%98%E8%AE%A4%E4%BD%BF%E7%94%A8%E5%93%AA%E4%B8%AA"><span class="nav-number">3.1.</span> <span class="nav-text">MySQL支持哪些存储引擎？默认使用哪个？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mysql%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E%E6%9E%B6%E6%9E%84%E4%BA%86%E8%A7%A3%E5%90%97"><span class="nav-number">3.2.</span> <span class="nav-text">MySQL存储引擎架构了解吗？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#myisam%E5%92%8Cinnodb%E7%9A%84%E5%8C%BA%E5%88%AB%E6%98%AF%E4%BB%80%E4%B9%88"><span class="nav-number">3.3.</span> <span class="nav-text">MyISAM和InnoDB的区别是什么？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#myisam%E5%92%8Cinnodb-%E5%A6%82%E4%BD%95%E9%80%89%E6%8B%A9"><span class="nav-number">3.4.</span> <span class="nav-text">MyISAM和InnoDB 如何选择</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#mysql-%E7%B4%A2%E5%BC%95"><span class="nav-number">4.</span> <span class="nav-text">MySQL 索引</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#mysql%E6%9F%A5%E8%AF%A2%E7%BC%93%E5%AD%98"><span class="nav-number">5.</span> <span class="nav-text">MySQL查询缓存</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#mysql%E4%BA%8B%E5%8A%A1"><span class="nav-number">6.</span> <span class="nav-text">MySQL事务</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%95%E8%B0%93%E4%BA%8B%E5%8A%A1"><span class="nav-number">6.1.</span> <span class="nav-text">何谓事务</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%95%E8%B0%93%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BA%8B%E5%8A%A1"><span class="nav-number">6.2.</span> <span class="nav-text">何谓数据库事务</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B9%B6%E5%8F%91%E4%BA%8B%E5%8A%A1%E5%B8%A6%E6%9D%A5%E4%BA%86%E5%93%AA%E4%BA%9B%E9%97%AE%E9%A2%98"><span class="nav-number">6.3.</span> <span class="nav-text">并发事务带来了哪些问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8D%E5%8F%AF%E9%87%8D%E5%A4%8D%E8%AF%BB%E5%92%8C%E5%B9%BB%E8%AF%BB%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB"><span class="nav-number">6.4.</span> <span class="nav-text">不可重复读和幻读有什么区别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#sql%E6%A0%87%E5%87%86%E5%AE%9A%E4%B9%89%E4%BA%86%E5%93%AA%E4%BA%9B%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB"><span class="nav-number">6.5.</span> <span class="nav-text">SQL标准定义了哪些事务隔离级别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mysql%E7%9A%84%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB%E6%98%AF%E5%9F%BA%E4%BA%8E%E9%94%81%E5%AE%9E%E7%8E%B0%E7%9A%84%E5%90%97"><span class="nav-number">6.6.</span> <span class="nav-text">MySQL的隔离级别是基于锁实现的吗</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mysql%E7%9A%84%E9%BB%98%E8%AE%A4%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB%E6%98%AF%E4%BB%80%E4%B9%88"><span class="nav-number">6.7.</span> <span class="nav-text">MySQL的默认隔离级别是什么</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#mysql%E9%94%81"><span class="nav-number">7.</span> <span class="nav-text">MySQL锁</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A1%A8%E7%BA%A7%E9%94%81%E5%92%8C%E8%A1%8C%E7%BA%A7%E9%94%81%E4%BA%86%E8%A7%A3%E5%90%97%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB"><span class="nav-number">7.1.</span> <span class="nav-text">表级锁和行级锁了解吗？有什么区别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A1%8C%E7%BA%A7%E9%94%81%E7%9A%84%E4%BD%BF%E7%94%A8%E6%9C%89%E4%BB%80%E4%B9%88%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="nav-number">7.2.</span> <span class="nav-text">行级锁的使用有什么注意事项</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B1%E4%BA%AB%E9%94%81%E5%92%8C%E6%8E%92%E4%BB%96%E9%94%81%E5%91%A2"><span class="nav-number">7.3.</span> <span class="nav-text">共享锁和排他锁呢</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%84%8F%E5%90%91%E9%94%81%E6%9C%89%E4%BB%80%E4%B9%88%E4%BD%9C%E7%94%A8"><span class="nav-number">7.4.</span> <span class="nav-text">意向锁有什么作用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#innodb-%E6%9C%89%E5%93%AA%E5%87%A0%E7%B1%BB%E8%A1%8C%E9%94%81"><span class="nav-number">7.5.</span> <span class="nav-text">InnoDB 有哪几类行锁</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BD%93%E5%89%8D%E8%AF%BB%E5%92%8C%E5%BF%AB%E7%85%A7%E8%AF%BB%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB"><span class="nav-number">7.6.</span> <span class="nav-text">当前读和快照读有什么区别</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#mysql-%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96"><span class="nav-number">8.</span> <span class="nav-text">MySQL 性能优化</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%83%BD%E7%94%A8mysql%E7%9B%B4%E6%8E%A5%E5%AD%98%E5%82%A8%E6%96%87%E4%BB%B6%E6%AF%94%E5%A6%82%E5%9B%BE%E7%89%87%E5%90%97"><span class="nav-number">8.1.</span> <span class="nav-text">能用MySQL直接存储文件（比如图片）吗</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mysql%E5%A6%82%E4%BD%95%E5%AD%98%E5%82%A8ip-%E5%9C%B0%E5%9D%80"><span class="nav-number">8.2.</span> <span class="nav-text">MySQL如何存储IP 地址</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%89%E5%93%AA%E4%BA%9B%E5%B8%B8%E8%A7%81%E7%9A%84sql%E4%BC%98%E5%8C%96%E6%89%8B%E6%AE%B5%E5%90%97"><span class="nav-number">8.3.</span> <span class="nav-text">有哪些常见的SQL优化手段吗</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#mysql%E5%9F%BA%E7%A1%80"><span class="nav-number">1.</span> <span class="nav-text">MySQL基础</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B3%E7%B3%BB%E5%9E%8B%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.1.</span> <span class="nav-text">关系型数据库介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mysql%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.2.</span> <span class="nav-text">MySQL介绍</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#mysql%E5%9F%BA%E7%A1%80%E6%9E%B6%E6%9E%84"><span class="nav-number">2.</span> <span class="nav-text">MySQL基础架构</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#mysql%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E"><span class="nav-number">3.</span> <span class="nav-text">MySQL存储引擎</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#mysql%E6%94%AF%E6%8C%81%E5%93%AA%E4%BA%9B%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E%E9%BB%98%E8%AE%A4%E4%BD%BF%E7%94%A8%E5%93%AA%E4%B8%AA"><span class="nav-number">3.1.</span> <span class="nav-text">MySQL支持哪些存储引擎？默认使用哪个？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mysql%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E%E6%9E%B6%E6%9E%84%E4%BA%86%E8%A7%A3%E5%90%97"><span class="nav-number">3.2.</span> <span class="nav-text">MySQL存储引擎架构了解吗？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#myisam%E5%92%8Cinnodb%E7%9A%84%E5%8C%BA%E5%88%AB%E6%98%AF%E4%BB%80%E4%B9%88"><span class="nav-number">3.3.</span> <span class="nav-text">MyISAM和InnoDB的区别是什么？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#myisam%E5%92%8Cinnodb-%E5%A6%82%E4%BD%95%E9%80%89%E6%8B%A9"><span class="nav-number">3.4.</span> <span class="nav-text">MyISAM和InnoDB 如何选择</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#mysql-%E7%B4%A2%E5%BC%95"><span class="nav-number">4.</span> <span class="nav-text">MySQL 索引</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#mysql%E6%9F%A5%E8%AF%A2%E7%BC%93%E5%AD%98"><span class="nav-number">5.</span> <span class="nav-text">MySQL查询缓存</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#mysql%E4%BA%8B%E5%8A%A1"><span class="nav-number">6.</span> <span class="nav-text">MySQL事务</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%95%E8%B0%93%E4%BA%8B%E5%8A%A1"><span class="nav-number">6.1.</span> <span class="nav-text">何谓事务</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%95%E8%B0%93%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BA%8B%E5%8A%A1"><span class="nav-number">6.2.</span> <span class="nav-text">何谓数据库事务</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B9%B6%E5%8F%91%E4%BA%8B%E5%8A%A1%E5%B8%A6%E6%9D%A5%E4%BA%86%E5%93%AA%E4%BA%9B%E9%97%AE%E9%A2%98"><span class="nav-number">6.3.</span> <span class="nav-text">并发事务带来了哪些问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8D%E5%8F%AF%E9%87%8D%E5%A4%8D%E8%AF%BB%E5%92%8C%E5%B9%BB%E8%AF%BB%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB"><span class="nav-number">6.4.</span> <span class="nav-text">不可重复读和幻读有什么区别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#sql%E6%A0%87%E5%87%86%E5%AE%9A%E4%B9%89%E4%BA%86%E5%93%AA%E4%BA%9B%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB"><span class="nav-number">6.5.</span> <span class="nav-text">SQL标准定义了哪些事务隔离级别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mysql%E7%9A%84%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB%E6%98%AF%E5%9F%BA%E4%BA%8E%E9%94%81%E5%AE%9E%E7%8E%B0%E7%9A%84%E5%90%97"><span class="nav-number">6.6.</span> <span class="nav-text">MySQL的隔离级别是基于锁实现的吗</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mysql%E7%9A%84%E9%BB%98%E8%AE%A4%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB%E6%98%AF%E4%BB%80%E4%B9%88"><span class="nav-number">6.7.</span> <span class="nav-text">MySQL的默认隔离级别是什么</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#mysql%E9%94%81"><span class="nav-number">7.</span> <span class="nav-text">MySQL锁</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A1%A8%E7%BA%A7%E9%94%81%E5%92%8C%E8%A1%8C%E7%BA%A7%E9%94%81%E4%BA%86%E8%A7%A3%E5%90%97%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB"><span class="nav-number">7.1.</span> <span class="nav-text">表级锁和行级锁了解吗？有什么区别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A1%8C%E7%BA%A7%E9%94%81%E7%9A%84%E4%BD%BF%E7%94%A8%E6%9C%89%E4%BB%80%E4%B9%88%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="nav-number">7.2.</span> <span class="nav-text">行级锁的使用有什么注意事项</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B1%E4%BA%AB%E9%94%81%E5%92%8C%E6%8E%92%E4%BB%96%E9%94%81"><span class="nav-number">7.3.</span> <span class="nav-text">共享锁和排他锁</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%84%8F%E5%90%91%E9%94%81%E6%9C%89%E4%BB%80%E4%B9%88%E4%BD%9C%E7%94%A8"><span class="nav-number">7.4.</span> <span class="nav-text">意向锁有什么作用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#innodb-%E6%9C%89%E5%93%AA%E5%87%A0%E7%B1%BB%E8%A1%8C%E9%94%81"><span class="nav-number">7.5.</span> <span class="nav-text">InnoDB 有哪几类行锁</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BD%93%E5%89%8D%E8%AF%BB%E5%92%8C%E5%BF%AB%E7%85%A7%E8%AF%BB%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB"><span class="nav-number">7.6.</span> <span class="nav-text">当前读和快照读有什么区别</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#mysql-%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96"><span class="nav-number">8.</span> <span class="nav-text">MySQL 性能优化</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%83%BD%E7%94%A8mysql%E7%9B%B4%E6%8E%A5%E5%AD%98%E5%82%A8%E6%96%87%E4%BB%B6%E6%AF%94%E5%A6%82%E5%9B%BE%E7%89%87%E5%90%97"><span class="nav-number">8.1.</span> <span class="nav-text">能用MySQL直接存储文件（比如图片）吗</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mysql%E5%A6%82%E4%BD%95%E5%AD%98%E5%82%A8ip-%E5%9C%B0%E5%9D%80"><span class="nav-number">8.2.</span> <span class="nav-text">MySQL如何存储IP 地址</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%89%E5%93%AA%E4%BA%9B%E5%B8%B8%E8%A7%81%E7%9A%84sql%E4%BC%98%E5%8C%96%E6%89%8B%E6%AE%B5%E5%90%97"><span class="nav-number">8.3.</span> <span class="nav-text">有哪些常见的SQL优化手段吗</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -871,12 +1004,12 @@ id="能用mysql直接存储文件比如图片吗">能用MySQL直接存储文件�
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">840k</span>
+    <span title="站点总字数">841k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">25:27</span>
+    <span title="站点阅读时长">25:29</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
