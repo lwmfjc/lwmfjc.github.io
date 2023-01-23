@@ -246,14 +246,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>3.3k</span>
+              <span>8.8k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>6 分钟</span>
+              <span>16 分钟</span>
             </span>
             <div class="post-description">MySQL高性能优化规范建议总结</div>
 
@@ -443,53 +443,309 @@ decimal 。</p>
 <h1 id="索引设计规范">索引设计规范</h1>
 <h2
 id="限制每张表上的索引数量建议单张表索引不超过5个">限制每张表上的索引数量，建议单张表索引不超过5个</h2>
+<ul>
+<li><p>索引并不是越多越好！索引可以<strong>提高效率</strong>同样可以<strong>降低效率</strong>。</p></li>
+<li><p>索引可以增加查询效率，但同样也会<strong>降低插入</strong>和<strong>更新</strong>的效率，甚至有些情况下会<strong>降低查询效率</strong>。</p>
+<blockquote>
+<p>因为 MySQL
+优化器在选择如何优化查询时，会根据统一信息，对每一个可以用到的索引来进行评估，以生成出一个最好的执行计划，如果同时有很多个索引都可以用于查询，就会<strong>增加
+MySQL
+优化器生成执行计划的时间</strong>，同样会<strong>降低查询性能</strong>。</p>
+</blockquote></li>
+</ul>
 <h2 id="禁止使用全文索引">禁止使用全文索引</h2>
+<p>全文索引不适用于 OLTP 场景。</p>
+<blockquote>
+<p>On-Line Transaction
+Processing联机事务处理过程(<em>OLTP</em>)，也称为面向交易的处理过程</p>
+</blockquote>
 <h2
 id="禁止给表中的每一列都建立单独的索引">禁止给表中的每一列都建立单独的索引</h2>
+<p>5.6 版本之前，一个 sql 只能使用到一个表中的一个索引，5.6
+以后，虽然有了合并索引的优化方式，但是还是远远没有使用一个<strong>联合索引</strong>的查询方式好</p>
+<blockquote>
+<p>尽量使用<strong>联合索引</strong></p>
+</blockquote>
 <h2 id="每个innodb表必须有个主键">每个InnoDB表必须有个主键</h2>
+<ul>
+<li>InnoDB
+是一种<strong>索引组织表</strong>：数据的<strong>存储的逻辑顺序</strong>和<strong>索引的顺序</strong>是相同的。每个表都可以有多个索引，但是<strong>表的存储顺序只能有一种</strong>。</li>
+<li>InnoDB 是按照<strong>主键索引的顺序</strong>来组织表的
+<ul>
+<li><strong>不要使用更新频繁的列</strong>作为主键，<strong>不适用多列主键</strong>（相当于联合索引）</li>
+<li>不要使用
+<strong>UUID,MD5,HASH,字符串</strong>列作为主键（无法保证数据的<strong>顺序增长</strong>）</li>
+<li>主键<strong>建议使用自增 ID</strong> 值</li>
+</ul></li>
+</ul>
 <h2 id="常见索引列建议">常见索引列建议</h2>
+<ul>
+<li><p>出现在 <strong>SELECT、UPDATE、DELETE</strong> 语句的
+<strong>WHERE 从句中的列</strong></p></li>
+<li><p>包含在 <strong>ORDER BY</strong>、<strong>GROUP
+BY</strong>、<strong>DISTINCT</strong> 中的字段</p></li>
+<li><p>并不要将符合 1 和 2 中的字段的列都建立一个索引， <strong>通常将
+1、2 中的字段建立联合索引</strong>效果更好</p></li>
+<li><p><strong>多表 join 的关联列</strong></p></li>
+</ul>
 <h2 id="如何选择索引列的顺序">如何选择索引列的顺序</h2>
+<p>建立<strong>索引的目的</strong>是：希望<strong>通过索引进行数据查找</strong>，<strong>减少随机
+IO</strong>，<strong>增加查询性能</strong>
+，索引能<strong>过滤出越少</strong>的数据，则<strong>从磁盘中读入的数据也就越少</strong>。</p>
+<ul>
+<li><strong>区分度最高</strong>的放在联合索引的<strong>最左侧</strong>（区分度=<strong>列中不同值的数量</strong>/列的总行数）</li>
+<li>尽量把字段长度小的列放在联合索引的最左侧（因为<strong>字段长度越小</strong>，<strong>一页能存储的数据量越大</strong>，<strong>IO
+性能也就越好</strong>）</li>
+<li>使用<strong>最频繁的列</strong>放到联合索引的左侧（这样可以比较少的建立一些索引）</li>
+</ul>
 <h2
 id="避免建立冗余索引和重复索引增加了查询优化器生成执行计划的时间">避免建立冗余索引和重复索引（增加了查询优化器生成执行计划的时间）</h2>
+<ul>
+<li><strong>重复索</strong>引示例：primary key(id)、index(id)、unique
+index(id)</li>
+<li><strong>冗余索引</strong>示例：index(a,b,c)、index(a,b)、index(a)</li>
+</ul>
 <h2
 id="对于频繁的查询有优先考虑使用覆盖索引">对于频繁的查询有优先考虑使用覆盖索引</h2>
+<blockquote>
+<p><strong>覆盖索引</strong>：就是<strong>包含了所有查询字段</strong>
+(where,select,order by,group by 包含的字段) 的索引</p>
+</blockquote>
+<p><strong>覆盖索引的好处：</strong></p>
+<ul>
+<li><strong>避免 InnoDB 表进行索引的二次查询:</strong> InnoDB
+是以聚集索引的顺序来存储的，对于 InnoDB
+来说，<strong>二级索引在叶子节点中所保存的是行的主键信息</strong>，如果是用二级索引查询数据的话，在查找到相应的键值后，<strong>还要通过主键进行二次查询</strong>才能获取我们真实所需要的数据。而在<strong>覆盖索引中，二级索引的键值中可以获取所有的数据</strong>，避免了对主键的二次查询
+，减少了 IO 操作，提升了查询效率。</li>
+<li><strong>可以把随机 IO 变成顺序 IO 加快查询效率:</strong>
+由于覆盖索引是<strong>按键值的顺序存储</strong>的，对于 IO
+密集型的<strong>范围查找</strong>来说，对比随机从磁盘读取每一行的数据
+<strong>IO
+要少的多</strong>，因此利用覆盖索引在访问时也可以<strong>把磁盘的随机读取的
+IO</strong> 转变成<strong>索引查找的顺序 IO</strong>。</li>
+</ul>
 <h2 id="索引set规范">索引SET规范</h2>
+<p><strong>尽量避免使用外键约束</strong></p>
+<ul>
+<li><strong>不建议使用外键约束（foreign
+key）</strong>，但一定要在表与表之间的<strong>关联键上建立索引</strong></li>
+<li>外键可用于<strong>保证数据的参照完整性</strong>，但建议<strong>在业务端实现</strong></li>
+<li>外键会<strong>影响父表和子表的写操作</strong>从而降低性能</li>
+</ul>
 <h1 id="数据库sql开发规范">数据库SQL开发规范</h1>
 <h2 id="优化对性能影响较大的sql语句">优化对性能影响较大的SQL语句</h2>
+<p>要找到<strong>最需要优化</strong>的 SQL
+语句。要么是<strong>使用最频繁</strong>的语句，要么是<strong>优化后提高最明显</strong>的语句，可以通过<strong>查询
+MySQL 的慢查询日志</strong>来发现需要进行优化的 SQL 语句；</p>
 <h2 id="充分利用表上已经存在的索引">充分利用表上已经存在的索引</h2>
+<ul>
+<li><p>避免使用双%号的查询条件。如：<code>a like '%123%'</code>，（<strong>如果无前置%,只有后置%，是可以用到列上的索引的</strong>）</p></li>
+<li><p>一个 SQL
+只能利用到<strong>复合索引中的一列</strong>进行<strong>范围</strong>查询。如：有
+a,b,c 列的联合索引，在查询条件中有 a 列的范围查询，则在 b,c
+列上的索引将不会被用到。</p>
+<blockquote>
+<p>https://blog.csdn.net/qq_33589510/article/details/123038988<br />
+(a=1 b=1 c=1) (a=1 b=2 c=1) (a=1 b=2 c=3)<br />
+(a=2 b=2 c=3) (a=2 b=2 c=5) (a=2 b=5 c=1) (a=2 b=5 c=2)<br />
+(a=3 b=0 c=1) (a=3 b=3 c=5) (a=3 b=8 c=6)<br />
+假设有一条SQL为<code>select a,b,c from table where a = 2 and b &gt;1 and c = 2</code>，那么索引c就用不到了，因为有可能b查找后c是无序的了</p>
+</blockquote></li>
+<li><p>在定义联合索引时，如果 a
+列要用到<strong>范围查找</strong>的话，就要把 <strong>a
+列放到联合索引的右侧</strong>，使用 <strong>left join</strong> 或
+<strong>not exists</strong> 来优化 not in 操作，因为 <strong>not in
+也通常会使用索引失效</strong>。</p>
+<blockquote>
+<p>这个的意思是，如果有两个列，b，a都是索引<br />
+SELECT * FROM table WHERE a &gt; 1 and b = 2;<br />
+对于上面这句，如果建立(a，b)，那么只有a会用得到。而如果建立(b，a)，则都能用上<br />
+（<strong>如果没有b= 2，那么（b，a）索引就用不上了</strong>）</p>
+</blockquote></li>
+</ul>
 <h2 id="禁止使用select-必须使用select-查询">禁止使用SELECT *
 必须使用SELECT <字段列表> 查询</h2>
+<ul>
+<li><code>SELECT *</code> 消耗<strong>更多的 CPU</strong> 和
+<strong>IO</strong> 以网络带宽资源</li>
+<li><code>SELECT *</code> <strong>无法使用覆盖索引</strong></li>
+<li><code>SELECT &lt;字段列表&gt;</code>
+可<strong>减少表结构变更带来的影响</strong></li>
+</ul>
 <h2
 id="禁止使用不含字段列表的insert语句">禁止使用不含字段列表的INSERT语句</h2>
+<p>如：</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> t <span class="keyword">values</span> (<span class="string">&#x27;a&#x27;</span>,<span class="string">&#x27;b&#x27;</span>,<span class="string">&#x27;c&#x27;</span>);</span><br></pre></td></tr></table></figure>
+<p>应使用：</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> t(c1,c2,c3) <span class="keyword">values</span> (<span class="string">&#x27;a&#x27;</span>,<span class="string">&#x27;b&#x27;</span>,<span class="string">&#x27;c&#x27;</span>);</span><br></pre></td></tr></table></figure>
 <h2
 id="建议使用预编译语句进行数据库操作">建议使用预编译语句进行数据库操作</h2>
+<p>（这里应该是针对jdbc，不是指mybatis的情况）</p>
+<blockquote>
+<p>例子：</p>
+<ol type="1">
+<li><p>MySQL执行预编译分为如三步：</p>
+<blockquote>
+<ul>
+<li><p>执行预编译语句，例如：prepare myfun from 'select * from t_book
+where bid=?'</p></li>
+<li><p>设置变量，例如：set <span class="citation"
+data-cites="str">@str</span>='b1'</p></li>
+<li><p>执行语句，例如：execute myfun using <span class="citation"
+data-cites="str">@str</span></p></li>
+</ul>
+<p>如果需要再次执行myfun，那么就不再需要第一步，即不需要再编译语句了：</p>
+<ul>
+<li>设置变量，例如：set <span class="citation"
+data-cites="str">@str</span>='b2'</li>
+<li>执行语句，例如：execute myfun using <span class="citation"
+data-cites="str">@str</span></li>
+</ul>
+<p>通过查看MySQL日志可以看到执行的过程：</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/202074104855490.png"
+alt="img" />
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+</blockquote></li>
+<li><p><strong>使用Statement执行预编译</strong><br />
+<strong>使用Statement执行预编译就是把上面的SQL语句执行一次。
+</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">Connection</span> <span class="variable">con</span> <span class="operator">=</span> JdbcUtils.getConnection();</span><br><span class="line"><span class="type">Statement</span> <span class="variable">stmt</span> <span class="operator">=</span> con.createStatement();</span><br><span class="line">stmt.executeUpdate(<span class="string">&quot;prepare myfun from &#x27;select * from t_book where bid=?&#x27;&quot;</span>);</span><br><span class="line">stmt.executeUpdate(<span class="string">&quot;set @str=&#x27;b1&#x27;&quot;</span>);</span><br><span class="line"><span class="type">ResultSet</span> <span class="variable">rs</span> <span class="operator">=</span> stmt.executeQuery(<span class="string">&quot;execute myfun using @str&quot;</span>);</span><br><span class="line"><span class="keyword">while</span>(rs.next()) &#123;</span><br><span class="line">  System.out.print(rs.getString(<span class="number">1</span>) + <span class="string">&quot;, &quot;</span>);</span><br><span class="line">  System.out.print(rs.getString(<span class="number">2</span>) + <span class="string">&quot;, &quot;</span>);</span><br><span class="line">  System.out.print(rs.getString(<span class="number">3</span>) + <span class="string">&quot;, &quot;</span>);</span><br><span class="line">  System.out.println(rs.getString(<span class="number">4</span>));</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line">stmt.executeUpdate(<span class="string">&quot;set @str=&#x27;b2&#x27;&quot;</span>);</span><br><span class="line">rs = stmt.executeQuery(<span class="string">&quot;execute myfun using @str&quot;</span>);</span><br><span class="line"> </span><br><span class="line"><span class="keyword">while</span>(rs.next()) &#123;</span><br><span class="line">  System.out.print(rs.getString(<span class="number">1</span>) + <span class="string">&quot;, &quot;</span>);</span><br><span class="line">  System.out.print(rs.getString(<span class="number">2</span>) + <span class="string">&quot;, &quot;</span>);</span><br><span class="line">  System.out.print(rs.getString(<span class="number">3</span>) + <span class="string">&quot;, &quot;</span>);</span><br><span class="line">  System.out.println(rs.getString(<span class="number">4</span>));</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line">rs.close();</span><br><span class="line">stmt.close();</span><br><span class="line">con.close();</span><br></pre></td></tr></table></figure></li>
+<li><p>useServerPrepStmts参数<br />
+默认使用PreparedStatement是不能执行预编译的，这需要在url中给出useServerPrepStmts=true参数（MySQL
+Server
+4.1之前的版本是不支持预编译的，而Connector/J在5.0.5以后的版本，默认是没有开启预编译功能的）。</p>
+<p>例如：jdbc:mysql://localhost:3306/test?useServerPrepStmts=true</p></li>
+</ol>
+</blockquote>
+<ul>
+<li><p>预编译语句可以<strong>重复使用这些计划，减少 SQL
+编译所需要的时间</strong>，还可以解决动态 SQL 所带来的 SQL
+注入的问题。</p></li>
+<li><p><strong>只传参数，比传递 SQL 语句更高效</strong>。</p></li>
+<li><p><strong>相同语句可以一次解析，多次使</strong>用，提高处理效率。</p></li>
+</ul>
 <h2 id="避免数据类型的隐式转换">避免数据类型的隐式转换</h2>
+<p>隐式转换会导致索引失效如:
+这里id应该不是字符型(<strong>但是这个好像是例外，如果字段是数字，而查询的是字符，索引还是有效的</strong>)</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">select</span> name,phone <span class="keyword">from</span> customer <span class="keyword">where</span> id <span class="operator">=</span> <span class="string">&#x27;111&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<p>详细解读可以看：<a
+target="_blank" rel="noopener" href="https://javaguide.cn/database/mysql/index-invalidation-caused-by-implicit-conversion.html">MySQL
+中的隐式转换造成的索引失效</a> 这篇文章</p>
 <h2
 id="避免使用子查询可以把子查询优化为join操作">避免使用子查询，可以把子查询优化为join操作</h2>
+<ul>
+<li><p>通常<strong>子查询在 in 子句中</strong>，且<strong>子查询中为简单
+SQL</strong>(不包含 union、group by、order by、limit 从句)
+时,<strong>才可以把子查询转化为关联查询进行优化</strong>。</p>
+<p><strong>子查询性能差的原因：</strong>
+子查询的结果集无法使用索引，通常<strong>子查询的结果集会被存储到临时表</strong>中，不论是<strong>内存临时表还是磁盘临时表都不会存在索引</strong>，所以查询性能会受到一定的影响。特别是对于返回结果集比较大的子查询，其对查询性能的影响也就越大。由于子查询会产生大量的临时表也没有索引，所以会<strong>消耗过多的
+CPU 和 IO 资源</strong>，产生大量的慢查询。</p></li>
+</ul>
 <h2 id="避免join关联太多的表">避免JOIN关联太多的表</h2>
+<ul>
+<li><p>对于 MySQL
+来说，是存在<strong>关联缓存</strong>的，<strong>缓存的大小可以由
+join_buffer_size</strong> 参数进行设置。</p></li>
+<li><p>在 MySQL 中，对于同一个 SQL
+<strong>多关联（join）一个表</strong>，就会<strong>多分配一个关联缓存</strong>，如果在一个
+SQL 中关联的表越多，所占用的内存也就越大。</p></li>
+<li><p>如果程序中<strong>大量的使用了多表关联</strong>的操作，同时
+<strong>join_buffer_size
+设置的也不合理</strong>的情况下，就容易造成<strong>服务器内存溢出</strong>的情况，就会<strong>影响到服务器数据库性能的稳定</strong>性。</p></li>
+<li><p>同时对于关联操作来说，会产生临时表操作，影响查询效率，<strong>MySQL
+最多允许关联 61 个表</strong>，<strong>建议不超过 5
+个</strong>。</p></li>
+</ul>
 <h2 id="减少同数据库的交互次数">减少同数据库的交互次数</h2>
+<p>数据库<strong>更适合处理批量</strong>操作，<strong>合并多个相同的操作到一起</strong>，可以提高处理效率。</p>
 <h2
 id="对应同一列进行or判断时使用in代替or">对应同一列进行or判断时，使用in代替or</h2>
+<p>in 的值不要超过 500 个，<strong>in
+操作可以更有效的利用索引</strong>，<strong>or
+大多数情况下很少能利用到索引</strong>。</p>
 <h2 id="禁止使用order-by-rand-进行随机排序">禁止使用order by rand()
 进行随机排序</h2>
+<ul>
+<li><p>order by rand()
+会把表中<strong>所有符合条件的数据装载到内存</strong>中，然后<strong>在内存中对所有数据根据随机生成的值进行排序</strong>，并且可能会对每一行都生成一个随机值，如果满足条件的数据集非常大，就会<strong>消耗大量的
+CPU 和 IO 及内存资源</strong>。</p></li>
+<li><p>推荐<strong>在程序中获取一个随机值</strong>，然后<strong>从数据库中获取数据</strong>的方式。</p></li>
+</ul>
 <h2
 id="where从句中禁止对列进行函数转换和计算">WHERE从句中禁止对列进行函数转换和计算</h2>
+<p><strong>对列进行函数转换或计算</strong>时会导致无法使用索引</p>
+<p><strong>不推荐：</strong></p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">where</span> <span class="type">date</span>(create_time)<span class="operator">=</span><span class="string">&#x27;20190101&#x27;</span></span><br></pre></td></tr></table></figure>
+<p><strong>推荐：</strong></p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">where</span> create_time <span class="operator">&gt;=</span> <span class="string">&#x27;20190101&#x27;</span> <span class="keyword">and</span> create_time <span class="operator">&lt;</span> <span class="string">&#x27;20190102&#x27;</span></span><br></pre></td></tr></table></figure>
 <h2
 id="在明显不会有重复值时使用union-all-而不是-union">在明显不会有重复值时使用UNION
 ALL 而不是 UNION</h2>
+<ul>
+<li>UNION
+会把两个结果集的所有数据放到临时表中后<strong>再进行去重</strong>操作</li>
+<li><strong>UNION ALL 不会再对结果集进行去重</strong>操作</li>
+</ul>
 <h2 id="拆分复杂的大sql为多个小sql">拆分复杂的大SQL为多个小SQL</h2>
+<ul>
+<li><strong>大 SQL 逻辑上比较复杂</strong>，需要<strong>占用大量 CPU
+进行计算</strong>的 SQL</li>
+<li>MySQL 中，一个 SQL 只能使用一个 CPU 进行计算</li>
+<li><strong>SQL 拆分后可以通过并行执行</strong>来提高处理效率</li>
+</ul>
 <h2
 id="程序连接不同的数据库使用不同的账号禁止跨库查询">程序连接不同的数据库使用不同的账号，禁止跨库查询</h2>
+<ul>
+<li>为数据库<strong>迁移</strong>和<strong>分库分表</strong>留出余地</li>
+<li><strong>降低业务耦合度</strong></li>
+<li><strong>避免权限过大而产生的安全风险</strong></li>
+</ul>
 <h1 id="数据库操作行为规范">数据库操作行为规范</h1>
 <h2
 id="超-100-万行的批量写-updatedeleteinsert-操作要分批多次进行操作">超
 100 万行的批量写 (UPDATE,DELETE,INSERT) 操作,要分批多次进行操作</h2>
+<ol type="1">
+<li><p><strong>大批量操作可能会造成严重的主从延迟</strong></p>
+<p>主从环境中,大批量操作可能会造成严重的主从延迟，大批量的写操作一般都需要执行一定长的时间，而只有当主库上执行完成后，才会在其他从库上执行，所以会造成主库与从库长时间的延迟情况</p></li>
+<li><p><strong>binlog 日志为 row 格式时会产生大量的日志</strong></p>
+<p>大批量写操作会产生大量日志，特别是对于 <strong>row
+格式二进制数据</strong>而言，由于在 row
+格式中会<strong>记录每一行数据的修</strong>改，我们一次修改的数据越多，产生的日志量也就会越多，<strong>日志的传输和恢复所需要的时间也就越长，这也是造成主从延迟</strong>的一个原因</p></li>
+<li><p><strong>避免产生大事务操作</strong></p>
+<p>大批量修改数据，一定是在一个事务中进行的，这就会造成表中大批量数据进行锁定，从而导致大量的阻塞，阻塞会对
+MySQL 的性能产生非常大的影响。</p>
+<p>特别是<strong>长时间的阻塞会占满所有数据库的可用连接</strong>，这会使<strong>生产环境中的其他应用无法连接到数据库</strong>，因此一定要注意大批量写操作要进行<strong>分批</strong></p></li>
+</ol>
 <h2 id="对于大表使用-pt-online-schema-change-修改表结构">对于大表使用
 pt-online-schema-change 修改表结构</h2>
+<ul>
+<li>避免<strong>大表修改产生的主从延迟</strong></li>
+<li>避免在<strong>对表字段进行修改时进行锁表</strong></li>
+</ul>
+<p>对<strong>大表数据结构的修改</strong>一定要谨慎，会造成严重的锁表操作，尤其是生产环境，是不能容忍的。</p>
+<p><strong>pt-online-schema-change</strong>
+它会首先建立一个与原表结构相同的新表，并且<strong>在新表上进行表结构的修改</strong>，然后<strong>再把原表中的数据复制到新表</strong>中，并在<strong>原表中增加一些触发器</strong>。把原表中新增的数据也复制到新表中，在<strong>行所有数据复制完成之后，把新表命名成原表</strong>，并把原来的表删除掉。</p>
+<blockquote>
+<p>把原来一个 DDL 操作，<strong>分解成多个小的批次</strong>进行。</p>
+</blockquote>
 <h2 id="禁止为程序使用的账号赋予-super-权限">禁止为程序使用的账号赋予
 super 权限</h2>
+<ul>
+<li>当<strong>达到最大连接数</strong>限制时，<strong>还运行 1 个有 super
+权限的用户</strong>连接</li>
+<li>super 权限只能<strong>留给 DBA 处理问题的账号</strong>使用</li>
+</ul>
 <h2
 id="对于程序连接数据库账号遵循权限最小原则">对于程序连接数据库账号,遵循权限最小原则</h2>
+<ul>
+<li><strong>程序使用数据库账号</strong>只能在<strong>一个 DB</strong>
+下使用，不准跨库</li>
+<li><strong>程序使用的账号</strong>原则上<strong>不准有 drop</strong>
+权限</li>
+</ul>
 
     </div>
 
@@ -656,12 +912,12 @@ super 权限</span></a></li><li class="nav-item nav-level-2"><a class="nav-link"
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">846k</span>
+    <span title="站点总字数">851k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">25:38</span>
+    <span title="站点阅读时长">25:48</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
