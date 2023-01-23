@@ -10414,21 +10414,80 @@ InnoDB）。</li>
 </ul>
 <h2
 id="数据库和表的字符集统一使用utf-8">数据库和表的字符集统一使用UTF-8</h2>
+<p><strong>兼容性</strong>更好，<strong>统一字符集</strong>可以避免由于字符集转换产生的<strong>乱码</strong>，不同的字符集进行比较前需要进行转换会造成<strong>索引失效</strong>，如果数据库中有<strong>存储
+emoji 表情</strong>的需要，字符集需要采用 <strong>utf8mb4</strong>
+字符集。</p>
+<p>参考文章：</p>
+<ul>
+<li><a
+href="https://blog.csdn.net/horses/article/details/107243447">MySQL
+字符集不一致导致索引失效的一个真实案例open in new window</a></li>
+<li>[MySQL 字符集详解</li>
+</ul>
 <h2 id="所有表和字段都需要添加注释">所有表和字段都需要添加注释</h2>
+<p>使用 <strong>comment
+从句添加表</strong>和<strong>列的备注</strong>，从一开始就进行数据字典的维护</p>
 <h2
 id="尽量控制单表数据量的大小建议控制在500万以内">尽量控制单表数据量的大小，建议控制在500万以内</h2>
+<ul>
+<li><p>500 万并不是 MySQL
+数据库的限制，<strong>过大会造成修改表结构</strong>，<strong>备份</strong>，<strong>恢复</strong>都会有很大的问题。</p></li>
+<li><p>可以用<strong>历史数据归档（应用于日志数据）</strong>，<strong>分库分表（应用于业务数据）</strong>等手段来控制数据量大小</p></li>
+</ul>
 <h2 id="谨慎使用mysql分区表">谨慎使用MySQL分区表</h2>
+<ul>
+<li><p>分区表在<strong>物理上表现为多个文件</strong>，在<strong>逻辑上表现为一个表</strong>；</p></li>
+<li><p>谨慎选择分区键，<strong>跨分区查询效率可能更低</strong>；</p></li>
+<li><p>建议采用<strong>物理分表的方式管理大数据</strong>。</p></li>
+</ul>
 <h2 id="经常一起使用的列放到一个表中">经常一起使用的列放到一个表中</h2>
+<p>避免更多的关联操作。</p>
 <h2 id="禁止在表中建立预留字段">禁止在表中建立预留字段</h2>
+<ul>
+<li>预留字段的命名<strong>很难做到见名识义</strong>。</li>
+<li>预留字段<strong>无法确认存储的数据类型</strong>，所以<strong>无法选择合适的类型</strong>。</li>
+<li><strong>对预留字段类型的修改，会对表进行锁定</strong></li>
+</ul>
 <h2
 id="禁止在数据库中存储文本比如图片这类大的二进制数据">禁止在数据库中存储文本（比如图片）这类大的二进制数据</h2>
+<ul>
+<li><p>在数据库中存储文件会严重<strong>影响数据库性能</strong>，<strong>消耗过多存储空间</strong>。</p></li>
+<li><p>文件（比如图片）这类大的二进制数据<strong>通常存储于文件服务器</strong>，数据库<strong>只存储文件地址信息</strong>。</p></li>
+</ul>
 <h2 id="不要被数据库范式所束缚">不要被数据库范式所束缚</h2>
+<p>一般来说，设计关系数据库时需要满足第三范式，但为了满足第三范式，我们可能会拆分出多张表。而在<strong>进行查询时需要对多张表进行关联查询</strong>，有时为了<strong>提高查询效率</strong>，会<strong>降低范式的要求</strong>，在表中<strong>保存一定的冗余</strong>信息，也叫做<strong>反范式</strong>。但要注意反范式一定要适度。</p>
 <h2 id="禁止在线上做数据库压力测试">禁止在线上做数据库压力测试</h2>
 <h2
 id="禁止从开发环境测试环境直接连接生产环境数据库">禁止从开发环境、测试环境，直接连接生产环境数据库</h2>
+<p><strong>安全隐患极大，要对生产环境抱有敬畏之心！</strong></p>
 <h1 id="数据库字段设计规范">数据库字段设计规范</h1>
 <h2
 id="优先选择符合存储需要的最小数据类型">优先选择符合存储需要的最小数据类型</h2>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230123123412164.png"
+alt="image-20230123123412164" />
+<figcaption aria-hidden="true">image-20230123123412164</figcaption>
+</figure>
+<p>存储字节越小，<strong>占用也就空间越小</strong>，<strong>性能也越好</strong>。</p>
+<p><strong>a.某些字符串可以转换成数字类型存储比如可以将 IP
+地址转换成整型数据。</strong></p>
+<p>数字是连续的，性能更好，占用空间也更小。</p>
+<p>MySQL 提供了两个方法来<strong>处理 ip 地址</strong></p>
+<ul>
+<li><code>INET_ATON()</code> ： 把 ip 转为<strong>无符号整型</strong>
+(4-8 位)</li>
+<li><code>INET_NTOA()</code> :把整型的 ip 转为地址</li>
+</ul>
+<p>插入数据前，先用 <code>INET_ATON()</code> 把 ip
+地址转为整型，显示数据时，使用 <code>INET_NTOA()</code> 把整型的 ip
+地址转为地址显示即可。</p>
+<p><strong>b.对于非负型的数据 (如自增 ID,整型 IP，年龄)
+来说,要优先使用无符号整型来存储。</strong></p>
+<p>无符号相对于有符号可以多出一倍的存储空间</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line">SIGNED <span class="type">INT</span> <span class="number">-2147483648</span><span class="operator">~</span><span class="number">2147483647</span></span><br><span class="line">UNSIGNED <span class="type">INT</span> <span class="number">0</span><span class="operator">~</span><span class="number">4294967295</span></span><br></pre></td></tr></table></figure>
+<p><strong>c.小数值类型（比如年龄、状态表示如 0/1）优先使用 TINYINT
+类型。</strong></p>
 <h2
 id="避免使用textblob数据类型最常见的text类型可以存储64k的数据">避免使用TEXT、BLOB数据类型，最常见的TEXT类型可以存储64k的数据</h2>
 <h2 id="避免使用enum类型">避免使用ENUM类型</h2>
