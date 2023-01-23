@@ -246,14 +246,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>2.3k</span>
+              <span>3.3k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>4 分钟</span>
+              <span>6 分钟</span>
             </span>
             <div class="post-description">MySQL高性能优化规范建议总结</div>
 
@@ -370,14 +370,76 @@ alt="image-20230123123412164" />
 类型。</strong></p>
 <h2
 id="避免使用textblob数据类型最常见的text类型可以存储64k的数据">避免使用TEXT、BLOB数据类型，最常见的TEXT类型可以存储64k的数据</h2>
+<p><strong>a. 建议把 BLOB 或是 TEXT
+列分离到单独的扩展表中。</strong></p>
+<p>MySQL <strong>内存临时表不支持 TEXT、BLOB
+这样的大数据类型</strong>，如果查询中包含这样的数据，在<strong>排序</strong>等操作时，就<strong>不能使用内存临时表</strong>，必须<strong>使用磁盘临时表</strong>进行。而且对于这种数据，MySQL
+还是要进行<strong>二次查询</strong>，会使 sql
+性能变得很差，但是不是说一定不能使用这样的数据类型。</p>
+<p>如果一定要使用，建议<strong>把 BLOB 或是 TEXT
+列分离到单独的扩展表</strong>中，查询时一定不要使用
+<code>select *</code>而<strong>只需要取出必要的列</strong>，<strong>不需要
+TEXT 列的数据时不要对该列进行查询</strong>。</p>
+<p><strong>2、TEXT 或 BLOB 类型只能使用前缀索引</strong></p>
+<p>因为 <strong>MySQL 对索引字段长度是有限制</strong>的，所以
+<strong>TEXT 类型只能使用前缀索引</strong>，并且 <strong>TEXT
+列上是不能有默认值</strong>的</p>
 <h2 id="避免使用enum类型">避免使用ENUM类型</h2>
+<p><strong>原因</strong>：</p>
+<ul>
+<li>修改 ENUM 值需要使用 <strong>ALTER 语句</strong>；</li>
+<li>ENUM 类型的 <strong>ORDER BY
+操作效率低</strong>，需要额外操作；</li>
+<li>ENUM 数据类型<strong>存在一些限制比如建议不要使用数值作为 ENUM
+的枚举值</strong>。</li>
+</ul>
+<p>相关阅读：<a
+target="_blank" rel="noopener" href="https://www.zhihu.com/question/404422255/answer/1661698499">是否推荐使用
+MySQL 的 enum 类型？ - 架构文摘 - 知乎open in new window</a></p>
 <h2 id="尽可能把所有的列定义为not-null">尽可能把所有的列定义为NOT
 NULL</h2>
+<p>除非有特别的原因使用 NULL 值，应该总是让字段保持 NOT NULL。</p>
+<ul>
+<li><strong>索引 NULL
+列需要额外的空间</strong>来保存，所以要占用更多的空间；</li>
+<li>进行<strong>比较和计算时要对 NULL 值做特别的处理</strong>。</li>
+</ul>
+<p>相关阅读：<a
+target="_blank" rel="noopener" href="https://opensource.actionsky.com/20190710-mysql/">技术分享 | MySQL
+默认值选型（是空，还是 NULL）open in new window</a> 。</p>
 <h2
 id="使用timestamp4个字节或datetime类型8个字节存储时间">使用TIMESTAMP(4个字节)或DATETIME类型（8个字节）存储时间</h2>
+<ul>
+<li><p>TIMESTAMP 存储的时间范围 1970-01-01 00:00:01 ~
+2038-01-19-03:14:07</p></li>
+<li><p><strong>TIMESTAMP 占用 4 字节和 INT 相同，但比 INT
+可读性高</strong></p></li>
+<li><p><strong>超出 TIMESTAMP 取值范围的使用 DATETIME
+类型</strong>存储</p></li>
+</ul>
+<p><strong>反之</strong>，
+经常会有人用字符串存储日期型的数据<strong>（不正确的做法）</strong></p>
+<ul>
+<li>缺点
+1：<strong>无法用日期函数</strong>进行<strong>计算</strong>和<strong>比较</strong></li>
+<li>缺点 2：用<strong>字符串存储日期要占用更多</strong>的空间</li>
+</ul>
 <h2
 id="同财务相关的金额类数据必须使用decimal类型">同财务相关的金额类数据必须使用decimal类型</h2>
+<ul>
+<li><strong>非精准浮点</strong> ：float,double</li>
+<li><strong>精准浮点</strong> ：decimal</li>
+</ul>
+<p><strong>decimal</strong>
+类型为精准浮点数，在<strong>计算时不会丢失精度</strong>。<strong>占用空间由定义的宽度决定</strong>，<strong>每
+4 个字节可以存储 9
+位数字</strong>，并且<strong>小数点要占用一个字节</strong>。并且，<strong>decimal
+可用于存储比 bigint 更大的整型数据</strong></p>
+<p>不过， 由于 decimal
+需要<strong>额外的空间</strong>和<strong>计算开销</strong>，应该<strong>尽量</strong>只在需要对数据进行<strong>精确计算</strong>时才使用
+decimal 。</p>
 <h2 id="单表不要包含过多字段">单表不要包含过多字段</h2>
+<p>如果一个表包含过多字段的话，可以考虑将其<strong>分解成多个表</strong>，必要时<strong>增加中间表进行关联</strong>。</p>
 <h1 id="索引设计规范">索引设计规范</h1>
 <h2
 id="限制每张表上的索引数量建议单张表索引不超过5个">限制每张表上的索引数量，建议单张表索引不超过5个</h2>
@@ -594,12 +656,12 @@ super 权限</span></a></li><li class="nav-item nav-level-2"><a class="nav-link"
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">845k</span>
+    <span title="站点总字数">846k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">25:36</span>
+    <span title="站点阅读时长">25:38</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
