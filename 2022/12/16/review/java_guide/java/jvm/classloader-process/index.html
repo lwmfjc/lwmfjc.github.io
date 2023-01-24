@@ -239,14 +239,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>2.6k</span>
+              <span>3.2k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>5 分钟</span>
+              <span>6 分钟</span>
             </span>
             <div class="post-description">类加载过程</div>
 
@@ -341,9 +341,49 @@ alt="image-20221216114118285" /></p></li>
 <li>程序实际运行时，只有<strong>符号引用</strong>是不够的。</li>
 <li>在程序<strong>执行方法</strong>时，系统需要明确知道这个方法所在的位置
 <ul>
-<li>Java虚拟机为<strong>每个类</strong>都准备了一张<strong>方法表</strong>来存放类中所有的方法。当需要调用一个类的方法的时候，只要知道<strong>这个方法在方法表中的偏移量</strong>就可以直接调用该方法了（针对<strong>其他类X</strong>或者当前类的方法）</li>
-<li>通过<strong>解析操作符号引用</strong>就可以直接转变为<strong>目标方法在类中方法表的位置</strong>，从而使得方法可以被调用。（将当前类中代码转为
-上面说的类的偏移量）</li>
+<li><p>Java虚拟机为<strong>每个类</strong>都准备了一张<strong>方法表</strong>来存放类中所有的方法。当需要调用一个类的方法的时候，只要知道<strong>这个方法在方法表中的偏移量</strong>就可以直接调用该方法了（针对<strong>其他类X</strong>或者当前类的方法）</p></li>
+<li><p>通过<strong>解析操作符号引用</strong>就可以直接转变为<strong>目标方法在类中方法表的位置</strong>，从而使得方法可以被调用。（将当前类中代码转为
+上面说的类的偏移量）<br />
+<strong>对下面的内容简化一下就是，编译后的class文件中，以 [类数组]
+的方式，保存了类中的方法表的位置（偏移量）（通过得到每个数组元素可以得到方法的信息）。而这里我们只能知道偏移量，但是当正式加载到方法区之后，我们就能根据偏移量，计算出具体的
+[内存地址] 了。</strong></p>
+<blockquote>
+<p>具体详情https://blog.csdn.net/luanlouis/article/details/41113695
+，这里涉及到几个概念，一个是<strong>方法表</strong>。通过
+<code>javap -v xxx</code>查看反编译的信息（class文件的信息）</p>
+<ol type="1">
+<li><p>class文件是这样的结构，里面有个<strong>方法表</strong>的概念</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230124213133879.png"
+alt="image-20230124213133879" />
+<figcaption aria-hidden="true">image-20230124213133879</figcaption>
+</figure></li>
+<li><p>如下，可能会有好几个方法，所以方法表，其实是一个<strong>类数组结构</strong>，而每个方法信息（method_info）呢，<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230124213042742.png"
+alt="image-20230124213042742" /></p></li>
+<li><p>进一步，对于每个method_info结构体的定义<br />
+方法表的结构体由：<strong>访问标志(*<em>access_flags*</em>)、名称索引(*<em>name_index*</em>)、描述索引(*<em>descriptor_index*</em>)、属性表(*<em>attribute_info*</em>)集合</strong>组成。</p>
+<blockquote>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230124213623779.png"
+alt="image-20230124213623779" />
+<figcaption aria-hidden="true">image-20230124213623779</figcaption>
+</figure>
+</blockquote></li>
+<li><p>而对于属性表，（其中：属性表集合--用来记录方法的机器指令和抛出异常等信息）<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/20141115145825045"
+alt="img" />
+<strong>Java之所以能够运行，就是从Code属性中，取出的机器码</strong></p>
+<p><img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230124214548060.png"
+alt="image-20230124214548060" /> <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/20141116114625218"
+alt="img" /></p></li>
+</ol>
+</blockquote></li>
 </ul></li>
 </ul>
 </blockquote></li>
@@ -572,12 +612,12 @@ GC</strong>，也就是说<strong>堆不存在该类</strong>的<strong>实例�
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">851k</span>
+    <span title="站点总字数">852k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">25:48</span>
+    <span title="站点阅读时长">25:49</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
