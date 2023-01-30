@@ -264,11 +264,11 @@
 （添加小部分笔记）感谢作者!</p>
 </blockquote>
 <h3 id="什么是序列化什么是反序列化">什么是序列化？什么是反序列化</h3>
-<p>当需要持久化Java对象，比如将Java对象保存在文件中、或者在网络中传输Java对象，这些场景都需要用到序列化</p>
+<p>当需要<strong>持久化Java对象</strong>，比如<strong>将Java对象保存在文件</strong>中、或者<strong>在网络中传输Java对象</strong>，这些场景都需要用到序列化</p>
 <p>即：</p>
 <ul>
-<li>序列化：将数据结构/对象，转换成二进制字节流</li>
-<li>反序列化：将在序列化过程中所生成的二进制字节流的过程，转换成数据结构或者对象的过程</li>
+<li>序列化：将<strong>数据结构/对象</strong>，<strong>转换成二进制字节流</strong></li>
+<li>反序列化：将在<strong>序列化过程中所生成的二进制字节流</strong>，<strong>转换成数据结构或者对象</strong>的过程</li>
 </ul>
 <p>对于Java，序列化的是对象(Object)，也就是实例化后的类(Class)</p>
 <p>序列化的目的，是通过网络传输对象，或者说是将对象存储到文件系统、数据库、内存中，如图：
@@ -289,10 +289,15 @@ Redis）时需要用到序列化</u></strong>，将对象<strong><u>从缓存数
 <img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221010110650054.png"
 alt="image-20221010110650054" /></p>
-<p>OSI七层协议模型中，表示层就是对应用层的用户数据，进行处理转换成二进制流；反过来的话，就是将二进制流转换成应用层的用户数据，即序列化和反序列化，所以<strong>序列化协议属于应用层</strong></p>
+<p>OSI七层协议模型中，表示层就是<strong>对应用层的用户数据，进行处理转换成二进制流</strong>；反过来的话，就是<strong>将二进制流转换成应用层的用户数据</strong>，即序列化和反序列化，<br />
+因为，OSI
+七层协议模型中的<strong>应用层、表示层和会话层</strong>对应的都是
+<strong>TCP/IP
+四层模型</strong>中的<strong>应用层</strong>，所以<strong>序列化协议</strong>属于
+<strong>TCP/IP 协议应用层</strong>的一部分</p>
 <h3 id="常见序列化协议对比">常见序列化协议对比</h3>
 <p>kryo 英音 [k'rɪəʊ]
-，除了JDK自带的序列化，还有hessian、kryo、protostuff</p>
+，除了JDK自带的序列化，还有<strong>hessian</strong>、<strong>kryo</strong>、<strong>protostuff</strong></p>
 <ul>
 <li><p>JDK自带的序列化，只需要实现java.io.Serializable接口即可</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@AllArgsConstructor</span></span><br><span class="line"><span class="meta">@NoArgsConstructor</span></span><br><span class="line"><span class="meta">@Getter</span></span><br><span class="line"><span class="meta">@Builder</span></span><br><span class="line"><span class="meta">@ToString</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">RpcRequest</span> <span class="keyword">implements</span> <span class="title class_">Serializable</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">long</span> <span class="variable">serialVersionUID</span> <span class="operator">=</span> <span class="number">1905122041950251207L</span>;</span><br><span class="line">    <span class="keyword">private</span> String requestId;</span><br><span class="line">    <span class="keyword">private</span> String interfaceName;</span><br><span class="line">    <span class="keyword">private</span> String methodName;</span><br><span class="line">    <span class="keyword">private</span> Object[] parameters;</span><br><span class="line">    <span class="keyword">private</span> Class&lt;?&gt;[] paramTypes;</span><br><span class="line">    <span class="keyword">private</span> RpcMessageTypeEnum rpcMessageTypeEnum;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
