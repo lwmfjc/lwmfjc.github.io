@@ -239,7 +239,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>7.4k</span>
+              <span>7.5k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -278,7 +278,7 @@ alt="image-20221008163827798" />
 </figure></li>
 <li><p>Exception和Error有什么区别</p>
 <ul>
-<li><p>除了RuntimeException及其子类以外，其他的Exception类极其子类都属于受检查异常</p></li>
+<li><p>除了RuntimeException及其子类以外，其他的Exception类及其子类都属于受检查异常</p></li>
 <li><p>Exception : 程序本身可以处理的异常（可通过catch捕获）</p>
 <ul>
 <li><p>Checked Exception ，受检查异常，必须处理(<strong>catch 或者
@@ -296,7 +296,7 @@ ArithmeticException，ClassCastException，IllegalThreadStateException，IndexOu
   ```illegal 英[ɪˈliːɡl] 非法的```  
   ```Arithmetic 英[əˈrɪθmətɪk] 算术```</code></pre>
 <ul>
-<li><p>Error： 程序无法处理的错误 ，不建议通过catch
+<li><p>Error： <strong>程序无法处理</strong>的错误 ，不建议通过catch
 捕获，已办错误发生时JVM会选择线程终止<br />
 OutOfMemoryError （堆，Java heap
 space），VirtualMachineError，StackOverFlowError，AssertionError
@@ -316,11 +316,11 @@ try后面必须要有catch或者finally；无论是否捕获异常，finally都�
 语句时，<code>finally</code> 语句块将在方法返回之前被执行。</p>
 <ul>
 <li><p><strong>不要在 finally 语句块中使用 return!</strong> 当 try
-语句和 finally 语句中都有 return 语句时，try 语句块中的 return
-语句会被忽略。这是因为 try 语句中的 return
+语句和 finally 语句中都有 return 语句时，<strong>try 语句块中的 return
+语句会被忽略</strong>。这是因为 try 语句中的 return
 返回值会先被暂存在一个本地变量中，当执行到 finally 语句中的 return
 之后，这个本地变量的值就变为了 finally 语句中的 return 返回值。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">不要在 <span class="keyword">finally</span> 语句块中使用 <span class="keyword">return</span>! 当 <span class="keyword">try</span> 语句和 <span class="keyword">finally</span> 语句中都有 <span class="keyword">return</span> 语句时，<span class="keyword">try</span> 语句块中的 <span class="keyword">return</span> 语句会被忽略。这是因为 <span class="keyword">try</span> 语句中的 <span class="keyword">return</span> 返回值会先被暂存在一个本地变量中，当执行到 <span class="keyword">finally</span> 语句中的 <span class="keyword">return</span> 之后，这个本地变量的值就变为了 <span class="keyword">finally</span> 语句中的 <span class="keyword">return</span> 返回值。</span><br></pre></td></tr></table></figure></li>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">  <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">      System.out.println(f(<span class="number">2</span>));</span><br><span class="line">&#125;</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">static</span> <span class="type">int</span> <span class="title function_">f</span><span class="params">(<span class="type">int</span> value)</span> &#123;</span><br><span class="line">      <span class="keyword">try</span> &#123;</span><br><span class="line">          <span class="keyword">return</span> value * value;</span><br><span class="line">      &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">          <span class="keyword">if</span> (value == <span class="number">2</span>) &#123;</span><br><span class="line">              <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">          &#125;</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">/*  </span></span><br><span class="line"><span class="comment">   0</span></span><br><span class="line"><span class="comment">  */</span></span><br></pre></td></tr></table></figure></li>
 </ul></li>
 <li><p>finally中的代码不一定执行（如果finally之前虚拟机就已经被终止了）</p>
 <ul>
@@ -329,7 +329,7 @@ try后面必须要有catch或者finally；无论是否捕获异常，finally都�
 <li><p>使用try-with-resources代替try-catch-finally</p>
 <ul>
 <li><p>适用范围：任何实现<code>java.lang.AutoCloseable</code>或者<code>java.io.Closeable</code>的对象【比如InputStream、OutputStream、Scanner、PrintWriter等需要调用close()方法的资源】</p></li>
-<li><p>在try-with-resources中，任何catch或finally块在声明的资源关闭后运行</p></li>
+<li><p>在try-with-resources中，任何<strong>catch或finally块在声明的资源关闭后运行</strong></p></li>
 <li><p>例子</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//读取文本文件的内容</span></span><br><span class="line"><span class="type">Scanner</span> <span class="variable">scanner</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    scanner = <span class="keyword">new</span> <span class="title class_">Scanner</span>(<span class="keyword">new</span> <span class="title class_">File</span>(<span class="string">&quot;D://read.txt&quot;</span>));</span><br><span class="line">    <span class="keyword">while</span> (scanner.hasNext()) &#123;</span><br><span class="line">        System.out.println(scanner.nextLine());</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="keyword">catch</span> (FileNotFoundException e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (scanner != <span class="literal">null</span>) &#123;</span><br><span class="line">        scanner.close();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 <p>改造后：</p>
@@ -339,20 +339,20 @@ try后面必须要有catch或者finally；无论是否捕获异常，finally都�
 </ul></li>
 <li><p>需要注意的地方</p>
 <ul>
-<li>不要把异常定义为静态变量，因为这样会导致异常栈信息错乱。每次手动抛出异常，我们都需要手动
-new 一个异常对象抛出。</li>
-<li>抛出的异常信息一定要有意义。</li>
-<li>建议抛出更加具体的异常比如字符串转换为数字格式错误的时候应该抛出<code>NumberFormatException</code>而不是其父类<code>IllegalArgumentException</code>。</li>
+<li>不要把异常定义为静态变量，因为这样会导致<strong>异常栈信息错乱</strong>。每次手动抛出异常，我们都需要<strong>手动
+new 一个异常对象抛出</strong>。</li>
+<li>抛出的<strong>异常信息一定要有意义</strong>。</li>
+<li>建议抛出<strong>更加具体的异常</strong>比如字符串转换为数字格式错误的时候应该抛出<code>NumberFormatException</code>而不是其父类<code>IllegalArgumentException</code>。</li>
 <li>使用日志打印异常之后就不要再抛出异常了（两者不要同时存在一段代码逻辑中）。</li>
 </ul></li>
 </ul>
 <h2 id="泛型">泛型</h2>
 <ul>
 <li><p>什么是泛型？有什么作用
-Java泛型（Generics）JDK5中引入的一个新特性，使用泛型参数，可以增强代码的可读性以及稳定性</p></li>
+Java泛型（Generics）JDK5中引入的一个新特性，使用泛型参数，可以<strong>增强代码的可读性</strong>以及<strong>稳定性</strong></p></li>
 <li><p>编译器可以<strong>对泛型参数进行检测，并通过泛型参数可以指定传入的对象类型</strong>，比如<code>ArrayList&lt;Person&gt; persons=new ArrayList&lt;Person&gt;()</code>这行代码指明该ArrayList对象只能传入Person对象，若传入其他类型的对象则会报错</p>
 <ul>
-<li>原生List返回类型为Object，需要手动转换类型才能使用，使用泛型后编译器自动转换</li>
+<li>原生List返回类型为Object，需要手动转换类型才能使用，<strong>使用泛型后编译器自动转换</strong></li>
 </ul></li>
 <li><p>泛型使用方式</p>
 <ul>
@@ -368,20 +368,20 @@ Java泛型（Generics）JDK5中引入的一个新特性，使用泛型参数，�
 </ul></li>
 <li><p>泛型方法</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line">   <span class="keyword">public</span> <span class="keyword">static</span> &lt; E &gt; <span class="keyword">void</span> <span class="title function_">printArray</span><span class="params">( E[] inputArray )</span></span><br><span class="line">   &#123;</span><br><span class="line">         <span class="keyword">for</span> ( E element : inputArray )&#123;</span><br><span class="line">            System.out.printf( <span class="string">&quot;%s &quot;</span>, element );</span><br><span class="line">         &#125;</span><br><span class="line">         System.out.println();</span><br><span class="line">    &#125;</span><br><span class="line"><span class="comment">//使用</span></span><br><span class="line"><span class="comment">// 创建不同类型数组： Integer, Double 和 Character</span></span><br><span class="line">Integer[] intArray = &#123; <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span> &#125;;</span><br><span class="line">String[] stringArray = &#123; <span class="string">&quot;Hello&quot;</span>, <span class="string">&quot;World&quot;</span> &#125;;</span><br><span class="line">printArray( intArray  );</span><br><span class="line">printArray( stringArray  );</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>上面称为静态方法，Java中泛型只是一个占位符，必须在传递类型后才能使用，类在实例化时才能传递类型参数，而类型方法的加载优先于类的实例化，静态泛型方法是<strong>没有办法使用类上声明的泛型（即上面的第二点中类名旁边的T）</strong>的，只能使用自己生命的<E></p>
-<p>也可以是非静态的</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">A</span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> age;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> &lt;E&gt; <span class="type">int</span>  <span class="title function_">geA</span><span class="params">(E e)</span>&#123;</span><br><span class="line">        System.out.println(e.toString());</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//使用,其中 &lt;Object&gt; 可以省略</span></span><br><span class="line">a.&lt;Object&gt;geA(<span class="keyword">new</span> <span class="title class_">Object</span>());  </span><br></pre></td></tr></table></figure></li>
+<p>上面称为静态方法，Java中泛型只是一个占位符，必须在传递类型后才能使用，类在实例化时才能传递类型参数，而类型方法的加载优先于类的实例化，静态泛型方法是<strong>没有办法使用类上声明的泛型（即上面的第二点中类名旁边的T）</strong>的，只能使用自己声明的<E></p></li>
+<li><p>也可以是非静态的</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">A</span>&#123;</span><br><span class="line">        <span class="keyword">private</span> String name;</span><br><span class="line">        <span class="keyword">private</span> <span class="type">int</span> age;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> &lt;E&gt; <span class="type">int</span>  <span class="title function_">geA</span><span class="params">(E e)</span>&#123;</span><br><span class="line">            System.out.println(e.toString());</span><br><span class="line">            <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//使用,其中 &lt;Object&gt; 可以省略</span></span><br><span class="line">    a.&lt;Object&gt;geA(<span class="keyword">new</span> <span class="title class_">Object</span>()); </span><br></pre></td></tr></table></figure></li>
 </ul></li>
 </ul>
 <h2 id="反射">反射</h2>
 <ul>
-<li><p>反射赋予了我们在运行时分析类以及执行类中方法的能力，通过反射可以获取任意一个类的所有属性和方法</p></li>
-<li><p>反射增加了安全问题，可以无视泛型参数的安全检查（泛型参数的安全检查发生在编译器），不过其对于框架来说实际是影响不大的</p></li>
+<li><p>反射赋予了我们在<strong>运行时分析类</strong>以及<strong>执行类中方法</strong>的能力，通过反射可以<strong>获取任意一个类的所有属性和方法</strong></p></li>
+<li><p>反射<strong>增加（导致）了安全问题</strong>，可以<strong>无视泛型参数的安全检查</strong>（<strong>泛型参数的安全检查发生在编译期</strong>），不过其对于框架来说实际是影响不大的</p></li>
 <li><p>应用场景<br />
-一般用于框架中，框架中大量使用了动态代理，而动态代理的实现也依赖于反射</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//JDK动态代理</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">DebugInvocationHandler</span> <span class="keyword">implements</span> <span class="title class_">InvocationHandler</span> &#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 代理类中的真实对象</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Object target;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">DebugInvocationHandler</span><span class="params">(Object target)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.target = target;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> Object <span class="title function_">invoke</span><span class="params">(Object proxy, Method method, Object[] args)</span> <span class="keyword">throws</span> InvocationTargetException, IllegalAccessException &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;before method &quot;</span> + method.getName());</span><br><span class="line">        <span class="type">Object</span> <span class="variable">result</span> <span class="operator">=</span> method.invoke(target, args);</span><br><span class="line">        System.out.println(<span class="string">&quot;after method &quot;</span> + method.getName());</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+一般用于框架中，框架中大量使用了<strong>动态代理</strong>，而<strong>动态代理的实现也依赖于反射</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//JDK动态代理</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">DebugInvocationHandler</span> <span class="keyword">implements</span> <span class="title class_">InvocationHandler</span> &#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 代理类中的真实对象</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Object target;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">DebugInvocationHandler</span><span class="params">(Object target)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.target = target;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> Object <span class="title function_">invoke</span><span class="params">(Object proxy, Method method, Object[] args)</span> <span class="keyword">throws</span> InvocationTargetException, IllegalAccessException &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;before method &quot;</span> + method.getName());</span><br><span class="line">        <span class="type">Object</span> <span class="variable">result</span> <span class="operator">=</span> method.invoke(target, args); <span class="comment">//通过反射调用方法</span></span><br><span class="line">        System.out.println(<span class="string">&quot;after method &quot;</span> + method.getName());</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>注解也使用到了反射，比如Spring上的@Component注解。
-可以基于反射分析类，然后获取到类/属性/方法/方法的参数上的注解，获取注解后，做进一步的处理</p></li>
+可以<strong>基于反射分析类</strong>，然后<strong>获取到类/属性/方法/方法的参数上的注解</strong>，<strong>获取注解后，做进一步的处理</strong></p></li>
 </ul>
 <h2 id="注解">注解</h2>
 <ul>
