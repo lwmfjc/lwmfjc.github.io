@@ -14028,7 +14028,7 @@ Java 类的结构或者类的属性上进行条件编译</strong></p>
 （添加小部分笔记）感谢作者!</p>
 </blockquote>
 <p><code>sun.misc.Unsafe</code></p>
-<p>提供执行低级别、不安全操作的方法，如直接访问系统内存资源、自主管理内存资源等，效率快，但由于有了操作内存空间的能力，会增加指针问题风险。且这些功能的实现依赖于本地方法，Java代码中只是声明方法头，具体实现规则交给本地代码
+<p>提供<strong>执行低级别</strong>、<strong>不安全操作</strong>的方法，如<strong>直接访问系统内存资源</strong>、<strong>自主管理内存资源</strong>等，效率快，但由于有了操作内存空间的能力，会<strong>增加指针问题风险</strong>。且这些功能的实现依赖于本地方法，Java代码中只是声明方法头，具体实现规则交给本地代码
 <img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221010172203732.png"
 alt="image-20221010172203732" /></p>
@@ -14049,7 +14049,7 @@ classloader加载。即只有启动类加载器加载的类才能够调用Unsafe
 <li><p>利用反射获得Unsafe类中已经实例化完成的单例对象<code>theUnsafe</code></p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> Unsafe <span class="title function_">reflectGetUnsafe</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      <span class="type">Field</span> <span class="variable">field</span> <span class="operator">=</span> Unsafe.class.getDeclaredField(<span class="string">&quot;theUnsafe&quot;</span>);</span><br><span class="line">      field.setAccessible(<span class="literal">true</span>);</span><br><span class="line">      <span class="keyword">return</span> (Unsafe) field.get(<span class="literal">null</span>);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">      log.error(e.getMessage(), e);</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
 <li><p>通过Java命令行命令<code>-Xbootclasspath/a</code>把调用Unsafe相关方法的类A所在jar包路径追加到默认的bootstrap路径中，使得A被引导类加载器加载</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">java -Xbootclasspath/a: $&#123;path&#125;   <span class="comment">// 其中path为调用Unsafe相关方法的类所在jar包路径</span></span><br></pre></td></tr></table></figure></li>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">java -Xbootclasspath/a:$&#123;path&#125;   <span class="comment">// 其中path为调用Unsafe相关方法的类所在jar包路径</span></span><br></pre></td></tr></table></figure></li>
 </ol>
 <h3 id="unsafe功能">Unsafe功能</h3>
 <p>内存操作、内存屏障、对象操作、数据操作、CAS操作、线程调度、Class操作、系统信息</p>
