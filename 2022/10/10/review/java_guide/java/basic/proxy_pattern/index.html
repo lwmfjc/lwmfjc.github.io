@@ -22,7 +22,7 @@
 
   <meta name="description" content="proxy_pattern">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Java代理模式">
+<meta property="og:title" content="ly008ly-Java代理模式">
 <meta property="og:url" content="http://example.com/2022/10/10/review/java_guide/java/basic/proxy_pattern/index.html">
 <meta property="og:site_name" content="随记">
 <meta property="og:description" content="proxy_pattern">
@@ -48,7 +48,7 @@
   };
 </script>
 
-  <title>Java代理模式 | 随记</title>
+  <title>ly008ly-Java代理模式 | 随记</title>
   
 
 
@@ -204,7 +204,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          Java代理模式
+          ly008ly-Java代理模式
         </h1>
 
         <div class="post-meta">
@@ -297,8 +297,7 @@ SpringAOP和RPC等框架都实现了动态代理</p>
 <ul>
 <li><p>实例</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//定义一个类，及方法拦截器</span></span><br><span class="line"><span class="keyword">package</span> github.javaguide.dynamicProxy.cglibDynamicProxy;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">AliSmsSer</span></span><br><span class="line">    pvice &#123;</span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">send</span><span class="params">(String message)</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;send message:&quot;</span> + message);</span><br><span class="line">        <span class="keyword">return</span> message;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//MethodInterceptor （方法拦截器）</span></span><br><span class="line"><span class="keyword">import</span> net.sf.cglib.proxy.MethodInterceptor;</span><br><span class="line"><span class="keyword">import</span> net.sf.cglib.proxy.MethodProxy;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.Method;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 自定义MethodInterceptor</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">DebugMethodInterceptor</span> <span class="keyword">implements</span> <span class="title class_">MethodInterceptor</span> &#123;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> o           代理对象（增强的对象）</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> method      被拦截的方法（需要增强的方法）</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> args        方法入参</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> methodProxy 用于调用原始方法</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Object <span class="title function_">intercept</span><span class="params">(Object o, Method method, Object[] args, MethodProxy methodProxy)</span> <span class="keyword">throws</span> Throwable &#123;</span><br><span class="line">        <span class="comment">//调用方法之前，我们可以添加自己的操作</span></span><br><span class="line">        System.out.println(<span class="string">&quot;before method &quot;</span> + method.getName());</span><br><span class="line">        <span class="type">Object</span> <span class="variable">object</span> <span class="operator">=</span> methodProxy.invokeSuper(o, args);</span><br><span class="line">        <span class="comment">//调用方法之后，我们同样可以添加自己的操作</span></span><br><span class="line">        System.out.println(<span class="string">&quot;after method &quot;</span> + method.getName());</span><br><span class="line">        <span class="keyword">return</span> object;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>获取代理类</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> net.sf.cglib.proxy.Enhancer;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CglibProxyFactory</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Object <span class="title function_">getProxy</span><span class="params">(Class&lt;?&gt; clazz)</span> &#123;</span><br><span class="line">        <span class="comment">// 创建动态代理增强类</span></span><br><span class="line">        <span class="type">Enhancer</span> <span class="variable">enhancer</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Enhancer</span>();</span><br><span class="line">        <span class="comment">// 设置类加载器</span></span><br><span class="line">        enhancer.setClassLoader(clazz.getClassLoader());</span><br><span class="line">        <span class="comment">// 设置被代理类</span></span><br><span class="line">        enhancer.setSuperclass(clazz);</span><br><span class="line">        <span class="comment">// 设置方法拦截器</span></span><br><span class="line">        enhancer.setCallback(<span class="keyword">new</span> <span class="title class_">DebugMethodInterceptor</span>());</span><br><span class="line">        <span class="comment">// 创建代理类</span></span><br><span class="line">        <span class="keyword">return</span> enhancer.create();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//实际使用</span></span><br><span class="line"><span class="type">AliSmsService</span> <span class="variable">aliSmsService</span> <span class="operator">=</span> (AliSmsService) CglibProxyFactory.getProxy(AliSmsService.class);</span><br><span class="line">aliSmsService.send(<span class="string">&quot;java&quot;</span>);</span><br></pre></td></tr></table></figure></li>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">获取代理类</span><br><span class="line"></span><br><span class="line">```java</span><br><span class="line">import net.sf.cglib.proxy.Enhancer;</span><br><span class="line"></span><br><span class="line">public class CglibProxyFactory &#123;</span><br><span class="line"></span><br><span class="line">    public static Object getProxy(Class&lt;?&gt; clazz) &#123;</span><br><span class="line">        // 创建动态代理增强类</span><br><span class="line">        Enhancer enhancer = new Enhancer();</span><br><span class="line">        // 设置类加载器</span><br><span class="line">        enhancer.setClassLoader(clazz.getClassLoader());</span><br><span class="line">        // 设置被代理类</span><br><span class="line">        enhancer.setSuperclass(clazz);</span><br><span class="line">        // 设置方法拦截器</span><br><span class="line">        enhancer.setCallback(new DebugMethodInterceptor());</span><br><span class="line">        // 创建代理类</span><br><span class="line">        return enhancer.create();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">//实际使用</span><br><span class="line">AliSmsService aliSmsService = (AliSmsService) CglibProxyFactory.getProxy(AliSmsService.class);</span><br><span class="line">aliSmsService.send(&quot;java&quot;);</span><br></pre></td></tr></table></figure></li>
 </ul>
 <h3 id="对比">对比</h3>
 <ol type="1">
@@ -325,12 +324,12 @@ SpringAOP和RPC等框架都实现了动态代理</p>
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2022/10/10/review/java_guide/java/basic/reflex/" rel="prev" title="java-reflex">
-      <i class="fa fa-chevron-left"></i> java-reflex
+    <a href="/2022/10/10/review/java_guide/java/basic/reflex/" rel="prev" title="ly007ly-java-reflex">
+      <i class="fa fa-chevron-left"></i> ly007ly-java-reflex
     </a></div>
       <div class="post-nav-item">
-    <a href="/2022/10/10/review/java_guide/java/basic/big_decimal/" rel="next" title="big_decimal">
-      big_decimal <i class="fa fa-chevron-right"></i>
+    <a href="/2022/10/10/review/java_guide/java/basic/big_decimal/" rel="next" title="ly009ly-big_decimal">
+      ly009ly-big_decimal <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
