@@ -239,14 +239,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>12k</span>
+              <span>13k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>22 分钟</span>
+              <span>23 分钟</span>
             </span>
             <div class="post-description">HashMap源码</div>
 
@@ -265,31 +265,57 @@
 </blockquote>
 <h2 id="hashmap简介">HashMap简介</h2>
 <ul>
-<li>HashMap用来存放键值对，基于哈希表的Map接口实现，是非线程安全的</li>
+<li>HashMap用来存放<strong>键值对</strong>，基于哈希表的Map接口实现，是<strong>非线程安全</strong>的</li>
 <li>可以存储null的key和value，但null作为键只能有一个</li>
-<li>JDK8之前，HashMap由数组和链表组成，链表是为了解决哈希冲突而存在；JDK8之后，当链表大于阈值（默认8），则会选择转为红黑树（当数组长度大于64则进行转换，否则只是扩容），以减少搜索时间</li>
-<li>HashMap默认初始化大小为16，每次扩容为原容量2倍，且总是使用2的幂作为哈希表的大小</li>
+<li>JDK8之前，HashMap由<strong>数组和链表</strong>组成，链表是为了解决哈希冲突而存在；JDK8之后，当链表大于阈值（默认8），则会选择<strong>转为红黑树</strong>（当数组长度大于64则进行转换，否则只是扩容），以<strong>减少搜索时间</strong></li>
+<li>HashMap默认初始化大小为16，每次<strong>扩容为原容量2倍</strong>，且总是使用2的幂作为哈希表的大小</li>
 </ul>
 <h2 id="底层数据结构分析">底层数据结构分析</h2>
 <ul>
-<li><p>JDK8之前，HashMap底层是数组和链表，即<strong>链表散列</strong>；通过key的hashCode，经过扰动函数，获得hash值，然后再通过(n-1)
+<li><p>JDK8之前，HashMap底层是<strong>数组和链表</strong>，即<strong>链表散列</strong>；通过key的hashCode，经过扰动函数，获得hash值，然后再通过(n-1)
 &amp; hash
-判断当前元素存放位置（n指的是数组长度），如果当前位置存在元素，就判断元素与要存入的元素的hash值以及key是否相同，相同则覆盖，否则通过拉链法解决</p>
+判断当前元素存放位置（n指的是数组长度），如果当前位置存在元素，就判断元素与要存入的元素的hash值以及key是否相同，相同则覆盖，否则通过<strong>拉链法</strong>解决<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230201151506827.png"
+alt="image-20230201151506827" /></p>
 <ul>
 <li><p>扰动函数，即hash(Object key)方法</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//JDK1.8  </span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">hash</span><span class="params">(Object key)</span> &#123;</span><br><span class="line">      <span class="type">int</span> h;</span><br><span class="line">      <span class="comment">// key.hashCode()：返回散列值也就是hashcode</span></span><br><span class="line">      <span class="comment">// ^ ：按位异或</span></span><br><span class="line">      <span class="comment">// &gt;&gt;&gt;:无符号右移，忽略符号位，空位都以0补齐</span></span><br><span class="line">      <span class="keyword">return</span> (key == <span class="literal">null</span>) ? <span class="number">0</span> : (h = key.hashCode()) ^ (h &gt;&gt;&gt; <span class="number">16</span>);</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure></li>
 <li><p>JDK1.7</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//JDK1.7 , 则扰动了4次，性能较差</span></span><br><span class="line"><span class="keyword">static</span> <span class="type">int</span> <span class="title function_">hash</span><span class="params">(<span class="type">int</span> h)</span> &#123;</span><br><span class="line">    <span class="comment">// This function ensures that hashCodes that differ only by</span></span><br><span class="line">    <span class="comment">// constant multiples at each bit position have a bounded</span></span><br><span class="line">    <span class="comment">// number of collisions (approximately 8 at default load factor).</span></span><br><span class="line"></span><br><span class="line">    h ^= (h &gt;&gt;&gt; <span class="number">20</span>) ^ (h &gt;&gt;&gt; <span class="number">12</span>);</span><br><span class="line">    <span class="keyword">return</span> h ^ (h &gt;&gt;&gt; <span class="number">7</span>) ^ (h &gt;&gt;&gt; <span class="number">4</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
 </ul></li>
-<li><p>JDK1.8，当大于阈值时（默认8），会调用treefyBin()，根据HashMap数组决定是否转换为红黑树，只有当数组长度大于或等于64才转换为红黑树，减少搜索时间，否则只是调用resize()方法扩容</p></li>
+<li><p>JDK1.8之后，当链表长度大于阈值（默认为 8）时，会首先调用
+<code>treeifyBin()</code>方法。这个方法会根据 HashMap
+数组来决定是否转换为红黑树。只有<strong>当数组长度大于或者等于
+64</strong>
+的情况下，才会执行转换红黑树操作，以减少搜索时间。<strong>否则，就是只是执行
+<code>resize()</code>
+方法对数组扩容</strong>。相关源码这里就不贴了，重点关注
+<code>treeifyBin()</code>方法即可！</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230201151719559.png"
+alt="image-20230201151719559" />
+<figcaption aria-hidden="true">image-20230201151719559</figcaption>
+</figure></li>
 <li><p>HashMap一些属性</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">HashMap</span>&lt;K,V&gt; <span class="keyword">extends</span> <span class="title class_">AbstractMap</span>&lt;K,V&gt; <span class="keyword">implements</span> <span class="title class_">Map</span>&lt;K,V&gt;, Cloneable, Serializable &#123;</span><br><span class="line">    <span class="comment">// 序列号</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">long</span> <span class="variable">serialVersionUID</span> <span class="operator">=</span> <span class="number">362498820763181265L</span>;</span><br><span class="line">    <span class="comment">// 默认的初始容量是16</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">DEFAULT_INITIAL_CAPACITY</span> <span class="operator">=</span> <span class="number">1</span> &lt;&lt; <span class="number">4</span>;</span><br><span class="line">    <span class="comment">// 最大容量</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">MAXIMUM_CAPACITY</span> <span class="operator">=</span> <span class="number">1</span> &lt;&lt; <span class="number">30</span>;</span><br><span class="line">    <span class="comment">// 默认的填充因子</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">float</span> <span class="variable">DEFAULT_LOAD_FACTOR</span> <span class="operator">=</span> <span class="number">0.75f</span>;</span><br><span class="line">    <span class="comment">// 当桶(bucket)上的结点数大于这个值时会转成红黑树</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">TREEIFY_THRESHOLD</span> <span class="operator">=</span> <span class="number">8</span>;</span><br><span class="line">    <span class="comment">// 当桶(bucket)上的结点数小于这个值时树转链表</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">UNTREEIFY_THRESHOLD</span> <span class="operator">=</span> <span class="number">6</span>;</span><br><span class="line">    <span class="comment">// 桶中结构转化为红黑树对应的table的最小容量</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">MIN_TREEIFY_CAPACITY</span> <span class="operator">=</span> <span class="number">64</span>;</span><br><span class="line">    <span class="comment">// 存储元素的数组，总是2的幂次倍</span></span><br><span class="line">    <span class="keyword">transient</span> Node&lt;k,v&gt;[] table;</span><br><span class="line">    <span class="comment">// 存放具体元素的集</span></span><br><span class="line">    <span class="keyword">transient</span> Set&lt;map.entry&lt;k,v&gt;&gt; entrySet;</span><br><span class="line">    <span class="comment">// 存放元素的个数，注意这个不等于数组的长度。</span></span><br><span class="line">    <span class="keyword">transient</span> <span class="type">int</span> size;</span><br><span class="line">    <span class="comment">// 每次扩容和更改map结构的计数器</span></span><br><span class="line">    <span class="keyword">transient</span> <span class="type">int</span> modCount;</span><br><span class="line">    <span class="comment">// 临界值(容量*填充因子) 当实际大小超过临界值时，会进行扩容</span></span><br><span class="line">    <span class="type">int</span> threshold;</span><br><span class="line">    <span class="comment">// 加载因子</span></span><br><span class="line">    <span class="keyword">final</span> <span class="type">float</span> loadFactor;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <ul>
-<li>LoadFactory 加载因子
-控制数组存放数据的疏密程度，<strong>趋于1，说明存放的数据越集中（即链表越长）</strong>；<strong>趋于0，数组中存放的数据少，即越稀疏</strong>。即如果太大则导致元素效率低，太小则数组利用率低（这里的低指的是每个数组存放的元素太少）；默认为0.75</li>
-<li>threshold <code>threshold 英[ˈθreʃhəʊld]</code> <strong>threshold =
-capacity * loadFactor</strong>，即存放的元素Size 如果 &gt; threshold
-，即capacity * 0.75的时候，就要考虑扩容了</li>
+<li><p>LoadFactor 加载因子</p>
+<p>loadFactor 加载因子是控制数组存放数据的疏密程度，loadFactor
+越<strong>趋近于 1</strong>，那么
+数组中存放的数据(entry)【<strong>说的就是数组个数</strong>】也就越多<strong>，也就</strong>越密<strong>，也就是会让</strong>链表的长度增加**，loadFactor
+越小，也就是趋近于 0，数组中存放的数据(entry)也就越少，也就越稀疏。</p>
+<p><strong>loadFactor
+太大导致查找元素效率低，太小导致数组的利用率低，存放的数据会很分散。loadFactor
+的默认值为 0.75f 是官方给出的一个比较好的临界值</strong>。</p>
+<p>给定的默认容量为 16，负载因子为 0.75。Map
+在使用过程中不断的往里面存放数据，当数量达到了 <strong>16 * 0.75 = 12
+就需要将当前 16 的容量进行扩容</strong>，而扩容这个过程涉及到
+<strong>rehash</strong>、<strong>复制数据</strong>等操作，所以<strong>非常消耗性能</strong>。</p></li>
+<li><p>threshold <code>threshold 英[ˈθreʃhəʊld]</code> <strong>threshold
+= capacity * loadFactor</strong>，即存放的元素Size 如果 &gt; threshold
+，即capacity * 0.75的时候，就要考虑扩容了</p></li>
 </ul></li>
 <li><p>Node类结点源码</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 继承自 Map.Entry&lt;K,V&gt;</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">Node</span>&lt;K,V&gt; <span class="keyword">implements</span> <span class="title class_">Map</span>.Entry&lt;K,V&gt; &#123;</span><br><span class="line">       <span class="keyword">final</span> <span class="type">int</span> hash;<span class="comment">// 哈希值，存放元素到hashmap中时用来与其他元素hash值比较</span></span><br><span class="line">       <span class="keyword">final</span> K key;<span class="comment">//键</span></span><br><span class="line">       V value;<span class="comment">//值</span></span><br><span class="line">       <span class="comment">// 指向下一个节点</span></span><br><span class="line">       Node&lt;K,V&gt; next;</span><br><span class="line">       Node(<span class="type">int</span> hash, K key, V value, Node&lt;K,V&gt; next) &#123;</span><br><span class="line">            <span class="built_in">this</span>.hash = hash;</span><br><span class="line">            <span class="built_in">this</span>.key = key;</span><br><span class="line">            <span class="built_in">this</span>.value = value;</span><br><span class="line">            <span class="built_in">this</span>.next = next;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">final</span> K <span class="title function_">getKey</span><span class="params">()</span>        &#123; <span class="keyword">return</span> key; &#125;</span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">final</span> V <span class="title function_">getValue</span><span class="params">()</span>      &#123; <span class="keyword">return</span> value; &#125;</span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">final</span> String <span class="title function_">toString</span><span class="params">()</span> &#123; <span class="keyword">return</span> key + <span class="string">&quot;=&quot;</span> + value; &#125;</span><br><span class="line">        <span class="comment">// 重写hashCode()方法</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">hashCode</span><span class="params">()</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> Objects.hashCode(key) ^ Objects.hashCode(value);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">final</span> V <span class="title function_">setValue</span><span class="params">(V newValue)</span> &#123;</span><br><span class="line">            <span class="type">V</span> <span class="variable">oldValue</span> <span class="operator">=</span> value;</span><br><span class="line">            value = newValue;</span><br><span class="line">            <span class="keyword">return</span> oldValue;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 重写 equals() 方法</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">final</span> <span class="type">boolean</span> <span class="title function_">equals</span><span class="params">(Object o)</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (o == <span class="built_in">this</span>)</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">            <span class="keyword">if</span> (o <span class="keyword">instanceof</span> Map.Entry) &#123;</span><br><span class="line">                Map.Entry&lt;?,?&gt; e = (Map.Entry&lt;?,?&gt;)o;</span><br><span class="line">                <span class="keyword">if</span> (Objects.equals(key, e.getKey()) &amp;&amp;</span><br><span class="line">                    Objects.equals(value, e.getValue()))</span><br><span class="line">                    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -502,7 +528,7 @@ key 比较，如果 key
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">26:05</span>
+    <span title="站点阅读时长">26:06</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
