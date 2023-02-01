@@ -239,7 +239,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>4.9k</span>
+              <span>5k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -358,7 +358,8 @@ tail 引用则会移动到新的节点上，这样一个双向链表就建立起
 <h2 id="collection-子接口">Collection 子接口</h2>
 <h3 id="list">List</h3>
 <ul>
-<li><p>ArrayList和Vector区别：ArrayList是List主要实现类，底层使用Object[]存储线程不安全（synchronized关键字）；Vector是List古老实现类，底层使用Object[]存储，线程安全</p></li>
+<li><p>ArrayList和Vector区别：ArrayList是List主要实现类，底层使用Object[]存储线程不安全；Vector是List古老实现类，底层使用Object[]存储，线程安全
+（<strong>synchronized</strong>关键字）</p></li>
 <li><p>ArrayList与LinkedList：</p>
 <ul>
 <li>都是线程不安全</li>
@@ -371,16 +372,22 @@ tail 引用则会移动到新的节点上，这样一个双向链表就建立起
 <li><p>实际项目中不怎么使用LinkedList，因为ArrayList性能通常会更好，LinkedList<strong>仅仅在头尾插入或者删除元素</strong>的时间复杂度<strong>近似O(1)</strong></p></li>
 <li><p>双向链表与双向循环链表</p>
 <ul>
-<li>双向链表，首尾相连 <img
+<li>双向链表，包含两个指针，一个 prev 指向前一个节点，一个 next
+指向后一个节点。 <img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221017145140450.png"
 alt="image-20221017145140450" /></li>
-<li>双向循环链表，首尾相连（头节点的前驱=尾结点，尾结点的后继=头节点）</li>
+<li>双向循环链表，<strong>首尾相连</strong>（头节点的前驱=尾结点，尾结点的后继=头节点）</li>
 </ul></li>
 <li><p>补充：RandomAccess接口，这个接口只是用来<strong>标识</strong>：<strong>实现这个接口的类，具有随机访问功能</strong>，但并不是说因为实现了该接口才具有的快速随机访问机制</p>
 <ul>
 <li><p>Collections里面有这样一段代码</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> &lt;T&gt;</span><br><span class="line"><span class="type">int</span> <span class="title function_">binarySearch</span><span class="params">(List&lt;? extends Comparable&lt;? <span class="built_in">super</span> T&gt;&gt; list, T key)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (list <span class="keyword">instanceof</span> RandomAccess || list.size()&lt;BINARYSEARCH_THRESHOLD)</span><br><span class="line">        <span class="keyword">return</span> Collections.indexedBinarySearch(list, key);</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        <span class="keyword">return</span> Collections.iteratorBinarySearch(list, key);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-<li><p>ArrayList实现了RandomAccess方法，而LinkedList没有。是由于ArrayList底层是数组，支持快速随机访问，时间复杂度为O(1)，而LinkedList底层是链表，不支持快速随机访问，时间复杂度为O(n)</p></li>
+<blockquote>
+<p>在 <code>binarySearch（)</code> 方法中，它要判断传入的 list 是否
+<code>RandomAccess</code>
+的实例，如果是，调用<code>indexedBinarySearch()</code>方法，如果不是，那么调用<code>iteratorBinarySearch()</code>方法</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">  <span class="keyword">public</span> <span class="keyword">static</span> &lt;T&gt;</span><br><span class="line">  <span class="type">int</span> <span class="title function_">binarySearch</span><span class="params">(List&lt;? extends Comparable&lt;? <span class="built_in">super</span> T&gt;&gt; list, T key)</span> &#123;</span><br><span class="line">      <span class="keyword">if</span> (list <span class="keyword">instanceof</span> RandomAccess || list.size()&lt;BINARYSEARCH_THRESHOLD)</span><br><span class="line">          <span class="keyword">return</span> Collections.indexedBinarySearch(list, key);</span><br><span class="line">      <span class="keyword">else</span></span><br><span class="line">          <span class="keyword">return</span> Collections.iteratorBinarySearch(list, key);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>ArrayList实现了RandomAccess方法，而LinkedList没有。是由于ArrayList底层是数组，支持<strong>快速随机访问</strong>，时间复杂度为<strong>O(1)</strong>，而LinkedList底层是链表，不支持快速随机访问，时间复杂度为<strong>O(n)</strong></p></li>
 </ul></li>
 </ul>
 <h3 id="set">Set</h3>
@@ -393,19 +400,19 @@ obj)方法用来排序</li>
 obj1,Object obj2)方法用来排序</li>
 </ul></li>
 <li><p><code>Collections.sort(List&lt;T&gt; list, Comparator&lt;? super T&gt; c)</code>默认是正序，T必须实现了Comparable，且<code>Arrays.sort()</code>方法中的部分代码如下：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//使用插入排序</span></span><br><span class="line">        <span class="keyword">if</span> (length &lt; INSERTIONSORT_THRESHOLD) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> i=low; i&lt;high; i++)</span><br><span class="line">                <span class="keyword">for</span> (<span class="type">int</span> j=i; j&gt;low &amp;&amp; c.compare(dest[j-<span class="number">1</span>], dest[j])&gt;<span class="number">0</span>; j--) <span class="comment">//如果前一个数跟后面的数相比大于零，则进行交换，即大的排后面</span></span><br><span class="line">                    swap(dest, j, j-<span class="number">1</span>);</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line"><span class="comment">//当比较结果&gt;0时，调换数组前后两个元素的值，也就是后面的一定要比前面的大，即</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">compareTo</span><span class="params">(Person o)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">this</span>.age &gt; o.getAge()) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">this</span>.age &lt; o.getAge()) &#123;</span><br><span class="line">            <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="comment">//下面这段代码，按照年龄降序（默认是升序）</span></span><br><span class="line">        Collections.sort(arrayList, <span class="keyword">new</span> <span class="title class_">Comparator</span>&lt;Integer&gt;() &#123;</span><br><span class="line"></span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">compare</span><span class="params">(Integer o1, Integer o2)</span> &#123;</span><br><span class="line">                <span class="comment">//如果结果大于0，则两个数对调 </span></span><br><span class="line">                <span class="comment">//如果返回o2.compareTo(o1)，就是当o2&gt;01时，两个结果对换，也就是降序</span></span><br><span class="line">                <span class="comment">//如果返回o1.compareTo(o2)，就是当o1&gt;o2时，两个结果对换，也就是升序   也就是当和参数顺序一致时，是升序；反之，则是降序</span></span><br><span class="line">                <span class="keyword">return</span> o2.compareTo(o1); </span><br><span class="line">                </span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line"><span class="comment">//上面这段代码，标识</span></span><br></pre></td></tr></table></figure></li>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//使用插入排序</span></span><br><span class="line">        <span class="keyword">if</span> (length &lt; INSERTIONSORT_THRESHOLD) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> i=low; i&lt;high; i++)</span><br><span class="line">                <span class="keyword">for</span> (<span class="type">int</span> j=i; j&gt;low &amp;&amp; c.compare(dest[j-<span class="number">1</span>], dest[j])&gt;<span class="number">0</span>; j--) <span class="comment">//如果前一个数跟后面的数相比大于零，则进行交换，即大的排后面</span></span><br><span class="line">                    swap(dest, j, j-<span class="number">1</span>);</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line"><span class="comment">//当比较结果&gt;0时，调换数组前后两个元素的值，也就是后面的一定要比前面的大，即</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">compareTo</span><span class="params">(Person o)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">this</span>.age &gt; o.getAge()) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">this</span>.age &lt; o.getAge()) &#123;</span><br><span class="line">            <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="comment">//下面这段代码，按照年龄降序（默认是升序）</span></span><br><span class="line">        Collections.sort(arrayList, <span class="keyword">new</span> <span class="title class_">Comparator</span>&lt;Integer&gt;() &#123;</span><br><span class="line"></span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">compare</span><span class="params">(Integer o1, Integer o2)</span> &#123;</span><br><span class="line">                <span class="comment">//如果结果大于0，则两个数对调</span></span><br><span class="line">                <span class="comment">//如果返回o2.compareTo(o1)，就是当o2&gt;01时，两个结果对换，也就是降序</span></span><br><span class="line">                <span class="comment">//如果返回o1.compareTo(o2)，就是当o1&gt;o2时，两个结果对换，也就是升序   也就是当和参数顺序一致时，是升序；反之，则是降序</span></span><br><span class="line">                <span class="keyword">return</span> o2.compareTo(o1); </span><br><span class="line">                </span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line"><span class="comment">//上面这段代码，标识</span></span><br></pre></td></tr></table></figure></li>
 <li><p>无序性和不可重复性</p>
 <ul>
-<li>无序性，指存储的数据，在底层数据结构中，并非按照数组索引的书顺序添加（而是根据数据的哈希值决定）</li>
-<li>不可重复性：指添加的元素按照equals()判断时，返回false。需同时填写equals()方法和hashCode()
+<li>无序性，指存储的数据，在底层数据结构中，<strong>并非按照数组索引的顺序</strong>添加（而是<strong>根据数据的哈希值</strong>决定）</li>
+<li>不可重复性：指添加的元素<strong>按照equals()判断时，返回false</strong>。需<strong>同时</strong>重写<strong>equals()</strong>方法和<strong>hashCode()</strong>
 方法</li>
 </ul></li>
 <li><p>比较HashSet、LinkedHashSet和TreeSet三者异同</p>
 <ul>
-<li>都是Set实现类，保证元素唯一，且非线程安全</li>
-<li>三者底层数据结构不同，HashSet底层为哈希表（HashMap）;
-LinkedHashSet底层为链表+哈希表
-，元素的插入和取出顺序满足FIFO。TreeSet底层为红黑树，元素有序，排序方式有自然排序和定制排序
+<li>都是Set实现类，保证<strong>元素唯一</strong>，且<strong>非线程安全</strong></li>
+<li>三者底层数据结构不同，HashSet底层为<strong>哈希表（HashMap）</strong>;
+LinkedHashSet底层为<strong>链表+哈希表</strong>
+，元素的插入和取出顺序满足<strong>FIFO</strong>。TreeSet底层为红黑树，元素<strong>有序</strong>，排序方式有<strong>自然排序</strong>和<strong>定制排序</strong>
 <img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221017170434986.png"
 alt="image-20221017170434986" /></li>
@@ -422,12 +429,12 @@ alt="image-20221017170659204" />
 <ul>
 <li>Queue
 <ul>
-<li>Queue为单端队列，只能从一端插入元素，另一端删除元素，实现上一般遵循<strong>先进先出（FIFO）</strong>规则【Dequeue为双端队列，在队列两端均可插入或删除元素】</li>
+<li>Queue为单端队列，只能<strong>从一端插入</strong>元素，<strong>另一端删除</strong>元素，实现上一般遵循<strong>先进先出（FIFO）</strong>规则【Dequeue为双端队列，在队列两端均可<strong>插入或删除</strong>元素】</li>
 <li>Queue扩展了Collection接口，根据<strong>因容量问题而导致操作失败后的处理方式不同</strong>分两类，操作失败后<strong>抛异常</strong>或<strong>返回特殊值</strong>
 <img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221017172811954.png"
 alt="image-20221017172811954" /></li>
-<li>Dequeue，双端队列，在队列两端均可插入或删除元素，也会根据失败后处理方式分两类
+<li>Dequeue，双端队列，在队列<strong>两端均可插入</strong>或<strong>删除</strong>元素，也会根据失败后处理方式分两类
 Deque还有push()和pop()等其他方法，可用于模拟栈 <img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221017173058398.png"
 alt="image-20221017173058398" /></li>
@@ -435,34 +442,36 @@ alt="image-20221017173058398" /></li>
 </ul>
 <h3 id="arraydeque与linkedlist区别">ArrayDeque与LinkedList区别</h3>
 <ul>
-<li>ArrayDeque和LinkedList都实现了Deque接口，两者都具有队列功能</li>
-<li>ArrayDeque基于可变长的数组和双指针来实现，而LinkedList则通过链表来实现</li>
-<li>ArrayDeque不支持存储NULL数据，但LinkedList支持</li>
+<li>ArrayDeque和LinkedList<strong>都实现了Deque</strong>接口，两者<strong>都具有队列</strong>功能</li>
+<li>ArrayDeque<strong>基于可变长的数组</strong>和<strong>双指针</strong>来实现，而<strong>LinkedList则通过链表</strong>来实现</li>
+<li>ArrayDeque<strong>不支持存储NULL</strong>数据，但<strong>LinkedList支持</strong></li>
 <li>ArrayDeque是后面（JDK1.6)引入的，而LinkedList在JDK1.2就存在</li>
 <li><code>ArrayDeque</code> 插入时可能存在扩容过程,
-不过均摊后的插入操作依然为 O(1)。虽然 <code>LinkedList</code>
-不需要扩容，但是每次插入数据时均需要申请新的堆空间，均摊性能相比更慢。</li>
+不过<strong>均摊后的插入操作依然为 O(1)</strong>。虽然
+<code>LinkedList</code>
+不需要扩容，但是<strong>每次插入数据时均需要申请新的堆空间</strong>，均摊性能相比更慢。</li>
 </ul>
-<p>总的来说，ArrayDeque来实现队列要比Linked更好，此外，ArrayDeque也可以用于实现栈</p>
+<p>总的来说，ArrayDeque来实现队列要比LinkedList更好，此外，ArrayDeque也可以用于实现栈</p>
 <h3 id="说一说priorityqueue">说一说PriorityQueue</h3>
 <p><code>PriorityQueue</code> 是在 JDK1.5 中被引入的, 其与
 <code>Queue</code>
-的区别在于元素出队顺序是与优先级相关的，即总是优先级最高的元素先出队。</p>
+的区别在于<strong>元素出队顺序</strong>是<strong>与优先级相关</strong>的，即总是<strong>优先级最高的元素先出队</strong>。</p>
 <p>这里列举其相关的一些要点：</p>
 <ul>
 <li><code>PriorityQueue</code>
-利用了二叉堆的数据结构来实现的，底层使用可变长的数组来存储数据</li>
-<li><code>PriorityQueue</code> 通过堆元素的上浮和下沉，实现了在 O(logn)
-的时间复杂度内插入元素和删除堆顶元素。</li>
-<li><code>PriorityQueue</code> 是非线程安全的，且不支持存储
-<code>NULL</code> 和 <code>non-comparable</code> 的对象。</li>
-<li><code>PriorityQueue</code> 默认是小顶堆，但可以接收一个
-<code>Comparator</code>
+利用了<strong>二叉堆</strong>的数据结构来实现的，底层使用<strong>可变长的数组</strong>来存储数据</li>
+<li><code>PriorityQueue</code>
+通过堆元素的<strong>上浮</strong>和<strong>下沉</strong>，实现了在
+<strong>O(logn)
+的时间复杂度内插入</strong>元素和<strong>删除</strong>堆顶元素。</li>
+<li><code>PriorityQueue</code>
+是<strong>非线程安全</strong>的，且不支持存储 <code>NULL</code> 和
+<code>non-comparable</code> 的对象。</li>
+<li><code>PriorityQueue</code>
+<strong>默认是小顶堆</strong>，但<strong>可以接收一个
+<code>Comparator</code></strong>
 作为构造参数，从而来自定义元素优先级的先后。</li>
 </ul>
-<blockquote>
-<p>大部分转自https://github.com/Snailclimb/JavaGuide</p>
-</blockquote>
 
     </div>
 
