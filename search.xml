@@ -14508,52 +14508,80 @@ alt="image-20221017173058398" /></li>
 <ul>
 <li><p>HashMap和Hashtable的区别</p>
 <ul>
-<li>HashMap是非线程安全的，Hashtable是线程安全的，因为Hashtable内部方法都经过synchronized修饰（不过要保证线程安全一般用ConcurrentHashMap）</li>
-<li>由于加了synchronized修饰，HashTable效率没有HashMap高</li>
-<li>HashMap可以存储null的key和value，但null作为key的键只能由一个；HashTable不允许有null键和null值</li>
-<li>初始容量及每次扩容
+<li><p><strong>HashMap是非线程安全</strong>的，<strong>Hashtable是线程安全</strong>的，因为Hashtable内部方法<strong>都经过synchronized</strong>修饰（不过要保证线程安全<strong>一般用ConcurrentHashMap</strong>）</p></li>
+<li><p>由于加了synchronized修饰，HashTable<strong>效率</strong>没有HashMap高</p></li>
+<li><p>HashMap<strong>可以存储null的key和value</strong>，但<strong>null作为键</strong>只能有一个<strong>；</strong>HashTable<strong>不允许有null键和null值</strong></p></li>
+<li><p>初始容量及每次扩容</p>
 <ul>
-<li>Hashtable默认初始大小11，之后扩容为2n+1;HashMap初始大小16，之后扩容2n</li>
+<li><strong>Hashtable默认初始大小11</strong>，之后<strong>扩容为2n+1</strong>;HashMap<strong>初始大小16</strong>，之后<strong>扩容变为原来的2倍</strong></li>
 <li>如果指定初始大小，HashTable直接使用初始大小<br />
-而HashMap使用2的幂作为哈希表的大小（我猜是大于初始大小的最小2的n次方）<strong>Returns
-a power of two size for the given target capacity.</strong></li>
+而<code>HashMap</code> 会将其<strong>扩充为 2
+的幂次方</strong>大小（<code>HashMap</code>
+中的<strong><code>tableSizeFor()</code></strong>方法保证，下面给出了源代码）。也就是说
+<code>HashMap</code> 总是使用 2
+的幂作为哈希表的大小,后面会介绍到为什么是 2 的幂次方</li>
 </ul></li>
-<li>底层数据结构
+<li><p>底层数据结构</p>
 <ul>
-<li>JDK1.8之后HashMap解决哈希冲突时，当链表大于阈值（默认8）时，将链表转为红黑树（转换前判断，如果当前数组长度小于64，则先进行数组扩容，而不转成红黑树），以减少搜索时间</li>
-</ul></li>
+<li>JDK1.8之后<strong>HashMap</strong>解决哈希冲突时，当<strong>链表大于阈值（默认8）</strong>时，将链表<strong>转为红黑树</strong>（转换<strong>前</strong>判断，如果当前<strong>数组长度小于64</strong>，则<strong>先进行数组扩容</strong>，而不转成红黑树），以减少搜索时间。</li>
+<li>Hashtable<strong>没有</strong>上面的机制</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">HashMap 中带有初始容量的构造函数：</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="keyword">public</span> <span class="title function_">HashMap</span><span class="params">(<span class="type">int</span> initialCapacity, <span class="type">float</span> loadFactor)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (initialCapacity &lt; <span class="number">0</span>)</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>(<span class="string">&quot;Illegal initial capacity: &quot;</span> +</span><br><span class="line">                                               initialCapacity);</span><br><span class="line">        <span class="keyword">if</span> (initialCapacity &gt; MAXIMUM_CAPACITY)</span><br><span class="line">            initialCapacity = MAXIMUM_CAPACITY;</span><br><span class="line">        <span class="keyword">if</span> (loadFactor &lt;= <span class="number">0</span> || Float.isNaN(loadFactor))</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>(<span class="string">&quot;Illegal load factor: &quot;</span> +</span><br><span class="line">                                               loadFactor);</span><br><span class="line">        <span class="built_in">this</span>.loadFactor = loadFactor;</span><br><span class="line">        <span class="built_in">this</span>.threshold = tableSizeFor(initialCapacity);</span><br><span class="line">    &#125;</span><br><span class="line">     <span class="keyword">public</span> <span class="title function_">HashMap</span><span class="params">(<span class="type">int</span> initialCapacity)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>(initialCapacity, DEFAULT_LOAD_FACTOR);</span><br><span class="line">    &#125; </span><br><span class="line"></span><br><span class="line"><span class="comment">/*下面这个方法保证了 HashMap 总是使用 2 的幂作为哈希表的大小。*/</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Returns a power of two size for the given target capacity.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">tableSizeFor</span><span class="params">(<span class="type">int</span> cap)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span> cap - <span class="number">1</span>;</span><br><span class="line">        n |= n &gt;&gt;&gt; <span class="number">1</span>;</span><br><span class="line">        n |= n &gt;&gt;&gt; <span class="number">2</span>;</span><br><span class="line">        n |= n &gt;&gt;&gt; <span class="number">4</span>;</span><br><span class="line">        n |= n &gt;&gt;&gt; <span class="number">8</span>;</span><br><span class="line">        n |= n &gt;&gt;&gt; <span class="number">16</span>;</span><br><span class="line">        <span class="keyword">return</span> (n &lt; <span class="number">0</span>) ? <span class="number">1</span> : (n &gt;= MAXIMUM_CAPACITY) ? MAXIMUM_CAPACITY : n + <span class="number">1</span>;</span><br><span class="line">    &#125; </span><br></pre></td></tr></table></figure></li>
 </ul></li>
 <li><p>HashMap和hashSet区别</p>
+<blockquote>
+<p>如果你看过 <code>HashSet</code>
+源码的话就应该知道：<code>HashSet</code> 底层就是基于
+<code>HashMap</code> 实现的。（<code>HashSet</code>
+的源码非常非常少，因为除了
+<code>clone()</code>、<code>writeObject()</code>、<code>readObject()</code>是
+<code>HashSet</code> 自己不得不实现之外，其他方法都是直接调用
+<code>HashMap</code> 中的方法</p>
+</blockquote>
 <ul>
-<li>HashSet底层就是HashMap实现的</li>
-<li>HashMap：实现了Map接口；存储键值对；调用put()向map中添加元素；<strong>HashMap使用键（key）计算</strong></li>
-<li>HashSet：实现Set接口；仅存储对象；调用add()方法向Set中添加元素；HashSet使用成员对象计算hashCode，对于不相等两个对象来说
-hashcode也可能相同，所以还要再借助equals()方法判断对象相等性</li>
+<li>HashSet底层就<code>HashMap</code> 会将其扩充为 2
+的幂次方大小（<code>HashMap</code>
+中的<code>tableSizeFor()</code>方法保证，下面给出了源代码）。也就是说
+<code>HashMap</code> 总是使用 2
+的幂作为哈希表的大小,后面会介绍到为什么是 2 的幂次方是HashMap实现的</li>
+<li>HashMap：实现了Map接口；存储<strong>键值对</strong>；调用put()向map中添加元素；<strong>HashMap使用键（key）计算hashcode</strong></li>
+<li>HashSet：实现Set接口；仅<strong>存储对象</strong>；调用add()方法向Set中添加元素；HashSet使用<strong>成员对象</strong>计算hashCode，对于不相等两个对象来说
+<strong>hashcode也可能相同</strong>，所以<strong>还要再借助equals()</strong>方法判断对象相等性</li>
 </ul></li>
 <li><p>HashMap和TreeMap navigable 英[ˈnævɪɡəbl] 通航的，可航行的<br />
 HashMap和TreeMap都继承自AbstractMap<br />
 TreeMap还实现了NavigableMap
-（<strong>对集合内元素搜索</strong>）和SortedMap（对集合内元素<strong>根据键排序</strong>，默认key升序，可指定排序的比较器）接口<br />
-示例：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> shuang.kou</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@createTime</span> 2020年06月15日 17:02:00</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Person</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> Integer age;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Person</span><span class="params">(Integer age)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.age = age;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> Integer <span class="title function_">getAge</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> age;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        TreeMap&lt;Person, String&gt; treeMap = <span class="keyword">new</span> <span class="title class_">TreeMap</span>&lt;&gt;(<span class="keyword">new</span> <span class="title class_">Comparator</span>&lt;Person&gt;() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">compare</span><span class="params">(Person person1, Person person2)</span> &#123;</span><br><span class="line">                <span class="type">int</span> <span class="variable">num</span> <span class="operator">=</span> person1.getAge() - person2.getAge();</span><br><span class="line">                <span class="keyword">return</span> Integer.compare(num, <span class="number">0</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">        treeMap.put(<span class="keyword">new</span> <span class="title class_">Person</span>(<span class="number">3</span>), <span class="string">&quot;person1&quot;</span>);</span><br><span class="line">        treeMap.put(<span class="keyword">new</span> <span class="title class_">Person</span>(<span class="number">18</span>), <span class="string">&quot;person2&quot;</span>);</span><br><span class="line">        treeMap.put(<span class="keyword">new</span> <span class="title class_">Person</span>(<span class="number">35</span>), <span class="string">&quot;person3&quot;</span>);</span><br><span class="line">        treeMap.put(<span class="keyword">new</span> <span class="title class_">Person</span>(<span class="number">16</span>), <span class="string">&quot;person4&quot;</span>);</span><br><span class="line">        treeMap.entrySet().stream().forEach(personStringEntry -&gt; &#123;</span><br><span class="line">            System.out.println(personStringEntry.getValue());</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//输出</span></span><br><span class="line"><span class="comment">/**person1</span></span><br><span class="line"><span class="comment">person4</span></span><br><span class="line"><span class="comment">person2</span></span><br><span class="line"><span class="comment">person3</span></span><br><span class="line"><span class="comment">**/</span></span><br></pre></td></tr></table></figure></li>
+（<strong>对集合内元素搜索</strong>）和SortedMap（对集合内元素<strong>根据键排序</strong>，默认key升序，可指定排序的比较器）接口</p></li>
+</ul>
+<ol type="1">
+<li><p>实现 <code>NavigableMap</code> 接口让 <code>TreeMap</code>
+有了<strong>对集合内元素的搜索</strong>的能力。</p></li>
+<li><p>实现<code>SortedMap</code>接口让 <code>TreeMap</code>
+有了对<strong>集合中的元素根据键排序</strong>的能力。默认是按 key
+的升序排序，不过我们也可以指定排序的比较器。示例代码如下：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@author</span> shuang.kou</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@createTime</span> 2020年06月15日 17:02:00</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Person</span> &#123;</span><br><span class="line">      <span class="keyword">private</span> Integer age;</span><br><span class="line">  </span><br><span class="line">      <span class="keyword">public</span> <span class="title function_">Person</span><span class="params">(Integer age)</span> &#123;</span><br><span class="line">          <span class="built_in">this</span>.age = age;</span><br><span class="line">      &#125;</span><br><span class="line">  </span><br><span class="line">      <span class="keyword">public</span> Integer <span class="title function_">getAge</span><span class="params">()</span> &#123;</span><br><span class="line">          <span class="keyword">return</span> age;</span><br><span class="line">      &#125;</span><br><span class="line">  </span><br><span class="line">  </span><br><span class="line">      <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">          TreeMap&lt;Person, String&gt; treeMap = <span class="keyword">new</span> <span class="title class_">TreeMap</span>&lt;&gt;(<span class="keyword">new</span> <span class="title class_">Comparator</span>&lt;Person&gt;() &#123;</span><br><span class="line">              <span class="meta">@Override</span></span><br><span class="line">              <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">compare</span><span class="params">(Person person1, Person person2)</span> &#123;</span><br><span class="line">                  <span class="type">int</span> <span class="variable">num</span> <span class="operator">=</span> person1.getAge() - person2.getAge();</span><br><span class="line">                  <span class="keyword">return</span> Integer.compare(num, <span class="number">0</span>);</span><br><span class="line">              &#125;</span><br><span class="line">          &#125;);</span><br><span class="line">          treeMap.put(<span class="keyword">new</span> <span class="title class_">Person</span>(<span class="number">3</span>), <span class="string">&quot;person1&quot;</span>);</span><br><span class="line">          treeMap.put(<span class="keyword">new</span> <span class="title class_">Person</span>(<span class="number">18</span>), <span class="string">&quot;person2&quot;</span>);</span><br><span class="line">          treeMap.put(<span class="keyword">new</span> <span class="title class_">Person</span>(<span class="number">35</span>), <span class="string">&quot;person3&quot;</span>);</span><br><span class="line">          treeMap.put(<span class="keyword">new</span> <span class="title class_">Person</span>(<span class="number">16</span>), <span class="string">&quot;person4&quot;</span>);</span><br><span class="line">          treeMap.entrySet().stream().forEach(personStringEntry -&gt; &#123;</span><br><span class="line">              System.out.println(personStringEntry.getValue());</span><br><span class="line">          &#125;);</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">//输出</span></span><br><span class="line">  <span class="comment">/**person1</span></span><br><span class="line"><span class="comment">  person4</span></span><br><span class="line"><span class="comment">  person2</span></span><br><span class="line"><span class="comment">person3</span></span><br><span class="line"><span class="comment">  **/</span></span><br></pre></td></tr></table></figure></li>
+</ol>
+<ul>
 <li><p>HashSet如何检查重复</p>
 <ul>
-<li><p>当在HashSet加入对象时，先计算对象hashcode值判断加入位置，同时与其他加入对象的hashcode值比较，如果没有相同的，会假设对象没有重复出现；如果发现有相同的hashcode值的对象，则调用equals()方法检查hashcode相等的对象是否真的相等，如果相等则不会加入</p></li>
-<li><p>JDK1.8中，HashSet的add()方法调用了HashMap的put()方法，并判断是否有重复元素（返回值是否null)</p>
+<li><p>当在HashSet加入对象时，<strong>先计算对象hashcode值</strong>判断加入位置，同时与其他加入对象的hashcode值比较，如果没有相同的，会假设对象没有重复出现；如果发现有<strong>相同的hashcode值</strong>的对象，则<strong>调用equals()方法</strong>检查hashcode相等的对象是否真的相等，如果相等则不会加入</p></li>
+<li><p>JDK1.8中，<strong>HashSet的add()方法调用了HashMap的put()方法</strong>，并判断是否有重复元素（返回值是否null)</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// Returns: true if this set did not already contain the specified element</span></span><br><span class="line"><span class="comment">// 返回值：当 set 中没有包含 add 的元素时返回真</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">add</span><span class="params">(E e)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> map.put(e, PRESENT)==<span class="literal">null</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//下面为HashMap的源代码</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Returns : previous value, or null if none</span></span><br><span class="line"><span class="comment">// 返回值：如果插入位置没有元素返回null，否则返回上一个元素</span></span><br><span class="line"><span class="keyword">final</span> V <span class="title function_">putVal</span><span class="params">(<span class="type">int</span> hash, K key, V value, <span class="type">boolean</span> onlyIfAbsent,</span></span><br><span class="line"><span class="params">                   <span class="type">boolean</span> evict)</span> &#123;</span><br><span class="line">...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
 </ul></li>
 <li><p>HashMap底层实现</p>
 <ul>
-<li><p>JDK1.8之前，底层是数组和链表结合在一起使用，即链表散列。通过key的hashcode经过扰动函数处理后得到hash值，并通过
-(n-1) &amp; hash 判断当前元素存放的位置
+<li><p>JDK1.8之前，底层是<strong>数组和链表</strong>结合在一起使用，即<strong>链表散列</strong>。通过<strong>key的hashcode</strong>
+<strong>经过扰动函数处理后得到hash</strong>值，并通过 <strong>(n-1)
+&amp; hash</strong> 判断当前元素存放的位置
 （n为数组长度），如果当前位置存在元素的话，就判断该元素与要存入的元素的hash值以及key是否相同，<strong>如果相同则覆盖，不同则通过拉链法解决冲突</strong>
-扰动函数指的是HashMap的hash方法，是为了防止一些实现比较差的hashCode方法，减少碰撞
-JDK1.8的hash：如果key为null则返回空，否则使用 (key的hash值) 与
-(hash值右移16位) 做异或操作</p>
+扰动函数指的是HashMap的hash方法，是为了<strong>防止一些实现比较差的hashCode方法</strong>，减少碰撞
+JDK1.8的hash：如果<strong>key为null则返回空</strong>，否则使用
+(<strong>key的hash值</strong>) 与 (<strong>hash值右移16位</strong>)
+做<strong>异或</strong>操作</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line">  <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">hash</span><span class="params">(Object key)</span> &#123;</span><br><span class="line">    <span class="type">int</span> h;</span><br><span class="line">    <span class="comment">// key.hashCode()：返回散列值也就是hashcode</span></span><br><span class="line">    <span class="comment">// ^ ：按位异或</span></span><br><span class="line">    <span class="comment">// &gt;&gt;&gt;:无符号右移，忽略符号位，空位都以0补齐</span></span><br><span class="line">    <span class="keyword">return</span> (key == <span class="literal">null</span>) ? <span class="number">0</span> : (h = key.hashCode()) ^ (h &gt;&gt;&gt; <span class="number">16</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>JDK1.7扰动次数更多</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="type">int</span> <span class="title function_">hash</span><span class="params">(<span class="type">int</span> h)</span> &#123;</span><br><span class="line">    <span class="comment">// This function ensures that hashCodes that differ only by</span></span><br><span class="line">    <span class="comment">// constant multiples at each bit position have a bounded</span></span><br><span class="line">    <span class="comment">// number of collisions (approximately 8 at default load factor).</span></span><br><span class="line"></span><br><span class="line">    h ^= (h &gt;&gt;&gt; <span class="number">20</span>) ^ (h &gt;&gt;&gt; <span class="number">12</span>);</span><br><span class="line">    <span class="keyword">return</span> h ^ (h &gt;&gt;&gt; <span class="number">7</span>) ^ (h &gt;&gt;&gt; <span class="number">4</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>拉链法即链表和数组结合，也就是创建一个链表数组，数组每一格为一个链表，如果发生哈希冲突，就将冲突的值添加到链表中即可</p>
+<p>拉链法即<strong>链表和数组</strong>结合，也就是创建一个链表数组，<strong>数组每一格为一个链表</strong>，如果<strong>发生哈希冲突</strong>，就将<strong>冲突的值添加到链表</strong>中即可</p>
 <figure>
 <img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221019143906992.png"
@@ -14564,22 +14592,33 @@ alt="image-20221019143906992" />
 <img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221019144049952.png"
 alt="image-20221019144049952" />
-二叉查找树，在某些情况下会退化成线性结构，时间复杂度为n
-，而红黑树趋于log n
+<strong>二叉查找树</strong>，在某些情况下会<strong>退化成线性</strong>结构，时间复杂度为n
+，而<strong>红黑树趋于log n</strong>
 。TreeMap、TreeSet以及1.8之后的HashMap都用到了红黑树</p></li>
 <li><p>代码</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//当链表长度大于8时，执行treeifyBin（转换红黑树）</span></span><br><span class="line"><span class="comment">// 遍历链表</span></span><br><span class="line"><span class="keyword">for</span> (<span class="type">int</span> <span class="variable">binCount</span> <span class="operator">=</span> <span class="number">0</span>; ; ++binCount) &#123;</span><br><span class="line">    <span class="comment">// 遍历到链表最后一个节点</span></span><br><span class="line">    <span class="keyword">if</span> ((e = p.next) == <span class="literal">null</span>) &#123;</span><br><span class="line">        p.next = newNode(hash, key, value, <span class="literal">null</span>);</span><br><span class="line">        <span class="comment">// 如果链表元素个数大于等于TREEIFY_THRESHOLD（8）</span></span><br><span class="line">        <span class="keyword">if</span> (binCount &gt;= TREEIFY_THRESHOLD - <span class="number">1</span>) <span class="comment">// -1 for 1st</span></span><br><span class="line">            <span class="comment">// 红黑树转换（并不会直接转换成红黑树）</span></span><br><span class="line">            treeifyBin(tab, hash);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (e.hash == hash &amp;&amp;</span><br><span class="line">        ((k = e.key) == key || (key != <span class="literal">null</span> &amp;&amp; key.equals(k))))</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    p = e;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//判断是否会转成红黑树</span></span><br><span class="line"><span class="keyword">final</span> <span class="keyword">void</span> <span class="title function_">treeifyBin</span><span class="params">(Node&lt;K,V&gt;[] tab, <span class="type">int</span> hash)</span> &#123;</span><br><span class="line">    <span class="type">int</span> n, index; Node&lt;K,V&gt; e;</span><br><span class="line">    <span class="comment">// 判断当前数组的长度是否小于 64</span></span><br><span class="line">    <span class="keyword">if</span> (tab == <span class="literal">null</span> || (n = tab.length) &lt; MIN_TREEIFY_CAPACITY)</span><br><span class="line">        <span class="comment">// 如果当前数组的长度小于 64，那么会选择先进行数组扩容</span></span><br><span class="line">        resize();</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> ((e = tab[index = (n - <span class="number">1</span>) &amp; hash]) != <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="comment">// 否则才将列表转换为红黑树</span></span><br><span class="line"></span><br><span class="line">        TreeNode&lt;K,V&gt; hd = <span class="literal">null</span>, tl = <span class="literal">null</span>;</span><br><span class="line">        <span class="keyword">do</span> &#123;</span><br><span class="line">            TreeNode&lt;K,V&gt; p = replacementTreeNode(e, <span class="literal">null</span>);</span><br><span class="line">            <span class="keyword">if</span> (tl == <span class="literal">null</span>)</span><br><span class="line">                hd = p;</span><br><span class="line">            <span class="keyword">else</span> &#123;</span><br><span class="line">                p.prev = tl;</span><br><span class="line">                tl.next = p;</span><br><span class="line">            &#125;</span><br><span class="line">            tl = p;</span><br><span class="line">        &#125; <span class="keyword">while</span> ((e = e.next) != <span class="literal">null</span>);</span><br><span class="line">        <span class="keyword">if</span> ((tab[index] = hd) != <span class="literal">null</span>)</span><br><span class="line">            hd.treeify(tab);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
 </ul></li>
 <li><p>HashMap的长度为为什么是2的幂次方</p>
-<ul>
-<li>Hash值范围是-2147483648 到 2147483647
-，大概是40亿映射空间，如果哈希函数映射均匀则很难发生碰撞，但一个40亿长度的数组内存放不下，所以用之前得对数组长度进行取模，然后得到的余数存放的位置才是对应的数组下标，下标计算方法
-(n-1) &amp;&amp; hash 为什么不是取余数，因为 hash &amp; (length -1) 比
-hash%length效率高，当length为2的n次方时两侧相等，而
-使用二进制位操作&amp; 能够提高效率</li>
-</ul></li>
+<ol type="1">
+<li><p>为了能让 HashMap
+存取高效，尽量较少碰撞，也就是要<strong>尽量把数据分配均匀</strong>。我们上面也讲到了过了，Hash
+值的范围值-2147483648 到 2147483647，前后加起来大概 40
+亿的映射空间，只要<strong>哈希函数映射得比较均匀松散</strong>，一般应用是<strong>很难出现碰撞</strong>的。但问题是一个
+40
+亿长度的数组，内存是放不下的。所以这个<strong>散列值是不能直接拿来用</strong>的（也就是这个数组<strong>不能直接拿来用</strong>）。</p></li>
+<li><p>用之前还要先<strong>做对数组的长度取模</strong>运算，<strong>得到的余数</strong>才能用来要存放的位置也就是对应的数组下标。这个数组下标的计算方法是“
+<code>(n - 1) &amp; hash</code>”。（n 代表数组长度）。这也就解释了
+HashMap 的长度为什么是 2 的幂次方。</p></li>
+</ol>
+<p><strong>这个算法应该如何设计呢？</strong></p>
+<p>我们首先可能会想到采用%取余的操作来实现。但是，重点来了：<strong>“取余(%)操作中如果除数是
+2 的幂次则等价于与其除数减一的与(&amp;)操作（也就是说
+hash%length==hash&amp;(length-1)的前提是 length 是 2 的 n
+次方；）。”</strong> 并且 <strong>采用二进制位操作
+&amp;，相对于%能够提高运算效率，这就解释了 HashMap 的长度为什么是 2
+的幂次方。</strong></p></li>
 <li><p>HashMap多线程操作导致死循环问题
-多线程下不建议使用HashMap，1.8之前并发下进行Rehash会造成元素之间形成循环链表，1.8之后还有其他问题（数据丢失），建议使用concurrentHashMap</p></li>
+多线程下不建议使用HashMap，<strong>1.8之前并发下进行Rehash会造成元素之间形成循环链表</strong>，但是1.8之后还有其他问题（<strong>数据丢失</strong>），建议使用concurrentHashMap</p></li>
 <li><p>HashMap有哪几种常见的遍历方式</p>
 <blockquote>
 <p>https://mp.weixin.qq.com/s/zQBN3UvJDhRTKP6SzcZFKw</p>
@@ -14596,11 +14635,11 @@ hash%length效率高，当length为2的n次方时两侧相等，而
 </ul></li>
 <li><p>实现线程安全的方式</p>
 <ul>
-<li>ConcurrentHashMap JDK1.7
-时对整个桶数进行分割分段(Segment，分段锁)，每一把锁只锁容器其中一部分数据，当访问不同数据段的数据就不会存在锁竞争</li>
+<li>ConcurrentHashMap <strong>JDK1.7
+时对整个桶数进行分割分段</strong>(Segment，分段锁)，<strong>每一把锁只锁容器其中一部分数据</strong>，当访问不同数据段的数据就不会存在锁竞争</li>
 <li>ConcurrentHashMap
-JDK1.8摒弃Segment概念，直接用Node数组+链表+红黑树，并发控制使用synchronized和CAS操作</li>
-<li>而Hashtable则是同一把锁，使用synchronized保证线程安全，效率低下。问题：当一个线程访问同步方式时，其他线程也访问同步方法，则可能进入阻塞/轮询状态，即如使用put添加元素另一个线程不能使用put和get</li>
+JDK1.8摒弃Segment概念，直接用Node数组+链表+红黑树，并发控制使用<strong>synchronized和CAS</strong>操作</li>
+<li>而Hashtable则是同一把锁，使用synchronized保证线程安全，效率低下。问题：当一个线程访问同步方式时，其他线程也访问同步方法，则可能进入<strong>阻塞/轮询</strong>状态，即如使用put添加元素另一个线程不能使用put和get</li>
 </ul></li>
 <li><p>底层数据结构图</p>
 <ul>
@@ -14633,17 +14672,18 @@ alt="image-20221019164531847" /><code>Segment</code> 继承了
 个线程并发写。 <code>Segment</code> 的结构和 <code>HashMap</code>
 类似，是一种数组和链表结构，一个 <code>Segment</code> 包含一个
 <code>HashEntry</code> 数组，每个 <code>HashEntry</code>
-是一个链表结构的元素，每个 <code>Segment</code> 守护着一个
-<code>HashEntry</code> 数组里的元素，当对 <code>HashEntry</code>
-数组的数据进行修改时，必须首先获得对应的 <code>Segment</code>
-的锁。也就是说，对同一 <code>Segment</code> 的并发写入会被阻塞，不同
-<code>Segment</code> 的写入是可以并发执行的。</p></li>
+是一个链表结构的元素，<strong>每个 <code>Segment</code> 守护着一个
+<code>HashEntry</code> 数组</strong>里的元素，当对
+<code>HashEntry</code> 数组的数据进行修改时，必须<strong>首先获得对应的
+<code>Segment</code> 的锁</strong>。也就是说，对同一
+<code>Segment</code> 的并发写入会被阻塞，不同 <code>Segment</code>
+的写入是可以并发执行的。</p></li>
 <li><p>JDK 1.8 之后 <img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221019165516462.png"
 alt="image-20221019165516462" />
 使用Node数组+链表/红黑树，几乎重写了ConcurrentHashMap，使用<code>Node+CAS+Synchronized</code>保证并发安全，数据结构跟HashMap1.8类似，超过一定阈值（默认8）将链表【O(N)】转成红黑树【O(log
 (N) )】
-JDK8中，只锁定当前链表/红黑二叉树的首节点，这样只要hash不冲突就不会产生并发，不影响其他Node的读写，提高效率</p></li>
+JDK8中，<strong>只锁定当前链表/红黑二叉树的首节点</strong>，这样<strong>只要hash不冲突就不会产生并发</strong>，不影响其他Node的读写，提高效率</p></li>
 </ul></li>
 </ul>
 <h2 id="collections工具类不重要">Collections工具类（不重要）</h2>
@@ -14657,9 +14697,6 @@ JDK8中，只锁定当前链表/红黑二叉树的首节点，这样只要hash�
 其中，<strong>HashSet、TreeSet、ArrayList、LinkedList、HashMap、TreeMap</strong>都是线程不安全的</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//不推荐，因为效率极低 建议使用JUC包下的并发集合</span></span><br><span class="line">synchronizedCollection(Collection&lt;T&gt;  c) <span class="comment">//返回指定 collection 支持</span></span><br><span class="line">的同步（线程安全的）collection。</span><br><span class="line">synchronizedList(List&lt;T&gt; list)<span class="comment">//返回指定列表支持的同步（线程安全的）List。</span></span><br><span class="line">synchronizedMap(Map&lt;K,V&gt; m) <span class="comment">//返回由指定映射支持的同步（线程安全的）Map。</span></span><br><span class="line">synchronizedSet(Set&lt;T&gt; s) <span class="comment">//返回指定 set 支持的同步（线程安全的）set。</span></span><br></pre></td></tr></table></figure></li>
 </ul>
-<blockquote>
-<p>大部分转自https://github.com/Snailclimb/JavaGuide</p>
-</blockquote>
 ]]></content>
       <categories>
         <category>学习</category>
