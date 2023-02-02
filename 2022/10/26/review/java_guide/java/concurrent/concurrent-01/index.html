@@ -278,7 +278,7 @@ alt="image-20221026212505577" /></li>
 <li><p>何为线程</p>
 <ul>
 <li><p>线程，比进程更小的执行单位</p></li>
-<li><p>同类的多个线程共享进程的<strong>堆和方法区</strong>资源，但每个线程有自己的<strong>程序计数器、虚拟机栈、本地方法栈</strong>，又被称为<strong>轻量级进程</strong></p></li>
+<li><p>同类的<strong>多个线程</strong>共享<strong>进程</strong>的<strong>堆和方法区</strong>资源，但每个线程有自己的<strong>程序计数器、虚拟机栈、本地方法栈</strong>，又被称为<strong>轻量级进程</strong></p></li>
 <li><p>Java天生就是多线程程序，如：</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MultiThread</span> &#123;</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">		<span class="comment">// 获取 Java 线程管理 MXBean</span></span><br><span class="line">	<span class="type">ThreadMXBean</span> <span class="variable">threadMXBean</span> <span class="operator">=</span> ManagementFactory.getThreadMXBean();</span><br><span class="line">		<span class="comment">// 不需要获取同步的 monitor 和 synchronizer 信息，仅获取线程和线程堆栈信息</span></span><br><span class="line">		ThreadInfo[] threadInfos = threadMXBean.dumpAllThreads(<span class="literal">false</span>, <span class="literal">false</span>);</span><br><span class="line">		<span class="comment">// 遍历线程信息，仅打印线程 ID 和线程名称信息</span></span><br><span class="line">		<span class="keyword">for</span> (ThreadInfo threadInfo : threadInfos) &#123;</span><br><span class="line">			System.out.println(<span class="string">&quot;[&quot;</span> + threadInfo.getThreadId() + <span class="string">&quot;] &quot;</span> + threadInfo.getThreadName());</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//输出</span></span><br><span class="line">[<span class="number">5</span>] Attach Listener <span class="comment">//添加事件</span></span><br><span class="line">[<span class="number">4</span>] Signal Dispatcher <span class="comment">// 分发处理给 JVM 信号的线程</span></span><br><span class="line">[<span class="number">3</span>] Finalizer <span class="comment">//调用对象 finalize 方法的线程</span></span><br><span class="line">[<span class="number">2</span>] Reference Handler <span class="comment">//清除 reference 线程</span></span><br><span class="line">[<span class="number">1</span>] main <span class="comment">//main 线程,程序入口</span></span><br></pre></td></tr></table></figure>
 <p>也就是说，一个Java程序的运行，是main线程和多个其他线程同时运行</p></li>
@@ -288,52 +288,57 @@ alt="image-20221026212505577" /></li>
 <li>从JVM角度说明 Java内存区域 <img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221026213728776.png"
 alt="image-20221026213728776" />
-一个进程拥有多个线程，多个线程共享进程的堆和方法区（元空间），每个进程拥有自己的程序计数器、虚拟机栈、本地方法栈</li>
+一个<strong>进程拥有多个线程</strong>，多个线程共享进程的<strong>堆</strong>和<strong>方法区（JDK1.8:
+元空间）</strong>，每个进程拥有自己的<strong>程序计数器</strong>、<strong>虚拟机栈</strong>、<strong>本地方法栈</strong></li>
 </ul></li>
 <li><p>总结</p>
 <ul>
-<li>线程是进程划分成的更小运行单位</li>
-<li>线程和进程最大不同在于各进程基本独立，而各线程极有可能互相影响</li>
-<li>线程开销小，但不利于资源保护；进程反之</li>
+<li>线程是<strong>进程划分成的更小运行单位</strong></li>
+<li>线程和进程最大不同在于<strong>各进程基本独立</strong>，而<strong>各线程极有可能</strong>互相影响</li>
+<li>线程<strong>开销小</strong>，但<strong>不利于资源保护</strong>；进程反之</li>
 </ul></li>
-<li><p>程序计数器为什么是私有</p>
-<ul>
-<li>程序计数器的作用：<strong>字节码解释器</strong>通过<strong>改变程序计数器</strong>来一次读取指令，从而实现代码流程控制；在多线程情况下，程序计数器用于<strong>记录当前线程执行位置</strong></li>
-<li>如果执行的是native方法，则程序计数器记录的是undefined地址；执行Java方法则记录的是<strong>下一条指令的地址</strong></li>
-<li>私有，是为了线程切换后能恢复到正确的执行位置</li>
-</ul></li>
+<li><p>程序计数器为什么是私有<br />
+程序计数器的作用</p>
+<ol type="1">
+<li><strong>字节码解释器</strong>通过改变程序计数器来<strong>依次读取</strong>指令，从而实现代码的流程控制，如：<strong>顺序执行</strong>、<strong>选择</strong>、<strong>循环</strong>、<strong>异常处理</strong>。</li>
+<li>在多线程的情况下，程序计数器用于记录<strong>当前线程执行的位置</strong>，从而<strong>当线程被切换回来</strong>的时候能够知道该线程上次运行到哪儿了。</li>
+</ol>
+<p>如果执行的是native方法，则程序计数器记录的是<strong>undefined</strong>地址；执行Java方法则记录的是<strong>下一条指令的地址</strong></p>
+<p><strong>私有，是为了线程切换后能恢复到正确的执行位置</strong></p></li>
 <li><p>虚拟机栈和本地方法栈为什么私有</p>
 <ul>
 <li>虚拟机栈：每个Java方法执行时同时会创建一个<strong>栈帧</strong>用于<strong>存储局部变量表</strong>、<strong>操作数栈</strong>、<strong>常量池引用</strong>等信息</li>
-<li>本地方法栈：和虚拟机栈类似，区别是虚拟机栈为虚拟机执行Java方法（字节码）服务，本地方法栈则为虚拟机使用到的<strong>Native</strong>方法服务。HotSpot虚拟机中和Java虚拟机栈合二为一</li>
-<li>为了保证线程中局部变量不被别的线程访问到，虚拟机栈和本地方法栈是私有的</li>
+<li>本地方法栈：和虚拟机栈类似，区别是<strong>虚拟机栈</strong>为虚拟机执行<strong>Java方法</strong>
+（字节码）服务，<strong>本地方法栈</strong>则为虚拟机使用到的<strong>Native方法</strong>服务。HotSpot虚拟机中和Java虚拟机栈合二为一</li>
+<li>为了保证<strong>线程中局部变量不被别的线程访问</strong>到，<strong>虚拟机栈</strong>和<strong>本地方法栈</strong>是私有的</li>
 </ul></li>
 <li><p><strong>堆和方法区</strong>是所有线程共享的资源，<strong>堆</strong>是进程中最大一块内存，用于<strong>存放新创建的对象</strong>（几乎所有对象都在这分配内存）;
 方法区则存放<strong>已被加载的 </strong>
-<strong>类信息、常量、静态变量</strong>、即时编译器编译后的代码等数据</p></li>
+<strong>类信息、常量、静态变量</strong>、<strong>即时编译器编译后的代码</strong>等数据</p></li>
 </ul></li>
 <li><p>并发与并行的区别</p>
 <ul>
 <li>并发：两个及两个以上的作业在<strong>同一时间段</strong>内执行（线程，同一个代码同一秒只能由一个线程访问）</li>
 <li>并行：两个及两个以上的作业<strong>同一时刻</strong>执行</li>
-<li>关键点：是否同时执行，只有并行才能同时执行</li>
+<li>关键点：是否同时执行，<strong>只有并行才能同时执行</strong></li>
 </ul></li>
 <li><p>同步和异步</p>
 <ul>
-<li>同步：发出调用后，没有得到结果前，该调用不能返回，一直等待</li>
-<li>异步：发出调用后，不用等返回结果，该调用直接返回</li>
+<li><strong>同步</strong>：发出调用后，<strong>没有得到结果前</strong>，该<strong>调用不能返回</strong>，一直等待</li>
+<li><strong>异步</strong>：发出调用后，<strong>不用等返回结果</strong>，该调用<strong>直接返回</strong></li>
 </ul></li>
 <li><p>为什么要使用多线程</p>
 <ul>
-<li>从计算机底层来说：线程是<strong>轻量级进程</strong>，程序执行最小单位，线程间切换和调度<strong>成本远小于进程</strong>。多核CPU时代意味着多个线程可以同时运行，减少线程上下文切换</li>
-<li>从当代互联网发展趋势：如今系统并发量大，利用多线程机制可以大大提高系统整体并发能力及性能</li>
+<li>从计算机底层来说：线程是<strong>轻量级进程</strong>，<strong>程序执行最小单位</strong>，线程间<strong>切换</strong>和<strong>调度</strong>
+<strong>成本远小于进程</strong>。<strong>多核CPU</strong>时代意味着<strong>多个线程可以同时运行</strong>，<strong>减少线程上下文切换</strong></li>
+<li>从当代互联网发展趋势：如今系统并发量大，利用多线程机制可以大大提高系统整体<strong>并发</strong>能力及性能</li>
 <li>深入计算机底层
 <ul>
-<li>单核时代：提高单进程利用CPU和IO系统的效率。当请求IO的时候，如果Java进程中只有一个线程，此线程被IO阻塞则整个进程被阻塞，CPU和IO设备只有一个运行，系统整体效率50%；而多线程时，如果一个线程被IO阻塞，其他线程还可以继续使用CPU</li>
-<li>多核时代：多核时代多线程主要是提高进程利用多核CPU的能力，如果要计算复杂任务，只有一个线程的话，不论系统几个CPU核心，都只有一个CPU核心被利用；而创建多个线程，这些线程可以被映射到底层多个CPU上执行，如果任务中的多个线程没有资源竞争，那么执行效率会显著提高</li>
+<li><strong>单核</strong>时代：提高单进程利用CPU和IO系统的效率。当请求IO的时候，如果Java进程中只有一个线程，此线程被IO阻塞则整个进程被阻塞，CPU和IO设备只有一个运行，系统整体效率50%；而多线程时，<strong>如果一个线程被IO阻塞，其他线程还可以继续使用CPU</strong></li>
+<li><strong>多核</strong>时代：多核时代多线程主要是提高<strong>进程利用多核CPU</strong>的能力，如果要计算复杂任务，只有一个线程的话，不论系统几个CPU核心，都只有一个CPU核心被利用；而创建多个线程，<strong>这些线程可以被映射到底层多个CPU</strong>上执行，如果任务中的<strong>多个线程没有资源竞争</strong>，那么执行效率会显著提高</li>
 </ul></li>
 </ul></li>
-<li><p>多线程带来的问题：内存泄漏（对象，没有释放）、死锁、线程不安全等</p></li>
+<li><p>多线程带来的问题：<strong>内存泄漏</strong>（对象，没有释放）、<strong>死锁</strong>、<strong>线程不安全</strong>等</p></li>
 <li><p>说说线程的声明周期和状态
 Java线程在运行的生命周期中的指定时刻，只可能处于下面6种不同状态中的一个</p>
 <ul>
