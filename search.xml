@@ -16351,29 +16351,32 @@ expungeStaleEntry() 方法（<strong>在remove中</strong>）</p>
 <li><p>为什么要使用线程池</p>
 <blockquote>
 <ul>
-<li>池化技术：线程池、数据库连接池、Http连接池</li>
-<li>池化技术思想意义：为了减少每次获取资源的消耗，提高对资源的利用率</li>
+<li>池化技术：<strong>线程池</strong>、<strong>数据库连接池</strong>、<strong>Http连接池</strong></li>
+<li>池化技术思想意义：为了减少每次<strong>获取资源</strong>的<strong>消耗</strong>，提高对<strong>资源的利用率</strong></li>
 </ul>
 </blockquote>
 <ul>
-<li>线程池提供了<strong>限制</strong>和<strong>管理</strong>资源(包括执行一个任务)的方法</li>
-<li>每个线程池还维护基本统计信息，例如已完成任务的数量</li>
+<li>线程池提供了<strong>限制</strong>和<strong>管理</strong>
+<strong>资源</strong>(包括执行一个任务)的方式</li>
+<li>每个线程池还维护<strong>基本统计信息</strong>，例如<strong>已完成</strong>任务的数量</li>
 <li>好处：
 <ol type="1">
 <li><strong>降低资源消耗</strong>
-重复利用已创建线程降低线程创建和销毁造成的消耗</li>
-<li>提高响应速度 任务到达时，任务可以不需等到线程创建就能继续执行</li>
-<li>提高线程的可管理性
+<strong>重复利用已创建线程</strong>降低<strong>线程创建</strong>和<strong>销毁</strong>造成的消耗</li>
+<li>提高响应速度
+任务到达时，任务可以<strong>不需等到线程创建</strong>就能继续执行</li>
+<li>提高线程的<strong>可管理性</strong>
 线程是稀缺资源，如果无限制创建，不仅<strong>消耗系统资源</strong>，还会<strong>降低系统的稳定性</strong>，使用线程池统一<strong>管理分配</strong>、<strong>调优</strong>和<strong>监控</strong>。</li>
 </ol></li>
 </ul></li>
 <li><p>实现Runnable接口和Callable接口的区别</p>
 <ul>
-<li>Runnable接口不会返回接口或抛出检查异常，Callable接口可以</li>
-<li>Executors可以实现将Runnable对象转换成Callable对象<br />
+<li><p>Runnable接口不会返回接口或抛出检查异常，Callable接口可以</p></li>
+<li><p>Executors可以实现将Runnable对象转换成Callable对象<br />
 Executors.callable(Runnable
 task)<code>或</code>Executors.callable(Runnable task, Object result)
-//则两个方法，运行的结果是 Callable<Object></li>
+//则两个方法，运行的结果是 Callable<Object></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//一个不指定结果，另一个指定结果  </span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        Callable&lt;Object&gt; abc = Executors.callable(() -&gt; &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                TimeUnit.SECONDS.sleep(<span class="number">2</span>);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">            System.out.println(<span class="string">&quot;abc&quot;</span>);</span><br><span class="line">        &#125;,<span class="string">&quot;abcccc&quot;</span>);<span class="comment">//如果没有&quot;abcccc&quot;，则下面输出null</span></span><br><span class="line">        FutureTask&lt;Object&gt; futureTask = <span class="keyword">new</span> <span class="title class_">FutureTask</span>&lt;&gt;(abc);</span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">Thread</span>(futureTask).start();</span><br><span class="line">        <span class="type">Object</span> <span class="variable">o</span> <span class="operator">=</span> futureTask.get();</span><br><span class="line">        System.out.println(<span class="string">&quot;获取值：&quot;</span>+o);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></li>
 </ul>
 <p>Runnable和Callable：</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//Runnable.java</span></span><br><span class="line"><span class="meta">@FunctionalInterface</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Runnable</span> &#123;</span><br><span class="line">   <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 被线程执行，没有返回值也无法抛出异常</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//=========================================</span></span><br><span class="line"><span class="comment">//Callable.java</span></span><br><span class="line"><span class="meta">@FunctionalInterface</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Callable</span>&lt;V&gt; &#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 计算结果，或在无法这样做时抛出异常。</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 计算得出的结果</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> 如果无法计算结果，则抛出异常</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    V <span class="title function_">call</span><span class="params">()</span> <span class="keyword">throws</span> Exception;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
@@ -16383,18 +16386,21 @@ task)<code>或</code>Executors.callable(Runnable task, Object result)
 方法用于提交<strong>不需要返回值的任务</strong>，所以<strong>无法判断任务是否被线程池执行成功</strong></p></li>
 <li><p><strong>submit()</strong>方法用于提交<strong>需要返回值的任务</strong>，线程池会<strong>返回一个Future类型</strong>的对象，通过这个Future对象<strong>可以判断任务是否返回成功</strong></p>
 <ul>
-<li><p>这个Future的get()方法来获取返回值，get()方法会阻塞当前线程直到任务完成；
+<li><p>这个Future的get()方法来获取返回值，<strong>get()方法会阻塞当前线程</strong>直到任务完成；
 使用get(long timeout,TimeUnit unit)
-方法会在阻塞当前线程一段时间后立即返回(此时任务不一定已经执行完) 注意:
-这里的get()不一定会有返回值的，例子如下</p>
+方法会在<strong>阻塞当前线程一段时间后立即返回(此时任务不一定已经执行完)</strong>
+注意: 这里的get()不一定会有返回值的，例子如下</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line">        <span class="type">ExecutorService</span> <span class="variable">executorService</span> <span class="operator">=</span> Executors.newCachedThreadPool();</span><br><span class="line">        Callable&lt;MyClass&gt; myClassCallable = <span class="keyword">new</span> <span class="title class_">Callable</span>&lt;MyClass&gt;() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="keyword">public</span> MyClass <span class="title function_">call</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">                <span class="type">MyClass</span> <span class="variable">myClass1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">MyClass</span>();</span><br><span class="line">                myClass1.setName(<span class="string">&quot;ly-callable-测试&quot;</span>);</span><br><span class="line">                TimeUnit.SECONDS.sleep(<span class="number">2</span>);</span><br><span class="line">                <span class="keyword">return</span> myClass1;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line">        Future&lt;?&gt; submit = executorService.submit(myClassCallable);</span><br><span class="line">        <span class="comment">//这里会阻塞</span></span><br><span class="line">        <span class="type">Object</span> <span class="variable">o</span> <span class="operator">=</span> submit.get();</span><br><span class="line">        log.info(<span class="string">&quot;ly-callable-打印结果1:&quot;</span> + o);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        FutureTask&lt;MyClass&gt; futureTask = <span class="keyword">new</span> <span class="title class_">FutureTask</span>&lt;&gt;(() -&gt; &#123;</span><br><span class="line">            <span class="type">MyClass</span> <span class="variable">myClass1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">MyClass</span>();</span><br><span class="line">            myClass1.setName(<span class="string">&quot;ly-FutureTask-测试&quot;</span>);</span><br><span class="line">            TimeUnit.SECONDS.sleep(<span class="number">2</span>);</span><br><span class="line">            <span class="keyword">return</span> myClass1;</span><br><span class="line">        &#125;);</span><br><span class="line">        Future&lt;?&gt; submit2 = executorService.submit(futureTask);</span><br><span class="line">        <span class="comment">//这里会阻塞</span></span><br><span class="line">        <span class="type">Object</span> <span class="variable">o2</span> <span class="operator">=</span> submit2.get();</span><br><span class="line">        log.info(<span class="string">&quot;ly-callable-打印结果2:&quot;</span> + o2);</span><br><span class="line">        executorService.shutdown();</span><br><span class="line"></span><br><span class="line"><span class="comment">/*结果</span></span><br><span class="line"><span class="comment">2022-11-09 10:19:10 上午 [Thread: main] </span></span><br><span class="line"><span class="comment">INFO:ly-callable-打印结果1:MyClass(name=ly-callable-测试)</span></span><br><span class="line"><span class="comment">2022-11-09 10:19:12 上午 [Thread: main] </span></span><br><span class="line"><span class="comment">INFO:ly-callable-打印结果2:null</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
-<p>当submit一个Callable对象的时候，能从submit返回的Futureget到返回值；当submit一个FutureTask对象时，没法获取返回值，因为会被当作Runnable对象submit进来</p>
+<p>当submit一个Callable对象的时候，能从submit返回的Futureget到返回值；当submit一个<strong>FutureTask对象（FutureTask有参构造函数包含Callable对象，但它本身不是Callable）</strong>时，没法获取返回值，因为会<strong>被当作Runnable对象</strong>submit进来</p>
 <p><img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221109103922513.png"
 alt="image-20221109103922513" />
 而入参为Runnable时返回值里是get不到结果的</p></li>
 </ul></li>
 <li><p>下面这段源码，解释了为什么当传入的类型是Runnable对象时，结果为null</p>
+<blockquote>
+<p>只要是submit（Runnable ），就会返回null</p>
+</blockquote>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//源码AbstractExecutorService 接口中的一个submit方法</span></span><br><span class="line"><span class="keyword">public</span> Future&lt;?&gt; submit(Runnable task) &#123;</span><br><span class="line">    <span class="keyword">if</span> (task == <span class="literal">null</span>) <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">NullPointerException</span>();</span><br><span class="line">    RunnableFuture&lt;Void&gt; ftask = newTaskFor(task, <span class="literal">null</span>);</span><br><span class="line">    execute(ftask);</span><br><span class="line">    <span class="keyword">return</span> ftask;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//其中的newTaskFor方法</span></span><br><span class="line"><span class="keyword">protected</span> &lt;T&gt; RunnableFuture&lt;T&gt; <span class="title function_">newTaskFor</span><span class="params">(Runnable runnable, T value)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">FutureTask</span>&lt;T&gt;(runnable, value);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//execute()方法</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">execute</span><span class="params">(Runnable command)</span> &#123;</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
 </ol></li>
 <li><p>如何创建线程池</p>
