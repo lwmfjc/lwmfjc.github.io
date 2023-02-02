@@ -246,14 +246,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>11k</span>
+              <span>12k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>20 分钟</span>
+              <span>22 分钟</span>
             </span>
             <div class="post-description">并发02</div>
 
@@ -272,29 +272,44 @@
 </blockquote>
 <h2 id="jmmjavamemorymodel">JMM（JavaMemoryModel)</h2>
 <p><a
-href="/2022/11/21/review/java_guide/java/concurrent/jmm">详见-知识点</a></p>
+href="/2022/11/21/review/java_guide/java/concurrent/jmm">详见-知识点</a>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230202141110576.png"
+alt="Java内存模型" /></p>
 <h2 id="volatile关键字">volatile关键字</h2>
 <ul>
 <li><p>保证变量可见性</p>
 <ul>
-<li>使用volatile关键字保证变量可见性，如果将变量声明为volatile则<strong>指示JVM该变量是共享且不稳定</strong>的，每次使用它都到<strong>主存</strong>中读取
+<li><p>使用volatile关键字保证变量可见性，如果将变量声明为volatile则<strong>指示JVM该变量是共享且不稳定</strong>的，每次使用它都到<strong>主存</strong>中读取<br />
 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221028150859646.png"
-alt="image-20221028150859646" /> 原始意义即金庸CPU缓存</li>
-<li>volatile关键字只能保证数据可见性，不能保证数据原子性。synchronized关键字两者都能保证</li>
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230202141302707.png"
+alt="image-20230202141302707" /></p>
+<blockquote>
+<p>volatile关键字并非Java语言特有，在C语言里也有，它最原始的意义就是<strong>禁用CPU缓存</strong>。</p>
+</blockquote></li>
+<li><p>volatile关键字只能<strong>保证数据可见性</strong>，<strong>不能保证数据原子性</strong>。<strong>synchronized</strong>关键字两者都能保证</p></li>
+<li><p>不可见的例子</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> com.concurrent; </span><br><span class="line"><span class="keyword">import</span> java.util.concurrent.TimeUnit;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">TestLy</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//如果加上volatile,就能保证可见性，线程1 才能停止</span></span><br><span class="line">      <span class="type">boolean</span> <span class="variable">stop</span> <span class="operator">=</span> <span class="literal">false</span>;<span class="comment">//对象属性</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">       <span class="type">TestLy</span> <span class="variable">atomicTest</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">TestLy</span>();</span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">            <span class="keyword">while</span> (!atomicTest.stop) &#123;</span><br><span class="line">                <span class="comment">//这里不能加System.out.println ,因为这个方法内部用了synchronized修饰,会导致获取主内存的值，</span></span><br><span class="line">                <span class="comment">//就没法展示效果了</span></span><br><span class="line">                <span class="comment">/*System.out.println(&quot;1还没有停止&quot;);*/</span></span><br><span class="line">            &#125;</span><br><span class="line">            System.out.println(Thread.currentThread().getName()+<span class="string">&quot;停止了&quot;</span>);</span><br><span class="line">        &#125;,<span class="string">&quot;线程1&quot;</span>).start();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                TimeUnit.SECONDS.sleep(<span class="number">1</span>);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">            atomicTest.stop= <span class="literal">true</span>;</span><br><span class="line">            System.out.println(Thread.currentThread().getName()+<span class="string">&quot;让线程1停止&quot;</span>);</span><br><span class="line">        &#125;,<span class="string">&quot;线程2&quot;</span>).start();</span><br><span class="line">        <span class="keyword">while</span> (<span class="literal">true</span>)&#123;&#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
 </ul></li>
 <li><p>如何禁止指令重排
-使用<strong>volatile</strong>关键字，能<strong>防止JVM指令重排</strong>。当我们对这个变量进行读写操作的时候，-会通过插入特定的<strong>内存屏障</strong>来禁止指令重排</p>
+使用<strong>volatile</strong>关键字，除了可以保证<strong>变量的可见性</strong>，还能<strong>防止JVM指令重排</strong>。当我们对这个变量进行读写操作的时候，-会通过插入特定的<strong>内存屏障</strong>来禁止指令重排</p>
 <ul>
-<li><p>Java中，提供了三个关于<strong>内存屏障</strong>相关的方法，屏蔽了操作系统底层的差异，可以用来实现和volatile禁止重排序的效果</p>
-<p><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title function_">loadFence</span><span class="params">()</span>; <span class="comment">//读指令屏障</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title function_">storeFence</span><span class="params">()</span>; <span class="comment">//写指令屏障</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title function_">fullFence</span><span class="params">()</span>; <span class="comment">//读写指令屏障</span></span><br></pre></td></tr></table></figure></p></li>
+<li><p>Java中，Unsafe类提供了三个开箱即用关于<strong>内存屏障</strong>相关的方法，<strong>屏蔽了操作系统底层的差异</strong></p>
+<blockquote>
+<p>可以用来实现和volatile禁止重排序的效果</p>
+</blockquote>
+<p><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">  <span class="keyword">public</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title function_">loadFence</span><span class="params">()</span>; <span class="comment">//读指令屏障</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title function_">storeFence</span><span class="params">()</span>; <span class="comment">//写指令屏障</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title function_">fullFence</span><span class="params">()</span>; <span class="comment">//读写指令屏障</span></span><br></pre></td></tr></table></figure></p></li>
 <li><p>例子（通过双重校验锁实现对象单例），保证线程安全</p>
-<p><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Singleton</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="keyword">static</span> Singleton uniqueInstance;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="title function_">Singleton</span><span class="params">()</span> &#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span>  <span class="keyword">static</span> Singleton <span class="title function_">getUniqueInstance</span><span class="params">()</span> &#123;</span><br><span class="line">       <span class="comment">//先判断对象是否已经实例过，没有实例化过才进入加锁代码</span></span><br><span class="line">        <span class="keyword">if</span> (uniqueInstance == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="comment">//类对象加锁</span></span><br><span class="line">            <span class="keyword">synchronized</span> (Singleton.class) &#123;</span><br><span class="line">                <span class="keyword">if</span> (uniqueInstance == <span class="literal">null</span>) &#123;</span><br><span class="line">                    uniqueInstance = <span class="keyword">new</span> <span class="title class_">Singleton</span>();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> uniqueInstance;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>这里，uniqueInstance采用volatile的必要性：主要分析<code>uniqueInstance  = new Singleton();</code>分三步</p>
+<p><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Singleton</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="keyword">static</span> Singleton uniqueInstance;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="title function_">Singleton</span><span class="params">()</span> &#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span>  <span class="keyword">static</span> Singleton <span class="title function_">getUniqueInstance</span><span class="params">()</span> &#123;</span><br><span class="line">       	<span class="comment">//先判断对象是否已经实例过，没有实例化过才进入加锁代码</span></span><br><span class="line">        <span class="comment">//避免了不论如何都进行加锁的情况</span></span><br><span class="line">        <span class="keyword">if</span> (uniqueInstance == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="comment">//...一些其他代码</span></span><br><span class="line">            <span class="comment">//加锁，并判断如果未初始化则进行初始化</span></span><br><span class="line">            <span class="keyword">synchronized</span> (Singleton.class) &#123; </span><br><span class="line">                <span class="comment">//别晕了，这个是一定要判断的</span></span><br><span class="line">                <span class="keyword">if</span> (uniqueInstance == <span class="literal">null</span>) &#123;</span><br><span class="line">                    uniqueInstance = <span class="keyword">new</span> <span class="title class_">Singleton</span>();</span><br><span class="line">                &#125; </span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> uniqueInstance;</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这里，uniqueInstance采用volatile的必要性：主要分析<code>uniqueInstance  = new Singleton();</code>分三步（正常情况）</p>
 <ol type="1">
-<li>为uniqueInstance分配内存空间</li>
-<li>初始化 uniqueInstance</li>
-<li>将uniqueInstance指向被分配的空间</li>
+<li>为uniqueInstance<strong>分配内存空间</strong></li>
+</ol></li>
+</ul>
+<ol start="2" type="1">
+<li><p><strong>初始化</strong> uniqueInstance</p>
+<ol start="3" type="1">
+<li>将uniqueInstance<strong>指向</strong>被分配的空间</li>
 </ol>
 <p>由于指令重排的关系，可能会编程1-&gt;3-&gt;2
 ，指令重排在单线程情况下不会出现问题，而多线程，</p>
@@ -303,14 +318,17 @@ alt="image-20221028150859646" /> 原始意义即金庸CPU缓存</li>
 <li>例如，线程 T1 执行了 1 和 3，此时 T2 调用
 <code>getUniqueInstance</code>() 后发现 <code>uniqueInstance</code>
 不为空，因此返回 <code>uniqueInstance</code>，但此时
-<code>uniqueInstance</code> 还未被初始化</li>
+<code>uniqueInstance</code>
+还未被初始化<strong>（就会造成一些问题）</strong></li>
 </ul></li>
-</ul></li>
+</ol></li>
 <li><p>volatile不能保证原子性</p>
 <ul>
 <li><p>下面的代码，输出结果小于2500</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">VolatoleAtomicityDemo</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">volatile</span> <span class="keyword">static</span> <span class="type">int</span> <span class="variable">inc</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">increase</span><span class="params">()</span> &#123;</span><br><span class="line">        inc++;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">        <span class="type">ExecutorService</span> <span class="variable">threadPool</span> <span class="operator">=</span> Executors.newFixedThreadPool(<span class="number">5</span>);</span><br><span class="line">        <span class="type">VolatoleAtomicityDemo</span> <span class="variable">volatoleAtomicityDemo</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">VolatoleAtomicityDemo</span>();</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; <span class="number">5</span>; i++) &#123;</span><br><span class="line">            threadPool.execute(() -&gt; &#123;</span><br><span class="line">                <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>; j &lt; <span class="number">500</span>; j++) &#123;</span><br><span class="line">                    volatoleAtomicityDemo.increase();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 等待1.5秒，保证上面程序执行完成</span></span><br><span class="line">        Thread.sleep(<span class="number">1500</span>);</span><br><span class="line">        System.out.println(inc);</span><br><span class="line">        threadPool.shutdown();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>对于上面例子, inc++ 是原子性的，实际上inc ++ 是一个符合操作，即</p>
+<p>对于上面例子, 很多人会<strong>误以为inc++
+是原子性</strong>的，实际上<strong>inc ++
+是一个复合操作</strong>，即</p>
 <ol type="1">
 <li>读取inc的值</li>
 <li>对inc加1</li>
@@ -320,7 +338,7 @@ alt="image-20221028150859646" /> 原始意义即金庸CPU缓存</li>
 <ol type="1">
 <li>线程1对inc读取后，尚未修改</li>
 <li>线程2又读取了，并对他进行+1，然后将+1后的值写回主存</li>
-<li>此时线程2操作完毕后，线程1在之前读取的基础上进行一次自增，这将覆盖第2步操作的值，导致inc只增加了1</li>
+<li>此时线程2操作完毕后，线程1在之前读取的基础上进行一次自增，这将<strong>覆盖第2步操作的值，导致inc只增加了1（实际两个线程处理了，应该加2才对）</strong></li>
 </ol>
 <p>如果要保证上面代码运行正确，可以使用synchronized、Lock或者AtomicInteger，如</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//synchronized</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title function_">increase</span><span class="params">()</span> &#123;</span><br><span class="line">    inc++;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//或者AtomicInteger</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">AtomicInteger</span> <span class="variable">inc</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">AtomicInteger</span>();</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">increase</span><span class="params">()</span> &#123;</span><br><span class="line">    inc.getAndIncrement();</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//或者ReentrantLock改进</span></span><br><span class="line"><span class="type">Lock</span> <span class="variable">lock</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ReentrantLock</span>();</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">increase</span><span class="params">()</span> &#123;</span><br><span class="line">    lock.lock();</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        inc++;</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        lock.unlock();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
@@ -712,12 +730,12 @@ key会被清理掉，而value不会</p>
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">862k</span>
+    <span title="站点总字数">863k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">26:07</span>
+    <span title="站点阅读时长">26:09</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
