@@ -240,7 +240,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>6.6k</span>
+              <span>6.8k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -342,12 +342,14 @@ alt="image-20221026213728776" />
 <li><p>说说线程的声明周期和状态
 Java线程在运行的生命周期中的指定时刻，只可能处于下面6种不同状态中的一个</p>
 <ul>
-<li><p>NEW：初始状态，线程被创建出来但没有调用start()</p></li>
-<li><p>RUNNABLE：运行状态，线程被调用了start() 等待运行的状态</p></li>
-<li><p>BLOCKED：阻塞状态，需要等待锁释放</p></li>
-<li><p>WAITING：等待状态，表示该线程需要等待其他线程做出一些特定动作（通知或中断）</p></li>
-<li><p>TIME_WAITING：超时等待状态，在指定的时间后自行返回而不是像WAITING一直等待</p></li>
-<li><p>TERMINATED：终止状态，表示该线程已经运行完毕 如图<br />
+<li><p><strong>NEW</strong>：初始状态，线程被创建出来但没有调用start()</p></li>
+<li><p><strong>RUNNABLE</strong>：运行状态，线程被调用了start()
+等待运行的状态</p></li>
+<li><p><strong>BLOCKED</strong>：阻塞状态，需要<strong>等待锁释放</strong></p></li>
+<li><p><strong>WAITING</strong>：等待状态，表示该线程需要<strong>等待其他线程做出一些特定</strong>动作（<strong>通知</strong>或<strong>中断</strong>）</p></li>
+<li><p><strong>TIME_WAITING</strong>：超时等待状态，在<strong>指定的时间后自行返回</strong>而不是像WAITING一直等待</p></li>
+<li><p><strong>TERMINATED</strong>：终止状态，表示该线程<strong>已经运行完毕</strong>
+如图<br />
 <img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221027094635757.png"
 alt="image-20221027094635757" /> 对于该图有以下几点要注意：</p>
@@ -356,8 +358,8 @@ alt="image-20221027094635757" /> 对于该图有以下几点要注意：</p>
 <blockquote>
 <ul>
 <li>操作系统中有READY和RUNNING两个状态，而JVM中只有RUNNABLE状态</li>
-<li>现在的操作系统通常都是“时间分片“”方法进行抢占式
-轮转调度“，一个线程最多只能在CPU上运行10-20ms的时间（此时处于RUNNING)状态，时间过短，时间片之后放入<strong>调度队列</strong>末尾等待再次调度（回到READY状态），太快所以不区分两种状态
+<li>现在的操作系统通常都是<strong>“时间分片“</strong>方法进行<strong>抢占式
+轮转调度</strong>“，一个线程最多<strong>只能在CPU上运行10-20ms</strong>的时间（此时处于RUNNING)状态，时间过短，时间片之后放入<strong>调度队列</strong>末尾等待再次调度（回到READY状态），太快所以不区分两种状态
 <img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221027095421280.png"
 alt="image-20221027095421280" /></li>
@@ -377,18 +379,18 @@ millis)或wait(long millis)
 <ul>
 <li><p>线程在执行过程中会有自己的运行条件和状态（也称上下文），比如上文提到的<strong>程序计数器</strong>，<strong>栈信息</strong>等。当出现下面情况时，线程从<strong>占用CPU状态中退出</strong>：</p>
 <ol type="1">
-<li>主动让出CPU，如sleep(),wait()等</li>
+<li><strong>主动</strong>让出CPU，如sleep(),wait()等</li>
 <li>时间片用完了</li>
-<li>调用了阻塞类型的系统中断（请求IO，线程被阻塞）</li>
-<li>被终止或结束运行</li>
+<li>调用了<strong>阻塞</strong>类型的<strong>系统中断</strong>（请求IO，线程被阻塞）</li>
+<li><strong>被终止</strong>或<strong>结束运行</strong></li>
 </ol>
-<p>前3种会发生<strong>线程切换</strong>：需要保存当前线程上下文，留待线程下次占用CPU的时候恢复，并加载下一个将要占用CPU的线程上下文，即所谓的上下文切换</p></li>
+<p>前3种会发生<strong>线程切换</strong>：需要<strong>保存当前线程上下文</strong>，留待线程下次占用CPU的时候恢复，并<strong>加载下一个将要占用CPU的线程上下文</strong>，即所谓的上下文切换</p></li>
 <li><p>是现代系统基本功能，每次都要<strong>保存信息恢复信息</strong>，将会<strong>占用CPU</strong>，<strong>内存</strong>等系统资源，即<strong>效率有一定损耗</strong>，频繁切换会造成<strong>整体效率低下</strong></p></li>
 </ul></li>
 <li><p>线程死锁是什么？如何避免?</p>
 <ul>
-<li><p>多个线程同时被阻塞，它们种的一个或者全部，都在等待某个资源被释放。由于线程被无限期地阻塞，因此程序不可能正常终止</p></li>
-<li><p>前提：线程A持有资源2，线程B持有资源1。现象：线程A在等待申请资源1，线程B在等待申请资源2，所以这两个线程就会互相等待而进入死锁状态
+<li><p>多个线程<strong>同时被阻塞</strong>，它们中的一个或者全部，都在<strong>等待某个资源</strong>被释放。由于<strong>线程被无限期地阻塞</strong>，因此<strong>程序不可能正常终止</strong></p></li>
+<li><p>前提：<strong>线程A持有资源2</strong>，<strong>线程B持有资源1</strong>。现象：线程A在等待申请资源1，线程B在等待申请资源2，所以这两个线程就会<strong>互相等待</strong>而进入<strong>死锁</strong>状态
 <img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221028092652845.png"
 alt="image-20221028092652845" /> 使用代码描述上述问题</p>
@@ -403,9 +405,9 @@ alt="image-20221028092652845" /> 使用代码描述上述问题</p>
 </ul></li>
 <li><p>如何预防死锁---&gt;破坏死锁的必要条件</p>
 <ul>
-<li>破坏请求与保持条件：一次性申请所有资源</li>
-<li>破坏不剥夺条件：占用部分资源的线程进一步申请其他资源时，如果申请不到，可以<strong>主动</strong>释放它占有的资源</li>
-<li>破坏循环等待条件：靠按序申请资源来预防（按某顺序申请资源，释放资源时反序）</li>
+<li>破坏<strong>请求与保持</strong>条件：一次性申请所有资源</li>
+<li>破坏<strong>不剥夺</strong>条件：占用部分资源的线程进一步申请其他资源时，如果申请不到，可以<strong>主动释放</strong>它占有的资源</li>
+<li>破坏<strong>循环等待</strong>条件：靠<strong>按需申请资源</strong>来预防（按某顺序申请资源，<strong>释放资源时反序</strong>）</li>
 </ul></li>
 <li><p>如何将避免死锁</p>
 <ul>
@@ -418,14 +420,14 @@ alt="image-20221028092652845" /> 使用代码描述上述问题</p>
 <li><p>修改线程2的代码 原线程1代码不变</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">            <span class="keyword">synchronized</span> (resource1) &#123;</span><br><span class="line">                System.out.println(Thread.currentThread() + <span class="string">&quot;get resource1&quot;</span>);</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    Thread.sleep(<span class="number">1000</span>);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125;</span><br><span class="line">                System.out.println(Thread.currentThread() + <span class="string">&quot;waiting get resource2&quot;</span>);</span><br><span class="line">                <span class="keyword">synchronized</span> (resource2) &#123;</span><br><span class="line">                    System.out.println(Thread.currentThread() + <span class="string">&quot;get resource2&quot;</span>);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;, <span class="string">&quot;线程 1&quot;</span>).start();</span><br></pre></td></tr></table></figure>
 <p>线程2代码修改：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">            <span class="keyword">synchronized</span> (resource1) &#123;</span><br><span class="line">                System.out.println(Thread.currentThread() + <span class="string">&quot;get resource1&quot;</span>);</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    Thread.sleep(<span class="number">1000</span>);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125;</span><br><span class="line">                System.out.println(Thread.currentThread() + <span class="string">&quot;waiting get resource2&quot;</span>);</span><br><span class="line">                <span class="keyword">synchronized</span> (resource2) &#123;</span><br><span class="line">                    System.out.println(Thread.currentThread() + <span class="string">&quot;get resource2&quot;</span>);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;, <span class="string">&quot;线程 2&quot;</span>).start();</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">  <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">              <span class="keyword">synchronized</span> (resource1) &#123;</span><br><span class="line">                  System.out.println(Thread.currentThread() + <span class="string">&quot;get resource1&quot;</span>);</span><br><span class="line">                  <span class="keyword">try</span> &#123;</span><br><span class="line">                      Thread.sleep(<span class="number">1000</span>);</span><br><span class="line">                  &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                      e.printStackTrace();</span><br><span class="line">                  &#125;</span><br><span class="line">                  System.out.println(Thread.currentThread() + <span class="string">&quot;waiting get resource2&quot;</span>);</span><br><span class="line">                  <span class="keyword">synchronized</span> (resource2) &#123;</span><br><span class="line">                      System.out.println(Thread.currentThread() + <span class="string">&quot;get resource2&quot;</span>);</span><br><span class="line">                  &#125;</span><br><span class="line">              &#125;</span><br><span class="line">          &#125;, <span class="string">&quot;线程 2&quot;</span>).start();</span><br><span class="line">  <span class="comment">/* 输出</span></span><br><span class="line"><span class="comment">Thread[线程 1,5,main]get resource1</span></span><br><span class="line"><span class="comment">  Thread[线程 1,5,main]waiting get resource2</span></span><br><span class="line"><span class="comment">Thread[线程 1,5,main]get resource2</span></span><br><span class="line"><span class="comment">  Thread[线程 2,5,main]get resource1</span></span><br><span class="line"><span class="comment">  Thread[线程 2,5,main]waiting get resource2</span></span><br><span class="line"><span class="comment">  Thread[线程 2,5,main]get resource2</span></span><br><span class="line"><span class="comment">  </span></span><br><span class="line"><span class="comment">  Process finished with exit code 0 </span></span><br><span class="line"><span class="comment">  */</span></span><br></pre></td></tr></table></figure>
 <p>分析</p>
 <blockquote>
 <p>线程 1 首先获得到 resource1 的监视器锁,这时候线程 2
 就获取不到了。然后线程 1 再去获取 resource2
 的监视器锁，可以获取到。然后<strong>线程 1 释放了对 resource1、resource2
 的监视器锁的占用，线程 2
-获取到就可以执行了</strong>。这样就破坏了破坏循环等待条件，因此避免了死锁。</p>
+获取到（resource1）就可以执行了</strong>。这样就破坏了破坏循环等待条件，因此避免了死锁。</p>
 </blockquote></li>
 </ul></li>
 <li><p>sleep()方法和wait()方法对比</p>
@@ -433,33 +435,31 @@ alt="image-20221028092652845" /> 使用代码描述上述问题</p>
 <li>共同点： 两者都可暂停线程执行</li>
 <li>区别
 <ol type="1">
-<li>seep() 方法没有释放锁，wait() 方法释放了锁</li>
-<li>wait() 通常用于线程间交互/通信，sleep()用于暂停执行</li>
-<li>wait()方法被调用后，线程不会自动苏醒，需要别的线程调用同一对象（监视器monitor）的notify()或者notifyAll()方法；sleep()方法执行完成后/或者wait(long
-timeout)超时后，线程会自动苏醒</li>
-<li>sleep时Thread类的静态本地方法，wait()则是Object类的本地方法</li>
+<li>seep() 方法<strong>没有释放锁</strong>，wait()
+方法<strong>释放了锁</strong></li>
+<li>wait()
+通常用于<strong>线程间交互/通信</strong>，sleep()用于<strong>暂停执行</strong></li>
+<li>wait()方法被调用后，<strong>线程不会自动苏醒</strong>，需要别的线程调用同一对象（监视器monitor）的<strong>notify()</strong>或者<strong>notifyAll()</strong>方法；sleep()方法执行完成后/或者wait(long
+timeout)超时后，线程会<strong>自动苏醒</strong></li>
+<li>sleep时Thread类的<strong>静态本地方法</strong>，wait()则是<strong>Object类的本地方法</strong></li>
 </ol></li>
 </ul></li>
 <li><p>为什么wait()方法不定义在Thread中</p>
 <ul>
 <li>wait()
 目的是让<strong>获得对象锁的线程</strong>实现等待，会<strong>自动释放当前线程占有的对象锁</strong></li>
-<li>每个对象(Object)都拥有对象锁，既然是让获得对象锁的线程等待，所以方法应该出现在对象Object上</li>
-<li>sleep()是让当前线程暂停执行，不涉及对象类，也不需要获得对象锁</li>
+<li>每个<strong>对象(Object)都拥有对象锁</strong>，既然是<strong>让获得对象锁的线程等待</strong>，所以方法应该出现在对象Object上</li>
+<li>sleep()是<strong>让当前线程暂停执行</strong>，<strong>不涉及对象类</strong>，也<strong>不需要获得对象锁</strong></li>
 </ul></li>
 <li><p>可以直接调用Thread类的run方法吗</p>
 <ul>
 <li>new一个Thread之后，线程进入新建状态</li>
-<li>调用start()，会启动线程并使他进入就绪状态（Runable，可运行状态，又分为Ready和Running），分配到时间片后就开始运行</li>
-<li>start()执行线程相应准备工作，之后自动执行run()方法的内容</li>
-<li>如果直接执行run()方法，则会把run()方法当作main线程下普通方法去执行，并不会在某个线程中执行它</li>
-<li>只有调用start()方法才可以启动新的线程使他进入就绪状态，等待获取时间片后运行</li>
+<li>调用<strong>start()</strong>，会<strong>启动线程并使他进入就绪</strong>状态（Runable，可运行状态，又分为Ready和Running），分配到时间片后就开始运行</li>
+<li>start()执行线程相应准备工作，之后<strong>自动执行run()</strong>方法的内容</li>
+<li>如果直接执行run()方法，则<strong>会把run()方法当作main线程下普通方法去执行</strong>，并不会在某个线程中执行它</li>
+<li>只有调用<strong>start()</strong>方法才可以<strong>启动新的线程</strong>使他<strong>进入就绪</strong>状态，<strong>等待获取时间片后运行</strong></li>
 </ul></li>
-<li></li>
 </ul>
-<blockquote>
-<p>大部分转自https://github.com/Snailclimb/JavaGuide</p>
-</blockquote>
 
     </div>
 
@@ -626,7 +626,7 @@ timeout)超时后，线程会自动苏醒</li>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">26:06</span>
+    <span title="站点阅读时长">26:07</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
