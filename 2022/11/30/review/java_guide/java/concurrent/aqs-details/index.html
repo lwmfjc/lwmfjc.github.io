@@ -253,7 +253,7 @@
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>39 分钟</span>
+              <span>40 分钟</span>
             </span>
             <div class="post-description">aqs详解</div>
 
@@ -366,6 +366,18 @@ CAS
 state
 的获取与释放方式即可</strong>，至于<strong>具体线程等待队列的维护（如获取资源失败入队/唤醒出队等），AQS
 已经在上层已经帮我们实现</strong>好了。</p></li>
+<li><p>AQS对资源的共享方式</p>
+<ul>
+<li>AQS定义两种资源共享方式
+<ul>
+<li>Exclusive
+独占：<strong>只有一个线程</strong>能执行，如ReentrantLock，又分公平锁（按照线程在队列中排队顺序，先到者先拿到锁）及非公平锁（当线程要获取锁时，无视队列顺序直接去抢锁，谁抢到就是谁的）</li>
+<li>Share
+共享：<strong>多个线程可同时执行</strong>，如CountDownLatch、Semaphore、CyclicBarrier、ReadWriteLock</li>
+</ul></li>
+<li>ReentrantReadWriteLock是组合式，读写锁允许<strong>多个线程同时对某一资源</strong>进行读</li>
+<li>★不同定义器同步器征用共享资源的方式不同，<strong>自定义同步器在实现时只需要实现共享资源state的获取与释放方法</strong>，至于具体线程等待队列的维护（获取资源失败入队/唤醒出队等），AQS已经在顶层实现好</li>
+</ul></li>
 <li><p>AQS底层使用了模板方法模式 使用方式</p>
 <ol type="1">
 <li><p>使用者继承AbstractQueueSynchronizer并重写指定方法（<strong>无非是对于共享资源state的获取和释放</strong>）</p></li>

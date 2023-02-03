@@ -15457,6 +15457,18 @@ CAS
 state
 的获取与释放方式即可</strong>，至于<strong>具体线程等待队列的维护（如获取资源失败入队/唤醒出队等），AQS
 已经在上层已经帮我们实现</strong>好了。</p></li>
+<li><p>AQS对资源的共享方式</p>
+<ul>
+<li>AQS定义两种资源共享方式
+<ul>
+<li>Exclusive
+独占：<strong>只有一个线程</strong>能执行，如ReentrantLock，又分公平锁（按照线程在队列中排队顺序，先到者先拿到锁）及非公平锁（当线程要获取锁时，无视队列顺序直接去抢锁，谁抢到就是谁的）</li>
+<li>Share
+共享：<strong>多个线程可同时执行</strong>，如CountDownLatch、Semaphore、CyclicBarrier、ReadWriteLock</li>
+</ul></li>
+<li>ReentrantReadWriteLock是组合式，读写锁允许<strong>多个线程同时对某一资源</strong>进行读</li>
+<li>★不同定义器同步器征用共享资源的方式不同，<strong>自定义同步器在实现时只需要实现共享资源state的获取与释放方法</strong>，至于具体线程等待队列的维护（获取资源失败入队/唤醒出队等），AQS已经在顶层实现好</li>
+</ul></li>
 <li><p>AQS底层使用了模板方法模式 使用方式</p>
 <ol type="1">
 <li><p>使用者继承AbstractQueueSynchronizer并重写指定方法（<strong>无非是对于共享资源state的获取和释放</strong>）</p></li>
@@ -16725,19 +16737,26 @@ alt="image-20221117152847851" /></p>
 <strong>带有版本号的引用类型</strong>。该类将整数值与引用关联，解决原子的更新数据和数据的版本号，解决使用CAS进行原子更新可能出现的ABA问题），AtomicMarkableReference（原子更新带有标记位的引用类型）</li>
 <li>对象属性修改类型：AtomicIntegerFiledUpdater原子更新整型字段的更新器；AtomicLongFiledUpdater；AtomicReferenceFieldUpdater</li>
 </ol>
-<p><a href="../atomic-classes">详见</a></p>
+<p><a
+href="/2022/12/05/review/java_guide/java/concurrent/atomic-classes">详见</a></p>
 <h2 id="aqs">AQS</h2>
 <ul>
-<li><p>AQS介绍
+<li>AQS介绍
 全程，AbstractQueuedSynchronizer抽象队列同步器，在java.util.concurrent.locks包下
 <img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221121094942039.png"
-alt="image-20221121094942039" /></p>
-<p>AQS：用来构建锁和同步器的框架，能<strong>简单且高效</strong>地构造出大量应用广泛的同步器，例如ReentrantLock，Semaphore<code>[ˈseməfɔː(r)]</code>以及ReentrantReadWriteLock，SynchronousQueue，FutureTask都基于AQS</p></li>
+alt="image-20221121094942039" />
+AQS是一个抽象类，主要用来<strong>构建锁</strong>和<strong>同步器</strong></li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">AbstractQueuedSynchronizer</span> <span class="keyword">extends</span> <span class="title class_">AbstractOwnableSynchronizer</span> <span class="keyword">implements</span> <span class="title class_">java</span>.io.Serializable &#123;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+<p>AQS
+为<strong>构建锁</strong>和<strong>同步器</strong>提供了一些通用功能的实现，能<strong>简单且高效</strong>地构造出大量应用广泛的同步器，例如ReentrantLock，Semaphore<code>[ˈseməfɔː(r)]</code>以及ReentrantReadWriteLock，SynchronousQueue
+等等都基于AQS</p>
+<ul>
 <li><p>AQS原理分析</p>
 <p><strong>面试不是背题，大家一定要加入自己的思想，即使加入不了自己的思想也要保证自己能够通俗的讲出来而不是背出来</strong></p>
 <p>AQS
-核心思想是，如果被请求的共享资源空闲，则将当前请求资源的线程设置为有效的工作线程，并且将共享资源设置为锁定状态。如果被请求的共享资源被占用，那么就需要一套线程阻塞等待以及被唤醒时锁分配的机制，这个机制
+核心思想是，如果<strong>被请求的共享资源空闲</strong>，则将<strong>当前请求资源的线程</strong>设置为<strong>有效</strong>的工作线程，并且将<strong>共享资源</strong>设置为<strong>锁定</strong>状态。如果被请求的共享资源<strong>被占用</strong>，那么就需要<strong>一套线程阻塞等待</strong>以及<strong>被唤醒时锁分配的机制</strong>，这个机制
 AQS 是用 <strong>CLH
 队列锁</strong>实现的，即<strong>将暂时获取不到锁的线程加入到队列</strong>中。</p>
 <blockquote>
@@ -16747,25 +16766,22 @@ Hagersten)队列是一个<strong>虚拟的双向队列</strong>（虚拟的双�
 锁队列的一个结点</strong>（Node）来实现锁的分配。
 搜索了一下，CLH好像是人名</p>
 </blockquote>
+<p>CLH队列结构如下图所示<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/40cb932a64694262993907ebda6a0bfe%7Etplv-k3u1fbpfcp-zoom-1.image"
+alt="img" /></p>
 <p>AQS（AbstractQueuedSynchronized）原理图<br />
 <img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221120193141243.png"
 alt="image-20221120193141243" /></p>
-<p>AQS使用一个<strong>int成员变量来表示同步状态</strong>，通过内置的FIFO队列来获取资源线程的排队工作。AQS<strong>使用CAS对同步状态进行原子操作</strong>并实现对其值的修改</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">volatile</span> <span class="type">int</span> state;<span class="comment">//共享变量，使用volatile修饰保证线程可见性</span></span><br></pre></td></tr></table></figure>
+<p>AQS 使用 <strong>int 成员变量 <code>state</code>
+表示同步状态</strong>，通过内置的 <strong>线程等待队列</strong>
+来完成获取资源线程的<strong>排队</strong>工作。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//state 变量由 volatile 修饰，用于展示当前临界资源的获锁情况。</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">volatile</span> <span class="type">int</span> state;<span class="comment">//共享变量，使用volatile修饰保证线程可见性</span></span><br></pre></td></tr></table></figure>
 <p>状态信息的操作</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//返回同步状态的当前值</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">getState</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> state;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//设置同步状态的值</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title function_">setState</span><span class="params">(<span class="type">int</span> newState)</span> &#123;</span><br><span class="line">    state = newState;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//原子地（CAS操作）将同步状态值设置为给定值update如果当前同步状态的值等于expect（期望值）</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">final</span> <span class="type">boolean</span> <span class="title function_">compareAndSetState</span><span class="params">(<span class="type">int</span> expect, <span class="type">int</span> update)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> unsafe.compareAndSwapInt(<span class="built_in">this</span>, stateOffset, expect, update);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-<li><p>AQS对资源的共享方式</p>
-<ul>
-<li>AQS定义两种资源共享方式
-<ul>
-<li>Exclusive
-独占：<strong>只有一个线程</strong>能执行，如ReentrantLock，又分公平锁（按照线程在队列中排队顺序，先到者先拿到锁）及非公平锁（当线程要获取锁时，无视队列顺序直接去抢锁，谁抢到就是谁的）</li>
-<li>Share
-共享：<strong>多个线程可同时执行</strong>，如CountDownLatch、Semaphore、CyclicBarrier、ReadWriteLock</li>
-</ul></li>
-<li>ReentrantReadWriteLock是组合式，读写锁允许<strong>多个线程同时对某一资源</strong>进行读</li>
-<li>★不同定义器同步器征用共享资源的方式不同，<strong>自定义同步器在实现时只需要实现共享资源state的获取与释放方法</strong>，至于具体线程等待队列的维护（获取资源失败入队/唤醒出队等），AQS已经在顶层实现好</li>
+<li><ul>
+<li></li>
 </ul></li>
 <li><p>AQS底层使用了模板方法模式 使用方式</p>
 <ol type="1">
