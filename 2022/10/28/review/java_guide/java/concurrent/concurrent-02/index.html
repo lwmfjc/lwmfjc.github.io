@@ -22,7 +22,7 @@
 
   <meta name="description" content="并发02">
 <meta property="og:type" content="article">
-<meta property="og:title" content="并发02">
+<meta property="og:title" content="ly0302ly并发02">
 <meta property="og:url" content="http://example.com/2022/10/28/review/java_guide/java/concurrent/concurrent-02/index.html">
 <meta property="og:site_name" content="随记">
 <meta property="og:description" content="并发02">
@@ -48,7 +48,7 @@
   };
 </script>
 
-  <title>并发02 | 随记</title>
+  <title>ly0302ly并发02 | 随记</title>
   
 
 
@@ -204,7 +204,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          并发02
+          ly0302ly并发02
         </h1>
 
         <div class="post-meta">
@@ -300,28 +300,8 @@ alt="image-20230202141302707" /></p>
 </blockquote>
 <p><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">  <span class="keyword">public</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title function_">loadFence</span><span class="params">()</span>; <span class="comment">//读指令屏障</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title function_">storeFence</span><span class="params">()</span>; <span class="comment">//写指令屏障</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title function_">fullFence</span><span class="params">()</span>; <span class="comment">//读写指令屏障</span></span><br></pre></td></tr></table></figure></p></li>
 <li><p>例子（通过双重校验锁实现对象单例），保证线程安全</p>
-<p><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Singleton</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="keyword">static</span> Singleton uniqueInstance;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="title function_">Singleton</span><span class="params">()</span> &#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span>  <span class="keyword">static</span> Singleton <span class="title function_">getUniqueInstance</span><span class="params">()</span> &#123;</span><br><span class="line">       	<span class="comment">//先判断对象是否已经实例过，没有实例化过才进入加锁代码</span></span><br><span class="line">        <span class="comment">//避免了不论如何都进行加锁的情况</span></span><br><span class="line">        <span class="keyword">if</span> (uniqueInstance == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="comment">//...一些其他代码</span></span><br><span class="line">            <span class="comment">//加锁，并判断如果未初始化则进行初始化</span></span><br><span class="line">            <span class="keyword">synchronized</span> (Singleton.class) &#123; </span><br><span class="line">                <span class="comment">//别晕了，这个是一定要判断的</span></span><br><span class="line">                <span class="keyword">if</span> (uniqueInstance == <span class="literal">null</span>) &#123;</span><br><span class="line">                    uniqueInstance = <span class="keyword">new</span> <span class="title class_">Singleton</span>();</span><br><span class="line">                &#125; </span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> uniqueInstance;</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>这里，uniqueInstance采用volatile的必要性：主要分析<code>uniqueInstance  = new Singleton();</code>分三步（正常情况）</p>
-<ol type="1">
-<li>为uniqueInstance<strong>分配内存空间</strong></li>
-</ol></li>
-</ul>
-<ol start="2" type="1">
-<li><p><strong>初始化</strong> uniqueInstance</p>
-<ol start="3" type="1">
-<li>将uniqueInstance<strong>指向</strong>被分配的空间</li>
-</ol>
-<p>由于指令重排的关系，可能会编程1-&gt;3-&gt;2
-，指令重排在单线程情况下不会出现问题，而多线程，</p>
-<ul>
-<li>就会导致可能指针非空的时候，实际该指针所指向的对象（实例）并还没有初始化</li>
-<li>例如，线程 T1 执行了 1 和 3，此时 T2 调用
-<code>getUniqueInstance</code>() 后发现 <code>uniqueInstance</code>
-不为空，因此返回 <code>uniqueInstance</code>，但此时
-<code>uniqueInstance</code>
-还未被初始化<strong>（就会造成一些问题）</strong></li>
+<p><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Singleton</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="keyword">static</span> Singleton uniqueInstance;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="title function_">Singleton</span><span class="params">()</span> &#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span>  <span class="keyword">static</span> Singleton <span class="title function_">getUniqueInstance</span><span class="params">()</span> &#123;</span><br><span class="line">       	<span class="comment">//先判断对象是否已经实例过，没有实例化过才进入加锁代码</span></span><br><span class="line">        <span class="comment">//避免了不论如何都进行加锁的情况</span></span><br><span class="line">        <span class="keyword">if</span> (uniqueInstance == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="comment">//...一些其他代码</span></span><br><span class="line">            <span class="comment">//加锁，并判断如果未初始化则进行初始化</span></span><br><span class="line">            <span class="keyword">synchronized</span> (Singleton.class) &#123; </span><br><span class="line">                <span class="comment">//别晕了，这个是一定要判断的</span></span><br><span class="line">                <span class="keyword">if</span> (uniqueInstance == <span class="literal">null</span>) &#123;</span><br><span class="line">                    uniqueInstance = <span class="keyword">new</span> <span class="title class_">Singleton</span>();</span><br><span class="line">                &#125; </span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> uniqueInstance;</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">    </span><br><span class="line">    </span><br><span class="line">    这里，uniqueInstance采用volatile的必要性：主要分析``` uniqueInstance  = new Singleton(); ```分三步（正常情况）</span><br><span class="line"></span><br><span class="line">    1. 为uniqueInstance**分配内存空间**</span><br><span class="line">2. **初始化** uniqueInstance</span><br><span class="line">    3. 将uniqueInstance**指向**被分配的空间</span><br><span class="line">    </span><br><span class="line">    由于指令重排的关系，可能会编程1-&gt;3-&gt;2 ，指令重排在单线程情况下不会出现问题，而多线程，</span><br><span class="line">    </span><br><span class="line">    - 就会导致可能指针非空的时候，实际该指针所指向的对象（实例）并还没有初始化</span><br><span class="line">    - 例如，线程 T1 执行了 1 和 3，此时 T2 调用 `getUniqueInstance`() 后发现 `uniqueInstance` 不为空，因此返回 `uniqueInstance`，但此时 `uniqueInstance` 还未被初始化**（就会造成一些问题）**</span><br></pre></td></tr></table></figure></p></li>
 </ul></li>
-</ol></li>
 <li><p>volatile不能保证原子性</p>
 <ul>
 <li><p>下面的代码，输出结果小于2500</p>
@@ -744,12 +724,12 @@ expungeStaleEntry() 方法（<strong>在remove中</strong>）</p>
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">879k</span>
+    <span title="站点总字数">880k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">26:39</span>
+    <span title="站点阅读时长">26:40</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>

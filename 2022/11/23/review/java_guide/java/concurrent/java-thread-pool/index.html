@@ -22,7 +22,7 @@
 
   <meta name="description" content="java线程池详解">
 <meta property="og:type" content="article">
-<meta property="og:title" content="java线程池详解">
+<meta property="og:title" content="ly0305lyjava线程池详解">
 <meta property="og:url" content="http://example.com/2022/11/23/review/java_guide/java/concurrent/java-thread-pool/index.html">
 <meta property="og:site_name" content="随记">
 <meta property="og:description" content="java线程池详解">
@@ -48,7 +48,7 @@
   };
 </script>
 
-  <title>java线程池详解 | 随记</title>
+  <title>ly0305lyjava线程池详解 | 随记</title>
   
 
 
@@ -204,7 +204,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          java线程池详解
+          ly0305lyjava线程池详解
         </h1>
 
         <div class="post-meta">
@@ -246,14 +246,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>23k</span>
+              <span>24k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>42 分钟</span>
+              <span>43 分钟</span>
             </span>
             <div class="post-description">java线程池详解</div>
 
@@ -276,19 +276,23 @@
 <li>线程池提供一种<strong>限制</strong>和<strong>管理资源（包括执行一个任务）</strong>的方式，每个线程池还维护一些基本统计信息，例如<strong>已完成任务</strong>的数量</li>
 <li>线程池的好处
 <ul>
-<li>降低资源消耗（重复利用，降低线程创建和销毁造成的消耗）</li>
-<li>提高响应速度（任务到达直接执行，无需等待线程创建）</li>
-<li>提高线程可管理性（避免无休止创建，使用线程池同一分配、调优、监控）</li>
+<li>降低<strong>资源消耗</strong>（重复利用，降低<strong>线程创建和销毁</strong>造成的消耗）</li>
+<li>提高<strong>响应速度</strong>（任务到达直接执行，<strong>无需等待线程创建</strong>）</li>
+<li>提高线程<strong>可管理性</strong>（<strong>避免无休止创建</strong>，使用线程池统一<strong>分配</strong>、<strong>调优</strong>、<strong>监控</strong>）</li>
 </ul></li>
 </ul>
 <h2 id="二-executor框架">二 Executor框架</h2>
-<p>Java5之后，通过Executor启动线程，比使用Thread的start方法更好，更易于管理，效率高，还能有助于避免this逃逸的问题</p>
+<p>Java5之后，通过Executor启动线程，比使用Thread的start方法更好，更<strong>易于管理</strong>，<strong>效率高</strong>，还能有助于避免this逃逸的问题</p>
 <blockquote>
-<p>this逃逸，指的是构造函数返回之前，其他线程就持有该对象的引用，会导致调用尚未构造完全的对象</p>
+<p>this逃逸，指的是<strong>构造函数返回之前</strong>，<strong>其他线程就持有该对象的引用</strong>，会导致调用尚未构造完全的对象<br />
+例子：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ThisEscape</span> &#123; </span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">ThisEscape</span><span class="params">()</span> &#123; </span><br><span class="line">    <span class="keyword">new</span> <span class="title class_">Thread</span>(<span class="keyword">new</span> <span class="title class_">EscapeRunnable</span>()).start(); </span><br><span class="line">    <span class="comment">// ... </span></span><br><span class="line">  &#125; </span><br><span class="line">    </span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">class</span> <span class="title class_">EscapeRunnable</span> <span class="keyword">implements</span> <span class="title class_">Runnable</span> &#123; </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123; </span><br><span class="line">      <span class="comment">// 通过ThisEscape.this就可以引用外围类对象, 但是此时外围类对象可能还没有构造完成, 即发生了外围类的this引用的逃逸 </span></span><br><span class="line">    &#125; </span><br><span class="line">  &#125; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>处理办法</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ThisEscape</span> &#123; </span><br><span class="line">  <span class="keyword">private</span> Thread t; </span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">ThisEscape</span><span class="params">()</span> &#123; </span><br><span class="line">    t = <span class="keyword">new</span> <span class="title class_">Thread</span>(<span class="keyword">new</span> <span class="title class_">EscapeRunnable</span>()); </span><br><span class="line">    <span class="comment">// ... </span></span><br><span class="line">  &#125; </span><br><span class="line">    </span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">init</span><span class="params">()</span> &#123; </span><br><span class="line">    <span class="comment">//也就是说对象没有构造完成前，不要调用ThisEscape.this即可</span></span><br><span class="line">    t.start(); </span><br><span class="line">  &#125; </span><br><span class="line">    </span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">class</span> <span class="title class_">EscapeRunnable</span> <span class="keyword">implements</span> <span class="title class_">Runnable</span> &#123; </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123; </span><br><span class="line">      <span class="comment">// 通过ThisEscape.this就可以引用外围类对象, 此时可以保证外围类对象已经构造完成 </span></span><br><span class="line">    &#125; </span><br><span class="line">  &#125; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 </blockquote>
 <p>Executor框架不仅包括<strong>线程池的管理</strong>，提供<strong>线程工厂</strong>、<strong>队列</strong>以及<strong>拒绝策略</strong>。</p>
 <h3 id="executor框架结构">Executor框架结构</h3>
-<p>主要是三大部分：任务（Runnable/Callable），任务的执行(Executor)，异步计算的结果Future</p>
+<p>主要是<strong>三大部分</strong>：<strong>任务（Runnable/Callable）</strong>，<strong>任务的执行(Executor)</strong>，<strong>异步计算的结果Future</strong></p>
 <ol type="1">
 <li><p>任务
 执行任务需要的Runnable/Callable接口，他们的实现类，都可以被ThreadPoolExecutor或ScheduleThreadPoolExecutor执行</p></li>
@@ -685,8 +689,8 @@ IO 密集型，这类任务的特点是 CPU 计算耗费时间相比于等待 IO
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2022/11/21/review/java_guide/java/concurrent/jmm/" rel="prev" title="java内存模型">
-      <i class="fa fa-chevron-left"></i> java内存模型
+    <a href="/2022/11/21/review/java_guide/java/concurrent/jmm/" rel="prev" title="ly0304lyjava内存模型">
+      <i class="fa fa-chevron-left"></i> ly0304lyjava内存模型
     </a></div>
       <div class="post-nav-item">
     <a href="/2022/11/29/review/java_guide/java/concurrent/thread-pool-best/" rel="next" title="线程池最佳实践">
@@ -830,12 +834,12 @@ ThreadPoolExecutor使用+原理分析</span></a><ol class="nav-child"><li class=
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">879k</span>
+    <span title="站点总字数">880k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">26:39</span>
+    <span title="站点阅读时长">26:40</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>

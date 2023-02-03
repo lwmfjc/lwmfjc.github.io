@@ -7474,89 +7474,6 @@ alt="image-20220717094642979" /></p>
       </tags>
   </entry>
   <entry>
-    <title>mybatis-plus-sgg-01-11</title>
-    <url>/2022/06/03/study/mybatis_plus/bl_sgg/01-11/</url>
-    <content><![CDATA[<h2 id="简介">简介</h2>
-<ul>
-<li>MyBatis-Plus是一个MyBatis的<strong>增强工具</strong>，在MyBatis的基础上<strong>只做增强不做改变</strong>，为<strong>简化开发、提高效率</strong>而生</li>
-<li>这里以MySQL数据库为案例，以Idea作为IDE，使用Maven作为构建工具，使用SpringBoot完成各种功能</li>
-<li>课程主要内容 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220603073359351.png"
-alt="image-20220603073359351" /></li>
-<li>特性 润物无声、效率至上、丰富功能</li>
-<li>支持的数据库 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220603074051884.png"
-alt="image-20220603074051884" /></li>
-<li>框架结构 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220603074111318.png"
-alt="image-20220603074111318" />
-<ul>
-<li>左边：扫描实体，从实体抽取属性猜测数据库字段</li>
-<li>通过默认提供的方法使用sql语句，然后注入mybatis容器</li>
-</ul></li>
-</ul>
-<h2 id="开发环境">开发环境</h2>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220603074238643.png"
-alt="image-20220603074238643" />
-<figcaption aria-hidden="true">image-20220603074238643</figcaption>
-</figure>
-<h2 id="测试数据库和表">测试数据库和表</h2>
-<ul>
-<li><p>这里创建数据库mybatis_plus</p></li>
-<li><p>然后创建表user</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">DROP TABLE IF EXISTS user;</span><br><span class="line"></span><br><span class="line">CREATE TABLE user</span><br><span class="line">(</span><br><span class="line">    id BIGINT(20) NOT NULL COMMENT &#x27;主键ID&#x27;,</span><br><span class="line">    name VARCHAR(30) NULL DEFAULT NULL COMMENT &#x27;姓名&#x27;,</span><br><span class="line">    age INT(11) NULL DEFAULT NULL COMMENT &#x27;年龄&#x27;,</span><br><span class="line">    email VARCHAR(50) NULL DEFAULT NULL COMMENT &#x27;邮箱&#x27;,</span><br><span class="line">    PRIMARY KEY (id)</span><br><span class="line">);</span><br></pre></td></tr></table></figure></li>
-<li><p>插入默认数据</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">DELETE FROM user;</span><br><span class="line"></span><br><span class="line">INSERT INTO user (id, name, age, email) VALUES</span><br><span class="line">(1, &#x27;Jone&#x27;, 18, &#x27;test1@baomidou.com&#x27;),</span><br><span class="line">(2, &#x27;Jack&#x27;, 20, &#x27;test2@baomidou.com&#x27;),</span><br><span class="line">(3, &#x27;Tom&#x27;, 28, &#x27;test3@baomidou.com&#x27;),</span><br><span class="line">(4, &#x27;Sandy&#x27;, 21, &#x27;test4@baomidou.com&#x27;),</span><br><span class="line">(5, &#x27;Billie&#x27;, 24, &#x27;test5@baomidou.com&#x27;);</span><br></pre></td></tr></table></figure></li>
-</ul>
-<h2 id="spring-boot工程">Spring Boot工程</h2>
-<p>添加依赖，并install Lombok 插件</p>
-<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">parent</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-parent<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.7.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">relativePath</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">parent</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-test<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">scope</span>&gt;</span>test<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.baomidou<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>mybatis-plus-boot-starter<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>3.5.1<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>mysql<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>mysql-connector-java<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>8.0.29<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- https://mvnrepository.com/artifact/org.projectlombok/lombok --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.projectlombok<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>lombok<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.18.24<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">scope</span>&gt;</span>provided<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- https://mvnrepository.com/artifact/com.baomidou/mybatis-plus-generator --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.baomidou<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>mybatis-plus-generator<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>3.5.2<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br></pre></td></tr></table></figure>
-<h2 id="基础配置">基础配置</h2>
-<ul>
-<li><p>创建spring boot启动类</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MybatisPlusApplication</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        SpringApplication.run(MybatisPlusApplication.class, args);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-<li><p>配置resources/application.yml文件</p>
-<figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="attr">spring:</span></span><br><span class="line">  <span class="comment">#配置数据源</span></span><br><span class="line">  <span class="attr">datasource:</span></span><br><span class="line">    <span class="comment">#配置数据源类型</span></span><br><span class="line">    <span class="attr">type:</span> <span class="string">com.zaxxer.hikari.HikariDataSource</span></span><br><span class="line">    <span class="comment">#配置数据源各个信息</span></span><br><span class="line">    <span class="attr">driver-class-name:</span> <span class="string">com.mysql.cj.jdbc.Driver</span></span><br><span class="line">    <span class="attr">url:</span> <span class="string">jdbc:mysql://localhost:3306/mybatis_plus?characterEncoding=utf-8&amp;&amp;useSSL=false</span></span><br><span class="line">    <span class="attr">username:</span> <span class="string">root</span></span><br><span class="line">    <span class="attr">password:</span> <span class="number">123456</span></span><br></pre></td></tr></table></figure>
-<ul>
-<li>这个时候启动会直接结束，因为我们没有使用springboot-web 包</li>
-</ul></li>
-<li><p>实体类的创建</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> com.ly.mybatisplus.pojo;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> lombok.Data;</span><br><span class="line"></span><br><span class="line"><span class="comment">//相当于get set 无参构造器 hashCode()和equals()、toString()方法重写</span></span><br><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">User</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> Long id;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">    <span class="keyword">private</span> Integer age;</span><br><span class="line">    <span class="keyword">private</span> String email;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
-<li><p>mapper的创建 mapper/UserMapper</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> com.ly.mybatisplus.mapper;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> com.baomidou.mybatisplus.core.mapper.BaseMapper;</span><br><span class="line"><span class="keyword">import</span> com.ly.mybatisplus.pojo.User;</span><br><span class="line"><span class="keyword">import</span> org.springframework.stereotype.Repository;</span><br><span class="line"></span><br><span class="line"><span class="comment">//将这个类标记成持久层组件 处理测试类中红色下划线的问题</span></span><br><span class="line"><span class="meta">@Repository</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">UserMapper</span> <span class="keyword">extends</span> <span class="title class_">BaseMapper</span>&lt;User&gt; &#123;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
-<li><p>设置mapper接口所在的包</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> com.ly.mybatisplus;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.mybatis.spring.annotation.MapperScan;</span><br><span class="line"><span class="keyword">import</span> org.springframework.boot.SpringApplication;</span><br><span class="line"><span class="keyword">import</span> org.springframework.boot.autoconfigure.SpringBootApplication;</span><br><span class="line"></span><br><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="comment">//扫描指定包下的mapper接口</span></span><br><span class="line"><span class="meta">@MapperScan(&quot;com.ly.mybatisplus.mapper&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MybatisPlusApplication</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        SpringApplication.run(MybatisPlusApplication.class, args);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
-</ul>
-<h2 id="测试">测试</h2>
-<ul>
-<li><p>测试类的创建</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> com.ly.mybatisplus.MybatisPlusApplication;</span><br><span class="line"><span class="keyword">import</span> com.ly.mybatisplus.mapper.UserMapper;</span><br><span class="line"><span class="keyword">import</span> com.ly.mybatisplus.pojo.User;</span><br><span class="line"><span class="keyword">import</span> org.junit.jupiter.api.Test;</span><br><span class="line"><span class="keyword">import</span> org.springframework.beans.factory.annotation.Autowired;</span><br><span class="line"><span class="keyword">import</span> org.springframework.boot.test.context.SpringBootTest;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"></span><br><span class="line"><span class="comment">//可能是由于没有使用web包依赖，这里要加入classes指定启动类</span></span><br><span class="line"><span class="meta">@SpringBootTest(classes = MybatisPlusApplication.class)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MybatisPlusTest</span> &#123;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> UserMapper userMapper;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">testSelect</span><span class="params">()</span>&#123;</span><br><span class="line">        <span class="comment">//通过条件构造器查询list集合 null表示没有条件</span></span><br><span class="line">        List&lt;User&gt; users = userMapper.selectList(<span class="literal">null</span>);</span><br><span class="line">        users.forEach(System.out::println);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
-</ul>
-<h2 id="加入日志功能">加入日志功能</h2>
-<ul>
-<li><p>配置application.yml加入日志</p>
-<figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">#日志</span></span><br><span class="line"><span class="attr">mybatis-plus:</span></span><br><span class="line">  <span class="attr">configuration:</span></span><br><span class="line">    <span class="attr">log-impl:</span> <span class="string">org.apache.ibatis.logging.stdout.StdOutImpl</span></span><br></pre></td></tr></table></figure></li>
-<li><p>效果 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220603081229650.png"
-alt="image-20220603081229650" /></p>
-<ul>
-<li>如上图，查询的字段名来自于实体类属性</li>
-<li><img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220603081319437.png"
-title="fig:" alt="image-20220603081319437" /></li>
-</ul></li>
-</ul>
-]]></content>
-      <categories>
-        <category>学习</category>
-      </categories>
-      <tags>
-        <tag>mybatis-plus 尚硅谷</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>mybatis-plus-sgg-12-18</title>
     <url>/2022/06/03/study/mybatis_plus/bl_sgg/12-18/</url>
     <content><![CDATA[<h2 id="basemapper">BaseMapper</h2>
@@ -8505,6 +8422,89 @@ End</p>
       </categories>
       <tags>
         <tag>redis_尚硅谷</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>mybatis-plus-sgg-01-11</title>
+    <url>/2022/06/03/study/mybatis_plus/bl_sgg/01-11/</url>
+    <content><![CDATA[<h2 id="简介">简介</h2>
+<ul>
+<li>MyBatis-Plus是一个MyBatis的<strong>增强工具</strong>，在MyBatis的基础上<strong>只做增强不做改变</strong>，为<strong>简化开发、提高效率</strong>而生</li>
+<li>这里以MySQL数据库为案例，以Idea作为IDE，使用Maven作为构建工具，使用SpringBoot完成各种功能</li>
+<li>课程主要内容 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220603073359351.png"
+alt="image-20220603073359351" /></li>
+<li>特性 润物无声、效率至上、丰富功能</li>
+<li>支持的数据库 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220603074051884.png"
+alt="image-20220603074051884" /></li>
+<li>框架结构 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220603074111318.png"
+alt="image-20220603074111318" />
+<ul>
+<li>左边：扫描实体，从实体抽取属性猜测数据库字段</li>
+<li>通过默认提供的方法使用sql语句，然后注入mybatis容器</li>
+</ul></li>
+</ul>
+<h2 id="开发环境">开发环境</h2>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220603074238643.png"
+alt="image-20220603074238643" />
+<figcaption aria-hidden="true">image-20220603074238643</figcaption>
+</figure>
+<h2 id="测试数据库和表">测试数据库和表</h2>
+<ul>
+<li><p>这里创建数据库mybatis_plus</p></li>
+<li><p>然后创建表user</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">DROP TABLE IF EXISTS user;</span><br><span class="line"></span><br><span class="line">CREATE TABLE user</span><br><span class="line">(</span><br><span class="line">    id BIGINT(20) NOT NULL COMMENT &#x27;主键ID&#x27;,</span><br><span class="line">    name VARCHAR(30) NULL DEFAULT NULL COMMENT &#x27;姓名&#x27;,</span><br><span class="line">    age INT(11) NULL DEFAULT NULL COMMENT &#x27;年龄&#x27;,</span><br><span class="line">    email VARCHAR(50) NULL DEFAULT NULL COMMENT &#x27;邮箱&#x27;,</span><br><span class="line">    PRIMARY KEY (id)</span><br><span class="line">);</span><br></pre></td></tr></table></figure></li>
+<li><p>插入默认数据</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">DELETE FROM user;</span><br><span class="line"></span><br><span class="line">INSERT INTO user (id, name, age, email) VALUES</span><br><span class="line">(1, &#x27;Jone&#x27;, 18, &#x27;test1@baomidou.com&#x27;),</span><br><span class="line">(2, &#x27;Jack&#x27;, 20, &#x27;test2@baomidou.com&#x27;),</span><br><span class="line">(3, &#x27;Tom&#x27;, 28, &#x27;test3@baomidou.com&#x27;),</span><br><span class="line">(4, &#x27;Sandy&#x27;, 21, &#x27;test4@baomidou.com&#x27;),</span><br><span class="line">(5, &#x27;Billie&#x27;, 24, &#x27;test5@baomidou.com&#x27;);</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="spring-boot工程">Spring Boot工程</h2>
+<p>添加依赖，并install Lombok 插件</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">parent</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-parent<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.7.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">relativePath</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">parent</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-test<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">scope</span>&gt;</span>test<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.baomidou<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>mybatis-plus-boot-starter<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>3.5.1<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>mysql<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>mysql-connector-java<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>8.0.29<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- https://mvnrepository.com/artifact/org.projectlombok/lombok --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.projectlombok<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>lombok<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.18.24<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">scope</span>&gt;</span>provided<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- https://mvnrepository.com/artifact/com.baomidou/mybatis-plus-generator --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.baomidou<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>mybatis-plus-generator<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>3.5.2<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h2 id="基础配置">基础配置</h2>
+<ul>
+<li><p>创建spring boot启动类</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MybatisPlusApplication</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        SpringApplication.run(MybatisPlusApplication.class, args);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>配置resources/application.yml文件</p>
+<figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="attr">spring:</span></span><br><span class="line">  <span class="comment">#配置数据源</span></span><br><span class="line">  <span class="attr">datasource:</span></span><br><span class="line">    <span class="comment">#配置数据源类型</span></span><br><span class="line">    <span class="attr">type:</span> <span class="string">com.zaxxer.hikari.HikariDataSource</span></span><br><span class="line">    <span class="comment">#配置数据源各个信息</span></span><br><span class="line">    <span class="attr">driver-class-name:</span> <span class="string">com.mysql.cj.jdbc.Driver</span></span><br><span class="line">    <span class="attr">url:</span> <span class="string">jdbc:mysql://localhost:3306/mybatis_plus?characterEncoding=utf-8&amp;&amp;useSSL=false</span></span><br><span class="line">    <span class="attr">username:</span> <span class="string">root</span></span><br><span class="line">    <span class="attr">password:</span> <span class="number">123456</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>这个时候启动会直接结束，因为我们没有使用springboot-web 包</li>
+</ul></li>
+<li><p>实体类的创建</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> com.ly.mybatisplus.pojo;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> lombok.Data;</span><br><span class="line"></span><br><span class="line"><span class="comment">//相当于get set 无参构造器 hashCode()和equals()、toString()方法重写</span></span><br><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">User</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> Long id;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">    <span class="keyword">private</span> Integer age;</span><br><span class="line">    <span class="keyword">private</span> String email;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+<li><p>mapper的创建 mapper/UserMapper</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> com.ly.mybatisplus.mapper;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> com.baomidou.mybatisplus.core.mapper.BaseMapper;</span><br><span class="line"><span class="keyword">import</span> com.ly.mybatisplus.pojo.User;</span><br><span class="line"><span class="keyword">import</span> org.springframework.stereotype.Repository;</span><br><span class="line"></span><br><span class="line"><span class="comment">//将这个类标记成持久层组件 处理测试类中红色下划线的问题</span></span><br><span class="line"><span class="meta">@Repository</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">UserMapper</span> <span class="keyword">extends</span> <span class="title class_">BaseMapper</span>&lt;User&gt; &#123;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+<li><p>设置mapper接口所在的包</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> com.ly.mybatisplus;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.mybatis.spring.annotation.MapperScan;</span><br><span class="line"><span class="keyword">import</span> org.springframework.boot.SpringApplication;</span><br><span class="line"><span class="keyword">import</span> org.springframework.boot.autoconfigure.SpringBootApplication;</span><br><span class="line"></span><br><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="comment">//扫描指定包下的mapper接口</span></span><br><span class="line"><span class="meta">@MapperScan(&quot;com.ly.mybatisplus.mapper&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MybatisPlusApplication</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        SpringApplication.run(MybatisPlusApplication.class, args);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="测试">测试</h2>
+<ul>
+<li><p>测试类的创建</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> com.ly.mybatisplus.MybatisPlusApplication;</span><br><span class="line"><span class="keyword">import</span> com.ly.mybatisplus.mapper.UserMapper;</span><br><span class="line"><span class="keyword">import</span> com.ly.mybatisplus.pojo.User;</span><br><span class="line"><span class="keyword">import</span> org.junit.jupiter.api.Test;</span><br><span class="line"><span class="keyword">import</span> org.springframework.beans.factory.annotation.Autowired;</span><br><span class="line"><span class="keyword">import</span> org.springframework.boot.test.context.SpringBootTest;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"></span><br><span class="line"><span class="comment">//可能是由于没有使用web包依赖，这里要加入classes指定启动类</span></span><br><span class="line"><span class="meta">@SpringBootTest(classes = MybatisPlusApplication.class)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MybatisPlusTest</span> &#123;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> UserMapper userMapper;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">testSelect</span><span class="params">()</span>&#123;</span><br><span class="line">        <span class="comment">//通过条件构造器查询list集合 null表示没有条件</span></span><br><span class="line">        List&lt;User&gt; users = userMapper.selectList(<span class="literal">null</span>);</span><br><span class="line">        users.forEach(System.out::println);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="加入日志功能">加入日志功能</h2>
+<ul>
+<li><p>配置application.yml加入日志</p>
+<figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">#日志</span></span><br><span class="line"><span class="attr">mybatis-plus:</span></span><br><span class="line">  <span class="attr">configuration:</span></span><br><span class="line">    <span class="attr">log-impl:</span> <span class="string">org.apache.ibatis.logging.stdout.StdOutImpl</span></span><br></pre></td></tr></table></figure></li>
+<li><p>效果 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220603081229650.png"
+alt="image-20220603081229650" /></p>
+<ul>
+<li>如上图，查询的字段名来自于实体类属性</li>
+<li><img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220603081319437.png"
+title="fig:" alt="image-20220603081319437" /></li>
+</ul></li>
+</ul>
+]]></content>
+      <categories>
+        <category>学习</category>
+      </categories>
+      <tags>
+        <tag>mybatis-plus 尚硅谷</tag>
       </tags>
   </entry>
   <entry>
@@ -15189,7 +15189,7 @@ Node，<strong>如果为空表示当前位置可以写入</strong>数据，利�
       </tags>
   </entry>
   <entry>
-    <title>Atomic预备知识</title>
+    <title>ly030301lyAtomic预备知识</title>
     <url>/2023/02/03/review/java_guide/java/concurrent/AtomicPre/</url>
     <content><![CDATA[<h3
 id="java实现cas的原理非javaguide">Java实现CAS的原理[非javaguide]</h3>
@@ -15976,7 +15976,7 @@ https://gitee.com/jd-platform-opensource/asyncTool#%E5%B9%B6%E8%A1%8C%E5%9C%BA%E
       </tags>
   </entry>
   <entry>
-    <title>并发01</title>
+    <title>ly0301ly并发01</title>
     <url>/2022/10/26/review/java_guide/java/concurrent/concurrent-01/</url>
     <content><![CDATA[<blockquote>
 <p>转载自https://github.com/Snailclimb/JavaGuide
@@ -16189,7 +16189,7 @@ timeout)超时后，线程会<strong>自动苏醒</strong></li>
       </tags>
   </entry>
   <entry>
-    <title>并发02</title>
+    <title>ly0302ly并发02</title>
     <url>/2022/10/28/review/java_guide/java/concurrent/concurrent-02/</url>
     <content><![CDATA[<blockquote>
 <p>转载自https://github.com/Snailclimb/JavaGuide
@@ -16225,28 +16225,8 @@ alt="image-20230202141302707" /></p>
 </blockquote>
 <p><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">  <span class="keyword">public</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title function_">loadFence</span><span class="params">()</span>; <span class="comment">//读指令屏障</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title function_">storeFence</span><span class="params">()</span>; <span class="comment">//写指令屏障</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title function_">fullFence</span><span class="params">()</span>; <span class="comment">//读写指令屏障</span></span><br></pre></td></tr></table></figure></p></li>
 <li><p>例子（通过双重校验锁实现对象单例），保证线程安全</p>
-<p><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Singleton</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="keyword">static</span> Singleton uniqueInstance;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="title function_">Singleton</span><span class="params">()</span> &#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span>  <span class="keyword">static</span> Singleton <span class="title function_">getUniqueInstance</span><span class="params">()</span> &#123;</span><br><span class="line">       	<span class="comment">//先判断对象是否已经实例过，没有实例化过才进入加锁代码</span></span><br><span class="line">        <span class="comment">//避免了不论如何都进行加锁的情况</span></span><br><span class="line">        <span class="keyword">if</span> (uniqueInstance == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="comment">//...一些其他代码</span></span><br><span class="line">            <span class="comment">//加锁，并判断如果未初始化则进行初始化</span></span><br><span class="line">            <span class="keyword">synchronized</span> (Singleton.class) &#123; </span><br><span class="line">                <span class="comment">//别晕了，这个是一定要判断的</span></span><br><span class="line">                <span class="keyword">if</span> (uniqueInstance == <span class="literal">null</span>) &#123;</span><br><span class="line">                    uniqueInstance = <span class="keyword">new</span> <span class="title class_">Singleton</span>();</span><br><span class="line">                &#125; </span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> uniqueInstance;</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>这里，uniqueInstance采用volatile的必要性：主要分析<code>uniqueInstance  = new Singleton();</code>分三步（正常情况）</p>
-<ol type="1">
-<li>为uniqueInstance<strong>分配内存空间</strong></li>
-</ol></li>
-</ul>
-<ol start="2" type="1">
-<li><p><strong>初始化</strong> uniqueInstance</p>
-<ol start="3" type="1">
-<li>将uniqueInstance<strong>指向</strong>被分配的空间</li>
-</ol>
-<p>由于指令重排的关系，可能会编程1-&gt;3-&gt;2
-，指令重排在单线程情况下不会出现问题，而多线程，</p>
-<ul>
-<li>就会导致可能指针非空的时候，实际该指针所指向的对象（实例）并还没有初始化</li>
-<li>例如，线程 T1 执行了 1 和 3，此时 T2 调用
-<code>getUniqueInstance</code>() 后发现 <code>uniqueInstance</code>
-不为空，因此返回 <code>uniqueInstance</code>，但此时
-<code>uniqueInstance</code>
-还未被初始化<strong>（就会造成一些问题）</strong></li>
+<p><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Singleton</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="keyword">static</span> Singleton uniqueInstance;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="title function_">Singleton</span><span class="params">()</span> &#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span>  <span class="keyword">static</span> Singleton <span class="title function_">getUniqueInstance</span><span class="params">()</span> &#123;</span><br><span class="line">       	<span class="comment">//先判断对象是否已经实例过，没有实例化过才进入加锁代码</span></span><br><span class="line">        <span class="comment">//避免了不论如何都进行加锁的情况</span></span><br><span class="line">        <span class="keyword">if</span> (uniqueInstance == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="comment">//...一些其他代码</span></span><br><span class="line">            <span class="comment">//加锁，并判断如果未初始化则进行初始化</span></span><br><span class="line">            <span class="keyword">synchronized</span> (Singleton.class) &#123; </span><br><span class="line">                <span class="comment">//别晕了，这个是一定要判断的</span></span><br><span class="line">                <span class="keyword">if</span> (uniqueInstance == <span class="literal">null</span>) &#123;</span><br><span class="line">                    uniqueInstance = <span class="keyword">new</span> <span class="title class_">Singleton</span>();</span><br><span class="line">                &#125; </span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> uniqueInstance;</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">    </span><br><span class="line">    </span><br><span class="line">    这里，uniqueInstance采用volatile的必要性：主要分析``` uniqueInstance  = new Singleton(); ```分三步（正常情况）</span><br><span class="line"></span><br><span class="line">    1. 为uniqueInstance**分配内存空间**</span><br><span class="line">2. **初始化** uniqueInstance</span><br><span class="line">    3. 将uniqueInstance**指向**被分配的空间</span><br><span class="line">    </span><br><span class="line">    由于指令重排的关系，可能会编程1-&gt;3-&gt;2 ，指令重排在单线程情况下不会出现问题，而多线程，</span><br><span class="line">    </span><br><span class="line">    - 就会导致可能指针非空的时候，实际该指针所指向的对象（实例）并还没有初始化</span><br><span class="line">    - 例如，线程 T1 执行了 1 和 3，此时 T2 调用 `getUniqueInstance`() 后发现 `uniqueInstance` 不为空，因此返回 `uniqueInstance`，但此时 `uniqueInstance` 还未被初始化**（就会造成一些问题）**</span><br></pre></td></tr></table></figure></p></li>
 </ul></li>
-</ol></li>
 <li><p>volatile不能保证原子性</p>
 <ul>
 <li><p>下面的代码，输出结果小于2500</p>
@@ -16518,7 +16498,7 @@ expungeStaleEntry() 方法（<strong>在remove中</strong>）</p>
       </tags>
   </entry>
   <entry>
-    <title>并发03</title>
+    <title>ly0303ly并发03</title>
     <url>/2022/11/07/review/java_guide/java/concurrent/concurrent-03/</url>
     <content><![CDATA[<blockquote>
 <p>转载自https://github.com/Snailclimb/JavaGuide
@@ -17096,7 +17076,7 @@ alt="image-20221130144439833" /> 查找 18 的时候原来需要遍历 18
       </tags>
   </entry>
   <entry>
-    <title>java线程池详解</title>
+    <title>ly0305lyjava线程池详解</title>
     <url>/2022/11/23/review/java_guide/java/concurrent/java-thread-pool/</url>
     <content><![CDATA[<blockquote>
 <p>转载自https://github.com/Snailclimb/JavaGuide
@@ -17108,19 +17088,23 @@ alt="image-20221130144439833" /> 查找 18 的时候原来需要遍历 18
 <li>线程池提供一种<strong>限制</strong>和<strong>管理资源（包括执行一个任务）</strong>的方式，每个线程池还维护一些基本统计信息，例如<strong>已完成任务</strong>的数量</li>
 <li>线程池的好处
 <ul>
-<li>降低资源消耗（重复利用，降低线程创建和销毁造成的消耗）</li>
-<li>提高响应速度（任务到达直接执行，无需等待线程创建）</li>
-<li>提高线程可管理性（避免无休止创建，使用线程池同一分配、调优、监控）</li>
+<li>降低<strong>资源消耗</strong>（重复利用，降低<strong>线程创建和销毁</strong>造成的消耗）</li>
+<li>提高<strong>响应速度</strong>（任务到达直接执行，<strong>无需等待线程创建</strong>）</li>
+<li>提高线程<strong>可管理性</strong>（<strong>避免无休止创建</strong>，使用线程池统一<strong>分配</strong>、<strong>调优</strong>、<strong>监控</strong>）</li>
 </ul></li>
 </ul>
 <h2 id="二-executor框架">二 Executor框架</h2>
-<p>Java5之后，通过Executor启动线程，比使用Thread的start方法更好，更易于管理，效率高，还能有助于避免this逃逸的问题</p>
+<p>Java5之后，通过Executor启动线程，比使用Thread的start方法更好，更<strong>易于管理</strong>，<strong>效率高</strong>，还能有助于避免this逃逸的问题</p>
 <blockquote>
-<p>this逃逸，指的是构造函数返回之前，其他线程就持有该对象的引用，会导致调用尚未构造完全的对象</p>
+<p>this逃逸，指的是<strong>构造函数返回之前</strong>，<strong>其他线程就持有该对象的引用</strong>，会导致调用尚未构造完全的对象<br />
+例子：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ThisEscape</span> &#123; </span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">ThisEscape</span><span class="params">()</span> &#123; </span><br><span class="line">    <span class="keyword">new</span> <span class="title class_">Thread</span>(<span class="keyword">new</span> <span class="title class_">EscapeRunnable</span>()).start(); </span><br><span class="line">    <span class="comment">// ... </span></span><br><span class="line">  &#125; </span><br><span class="line">    </span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">class</span> <span class="title class_">EscapeRunnable</span> <span class="keyword">implements</span> <span class="title class_">Runnable</span> &#123; </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123; </span><br><span class="line">      <span class="comment">// 通过ThisEscape.this就可以引用外围类对象, 但是此时外围类对象可能还没有构造完成, 即发生了外围类的this引用的逃逸 </span></span><br><span class="line">    &#125; </span><br><span class="line">  &#125; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>处理办法</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ThisEscape</span> &#123; </span><br><span class="line">  <span class="keyword">private</span> Thread t; </span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">ThisEscape</span><span class="params">()</span> &#123; </span><br><span class="line">    t = <span class="keyword">new</span> <span class="title class_">Thread</span>(<span class="keyword">new</span> <span class="title class_">EscapeRunnable</span>()); </span><br><span class="line">    <span class="comment">// ... </span></span><br><span class="line">  &#125; </span><br><span class="line">    </span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">init</span><span class="params">()</span> &#123; </span><br><span class="line">    <span class="comment">//也就是说对象没有构造完成前，不要调用ThisEscape.this即可</span></span><br><span class="line">    t.start(); </span><br><span class="line">  &#125; </span><br><span class="line">    </span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">class</span> <span class="title class_">EscapeRunnable</span> <span class="keyword">implements</span> <span class="title class_">Runnable</span> &#123; </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123; </span><br><span class="line">      <span class="comment">// 通过ThisEscape.this就可以引用外围类对象, 此时可以保证外围类对象已经构造完成 </span></span><br><span class="line">    &#125; </span><br><span class="line">  &#125; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 </blockquote>
 <p>Executor框架不仅包括<strong>线程池的管理</strong>，提供<strong>线程工厂</strong>、<strong>队列</strong>以及<strong>拒绝策略</strong>。</p>
 <h3 id="executor框架结构">Executor框架结构</h3>
-<p>主要是三大部分：任务（Runnable/Callable），任务的执行(Executor)，异步计算的结果Future</p>
+<p>主要是<strong>三大部分</strong>：<strong>任务（Runnable/Callable）</strong>，<strong>任务的执行(Executor)</strong>，<strong>异步计算的结果Future</strong></p>
 <ol type="1">
 <li><p>任务
 执行任务需要的Runnable/Callable接口，他们的实现类，都可以被ThreadPoolExecutor或ScheduleThreadPoolExecutor执行</p></li>
@@ -17508,7 +17492,7 @@ IO 密集型，这类任务的特点是 CPU 计算耗费时间相比于等待 IO
       </tags>
   </entry>
   <entry>
-    <title>java内存模型</title>
+    <title>ly0304lyjava内存模型</title>
     <url>/2022/11/21/review/java_guide/java/concurrent/jmm/</url>
     <content><![CDATA[<blockquote>
 <p>引用自https://github.com/Snailclimb/JavaGuide</p>
@@ -19959,512 +19943,6 @@ GC</strong>，也就是说<strong>堆不存在该类</strong>的<strong>实例�
       </tags>
   </entry>
   <entry>
-    <title>java垃圾回收器</title>
-    <url>/2022/12/12/review/java_guide/java/jvm/garbage-collection/</url>
-    <content><![CDATA[<blockquote>
-<p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!</p>
-</blockquote>
-<h1 id="前言">前言</h1>
-<p>当<strong>需要排查各种内存溢出问题</strong>、当<strong>垃圾收集</strong>成为系统达到更高并发的瓶颈时，我们就需要对这些<strong>“自动化”</strong>的技术实施必要的<strong>监控</strong>和<strong>调节</strong></p>
-<h1 id="堆空间的基本结构">堆空间的基本结构</h1>
-<ul>
-<li><p>Java的<strong>自动内存管理</strong>主要是针对对象内存的<strong>回收</strong>和对象内存的<strong>分配</strong>。且Java自动内存管理最核心的功能是<strong>堆</strong>内存中的对象<strong>分配</strong>和<strong>回收</strong></p></li>
-<li><p>Java堆是垃圾收集器管理的主要区域，因此也被称作<strong>GC堆（Garbage
-Collected Heap）</strong></p></li>
-<li><p>从<strong>垃圾回收的角度</strong>来说，由于现在收集器基本都采用<strong>分代垃圾收集算法</strong>，所以Java堆被划分为了几个不同的区域，这样我们就可以<strong>根据各个区域的特点</strong>选择<strong>合适的垃圾收集算法</strong></p></li>
-<li><p>JDK7版本及JDK7版本之前，堆内存被通常分为下面三部分：</p>
-<ol type="1">
-<li>新生代内存（Young Generation）</li>
-<li>老生代（Old Generation）</li>
-<li>永久代（Permanent Generation）</li>
-</ol></li>
-</ul>
-<figure>
-<img
-src="https://javaguide.cn/assets/hotspot-heap-structure.41533631.png"
-alt="hotspot-heap-structure" />
-<figcaption aria-hidden="true">hotspot-heap-structure</figcaption>
-</figure>
-<p>JDK8版本之后PermGen（永久）已被Metaspace（元空间）取代，且已经不在堆里面了，元空间使用的是<strong>直接内存</strong>。</p>
-<h1 id="内存分配和回收原则">内存分配和回收原则</h1>
-<h2 id="对象优先在eden区分配">对象优先在Eden区分配</h2>
-<ul>
-<li><p>多数情况下，对象在<strong>新生代中Eden区</strong>分配。当Eden区没有足够空间进行分配时，会触发一次MinorGC
-首先，先添加一下参数打印GC详情：<code>-XX:+PrintGCDetails</code></p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">GCTest</span> &#123;</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">		<span class="type">byte</span>[] allocation1, allocation2;</span><br><span class="line">		allocation1 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">30900</span>*<span class="number">1024</span>];<span class="comment">//会用掉3万多K</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
-<p>运行后的结果（这里应该是配过xms和xmx了，即堆内存大小） <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/28954286.jpg"
-alt="img" />
-如上，<strong>Eden区内存几乎被分配完全</strong>（即使程序什么都不做，新生代也会使用2000多K）</p>
-<blockquote>
-<p>注： PSYoungGen 为 38400K ，= 33280K + 5120K
-（Survivor区总会有一个是空的，所以只加了一个5120K ）</p>
-</blockquote>
-<p>假如我们再为allocation2分配内存会怎么样(不处理的话，年轻代会溢出)</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">allocation2 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">900</span> * <span class="number">1024</span>];</span><br></pre></td></tr></table></figure>
-<p><img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/28128785.jpg"
-alt="img" />
-在给allocation2分配内存之前，Eden区内存几乎已经被分配完。所以当<strong>Eden区没有足够空间进行分配时</strong>，虚拟机将发起一次MinorGC。GC期间虚拟机又发现<strong>allocation1无法存入空间</strong>，所以只好通过<strong>分配担保机制</strong>，把<strong>新生代的对象</strong>，<strong>提前转移到老年代</strong>去，老年代的空间足够存放allocation1，<strong>所以不会出现Full
-GC（这里可能是之前的说法，可能只是要表达老年代的GC，而不是Full
-GC(整堆GC) ）</strong>　　</p>
-<p>执行MinorGC后，<strong>后面分配的对象如果能够存在Eden区</strong>的话，还是会在Eden区分配内存<br />
-执行如下代码验证：</p></li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">GCTest</span> &#123;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">		<span class="type">byte</span>[] allocation1, allocation2,allocation3,allocation4,allocation5;</span><br><span class="line">		allocation1 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">32000</span>*<span class="number">1024</span>];</span><br><span class="line">		allocation2 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">1000</span>*<span class="number">1024</span>];</span><br><span class="line">		allocation3 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">1000</span>*<span class="number">1024</span>];</span><br><span class="line">		allocation4 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">1000</span>*<span class="number">1024</span>];</span><br><span class="line">		allocation5 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">1000</span>*<span class="number">1024</span>];</span><br><span class="line">	&#125;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
-<h2 id="大对象直接进入老年代">大对象直接进入老年代</h2>
-<ul>
-<li>大对象就是需要连续空间的对象（<strong>字符串</strong>、<strong>数组</strong>等）</li>
-<li>大对象直接进入老年代，主要是为了避免为<strong>大对象分配内存时</strong>，由于<strong>分配担保机制(这好像跟分配担保机制没有太大关系)</strong>带来的复制而<strong>降低效率</strong>。</li>
-</ul>
-<blockquote>
-<ul>
-<li><p>假设大对象最后会晋升老年代，而新生代是基于复制算法来回收垃圾的，由两个Survivor区域配合完成复制算法，如果新生代中出现大对象且能屡次躲过GC，那这个对象就会在两个Survivor区域中来回复制，直至最后升入老年代，而大对象在内存里来回复制移动，就会消耗更多的时间。</p></li>
-<li><p>假设大对象最后不会晋升老年代，新生代空间是有限的，在新生代里的对象大部分都是朝生夕死的，如果让一个大对象占据了新生代空间，那么相比起正常的对象被分配在新生代，大对象无疑会让新生代GC提早发生，因为内存空间会更快不够用，如果这个大对象因为业务原因，并不会马上被GC回收，那么这个对象就会进入到Survivor区域，默认情况下，Survivor区域本来就不会被分配的很大，那此时被大对象占据了大部分空间，很可能会导致之后的新生代GC后，存活下来的对象，Survivor区域空间不够放不下，导致大部分对象进入老年代，这就加快了老年代GC发生的时间，而老年代GC对系统性能的负面影响则远远大于新生代GC了。</p></li>
-</ul>
-</blockquote>
-<h2 id="长期存活的对象进入老年代">长期存活的对象进入老年代</h2>
-<ul>
-<li><p>内存回收时必须能够识别，哪些对象放在新生代，哪些对象放在老年代---&gt;
-因此，虚拟机给每个对象一个<strong>对象年龄（Age）</strong>计数器</p></li>
-<li><p><流程> :
-大部分情况下，对象都会<strong>首先在Eden区域</strong>分配。如果对象在Eden出生并经过<strong>第一次MinorGC后</strong>仍然能够存活，并且<strong>能</strong>被Survivor容纳的话，将被移动到Survivor空间（S0或S1）中，并将对象年龄设为<strong>1</strong>(<strong>Eden区
---&gt; Survivor区后</strong>对象初始年龄变为1 )</p>
-<ul>
-<li>后续，对象在<strong>Survivor区</strong>中每熬过一次MinorGC，<strong>年龄就增加1岁</strong>，当年龄增加到一定程序（<strong>默认为15岁</strong>），就会被晋升到老年代中。对象晋升到老年代的年龄<strong>阈值</strong>，可以通过参数<strong><code>-XX:MaxTenuringThreshold</code></strong>来设置</li>
-<li><strong>★★修正：</strong> “Hotspot
-遍历所有对象时，按照年龄<strong>从小到大</strong>对其所<strong>占用的大小进行累积</strong>，当<strong>累积的某个年龄大小超过了
-survivor 区的 50%</strong> 时（默认值是 50%，可以通过
-<code>-XX:TargetSurvivorRatio=percent</code> 来设置，参见 <a
-href="https://github.com/Snailclimb/JavaGuide/issues/1199">issue1199open
-in new window</a> ），取<strong>这个年龄</strong>和
-<strong>MaxTenuringThreshold
-中更小的一个值</strong>，作为新的晋升年龄阈值”。</li>
-</ul>
-<p>动态年龄计算的代码：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">uint ageTable::compute_tenuring_threshold(size_t survivor_capacity) &#123;</span><br><span class="line"><span class="comment">//survivor_capacity是survivor空间的大小</span></span><br><span class="line"><span class="type">size_t</span> <span class="variable">desired_survivor_size</span> <span class="operator">=</span> (size_t)((((<span class="type">double</span>)survivor_capacity)*TargetSurvivorRatio)/<span class="number">100</span>);</span><br><span class="line"><span class="type">size_t</span> <span class="variable">total</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line"><span class="type">uint</span> <span class="variable">age</span> <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line"><span class="keyword">while</span> (age &lt; table_size) &#123;</span><br><span class="line"><span class="comment">//sizes数组是每个年龄段对象大小</span></span><br><span class="line">total += sizes[age];</span><br><span class="line"><span class="keyword">if</span> (total &gt; desired_survivor_size) &#123;</span><br><span class="line"><span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br><span class="line">age++; <span class="comment">//注意这里，age是递增的，最终是去某个值，而不是区间的值计算</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="type">uint</span> <span class="variable">result</span> <span class="operator">=</span> age &lt; MaxTenuringThreshold ? age : MaxTenuringThreshold;</span><br><span class="line">...</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>例子：
-如<strong>对象年龄5的占30%，年龄6的占36%，年龄7的占34%，加入某个年龄段（如例子中的年龄6）</strong>后，总占用超过Survivor空间*TargetSurvivorRatio的时候，从该年龄段开始及大于的年龄对象就要进入老年代（即例子中的年龄6对象，就是年龄6和年龄7晋升到老年代），这时候无需等到MaxTenuringThreshold中要求的15</p>
-<blockquote>
-<p><strong>关于默认的晋升年龄是 15，这个说法的来源大部分都是《深入理解
-Java 虚拟机》这本书。</strong> 如果你去 Oracle 的官网阅读<a
-href="https://docs.oracle.com/javase/8/docs/technotes/tools/unix/java.html">相关的虚拟机参数open
-in new
-window</a>，你会发现<code>-XX:MaxTenuringThreshold=threshold</code>这里有个说明</p>
-<p><strong>Sets the maximum tenuring threshold for use in adaptive GC
-sizing. The largest value is 15. The default value is 15 for the
-parallel (throughput) collector, and 6 for the CMS
-collector.默认晋升年龄并不都是 15，这个是要区分垃圾收集器的，CMS 就是
-6.</strong></p>
-</blockquote>
-</blockquote></li>
-</ul>
-<h2 id="主要进行gc的区域">主要进行gc的区域</h2>
-<p>如图：（太长跳过了，直接看下面的总结）<br />
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/rf-hotspot-vm-gc.69291e6e.png"
-alt="img" /></p>
-<p>总结：<br />
-针对HotSpotVM的实现，它里面的GC准确分类只有两大种：</p>
-<ol type="1">
-<li>部分收集（Partial GC）
-<ul>
-<li>新生代收集（Minor GC/ Young GC
-）：只对<strong>新生代</strong>进行垃圾收集</li>
-<li>老年代（Major GC / Old GC
-)：只对<strong>老年代</strong>进行垃圾收集。★★：注意，MajorGC在有的语境中也用于指代<strong>整堆收集</strong></li>
-<li>混合收集（Mixed
-GC）：对<strong>整个新生代</strong>和<strong>部分老年代</strong>进行垃圾收集</li>
-</ul></li>
-<li>整堆收集（Full GC）：收集整个Java堆和方法区</li>
-</ol>
-<h2 id="空间分配担保">空间分配担保</h2>
-<ul>
-<li><p>为了确保在<strong>MinorGC</strong>之前老年代本身还有容纳<strong>新生代所有对象</strong>的剩余空间</p></li>
-<li><p>《深入理解Java虚拟机》第三章对于空间分配担保的描述如下：</p>
-<blockquote>
-<p>JDK 6 Update 24 之前，在发生 Minor GC
-之前，虚拟机必须先检查老年代最大可用的连续空间是否大于新生代所有对象总空间，如果这个条件成立，那这一次
-Minor GC 可以确保是安全的。如果不成立，则虚拟机会先查看
--XX:HandlePromotionFailure 参数的设置值是否允许担保失败(Handle Promotion
-Failure);如果允许，那会继续检查老年代最大可用的连续空间是否大于历次晋升到老年代对象的平均大小，如果大于，将尝试进行一次
-Minor GC，尽管这次 Minor GC 是有风险的;如果小于，或者 -XX:
-HandlePromotionFailure 设置不允许冒险，那这时就要改为进行一次 Full
-GC。</p>
-<p><strong>JDK6
-Update24</strong>之后，规则变为<strong>只要老年代的连续空间</strong>大于<strong>新生代对象总大小</strong>，或者<strong>历次晋升的平均大小</strong>，就会进行<strong>MinorGC</strong>，否则将进行<strong>Full
-GC</strong></p>
-</blockquote></li>
-</ul>
-<h1 id="死亡对象判断方法">死亡对象判断方法</h1>
-<p><strong>堆</strong>中<strong>几乎放着所有的对象实例</strong>，对堆垃圾回收前的第一步就是要<strong>判断哪些对象已经死亡</strong>（即不能再被<strong>任何途径使用</strong>的对象）</p>
-<h2 id="引用计数法">引用计数法</h2>
-<ul>
-<li><p>给对象中添加一个<strong>引用计数器</strong></p>
-<ul>
-<li>每当有一个地方引用它，<strong>计数器就加1</strong></li>
-<li>当引用失效，<strong>计数器就减1</strong></li>
-<li>任何时候<strong>计数器为0的对象</strong>就是<strong>不可能再被使用</strong>的</li>
-</ul></li>
-<li><p>这个方法实现<strong>简单，效率高</strong>，但是目前主流的虚拟机中并没有选择这个算法来管理内存，其最主要的原因是它<strong>很难解决对象之间相互循环引用</strong>的问题。</p></li>
-</ul>
-<blockquote>
-<p>除了对象 <code>objA</code> 和 <code>objB</code>
-相互引用着对方之外，这两个对象之间再无任何引用。但是他们因为互相引用对方，导致它们的引用计数器都不为
-0，于是引用计数算法无法通知 GC 回收器回收他们</p>
-</blockquote>
-<p>★其实我觉得只跟相互有关，跟是不是<strong>循环</strong>关系不会太大</p>
-<p><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ReferenceCountingGc</span> &#123;</span><br><span class="line">    <span class="type">Object</span> <span class="variable">instance</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">ReferenceCountingGc</span> <span class="variable">objA</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ReferenceCountingGc</span>();</span><br><span class="line">        <span class="type">ReferenceCountingGc</span> <span class="variable">objB</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ReferenceCountingGc</span>();</span><br><span class="line">        objA.instance = objB;</span><br><span class="line">        objB.instance = objA;</span><br><span class="line">        objA = <span class="literal">null</span>;</span><br><span class="line">        objB = <span class="literal">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure></p>
-<h2 id="可达性分析算法">可达性分析算法</h2>
-<ul>
-<li><p>该算法的基本思想就是通过一系列称为<strong>“GC
-Roots"</strong>的对象作为起点，从这些节点开始<strong>向下搜索</strong>，节点所走过的<strong>路径</strong>
-称为<strong>引用链</strong>，当一个对象到GC
-Roots<strong>没有任何引用链</strong>相连的话，证明该对象不可用，需要<strong>被回收</strong>
-下图中由于Object 6 ~ Object
-10之间有引用关系，但它们到GC不可达，所以需要被回收 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/jvm-gc-roots.d187e957.png"
-alt="可达性分析算法" /></p></li>
-<li><p>哪些对象可以作为GC Roots呢</p>
-<ol type="1">
-<li>虚拟机栈（栈帧中的<strong>本地变量表</strong>）中引用的对象</li>
-<li>本地方法栈（<strong>Native方法</strong>）中引用的对象</li>
-<li>方法区中<strong>类静态属性</strong>引用的对象</li>
-<li>方法区中<strong>常量</strong>引用的变量</li>
-<li>所有被<strong>同步锁持有的对象</strong></li>
-</ol></li>
-<li><p>对象可以被回收，就代码一定会被回收吗
-即使在可达性分析法中不可达的对象，也并非是“非死不可”的，这时候它们<strong>暂时处于“缓刑阶段”</strong>，要真正宣告一个对象死亡，至少要经历两次标记过程：</p>
-<ol type="1">
-<li><p>可达性分析中<strong>不可达的对象被第一次标记</strong>并且进行<strong>一次筛选</strong>：筛选的条件是此对象是否有必要执行finalize方法（有必要则放入）<br />
-当对象<strong>没有覆盖finalize</strong>方法，或<strong>finalize方法已经被虚拟机调用</strong>过，则虚拟机将两种情况视为<strong>没有必要</strong>执行，该对象会被<strong>直接回收</strong></p></li>
-<li><p>如果这个对象被判定为<strong>有必要执行finalize()</strong>方法，那么这个对象将会被<strong>放置在一个叫做F-Queue的队列</strong>中，然后由Finalizer线程去执行。GC将会<strong>对F-Queue中的对象进行第二次标记</strong>，如果对象<strong>在finalize()方法中重新与引用链上的任何一个对象建立关联</strong>，那么在<strong>第二次标记时将会被移除“即将回收”的集合</strong>，否则该对象将会被回收。</p>
-<p>（比如：把自己（this关键字）赋值给某个类变量(static修饰)或者对象的成员变量）</p></li>
-</ol>
-<blockquote>
-<p><code>Object</code> 类中的 <code>finalize</code>
-方法一直被认为是一个糟糕的设计，成为了 Java 语言的负担，影响了 Java
-语言的安全和 GC 的性能。JDK9 版本及后续版本中各个类中的
-<code>finalize</code> 方法会被逐渐弃用移除。忘掉它的存在吧！</p>
-</blockquote></li>
-</ul>
-<h2 id="引用类型总结">引用类型总结</h2>
-<ul>
-<li>不论是通过<strong>引用计数法</strong>判断对象引用数量，还是通过<strong>可达性分析法</strong>判断对象的引用链是否可达，判定对象的存活都与<strong>”引用“</strong>有关</li>
-<li>JDK1.2
-之前，Java中<strong>引用</strong>的定义很传统：如果<strong>reference类型的数据存储</strong>的数值代表的是<strong>另一块内存的起始地址</strong>，就称这块内存代表<strong>一个引用</strong></li>
-<li>JDK1.2
-之后，Java对引用的概念进行了扩充，将引用(具体)分为<strong>强引用</strong>、<strong>软引用</strong>、<strong>弱引用</strong>、<strong>虚引用</strong>四种（引用强度<strong>逐渐减弱</strong>）
-<ol type="1">
-<li><p><strong>强引用</strong>（Strong Reference）</p>
-<blockquote>
-<ul>
-<li>大部分引用实际上是<strong>强引用</strong>。如果对象具有强引用，那么类似于生活中<strong>必不可少</strong>，垃圾回收器<strong>绝不会回收</strong>它</li>
-<li>内存空间不足时，宁愿抛出<strong>OutOfMemoryErro</strong>错误，使程序异常终止，也不会回收<strong>强引用</strong>对象解决<strong>对象内存不足</strong></li>
-</ul>
-</blockquote></li>
-<li><p><strong>软引用</strong>（SoftReference）</p>
-<blockquote>
-<ul>
-<li>如果对象<strong>只</strong>具有软引用，那就类似<strong>可有可无</strong>的生活用品。</li>
-<li>内存够则不会回收；内存不足则回收这些对象。只要垃圾回收器没有回收，那么对象就可以<strong>被程序使用</strong>。</li>
-<li>软引用可用来实现<strong>内存敏感</strong>的高速缓存</li>
-<li>软引用可以和一个<strong>引用队列（ReferenceQueue）</strong>联合使用，如果软引用所引用的对象被垃圾回收，Java虚拟机就会把这个软引用加入到<strong>与之关联</strong>的引用队列中</li>
-</ul>
-</blockquote></li>
-<li><p><strong>弱引用</strong>（WeakReference）</p>
-<blockquote>
-<ul>
-<li>如果对象<strong>只</strong>具有弱引用，则类似于<strong>可有可无</strong>的生活用品</li>
-<li>弱引用和软引用的区别：只具有弱引用的对象拥有<strong>更短暂</strong>的生命周期</li>
-<li>垃圾回收器线程<strong>扫描</strong>它所管辖的内存区域的<strong>过程中</strong>，一旦发现只具有<strong>弱引用</strong>的对象，不管当前内存<strong>足够与否</strong>，都会回收它的内存。不过垃圾回收器是一个<strong>优先级很低</strong>的线程，因此不一定会很快发现那些<strong>只具有弱引用</strong>的对象</li>
-<li>弱引用可以和一个<strong>引用队列（ReferenceQueue）</strong>联合使用，如果<strong>弱引用所引用的对象</strong>被垃圾回收，Java虚拟机就会把这个弱引用<strong>加入到与之关联的引用队列</strong>中</li>
-</ul>
-</blockquote></li>
-<li><p><strong>虚引用</strong>（PhantomReference）</p>
-<blockquote>
-<p>与其他引用不同，<strong>虚引用并不会决定对象声明周期</strong>。如果一个<strong>仅持有</strong>虚拟引用，那么它就跟<strong>没有任何</strong>引用一样，在任何时候都可能被垃圾回收</p>
-</blockquote>
-<p>虚引用主要用来<strong>跟踪对象被垃圾回收的活动</strong></p></li>
-<li><p>虚引用、软引用和弱引用的区别：<strong>虚引用必须和引用队列（ReferenceQueue）联合使用</strong>。</p>
-<ul>
-<li>当垃圾回收器<strong>准备回收</strong>一个对象时，如果发现它还有虚引用，就会在回收对象的内存<strong>之前</strong>，把这个虚引用加入到<strong>与之关联</strong>的引用队列。</li>
-<li>程序可以通过<strong>判断引用队列是否加入虚引用</strong>，来了解被引用的对象是否<strong>将</strong>被垃圾回收</li>
-<li>如果发现某个虚引用已经被加入到引用队列，那么就可以在所引用的对象<strong>被回收之前</strong>采取必要的行动</li>
-</ul></li>
-<li><p>在程序设计中一般很少使用弱引用与虚引用，使用软引用的情况较多，这是因为<strong>软引用可以加速
-JVM
-对垃圾内存的回收速度，可以维护系统的运行安全，防止内存溢出（OutOfMemory）等问题的产生</strong></p></li>
-</ol></li>
-</ul>
-<h2 id="如何判断一个常量是废弃常量">如何判断一个常量是废弃常量</h2>
-<p>运行时常量池主要是回收<strong>废弃的常量</strong></p>
-<blockquote>
-<ol type="1">
-<li>JDK1.7
-之前，<strong>运行时常量池逻辑</strong>，包括字符串常量池，存放在<strong>方法区</strong>，此时hotspot虚拟机对<strong>方法区</strong>的实现为<strong>永久代</strong></li>
-<li>JDK1.7字符串常量池被<strong>从方法区</strong>拿到了<strong>堆</strong>中，这里没有提到运行时常量池，也就是说<strong>字符串常量池</strong>被单独拿到堆，运行时常量池剩下的东西，<strong>还在方法区</strong>。即hotspot中的<strong>永久代</strong></li>
-<li>JDK1.8
-hotspot移除了永久代，用<strong>元空间Metaspace</strong>取代之，这时候<strong>字符串常量池</strong>还在堆，<strong>运行时常量池</strong>还在方法区，只不过<strong>方法区的实现</strong>从永久代变成了<strong>元空间Metaspace</strong></li>
-</ol>
-</blockquote>
-<p>★★
-假如<strong>字符串常量池</strong>存在字符串“abc”，如果当前没有任何String对象<strong>引用该字符串常量</strong>的话，就说明常量“abc”是废弃常量。如果这时发生内存回收并且<strong>有必要</strong>的话，“abc”就会被系统<strong>清理出</strong>常量池</p>
-<h2 id="如何判断一个类是无用类">如何判断一个类是无用类</h2>
-<ul>
-<li><p><strong>方法区</strong>主要回收<strong>无用的类</strong>，判断一个类是否是<strong>无用的类</strong>相对苛刻，需要同时满足下面<strong>条件</strong></p>
-<ul>
-<li>该类所有实例都已经被回收，即<strong>Java堆中不存在该类的任何实例</strong></li>
-<li>加载该类的<strong>ClassLoader</strong>已经被回收</li>
-<li>该类对应的<strong>java.lang.Class</strong>对象没有在任何地方被引用，<strong>无法</strong>在任何地方<strong>通过反射</strong>访问该类方法</li>
-</ul>
-<p>Java虚拟机<strong>可以</strong>对<strong>满足上述3个条件</strong>的无用类进行回收，是<strong>“可以”</strong>，而<strong>不是必然</strong></p></li>
-</ul>
-<h1 id="垃圾收集算法">垃圾收集算法</h1>
-<h2 id="标记-清除算法">标记-清除算法</h2>
-<p>该算法分为<strong>“标记”</strong>和<strong>“清除”</strong>阶段：<br />
-标记出所有<strong>不需要回收的对象</strong>，在标记完成后<strong>统一回收掉所有没有被标记</strong>的对象</p>
-<p>这是<strong>最基础</strong>的<strong>收集算法</strong>，后续的算法都是对其不足进行改进得到，有两个明显问题：</p>
-<ol type="1">
-<li><strong>效率问题</strong></li>
-<li><strong>空间问题</strong>（标记清除后会产生<strong>大量不连续碎片</strong>）</li>
-</ol>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/%25E6%25A0%2587%25E8%25AE%25B0-%25E6%25B8%2585%25E9%2599%25A4%25E7%25AE%2597%25E6%25B3%2595.c1fbd0fe.jpeg"
-alt="img" />
-<figcaption aria-hidden="true">img</figcaption>
-</figure>
-<h2 id="标记-复制算法">标记-复制算法</h2>
-<ul>
-<li>将内存分为<strong>大小相同的两块</strong>，每次<strong>使用其中一块</strong></li>
-<li>当这块<strong>内存使用完后</strong>，就将还存活的对象<strong>复制到另一块</strong>去，然后再把<strong>使用的空间一次清理掉</strong></li>
-<li>这样每次内存<strong>回收</strong>都是对内存区间的一半<strong>进行回收</strong></li>
-</ul>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/90984624.e8c186ae.png"
-alt="复制算法" />
-<figcaption aria-hidden="true">复制算法</figcaption>
-</figure>
-<h2 id="标记-整理算法">标记-整理算法</h2>
-<p>根据老年代特点提出的一种<strong>标记算法</strong>，<strong>标记过程</strong>仍然与<strong>“标记-清除”</strong>算法一样，但后续不是直接对可回收对象回收，而是让<strong>所有存活对象向一端移动</strong>，然后直接<strong>清理掉端边界以外的内存</strong></p>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/94057049.22c58294.png"
-alt="标记-整理算法" />
-<figcaption aria-hidden="true">标记-整理算法</figcaption>
-</figure>
-<h2 id="分代收集算法">分代收集算法</h2>
-<ul>
-<li>当前虚拟机的垃圾收集都采用<strong>分代收集算法</strong>，没有新的思想，只是<strong>根据对象存活周期的不同</strong>将内存分为几块。</li>
-<li>一般将Java堆分为<strong>新生代</strong>和<strong>老年代</strong>，这样就可以<strong>根据各个年代的特点</strong>，选择合适的<strong>垃圾收集算法</strong>
-<ul>
-<li><strong>新生代</strong>中，每次收集都会有大量对象死去，所以可以选择<strong>“标记-复制”</strong>算法，只需要付出少量<strong>对象的复制成本</strong>就可以完成<strong>每次垃圾收集</strong></li>
-<li><strong>老年代</strong>对象存活几率是比较高的，而且<strong>没有额外的空间对它进行分配担保</strong>，所以必须选择<strong>标记-清除</strong>或者<strong>“标记-整理”</strong>算法进行垃圾收集</li>
-</ul></li>
-</ul>
-<h1 id="垃圾收集器">垃圾收集器</h1>
-<ul>
-<li><strong>收集算法</strong>是内存回收的<strong>方法论</strong>，而<strong>垃圾收集器</strong>则是内存回收的<strong>具体实现</strong></li>
-<li>没有<strong>最好的</strong>垃圾收集器，也没有<strong>万能的</strong>，应该<strong>根据具体应用场景</strong>，选择适合自己的<strong>垃圾收集器</strong></li>
-</ul>
-<h2 id="汇总">汇总</h2>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/11e9dcd0f1ee4f25836e6f1c47104c51-new-image69e1c56a-1d40-493a-9901-6efc647a01f3.png"
-alt="img" />
-<figcaption aria-hidden="true">img</figcaption>
-</figure>
-<blockquote>
-<ul>
-<li>新生代的垃圾回收器：Serial（串行--复制），ParNew（并行--复制），ParallelScavenge（并行--复制）</li>
-<li>老年代的垃圾回收器：SerialOld（串行--标记整理），ParallelOld（并行--标记整理），CMS（并发--标记清除）</li>
-<li>只有CMS和G1是并发，且CMS只作用于老年代，而G1都有</li>
-<li>JDK8为止，默认垃圾回收器是Parallel Scavenge和Parallel
-Old【并行--复制和并行--标记整理】</li>
-<li>JDK9开始，G1收集器成为默认的垃圾收集器，目前来看，G1回收期停顿时间最短且没有明显缺点，偏适合Web应用</li>
-</ul>
-<blockquote>
-<p>jdk8中测试Web应用，堆内存6G中新生代4.5G的情况下</p>
-<ul>
-<li>ParallelScavenge回收新生代停顿长达1.5秒。</li>
-<li>G1回收器回收同样大小的新生代只停顿0.2秒</li>
-</ul>
-</blockquote>
-</blockquote>
-<h2 id="serial-收集器">Serial 收集器</h2>
-<ul>
-<li><p>Serial 串行
-收集器是<strong>最基本</strong>、<strong>历史最悠久</strong>的垃圾收集器</p></li>
-<li><p>这是一个<strong>单线程收集器</strong>，它的<strong>单线程</strong>意义不仅意味着它只会使用<strong>一条垃圾收集线程</strong>去完成垃圾收集工作，更重要的是它在<strong>进行垃圾收集工作时</strong>必须暂停其他所有的工作线程<strong>（”Stop
-The World“）</strong>，直到它<strong>收集结束</strong>。</p>
-<ul>
-<li>新生代采用<strong>标记-复制</strong>算法，老年代采用<strong>标记-整理</strong>算法
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/46873026.3a9311ec.png"
-alt="Serial 收集器" /></li>
-<li>StopTheWorld会带来<strong>不良用户体验</strong>，所以在后续垃圾收集器设计中<strong>停顿时间不断缩短</strong>。（仍然有停顿，垃圾收集器的过程仍然在继续）</li>
-<li>优点：<strong>简单而高效</strong>（与其他收集器的单线程相比）
-<ol type="1">
-<li>且由于其<strong>没有线程交互</strong>的开销，自然可以获得<strong>很高的单线程收集效率</strong></li>
-<li>Serial收集器对于<strong>运行在Client模式</strong>下的虚拟机来说是个不错的选择</li>
-</ol></li>
-</ul></li>
-<li><p>```shell -XX:+UseSerialGC
-#虚拟机运行在Client模式下的默认值，Serial+Serial Old。
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">## ParNew 收集器</span><br><span class="line"></span><br><span class="line">- **ParNew**收集器其实就是**Serial收集器**的**多线程版本**，除了使用**多线程**进行垃圾收集外，其余行为（**控制参数**、**收集算法**、**回收策略**等等）和**Serial收集器**完全一样</span><br><span class="line"></span><br><span class="line">- **新生代**采用**标记-复制**算法，**老年代**采用**标记-整理**算法</span><br><span class="line"></span><br><span class="line">  ![ParNew 收集器 ](https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/22018368.df835851.png)</span><br><span class="line">  ★★★  这是许多运行在Server模式下的虚拟机的首要选择，除了**Serial收集器**外，只有它能与**CMS收集器**（真正意义上的**并发**收集器）配合工作（**ParNew是并行**）</span><br><span class="line"></span><br><span class="line">- **并行和并发**概念补充</span><br><span class="line"></span><br><span class="line">  - **并行（Parallel）**：指**多条垃圾收集线程**并行工作，但此时用户线程仍然处于**等待**状态</span><br><span class="line">  - **并发（Concurrent）**：指**用户线程**与**垃圾收集线程** **同时**执行（不一定并行，可能会交替执行），**用户程序在继续执行**，而**收集收集器**运行在另一个CPU上</span><br><span class="line"></span><br><span class="line">- ```shell</span><br><span class="line">  -XX:+UseParNewGC  #ParNew+Serial Old，在JDK1.8被废弃，在JDK1.7还可以使用。</span><br></pre></td></tr></table></figure></p></li>
-</ul>
-<h2 id="parallelscavenge-收集器">ParallelScavenge 收集器</h2>
-<ul>
-<li><p>它也是<strong>标记-复制</strong>算法的多线程收集器，看上去几乎和<strong>ParNew</strong>一样，<strong>区别</strong></p>
-<ul>
-<li><p>部分<strong>参数</strong> (有点争议，先以下面为准)</p>
-<p><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">-XX:+UseParallelGC  # 虚拟机运行在Server模式下的默认值(1.8) 新生代使用ParallelGC，老年代使用回收器 ; ★★ JDK1.7之后，能达到UseParallelOldGC 的效果 </span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment"># 参考自 https://zhuanlan.zhihu.com/p/353458348</span></span> </span><br><span class="line"></span><br><span class="line"></span><br><span class="line">-XX:+UseParallelOldGC # 新生代使用ParallelGC，老年代使用ParallelOldGC</span><br></pre></td></tr></table></figure></p></li>
-<li><p><strong>Parallel
-Scavenge</strong>收集器关注点是<strong>吞吐量（高效率利用CPU）</strong>，<strong>CMS</strong>等垃圾收集器关注点是用户的<strong>停顿时间</strong>（提高用户体验）</p>
-<blockquote>
-<p>所谓<strong>吞吐量</strong>就是CPU中用于<strong>运行用户代码的时间</strong>与<strong>CPU</strong>总消耗时间的<strong>比值</strong>
-（也就是<strong>希望</strong>消耗少量CPU就能<strong>运行更多代码</strong>）</p>
-</blockquote></li>
-<li><p>Parallel Scavenge
-收集器提供了很多参数供用户找到<strong>最合适的停顿时间</strong>或<strong>最大吞吐量</strong>，如果对于收集器运作不太了解，手工优化存在困难的时候，使用
-<strong>Parallel Scavenge
-收集器</strong>配合<strong>自适应调节策略</strong>，把<strong>内存管理优化</strong>交给虚拟机去完成也是一个不错的选择。</p></li>
-<li><p>新生代采用<strong>标记-复制</strong>，老年代采用<strong>标记-整理</strong>算法
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221215170900774.png"
-alt="image-20221215170900774" /></p></li>
-</ul></li>
-<li><p>这是JDK1.8 的默认收集器 使用 java -XX:+PrintCommandLineFlags
--version 命令查看 如下，两种情况：</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">默认</span></span><br><span class="line">λ java -XX:+PrintCommandLineFlags -version</span><br><span class="line">-XX:InitialHeapSize=531924800 -XX:MaxHeapSize=8510796800 -XX:+PrintCommandLineFlags -XX:+UseCompressedClassPointers -XX:+UseCompressedOops -XX:-UseLargePagesIndividualAllocation -XX:+UseParallelGC</span><br><span class="line">java version &quot;1.8.0_202&quot;</span><br><span class="line">Java(TM) SE Runtime Environment (build 1.8.0_202-b08)</span><br><span class="line">Java HotSpot(TM) 64-Bit Server VM (build 25.202-b08, mixed mode)</span><br></pre></td></tr></table></figure>
-<p>第二种情况：(注意：<code>-XX:-UseParallelOldGC</code>)</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">λ java -XX:-UseParallelOldGC -XX:+PrintCommandLineFlags -version</span><br><span class="line">-XX:InitialHeapSize=531924800 -XX:MaxHeapSize=8510796800 -XX:+PrintCommandLineFlags -XX:+UseCompressedClassPointers -XX:+UseCompressedOops -XX:-UseLargePagesIndividualAllocation -XX:+UseParallelGC -XX:-UseParallelOldGC</span><br><span class="line"></span><br><span class="line">java version &quot;1.8.0_202&quot;</span><br><span class="line">Java(TM) SE Runtime Environment (build 1.8.0_202-b08)</span><br><span class="line">Java HotSpot(TM) 64-Bit Server VM (build 25.202-b08, mixed mode)</span><br></pre></td></tr></table></figure></li>
-</ul>
-<h2 id="serialold-收集器">SerialOld 收集器</h2>
-<ul>
-<li>Serial收集器的<strong>老年代版本</strong>，是一个<strong>单线程</strong>收集器
-<ol type="1">
-<li>在JDK1.5以及以前的版本中，<strong>与Parallel
-Scavenge收集器搭配</strong>时候</li>
-<li>作为CMS收集器的<strong>后备方案</strong></li>
-</ol></li>
-</ul>
-<h2 id="parallelold-收集器">ParallelOld 收集器</h2>
-<ul>
-<li>Parallel
-Scavenge收集器的老年代版本，使用<strong>多线程</strong>和<strong>标记-整理</strong>算法
-<ol type="1">
-<li>在注重<strong>吞吐量</strong>以及<strong>CPU资源</strong>的场合，都可以考虑<strong>ParallelScavenge</strong>和<strong>ParallelOld</strong>收集器</li>
-</ol></li>
-</ul>
-<h2 id="cms-收集器">CMS 收集器</h2>
-<ul>
-<li><p>CMS，Concurrent Mark
-Sweep，是一种以<strong>获取最短回收停顿时间</strong>为目标的收集器，非常符合<strong>注重用户体验</strong>的引用上使用</p></li>
-<li><p>CMS收集器是HotSpot虚拟机上<strong>第一款</strong>真正意义上的<strong>并发</strong>收集器，第一次实现了<strong>让垃圾收集线程</strong>与<strong>用户线程</strong>（基本上）同时工作</p></li>
-<li><p>Mark-Sweep，是一种“<strong>标记-清除</strong>”算法，运作过程相比前面几种垃圾收集器来说更加复杂，步骤：</p>
-<ol type="1">
-<li><p>初始标记：暂停所有其他线程，<strong>记录直接与root相连的对象</strong>，速度很快</p></li>
-<li><p>并发标记：<strong>同时</strong> 开启GC和用户线程
-，用一个<strong>闭包结构记录可达对象</strong>。但这个阶段结束，这个闭包结构并<strong>不能保证包含当前所有的可达对象</strong>。</p>
-<blockquote>
-<p>因为用户线程会不断更新引用域，所以GC线程<strong>无法保证可达性分析的实时性</strong></p>
-</blockquote>
-<p>所以这个算法里会<strong>跟踪记录</strong>这些发生引用更新的地方</p></li>
-<li><p>重新标记：目的是<strong>修正并发标记期间</strong>因为用户程序继续运行而<strong>导致标记产生变动</strong>的那一部分对象的<strong>标记记录</strong>。</p>
-<blockquote>
-<p>这个阶段<strong>停顿时间</strong>一般会被初始标记阶段<strong>时间稍长</strong>，远远比<strong>并发标记阶段</strong>时间短</p>
-</blockquote></li>
-<li><p>并发清除：<strong>开启用户线程</strong>，同时<strong>GC线程</strong>开始对未扫描的区域做清扫</p></li>
-</ol>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/CMS%25E6%2594%25B6%25E9%259B%2586%25E5%2599%25A8.8a4d0487.png"
-alt="CMS 垃圾收集器" />
-<figcaption aria-hidden="true">CMS 垃圾收集器</figcaption>
-</figure></li>
-<li><p>从名字可以看出这是一款优秀的收集器：<strong>并发收集</strong>、<strong>低停顿</strong>。但有三个明显缺点</p>
-<ol type="1">
-<li><p><strong>对CPU资源敏感</strong></p></li>
-<li><p>无法处理浮动垃圾</p>
-<blockquote>
-<p>浮动垃圾的解释：就是之前被gc 标记为 可达对象，也就是
-存活对象，在两次gc线程之间被业务线程删除了引用，那么颜色不会更改，还是之前的颜色（黑色or灰色），但是其实是白色，所以这一次gc
-无法对其回收，需要等下一次gc初始标记启动才会被刷成白色 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/13864094-053f50032b4cdfad.png"
-alt="img" /></p>
-<p>作者：Yellowtail 链接：https://www.jianshu.com/p/6590aaad82f7
-来源：简书</p>
-</blockquote></li>
-<li><p>它使用的收集算法<strong>“标记-清除”</strong>算法会导致收集结束时会有<strong>大量空间碎片产生</strong></p></li>
-</ol></li>
-</ul>
-<h2 id="g1-收集器">G1 收集器</h2>
-<p>G1(Garbage-First)，是一款<strong>面向服务器</strong>的垃圾收集器，主要针对<strong>配备多颗处理器</strong>以及<strong>大容量内存</strong>的极其，以<strong>极高概率</strong>满足GC停顿时间要求的同时，还具备<strong>高吞吐量性能</strong>特征</p>
-<ul>
-<li><p><strong>JDK1.7</strong>中HotSpot虚拟机的一个<strong>重要进化特征</strong>，具备特点：</p>
-<ol type="1">
-<li><p>并行与并发：</p>
-<blockquote>
-<p>G1 能充分利用 CPU、多核环境下的硬件优势，<strong>使用多个 CPU（CPU
-或者 CPU 核心）来缩短 Stop-The-World
-停顿时间</strong>。部分其他收集器原本需要停顿 Java 线程执行的 GC
-动作，G1 收集器仍然可以通过并发的方式让 java 程序继续执行</p>
-</blockquote></li>
-<li><p>分代收集：</p>
-<blockquote>
-<p>虽然 G1 可以<strong>不需要其他收集器配合</strong>就能独立管理整个 GC
-堆，但是还是保留了分代的概念。</p>
-</blockquote></li>
-<li><p>空间整合：</p>
-<blockquote>
-<p>与 CMS 的“标记-清理”算法不同，G1
-<strong>从整体来看</strong>是基于<strong>“标记-整理”</strong>算法实现的收集器；从<strong>局部</strong>上来看是基于<strong>“标记-复制”</strong>算法实现的。</p>
-</blockquote></li>
-<li><p>可预测的停顿：</p>
-<blockquote>
-<p>这是 G1 相对于 CMS 的另一个大优势，降低停顿时间是 G1 和 CMS
-共同的关注点，但 G1
-除了追求低停顿外，还能建立可预测的停顿时间模型，能<strong>让使用者明确指定在一个长度为
-M 毫秒的时间片段</strong>内。</p>
-</blockquote></li>
-</ol></li>
-<li><p>G1 收集器的运作大致分为以下几个步骤</p>
-<ol type="1">
-<li><strong>初始标记</strong></li>
-<li><strong>并发标记</strong></li>
-<li><strong>最终标记</strong></li>
-<li><strong>筛选回收</strong></li>
-</ol></li>
-<li><p>G1
-收集器在后台<strong>维护了一个优先列表</strong>，每次<strong>根据允许的收集时间</strong>，<strong>优先选择回收价值最大的
-Region</strong>(这也就是它的名字 <strong>Garbage-First 的由来</strong>)
-。这种<strong>使用 Region
-划分内存空间</strong>以及<strong>有优先级的区域回收方式</strong>，，保证了
-G1
-收集器在<strong>有限时间内</strong>可以尽可能高的收集效率（<strong>把内存化整为零</strong>）</p></li>
-</ul>
-<h2 id="zgc-收集器">ZGC 收集器</h2>
-<p><code>The Z Garbage Collector</code></p>
-<p><strong>与 CMS 中的 ParNew 和 G1 类似，ZGC
-也采用标记-复制算法</strong>，不过 ZGC 对该算法做了重大改进。</p>
-<p>在 ZGC 中出现 Stop The World 的情况会更少！</p>
-<p>JDK11，相关文章
-https://tech.meituan.com/2020/08/06/new-zgc-practice-in-meituan.html</p>
-]]></content>
-      <categories>
-        <category>学习</category>
-      </categories>
-      <tags>
-        <tag>复习</tag>
-        <tag>复习-javaGuide</tag>
-        <tag>复习-javaGuide-jvm</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>jvm监控和故障处理工具 总结</title>
     <url>/2022/12/19/review/java_guide/java/jvm/jdk-monitoring-and-troubleshooting-tools/</url>
     <content><![CDATA[<blockquote>
@@ -21925,6 +21403,512 @@ reference
         <tag>复习</tag>
         <tag>复习-javaGuide</tag>
         <tag>复习-javaGuide-并发</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>java垃圾回收器</title>
+    <url>/2022/12/12/review/java_guide/java/jvm/garbage-collection/</url>
+    <content><![CDATA[<blockquote>
+<p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!</p>
+</blockquote>
+<h1 id="前言">前言</h1>
+<p>当<strong>需要排查各种内存溢出问题</strong>、当<strong>垃圾收集</strong>成为系统达到更高并发的瓶颈时，我们就需要对这些<strong>“自动化”</strong>的技术实施必要的<strong>监控</strong>和<strong>调节</strong></p>
+<h1 id="堆空间的基本结构">堆空间的基本结构</h1>
+<ul>
+<li><p>Java的<strong>自动内存管理</strong>主要是针对对象内存的<strong>回收</strong>和对象内存的<strong>分配</strong>。且Java自动内存管理最核心的功能是<strong>堆</strong>内存中的对象<strong>分配</strong>和<strong>回收</strong></p></li>
+<li><p>Java堆是垃圾收集器管理的主要区域，因此也被称作<strong>GC堆（Garbage
+Collected Heap）</strong></p></li>
+<li><p>从<strong>垃圾回收的角度</strong>来说，由于现在收集器基本都采用<strong>分代垃圾收集算法</strong>，所以Java堆被划分为了几个不同的区域，这样我们就可以<strong>根据各个区域的特点</strong>选择<strong>合适的垃圾收集算法</strong></p></li>
+<li><p>JDK7版本及JDK7版本之前，堆内存被通常分为下面三部分：</p>
+<ol type="1">
+<li>新生代内存（Young Generation）</li>
+<li>老生代（Old Generation）</li>
+<li>永久代（Permanent Generation）</li>
+</ol></li>
+</ul>
+<figure>
+<img
+src="https://javaguide.cn/assets/hotspot-heap-structure.41533631.png"
+alt="hotspot-heap-structure" />
+<figcaption aria-hidden="true">hotspot-heap-structure</figcaption>
+</figure>
+<p>JDK8版本之后PermGen（永久）已被Metaspace（元空间）取代，且已经不在堆里面了，元空间使用的是<strong>直接内存</strong>。</p>
+<h1 id="内存分配和回收原则">内存分配和回收原则</h1>
+<h2 id="对象优先在eden区分配">对象优先在Eden区分配</h2>
+<ul>
+<li><p>多数情况下，对象在<strong>新生代中Eden区</strong>分配。当Eden区没有足够空间进行分配时，会触发一次MinorGC
+首先，先添加一下参数打印GC详情：<code>-XX:+PrintGCDetails</code></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">GCTest</span> &#123;</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">		<span class="type">byte</span>[] allocation1, allocation2;</span><br><span class="line">		allocation1 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">30900</span>*<span class="number">1024</span>];<span class="comment">//会用掉3万多K</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+<p>运行后的结果（这里应该是配过xms和xmx了，即堆内存大小） <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/28954286.jpg"
+alt="img" />
+如上，<strong>Eden区内存几乎被分配完全</strong>（即使程序什么都不做，新生代也会使用2000多K）</p>
+<blockquote>
+<p>注： PSYoungGen 为 38400K ，= 33280K + 5120K
+（Survivor区总会有一个是空的，所以只加了一个5120K ）</p>
+</blockquote>
+<p>假如我们再为allocation2分配内存会怎么样(不处理的话，年轻代会溢出)</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">allocation2 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">900</span> * <span class="number">1024</span>];</span><br></pre></td></tr></table></figure>
+<p><img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/28128785.jpg"
+alt="img" />
+在给allocation2分配内存之前，Eden区内存几乎已经被分配完。所以当<strong>Eden区没有足够空间进行分配时</strong>，虚拟机将发起一次MinorGC。GC期间虚拟机又发现<strong>allocation1无法存入空间</strong>，所以只好通过<strong>分配担保机制</strong>，把<strong>新生代的对象</strong>，<strong>提前转移到老年代</strong>去，老年代的空间足够存放allocation1，<strong>所以不会出现Full
+GC（这里可能是之前的说法，可能只是要表达老年代的GC，而不是Full
+GC(整堆GC) ）</strong>　　</p>
+<p>执行MinorGC后，<strong>后面分配的对象如果能够存在Eden区</strong>的话，还是会在Eden区分配内存<br />
+执行如下代码验证：</p></li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">GCTest</span> &#123;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">		<span class="type">byte</span>[] allocation1, allocation2,allocation3,allocation4,allocation5;</span><br><span class="line">		allocation1 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">32000</span>*<span class="number">1024</span>];</span><br><span class="line">		allocation2 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">1000</span>*<span class="number">1024</span>];</span><br><span class="line">		allocation3 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">1000</span>*<span class="number">1024</span>];</span><br><span class="line">		allocation4 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">1000</span>*<span class="number">1024</span>];</span><br><span class="line">		allocation5 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">1000</span>*<span class="number">1024</span>];</span><br><span class="line">	&#125;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+<h2 id="大对象直接进入老年代">大对象直接进入老年代</h2>
+<ul>
+<li>大对象就是需要连续空间的对象（<strong>字符串</strong>、<strong>数组</strong>等）</li>
+<li>大对象直接进入老年代，主要是为了避免为<strong>大对象分配内存时</strong>，由于<strong>分配担保机制(这好像跟分配担保机制没有太大关系)</strong>带来的复制而<strong>降低效率</strong>。</li>
+</ul>
+<blockquote>
+<ul>
+<li><p>假设大对象最后会晋升老年代，而新生代是基于复制算法来回收垃圾的，由两个Survivor区域配合完成复制算法，如果新生代中出现大对象且能屡次躲过GC，那这个对象就会在两个Survivor区域中来回复制，直至最后升入老年代，而大对象在内存里来回复制移动，就会消耗更多的时间。</p></li>
+<li><p>假设大对象最后不会晋升老年代，新生代空间是有限的，在新生代里的对象大部分都是朝生夕死的，如果让一个大对象占据了新生代空间，那么相比起正常的对象被分配在新生代，大对象无疑会让新生代GC提早发生，因为内存空间会更快不够用，如果这个大对象因为业务原因，并不会马上被GC回收，那么这个对象就会进入到Survivor区域，默认情况下，Survivor区域本来就不会被分配的很大，那此时被大对象占据了大部分空间，很可能会导致之后的新生代GC后，存活下来的对象，Survivor区域空间不够放不下，导致大部分对象进入老年代，这就加快了老年代GC发生的时间，而老年代GC对系统性能的负面影响则远远大于新生代GC了。</p></li>
+</ul>
+</blockquote>
+<h2 id="长期存活的对象进入老年代">长期存活的对象进入老年代</h2>
+<ul>
+<li><p>内存回收时必须能够识别，哪些对象放在新生代，哪些对象放在老年代---&gt;
+因此，虚拟机给每个对象一个<strong>对象年龄（Age）</strong>计数器</p></li>
+<li><p><流程> :
+大部分情况下，对象都会<strong>首先在Eden区域</strong>分配。如果对象在Eden出生并经过<strong>第一次MinorGC后</strong>仍然能够存活，并且<strong>能</strong>被Survivor容纳的话，将被移动到Survivor空间（S0或S1）中，并将对象年龄设为<strong>1</strong>(<strong>Eden区
+--&gt; Survivor区后</strong>对象初始年龄变为1 )</p>
+<ul>
+<li>后续，对象在<strong>Survivor区</strong>中每熬过一次MinorGC，<strong>年龄就增加1岁</strong>，当年龄增加到一定程序（<strong>默认为15岁</strong>），就会被晋升到老年代中。对象晋升到老年代的年龄<strong>阈值</strong>，可以通过参数<strong><code>-XX:MaxTenuringThreshold</code></strong>来设置</li>
+<li><strong>★★修正：</strong> “Hotspot
+遍历所有对象时，按照年龄<strong>从小到大</strong>对其所<strong>占用的大小进行累积</strong>，当<strong>累积的某个年龄大小超过了
+survivor 区的 50%</strong> 时（默认值是 50%，可以通过
+<code>-XX:TargetSurvivorRatio=percent</code> 来设置，参见 <a
+href="https://github.com/Snailclimb/JavaGuide/issues/1199">issue1199open
+in new window</a> ），取<strong>这个年龄</strong>和
+<strong>MaxTenuringThreshold
+中更小的一个值</strong>，作为新的晋升年龄阈值”。</li>
+</ul>
+<p>动态年龄计算的代码：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">uint ageTable::compute_tenuring_threshold(size_t survivor_capacity) &#123;</span><br><span class="line"><span class="comment">//survivor_capacity是survivor空间的大小</span></span><br><span class="line"><span class="type">size_t</span> <span class="variable">desired_survivor_size</span> <span class="operator">=</span> (size_t)((((<span class="type">double</span>)survivor_capacity)*TargetSurvivorRatio)/<span class="number">100</span>);</span><br><span class="line"><span class="type">size_t</span> <span class="variable">total</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line"><span class="type">uint</span> <span class="variable">age</span> <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line"><span class="keyword">while</span> (age &lt; table_size) &#123;</span><br><span class="line"><span class="comment">//sizes数组是每个年龄段对象大小</span></span><br><span class="line">total += sizes[age];</span><br><span class="line"><span class="keyword">if</span> (total &gt; desired_survivor_size) &#123;</span><br><span class="line"><span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br><span class="line">age++; <span class="comment">//注意这里，age是递增的，最终是去某个值，而不是区间的值计算</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="type">uint</span> <span class="variable">result</span> <span class="operator">=</span> age &lt; MaxTenuringThreshold ? age : MaxTenuringThreshold;</span><br><span class="line">...</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>例子：
+如<strong>对象年龄5的占30%，年龄6的占36%，年龄7的占34%，加入某个年龄段（如例子中的年龄6）</strong>后，总占用超过Survivor空间*TargetSurvivorRatio的时候，从该年龄段开始及大于的年龄对象就要进入老年代（即例子中的年龄6对象，就是年龄6和年龄7晋升到老年代），这时候无需等到MaxTenuringThreshold中要求的15</p>
+<blockquote>
+<p><strong>关于默认的晋升年龄是 15，这个说法的来源大部分都是《深入理解
+Java 虚拟机》这本书。</strong> 如果你去 Oracle 的官网阅读<a
+href="https://docs.oracle.com/javase/8/docs/technotes/tools/unix/java.html">相关的虚拟机参数open
+in new
+window</a>，你会发现<code>-XX:MaxTenuringThreshold=threshold</code>这里有个说明</p>
+<p><strong>Sets the maximum tenuring threshold for use in adaptive GC
+sizing. The largest value is 15. The default value is 15 for the
+parallel (throughput) collector, and 6 for the CMS
+collector.默认晋升年龄并不都是 15，这个是要区分垃圾收集器的，CMS 就是
+6.</strong></p>
+</blockquote>
+</blockquote></li>
+</ul>
+<h2 id="主要进行gc的区域">主要进行gc的区域</h2>
+<p>如图：（太长跳过了，直接看下面的总结）<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/rf-hotspot-vm-gc.69291e6e.png"
+alt="img" /></p>
+<p>总结：<br />
+针对HotSpotVM的实现，它里面的GC准确分类只有两大种：</p>
+<ol type="1">
+<li>部分收集（Partial GC）
+<ul>
+<li>新生代收集（Minor GC/ Young GC
+）：只对<strong>新生代</strong>进行垃圾收集</li>
+<li>老年代（Major GC / Old GC
+)：只对<strong>老年代</strong>进行垃圾收集。★★：注意，MajorGC在有的语境中也用于指代<strong>整堆收集</strong></li>
+<li>混合收集（Mixed
+GC）：对<strong>整个新生代</strong>和<strong>部分老年代</strong>进行垃圾收集</li>
+</ul></li>
+<li>整堆收集（Full GC）：收集整个Java堆和方法区</li>
+</ol>
+<h2 id="空间分配担保">空间分配担保</h2>
+<ul>
+<li><p>为了确保在<strong>MinorGC</strong>之前老年代本身还有容纳<strong>新生代所有对象</strong>的剩余空间</p></li>
+<li><p>《深入理解Java虚拟机》第三章对于空间分配担保的描述如下：</p>
+<blockquote>
+<p>JDK 6 Update 24 之前，在发生 Minor GC
+之前，虚拟机必须先检查老年代最大可用的连续空间是否大于新生代所有对象总空间，如果这个条件成立，那这一次
+Minor GC 可以确保是安全的。如果不成立，则虚拟机会先查看
+-XX:HandlePromotionFailure 参数的设置值是否允许担保失败(Handle Promotion
+Failure);如果允许，那会继续检查老年代最大可用的连续空间是否大于历次晋升到老年代对象的平均大小，如果大于，将尝试进行一次
+Minor GC，尽管这次 Minor GC 是有风险的;如果小于，或者 -XX:
+HandlePromotionFailure 设置不允许冒险，那这时就要改为进行一次 Full
+GC。</p>
+<p><strong>JDK6
+Update24</strong>之后，规则变为<strong>只要老年代的连续空间</strong>大于<strong>新生代对象总大小</strong>，或者<strong>历次晋升的平均大小</strong>，就会进行<strong>MinorGC</strong>，否则将进行<strong>Full
+GC</strong></p>
+</blockquote></li>
+</ul>
+<h1 id="死亡对象判断方法">死亡对象判断方法</h1>
+<p><strong>堆</strong>中<strong>几乎放着所有的对象实例</strong>，对堆垃圾回收前的第一步就是要<strong>判断哪些对象已经死亡</strong>（即不能再被<strong>任何途径使用</strong>的对象）</p>
+<h2 id="引用计数法">引用计数法</h2>
+<ul>
+<li><p>给对象中添加一个<strong>引用计数器</strong></p>
+<ul>
+<li>每当有一个地方引用它，<strong>计数器就加1</strong></li>
+<li>当引用失效，<strong>计数器就减1</strong></li>
+<li>任何时候<strong>计数器为0的对象</strong>就是<strong>不可能再被使用</strong>的</li>
+</ul></li>
+<li><p>这个方法实现<strong>简单，效率高</strong>，但是目前主流的虚拟机中并没有选择这个算法来管理内存，其最主要的原因是它<strong>很难解决对象之间相互循环引用</strong>的问题。</p></li>
+</ul>
+<blockquote>
+<p>除了对象 <code>objA</code> 和 <code>objB</code>
+相互引用着对方之外，这两个对象之间再无任何引用。但是他们因为互相引用对方，导致它们的引用计数器都不为
+0，于是引用计数算法无法通知 GC 回收器回收他们</p>
+</blockquote>
+<p>★其实我觉得只跟相互有关，跟是不是<strong>循环</strong>关系不会太大</p>
+<p><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ReferenceCountingGc</span> &#123;</span><br><span class="line">    <span class="type">Object</span> <span class="variable">instance</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">ReferenceCountingGc</span> <span class="variable">objA</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ReferenceCountingGc</span>();</span><br><span class="line">        <span class="type">ReferenceCountingGc</span> <span class="variable">objB</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ReferenceCountingGc</span>();</span><br><span class="line">        objA.instance = objB;</span><br><span class="line">        objB.instance = objA;</span><br><span class="line">        objA = <span class="literal">null</span>;</span><br><span class="line">        objB = <span class="literal">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure></p>
+<h2 id="可达性分析算法">可达性分析算法</h2>
+<ul>
+<li><p>该算法的基本思想就是通过一系列称为<strong>“GC
+Roots"</strong>的对象作为起点，从这些节点开始<strong>向下搜索</strong>，节点所走过的<strong>路径</strong>
+称为<strong>引用链</strong>，当一个对象到GC
+Roots<strong>没有任何引用链</strong>相连的话，证明该对象不可用，需要<strong>被回收</strong>
+下图中由于Object 6 ~ Object
+10之间有引用关系，但它们到GC不可达，所以需要被回收 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/jvm-gc-roots.d187e957.png"
+alt="可达性分析算法" /></p></li>
+<li><p>哪些对象可以作为GC Roots呢</p>
+<ol type="1">
+<li>虚拟机栈（栈帧中的<strong>本地变量表</strong>）中引用的对象</li>
+<li>本地方法栈（<strong>Native方法</strong>）中引用的对象</li>
+<li>方法区中<strong>类静态属性</strong>引用的对象</li>
+<li>方法区中<strong>常量</strong>引用的变量</li>
+<li>所有被<strong>同步锁持有的对象</strong></li>
+</ol></li>
+<li><p>对象可以被回收，就代码一定会被回收吗
+即使在可达性分析法中不可达的对象，也并非是“非死不可”的，这时候它们<strong>暂时处于“缓刑阶段”</strong>，要真正宣告一个对象死亡，至少要经历两次标记过程：</p>
+<ol type="1">
+<li><p>可达性分析中<strong>不可达的对象被第一次标记</strong>并且进行<strong>一次筛选</strong>：筛选的条件是此对象是否有必要执行finalize方法（有必要则放入）<br />
+当对象<strong>没有覆盖finalize</strong>方法，或<strong>finalize方法已经被虚拟机调用</strong>过，则虚拟机将两种情况视为<strong>没有必要</strong>执行，该对象会被<strong>直接回收</strong></p></li>
+<li><p>如果这个对象被判定为<strong>有必要执行finalize()</strong>方法，那么这个对象将会被<strong>放置在一个叫做F-Queue的队列</strong>中，然后由Finalizer线程去执行。GC将会<strong>对F-Queue中的对象进行第二次标记</strong>，如果对象<strong>在finalize()方法中重新与引用链上的任何一个对象建立关联</strong>，那么在<strong>第二次标记时将会被移除“即将回收”的集合</strong>，否则该对象将会被回收。</p>
+<p>（比如：把自己（this关键字）赋值给某个类变量(static修饰)或者对象的成员变量）</p></li>
+</ol>
+<blockquote>
+<p><code>Object</code> 类中的 <code>finalize</code>
+方法一直被认为是一个糟糕的设计，成为了 Java 语言的负担，影响了 Java
+语言的安全和 GC 的性能。JDK9 版本及后续版本中各个类中的
+<code>finalize</code> 方法会被逐渐弃用移除。忘掉它的存在吧！</p>
+</blockquote></li>
+</ul>
+<h2 id="引用类型总结">引用类型总结</h2>
+<ul>
+<li>不论是通过<strong>引用计数法</strong>判断对象引用数量，还是通过<strong>可达性分析法</strong>判断对象的引用链是否可达，判定对象的存活都与<strong>”引用“</strong>有关</li>
+<li>JDK1.2
+之前，Java中<strong>引用</strong>的定义很传统：如果<strong>reference类型的数据存储</strong>的数值代表的是<strong>另一块内存的起始地址</strong>，就称这块内存代表<strong>一个引用</strong></li>
+<li>JDK1.2
+之后，Java对引用的概念进行了扩充，将引用(具体)分为<strong>强引用</strong>、<strong>软引用</strong>、<strong>弱引用</strong>、<strong>虚引用</strong>四种（引用强度<strong>逐渐减弱</strong>）
+<ol type="1">
+<li><p><strong>强引用</strong>（Strong Reference）</p>
+<blockquote>
+<ul>
+<li>大部分引用实际上是<strong>强引用</strong>。如果对象具有强引用，那么类似于生活中<strong>必不可少</strong>，垃圾回收器<strong>绝不会回收</strong>它</li>
+<li>内存空间不足时，宁愿抛出<strong>OutOfMemoryErro</strong>错误，使程序异常终止，也不会回收<strong>强引用</strong>对象解决<strong>对象内存不足</strong></li>
+</ul>
+</blockquote></li>
+<li><p><strong>软引用</strong>（SoftReference）</p>
+<blockquote>
+<ul>
+<li>如果对象<strong>只</strong>具有软引用，那就类似<strong>可有可无</strong>的生活用品。</li>
+<li>内存够则不会回收；内存不足则回收这些对象。只要垃圾回收器没有回收，那么对象就可以<strong>被程序使用</strong>。</li>
+<li>软引用可用来实现<strong>内存敏感</strong>的高速缓存</li>
+<li>软引用可以和一个<strong>引用队列（ReferenceQueue）</strong>联合使用，如果软引用所引用的对象被垃圾回收，Java虚拟机就会把这个软引用加入到<strong>与之关联</strong>的引用队列中</li>
+</ul>
+</blockquote></li>
+<li><p><strong>弱引用</strong>（WeakReference）</p>
+<blockquote>
+<ul>
+<li>如果对象<strong>只</strong>具有弱引用，则类似于<strong>可有可无</strong>的生活用品</li>
+<li>弱引用和软引用的区别：只具有弱引用的对象拥有<strong>更短暂</strong>的生命周期</li>
+<li>垃圾回收器线程<strong>扫描</strong>它所管辖的内存区域的<strong>过程中</strong>，一旦发现只具有<strong>弱引用</strong>的对象，不管当前内存<strong>足够与否</strong>，都会回收它的内存。不过垃圾回收器是一个<strong>优先级很低</strong>的线程，因此不一定会很快发现那些<strong>只具有弱引用</strong>的对象</li>
+<li>弱引用可以和一个<strong>引用队列（ReferenceQueue）</strong>联合使用，如果<strong>弱引用所引用的对象</strong>被垃圾回收，Java虚拟机就会把这个弱引用<strong>加入到与之关联的引用队列</strong>中</li>
+</ul>
+</blockquote></li>
+<li><p><strong>虚引用</strong>（PhantomReference）</p>
+<blockquote>
+<p>与其他引用不同，<strong>虚引用并不会决定对象声明周期</strong>。如果一个<strong>仅持有</strong>虚拟引用，那么它就跟<strong>没有任何</strong>引用一样，在任何时候都可能被垃圾回收</p>
+</blockquote>
+<p>虚引用主要用来<strong>跟踪对象被垃圾回收的活动</strong></p></li>
+<li><p>虚引用、软引用和弱引用的区别：<strong>虚引用必须和引用队列（ReferenceQueue）联合使用</strong>。</p>
+<ul>
+<li>当垃圾回收器<strong>准备回收</strong>一个对象时，如果发现它还有虚引用，就会在回收对象的内存<strong>之前</strong>，把这个虚引用加入到<strong>与之关联</strong>的引用队列。</li>
+<li>程序可以通过<strong>判断引用队列是否加入虚引用</strong>，来了解被引用的对象是否<strong>将</strong>被垃圾回收</li>
+<li>如果发现某个虚引用已经被加入到引用队列，那么就可以在所引用的对象<strong>被回收之前</strong>采取必要的行动</li>
+</ul></li>
+<li><p>在程序设计中一般很少使用弱引用与虚引用，使用软引用的情况较多，这是因为<strong>软引用可以加速
+JVM
+对垃圾内存的回收速度，可以维护系统的运行安全，防止内存溢出（OutOfMemory）等问题的产生</strong></p></li>
+</ol></li>
+</ul>
+<h2 id="如何判断一个常量是废弃常量">如何判断一个常量是废弃常量</h2>
+<p>运行时常量池主要是回收<strong>废弃的常量</strong></p>
+<blockquote>
+<ol type="1">
+<li>JDK1.7
+之前，<strong>运行时常量池逻辑</strong>，包括字符串常量池，存放在<strong>方法区</strong>，此时hotspot虚拟机对<strong>方法区</strong>的实现为<strong>永久代</strong></li>
+<li>JDK1.7字符串常量池被<strong>从方法区</strong>拿到了<strong>堆</strong>中，这里没有提到运行时常量池，也就是说<strong>字符串常量池</strong>被单独拿到堆，运行时常量池剩下的东西，<strong>还在方法区</strong>。即hotspot中的<strong>永久代</strong></li>
+<li>JDK1.8
+hotspot移除了永久代，用<strong>元空间Metaspace</strong>取代之，这时候<strong>字符串常量池</strong>还在堆，<strong>运行时常量池</strong>还在方法区，只不过<strong>方法区的实现</strong>从永久代变成了<strong>元空间Metaspace</strong></li>
+</ol>
+</blockquote>
+<p>★★
+假如<strong>字符串常量池</strong>存在字符串“abc”，如果当前没有任何String对象<strong>引用该字符串常量</strong>的话，就说明常量“abc”是废弃常量。如果这时发生内存回收并且<strong>有必要</strong>的话，“abc”就会被系统<strong>清理出</strong>常量池</p>
+<h2 id="如何判断一个类是无用类">如何判断一个类是无用类</h2>
+<ul>
+<li><p><strong>方法区</strong>主要回收<strong>无用的类</strong>，判断一个类是否是<strong>无用的类</strong>相对苛刻，需要同时满足下面<strong>条件</strong></p>
+<ul>
+<li>该类所有实例都已经被回收，即<strong>Java堆中不存在该类的任何实例</strong></li>
+<li>加载该类的<strong>ClassLoader</strong>已经被回收</li>
+<li>该类对应的<strong>java.lang.Class</strong>对象没有在任何地方被引用，<strong>无法</strong>在任何地方<strong>通过反射</strong>访问该类方法</li>
+</ul>
+<p>Java虚拟机<strong>可以</strong>对<strong>满足上述3个条件</strong>的无用类进行回收，是<strong>“可以”</strong>，而<strong>不是必然</strong></p></li>
+</ul>
+<h1 id="垃圾收集算法">垃圾收集算法</h1>
+<h2 id="标记-清除算法">标记-清除算法</h2>
+<p>该算法分为<strong>“标记”</strong>和<strong>“清除”</strong>阶段：<br />
+标记出所有<strong>不需要回收的对象</strong>，在标记完成后<strong>统一回收掉所有没有被标记</strong>的对象</p>
+<p>这是<strong>最基础</strong>的<strong>收集算法</strong>，后续的算法都是对其不足进行改进得到，有两个明显问题：</p>
+<ol type="1">
+<li><strong>效率问题</strong></li>
+<li><strong>空间问题</strong>（标记清除后会产生<strong>大量不连续碎片</strong>）</li>
+</ol>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/%25E6%25A0%2587%25E8%25AE%25B0-%25E6%25B8%2585%25E9%2599%25A4%25E7%25AE%2597%25E6%25B3%2595.c1fbd0fe.jpeg"
+alt="img" />
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<h2 id="标记-复制算法">标记-复制算法</h2>
+<ul>
+<li>将内存分为<strong>大小相同的两块</strong>，每次<strong>使用其中一块</strong></li>
+<li>当这块<strong>内存使用完后</strong>，就将还存活的对象<strong>复制到另一块</strong>去，然后再把<strong>使用的空间一次清理掉</strong></li>
+<li>这样每次内存<strong>回收</strong>都是对内存区间的一半<strong>进行回收</strong></li>
+</ul>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/90984624.e8c186ae.png"
+alt="复制算法" />
+<figcaption aria-hidden="true">复制算法</figcaption>
+</figure>
+<h2 id="标记-整理算法">标记-整理算法</h2>
+<p>根据老年代特点提出的一种<strong>标记算法</strong>，<strong>标记过程</strong>仍然与<strong>“标记-清除”</strong>算法一样，但后续不是直接对可回收对象回收，而是让<strong>所有存活对象向一端移动</strong>，然后直接<strong>清理掉端边界以外的内存</strong></p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/94057049.22c58294.png"
+alt="标记-整理算法" />
+<figcaption aria-hidden="true">标记-整理算法</figcaption>
+</figure>
+<h2 id="分代收集算法">分代收集算法</h2>
+<ul>
+<li>当前虚拟机的垃圾收集都采用<strong>分代收集算法</strong>，没有新的思想，只是<strong>根据对象存活周期的不同</strong>将内存分为几块。</li>
+<li>一般将Java堆分为<strong>新生代</strong>和<strong>老年代</strong>，这样就可以<strong>根据各个年代的特点</strong>，选择合适的<strong>垃圾收集算法</strong>
+<ul>
+<li><strong>新生代</strong>中，每次收集都会有大量对象死去，所以可以选择<strong>“标记-复制”</strong>算法，只需要付出少量<strong>对象的复制成本</strong>就可以完成<strong>每次垃圾收集</strong></li>
+<li><strong>老年代</strong>对象存活几率是比较高的，而且<strong>没有额外的空间对它进行分配担保</strong>，所以必须选择<strong>标记-清除</strong>或者<strong>“标记-整理”</strong>算法进行垃圾收集</li>
+</ul></li>
+</ul>
+<h1 id="垃圾收集器">垃圾收集器</h1>
+<ul>
+<li><strong>收集算法</strong>是内存回收的<strong>方法论</strong>，而<strong>垃圾收集器</strong>则是内存回收的<strong>具体实现</strong></li>
+<li>没有<strong>最好的</strong>垃圾收集器，也没有<strong>万能的</strong>，应该<strong>根据具体应用场景</strong>，选择适合自己的<strong>垃圾收集器</strong></li>
+</ul>
+<h2 id="汇总">汇总</h2>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/11e9dcd0f1ee4f25836e6f1c47104c51-new-image69e1c56a-1d40-493a-9901-6efc647a01f3.png"
+alt="img" />
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<blockquote>
+<ul>
+<li>新生代的垃圾回收器：Serial（串行--复制），ParNew（并行--复制），ParallelScavenge（并行--复制）</li>
+<li>老年代的垃圾回收器：SerialOld（串行--标记整理），ParallelOld（并行--标记整理），CMS（并发--标记清除）</li>
+<li>只有CMS和G1是并发，且CMS只作用于老年代，而G1都有</li>
+<li>JDK8为止，默认垃圾回收器是Parallel Scavenge和Parallel
+Old【并行--复制和并行--标记整理】</li>
+<li>JDK9开始，G1收集器成为默认的垃圾收集器，目前来看，G1回收期停顿时间最短且没有明显缺点，偏适合Web应用</li>
+</ul>
+<blockquote>
+<p>jdk8中测试Web应用，堆内存6G中新生代4.5G的情况下</p>
+<ul>
+<li>ParallelScavenge回收新生代停顿长达1.5秒。</li>
+<li>G1回收器回收同样大小的新生代只停顿0.2秒</li>
+</ul>
+</blockquote>
+</blockquote>
+<h2 id="serial-收集器">Serial 收集器</h2>
+<ul>
+<li><p>Serial 串行
+收集器是<strong>最基本</strong>、<strong>历史最悠久</strong>的垃圾收集器</p></li>
+<li><p>这是一个<strong>单线程收集器</strong>，它的<strong>单线程</strong>意义不仅意味着它只会使用<strong>一条垃圾收集线程</strong>去完成垃圾收集工作，更重要的是它在<strong>进行垃圾收集工作时</strong>必须暂停其他所有的工作线程<strong>（”Stop
+The World“）</strong>，直到它<strong>收集结束</strong>。</p>
+<ul>
+<li>新生代采用<strong>标记-复制</strong>算法，老年代采用<strong>标记-整理</strong>算法
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/46873026.3a9311ec.png"
+alt="Serial 收集器" /></li>
+<li>StopTheWorld会带来<strong>不良用户体验</strong>，所以在后续垃圾收集器设计中<strong>停顿时间不断缩短</strong>。（仍然有停顿，垃圾收集器的过程仍然在继续）</li>
+<li>优点：<strong>简单而高效</strong>（与其他收集器的单线程相比）
+<ol type="1">
+<li>且由于其<strong>没有线程交互</strong>的开销，自然可以获得<strong>很高的单线程收集效率</strong></li>
+<li>Serial收集器对于<strong>运行在Client模式</strong>下的虚拟机来说是个不错的选择</li>
+</ol></li>
+</ul></li>
+<li><p>```shell -XX:+UseSerialGC
+#虚拟机运行在Client模式下的默认值，Serial+Serial Old。
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">## ParNew 收集器</span><br><span class="line"></span><br><span class="line">- **ParNew**收集器其实就是**Serial收集器**的**多线程版本**，除了使用**多线程**进行垃圾收集外，其余行为（**控制参数**、**收集算法**、**回收策略**等等）和**Serial收集器**完全一样</span><br><span class="line"></span><br><span class="line">- **新生代**采用**标记-复制**算法，**老年代**采用**标记-整理**算法</span><br><span class="line"></span><br><span class="line">  ![ParNew 收集器 ](https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/22018368.df835851.png)</span><br><span class="line">  ★★★  这是许多运行在Server模式下的虚拟机的首要选择，除了**Serial收集器**外，只有它能与**CMS收集器**（真正意义上的**并发**收集器）配合工作（**ParNew是并行**）</span><br><span class="line"></span><br><span class="line">- **并行和并发**概念补充</span><br><span class="line"></span><br><span class="line">  - **并行（Parallel）**：指**多条垃圾收集线程**并行工作，但此时用户线程仍然处于**等待**状态</span><br><span class="line">  - **并发（Concurrent）**：指**用户线程**与**垃圾收集线程** **同时**执行（不一定并行，可能会交替执行），**用户程序在继续执行**，而**收集收集器**运行在另一个CPU上</span><br><span class="line"></span><br><span class="line">- ```shell</span><br><span class="line">  -XX:+UseParNewGC  #ParNew+Serial Old，在JDK1.8被废弃，在JDK1.7还可以使用。</span><br></pre></td></tr></table></figure></p></li>
+</ul>
+<h2 id="parallelscavenge-收集器">ParallelScavenge 收集器</h2>
+<ul>
+<li><p>它也是<strong>标记-复制</strong>算法的多线程收集器，看上去几乎和<strong>ParNew</strong>一样，<strong>区别</strong></p>
+<ul>
+<li><p>部分<strong>参数</strong> (有点争议，先以下面为准)</p>
+<p><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">-XX:+UseParallelGC  # 虚拟机运行在Server模式下的默认值(1.8) 新生代使用ParallelGC，老年代使用回收器 ; ★★ JDK1.7之后，能达到UseParallelOldGC 的效果 </span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment"># 参考自 https://zhuanlan.zhihu.com/p/353458348</span></span> </span><br><span class="line"></span><br><span class="line"></span><br><span class="line">-XX:+UseParallelOldGC # 新生代使用ParallelGC，老年代使用ParallelOldGC</span><br></pre></td></tr></table></figure></p></li>
+<li><p><strong>Parallel
+Scavenge</strong>收集器关注点是<strong>吞吐量（高效率利用CPU）</strong>，<strong>CMS</strong>等垃圾收集器关注点是用户的<strong>停顿时间</strong>（提高用户体验）</p>
+<blockquote>
+<p>所谓<strong>吞吐量</strong>就是CPU中用于<strong>运行用户代码的时间</strong>与<strong>CPU</strong>总消耗时间的<strong>比值</strong>
+（也就是<strong>希望</strong>消耗少量CPU就能<strong>运行更多代码</strong>）</p>
+</blockquote></li>
+<li><p>Parallel Scavenge
+收集器提供了很多参数供用户找到<strong>最合适的停顿时间</strong>或<strong>最大吞吐量</strong>，如果对于收集器运作不太了解，手工优化存在困难的时候，使用
+<strong>Parallel Scavenge
+收集器</strong>配合<strong>自适应调节策略</strong>，把<strong>内存管理优化</strong>交给虚拟机去完成也是一个不错的选择。</p></li>
+<li><p>新生代采用<strong>标记-复制</strong>，老年代采用<strong>标记-整理</strong>算法
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221215170900774.png"
+alt="image-20221215170900774" /></p></li>
+</ul></li>
+<li><p>这是JDK1.8 的默认收集器 使用 java -XX:+PrintCommandLineFlags
+-version 命令查看 如下，两种情况：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">默认</span></span><br><span class="line">λ java -XX:+PrintCommandLineFlags -version</span><br><span class="line">-XX:InitialHeapSize=531924800 -XX:MaxHeapSize=8510796800 -XX:+PrintCommandLineFlags -XX:+UseCompressedClassPointers -XX:+UseCompressedOops -XX:-UseLargePagesIndividualAllocation -XX:+UseParallelGC</span><br><span class="line">java version &quot;1.8.0_202&quot;</span><br><span class="line">Java(TM) SE Runtime Environment (build 1.8.0_202-b08)</span><br><span class="line">Java HotSpot(TM) 64-Bit Server VM (build 25.202-b08, mixed mode)</span><br></pre></td></tr></table></figure>
+<p>第二种情况：(注意：<code>-XX:-UseParallelOldGC</code>)</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">λ java -XX:-UseParallelOldGC -XX:+PrintCommandLineFlags -version</span><br><span class="line">-XX:InitialHeapSize=531924800 -XX:MaxHeapSize=8510796800 -XX:+PrintCommandLineFlags -XX:+UseCompressedClassPointers -XX:+UseCompressedOops -XX:-UseLargePagesIndividualAllocation -XX:+UseParallelGC -XX:-UseParallelOldGC</span><br><span class="line"></span><br><span class="line">java version &quot;1.8.0_202&quot;</span><br><span class="line">Java(TM) SE Runtime Environment (build 1.8.0_202-b08)</span><br><span class="line">Java HotSpot(TM) 64-Bit Server VM (build 25.202-b08, mixed mode)</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="serialold-收集器">SerialOld 收集器</h2>
+<ul>
+<li>Serial收集器的<strong>老年代版本</strong>，是一个<strong>单线程</strong>收集器
+<ol type="1">
+<li>在JDK1.5以及以前的版本中，<strong>与Parallel
+Scavenge收集器搭配</strong>时候</li>
+<li>作为CMS收集器的<strong>后备方案</strong></li>
+</ol></li>
+</ul>
+<h2 id="parallelold-收集器">ParallelOld 收集器</h2>
+<ul>
+<li>Parallel
+Scavenge收集器的老年代版本，使用<strong>多线程</strong>和<strong>标记-整理</strong>算法
+<ol type="1">
+<li>在注重<strong>吞吐量</strong>以及<strong>CPU资源</strong>的场合，都可以考虑<strong>ParallelScavenge</strong>和<strong>ParallelOld</strong>收集器</li>
+</ol></li>
+</ul>
+<h2 id="cms-收集器">CMS 收集器</h2>
+<ul>
+<li><p>CMS，Concurrent Mark
+Sweep，是一种以<strong>获取最短回收停顿时间</strong>为目标的收集器，非常符合<strong>注重用户体验</strong>的引用上使用</p></li>
+<li><p>CMS收集器是HotSpot虚拟机上<strong>第一款</strong>真正意义上的<strong>并发</strong>收集器，第一次实现了<strong>让垃圾收集线程</strong>与<strong>用户线程</strong>（基本上）同时工作</p></li>
+<li><p>Mark-Sweep，是一种“<strong>标记-清除</strong>”算法，运作过程相比前面几种垃圾收集器来说更加复杂，步骤：</p>
+<ol type="1">
+<li><p>初始标记：暂停所有其他线程，<strong>记录直接与root相连的对象</strong>，速度很快</p></li>
+<li><p>并发标记：<strong>同时</strong> 开启GC和用户线程
+，用一个<strong>闭包结构记录可达对象</strong>。但这个阶段结束，这个闭包结构并<strong>不能保证包含当前所有的可达对象</strong>。</p>
+<blockquote>
+<p>因为用户线程会不断更新引用域，所以GC线程<strong>无法保证可达性分析的实时性</strong></p>
+</blockquote>
+<p>所以这个算法里会<strong>跟踪记录</strong>这些发生引用更新的地方</p></li>
+<li><p>重新标记：目的是<strong>修正并发标记期间</strong>因为用户程序继续运行而<strong>导致标记产生变动</strong>的那一部分对象的<strong>标记记录</strong>。</p>
+<blockquote>
+<p>这个阶段<strong>停顿时间</strong>一般会被初始标记阶段<strong>时间稍长</strong>，远远比<strong>并发标记阶段</strong>时间短</p>
+</blockquote></li>
+<li><p>并发清除：<strong>开启用户线程</strong>，同时<strong>GC线程</strong>开始对未扫描的区域做清扫</p></li>
+</ol>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/CMS%25E6%2594%25B6%25E9%259B%2586%25E5%2599%25A8.8a4d0487.png"
+alt="CMS 垃圾收集器" />
+<figcaption aria-hidden="true">CMS 垃圾收集器</figcaption>
+</figure></li>
+<li><p>从名字可以看出这是一款优秀的收集器：<strong>并发收集</strong>、<strong>低停顿</strong>。但有三个明显缺点</p>
+<ol type="1">
+<li><p><strong>对CPU资源敏感</strong></p></li>
+<li><p>无法处理浮动垃圾</p>
+<blockquote>
+<p>浮动垃圾的解释：就是之前被gc 标记为 可达对象，也就是
+存活对象，在两次gc线程之间被业务线程删除了引用，那么颜色不会更改，还是之前的颜色（黑色or灰色），但是其实是白色，所以这一次gc
+无法对其回收，需要等下一次gc初始标记启动才会被刷成白色 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/13864094-053f50032b4cdfad.png"
+alt="img" /></p>
+<p>作者：Yellowtail 链接：https://www.jianshu.com/p/6590aaad82f7
+来源：简书</p>
+</blockquote></li>
+<li><p>它使用的收集算法<strong>“标记-清除”</strong>算法会导致收集结束时会有<strong>大量空间碎片产生</strong></p></li>
+</ol></li>
+</ul>
+<h2 id="g1-收集器">G1 收集器</h2>
+<p>G1(Garbage-First)，是一款<strong>面向服务器</strong>的垃圾收集器，主要针对<strong>配备多颗处理器</strong>以及<strong>大容量内存</strong>的极其，以<strong>极高概率</strong>满足GC停顿时间要求的同时，还具备<strong>高吞吐量性能</strong>特征</p>
+<ul>
+<li><p><strong>JDK1.7</strong>中HotSpot虚拟机的一个<strong>重要进化特征</strong>，具备特点：</p>
+<ol type="1">
+<li><p>并行与并发：</p>
+<blockquote>
+<p>G1 能充分利用 CPU、多核环境下的硬件优势，<strong>使用多个 CPU（CPU
+或者 CPU 核心）来缩短 Stop-The-World
+停顿时间</strong>。部分其他收集器原本需要停顿 Java 线程执行的 GC
+动作，G1 收集器仍然可以通过并发的方式让 java 程序继续执行</p>
+</blockquote></li>
+<li><p>分代收集：</p>
+<blockquote>
+<p>虽然 G1 可以<strong>不需要其他收集器配合</strong>就能独立管理整个 GC
+堆，但是还是保留了分代的概念。</p>
+</blockquote></li>
+<li><p>空间整合：</p>
+<blockquote>
+<p>与 CMS 的“标记-清理”算法不同，G1
+<strong>从整体来看</strong>是基于<strong>“标记-整理”</strong>算法实现的收集器；从<strong>局部</strong>上来看是基于<strong>“标记-复制”</strong>算法实现的。</p>
+</blockquote></li>
+<li><p>可预测的停顿：</p>
+<blockquote>
+<p>这是 G1 相对于 CMS 的另一个大优势，降低停顿时间是 G1 和 CMS
+共同的关注点，但 G1
+除了追求低停顿外，还能建立可预测的停顿时间模型，能<strong>让使用者明确指定在一个长度为
+M 毫秒的时间片段</strong>内。</p>
+</blockquote></li>
+</ol></li>
+<li><p>G1 收集器的运作大致分为以下几个步骤</p>
+<ol type="1">
+<li><strong>初始标记</strong></li>
+<li><strong>并发标记</strong></li>
+<li><strong>最终标记</strong></li>
+<li><strong>筛选回收</strong></li>
+</ol></li>
+<li><p>G1
+收集器在后台<strong>维护了一个优先列表</strong>，每次<strong>根据允许的收集时间</strong>，<strong>优先选择回收价值最大的
+Region</strong>(这也就是它的名字 <strong>Garbage-First 的由来</strong>)
+。这种<strong>使用 Region
+划分内存空间</strong>以及<strong>有优先级的区域回收方式</strong>，，保证了
+G1
+收集器在<strong>有限时间内</strong>可以尽可能高的收集效率（<strong>把内存化整为零</strong>）</p></li>
+</ul>
+<h2 id="zgc-收集器">ZGC 收集器</h2>
+<p><code>The Z Garbage Collector</code></p>
+<p><strong>与 CMS 中的 ParNew 和 G1 类似，ZGC
+也采用标记-复制算法</strong>，不过 ZGC 对该算法做了重大改进。</p>
+<p>在 ZGC 中出现 Stop The World 的情况会更少！</p>
+<p>JDK11，相关文章
+https://tech.meituan.com/2020/08/06/new-zgc-practice-in-meituan.html</p>
+]]></content>
+      <categories>
+        <category>学习</category>
+      </categories>
+      <tags>
+        <tag>复习</tag>
+        <tag>复习-javaGuide</tag>
+        <tag>复习-javaGuide-jvm</tag>
       </tags>
   </entry>
 </search>
