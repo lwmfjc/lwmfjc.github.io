@@ -16779,73 +16779,169 @@ alt="image-20221120193141243" /></p>
 来完成获取资源线程的<strong>排队</strong>工作。</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//state 变量由 volatile 修饰，用于展示当前临界资源的获锁情况。</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">volatile</span> <span class="type">int</span> state;<span class="comment">//共享变量，使用volatile修饰保证线程可见性</span></span><br></pre></td></tr></table></figure>
 <p>状态信息的操作</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//返回同步状态的当前值</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">getState</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> state;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//设置同步状态的值</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title function_">setState</span><span class="params">(<span class="type">int</span> newState)</span> &#123;</span><br><span class="line">    state = newState;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//原子地（CAS操作）将同步状态值设置为给定值update如果当前同步状态的值等于expect（期望值）</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">final</span> <span class="type">boolean</span> <span class="title function_">compareAndSetState</span><span class="params">(<span class="type">int</span> expect, <span class="type">int</span> update)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> unsafe.compareAndSwapInt(<span class="built_in">this</span>, stateOffset, expect, update);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-<li><ul>
-<li></li>
-</ul></li>
-<li><p>AQS底层使用了模板方法模式 使用方式</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//返回同步状态的当前值</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">getState</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> state;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//设置同步状态的值</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title function_">setState</span><span class="params">(<span class="type">int</span> newState)</span> &#123;</span><br><span class="line">    state = newState;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//原子地（CAS操作）将同步状态值设置为给定值update如果当前同步状态的值等于expect（期望值）</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">final</span> <span class="type">boolean</span> <span class="title function_">compareAndSetState</span><span class="params">(<span class="type">int</span> expect, <span class="type">int</span> update)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> unsafe.compareAndSwapInt(<span class="built_in">this</span>, stateOffset, expect, update);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <ol type="1">
-<li><p>使用者继承AbstractQueueSynchronizer并重写指定方法（无<strong>非是对于共享资源state的获取和释放</strong>）</p></li>
-<li><p>将AQS组合在自定义同步组件的实现中，并调用其模板方法，而<strong>这些模板方法会调用使用者重写的方法</strong></p></li>
-<li><p>自定义同步器时，需要重写下面几个AQS提供的钩子方法</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="type">boolean</span> <span class="title function_">tryAcquire</span><span class="params">(<span class="type">int</span>)</span><span class="comment">//独占方式。尝试获取资源，成功则返回true，失败则返回false。</span></span><br><span class="line"><span class="keyword">protected</span> <span class="type">boolean</span> <span class="title function_">tryRelease</span><span class="params">(<span class="type">int</span>)</span><span class="comment">//独占方式。尝试释放资源，成功则返回true，失败则返回false。</span></span><br><span class="line"><span class="keyword">protected</span> <span class="type">int</span> <span class="title function_">tryAcquireShared</span><span class="params">(<span class="type">int</span>)</span><span class="comment">//共享方式。尝试获取资源。负数表示失败；0表示成功，但没有剩余可用资源；正数表示成功，且有剩余资源。</span></span><br><span class="line"><span class="keyword">protected</span> <span class="type">boolean</span> <span class="title function_">tryReleaseShared</span><span class="params">(<span class="type">int</span>)</span><span class="comment">//共享方式。尝试释放资源，成功则返回true，失败则返回false。</span></span><br><span class="line"><span class="keyword">protected</span> <span class="type">boolean</span> <span class="title function_">isHeldExclusively</span><span class="params">()</span><span class="comment">//该线程是否正在独占资源。只有用到condition才需要去实现它。 </span></span><br></pre></td></tr></table></figure></li>
-<li><p><strong>什么是钩子方法呢？</strong>
-钩子方法是一种被声明在抽象类中的方法，它可以是空方法（由子类实现），也可以是默认实现的方法。模板设计模式<strong>通过钩子方法控制固定步骤的实现</strong>。AQS类中除了钩子方法，其他方法都是final</p></li>
-</ol>
-<blockquote>
-<p>重点：以 <code>ReentrantLock</code> 为例，state 初始化为
-0，表示未锁定状态。A 线程 <code>lock()</code> 时，会调用
-<code>tryAcquire()</code> 独占该锁并将 <code>state+1</code>
-。此后，其他线程再 <code>tryAcquire()</code> 时就会失败，直到 A 线程
+<li><p>以 <strong><code>ReentrantLock</code></strong>
+为例，<strong><code>state</code> 初始值为 0</strong>，表示未锁定状态。A
+线程 <strong><code>lock()</code></strong> 时，会调用
+<strong><code>tryAcquire()</code></strong> 独占该锁并将
+<strong><code>state+1</code></strong> 。此后，其他线程再
+<code>tryAcquire()</code> 时就会失败，<strong>直到 A 线程
 <code>unlock()</code> 到
-<code>state=</code>0（即释放锁）为止，其它线程才有机会获取该锁。当然，释放锁之前，A
-线程自己是可以重复获取此锁的（state
-会累加），这就是可重入的概念。但要注意，获取多少次就要释放多少次，这样才能保证
-state 是能回到零态的。</p>
-<p>再以 <code>CountDownLatch</code> 以例，任务分为 N
-个子线程去执行，state 也初始化为 N（注意 N 要与线程个数一致）。这 N
-个子线程是并行执行的，每个子线程执行完后<code>countDown()</code>
-一次，state 会 CAS(Compare and Swap) 减 1。等到所有子线程都执行完后(即
-<code>state=0</code> )，会 <code>unpark()</code>
-主调用线程，然后主调用线程就会从 <code>await()</code>
-函数返回，继续后余动作。</p>
-<p>一般来说，自定义同步器要么是独占方法，要么是共享方式，他们也只需实现<code>tryAcquire-tryRelease</code>、<code>tryAcquireShared-tryReleaseShared</code>中的一种即可。但
-AQS
-也支持自定义同步器同时实现独占和共享两种方式，如<code>ReentrantReadWriteLock</code>。</p>
-</blockquote></li>
-<li><p>AQS组件总结</p>
+<code>state=</code>0（即释放锁）为止</strong>，其它线程才有机会获取该锁。当然，<strong>释放锁之前，A
+线程自己是可以重复获取此锁的（<code>state</code>
+会累加）</strong>，这就是<strong>可重入</strong>的概念。但要注意，获取多少次就要释放多少次，这样才能保证
+state 是能回到零态的。</p></li>
+<li><p>以 <strong><code>CountDownLatch</code></strong> 以例，任务分为 N
+个子线程去执行，<code>state</code> 也初始化为 N（注意 <strong>N
+要与线程个数一致</strong>）。这 <strong>N
+个子线程是并行执行</strong>的，<strong>每个子线程执行完后<code>countDown()</code></strong>
+一次，state 会 <strong>CAS(Compare and Swap) 减
+1</strong>。等到所有子线程都执行完后(即 <code>state=0</code> )，会
+<strong><code>unpark()</code>
+主调用线</strong>程，然后<strong>主调用线程就会从 <code>await()</code>
+函数返回</strong>，继续后余动作</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//例子  </span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">TestCountDownLatch</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">         CountDownLatch countDownLatch=<span class="keyword">new</span> <span class="title class_">CountDownLatch</span>(<span class="number">3</span>);</span><br><span class="line">         <span class="keyword">new</span> <span class="title class_">Thread</span>(()-&gt;&#123;</span><br><span class="line">             <span class="keyword">try</span> &#123;</span><br><span class="line">                 TimeUnit.SECONDS.sleep(<span class="number">1</span>);</span><br><span class="line">             &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                 e.printStackTrace();</span><br><span class="line">             &#125;</span><br><span class="line">             System.out.println(Thread.currentThread().getName()+<span class="string">&quot;执行完毕&quot;</span>);</span><br><span class="line">             countDownLatch.countDown();</span><br><span class="line">         &#125;,<span class="string">&quot;线程1&quot;</span>).start();</span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">Thread</span>(()-&gt;&#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                TimeUnit.SECONDS.sleep(<span class="number">2</span>);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">            System.out.println(Thread.currentThread().getName()+<span class="string">&quot;执行完毕&quot;</span>);</span><br><span class="line">            countDownLatch.countDown();</span><br><span class="line">        &#125;,<span class="string">&quot;线程2&quot;</span>).start();</span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">Thread</span>(()-&gt;&#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                TimeUnit.SECONDS.sleep(<span class="number">3</span>);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">            System.out.println(Thread.currentThread().getName()+<span class="string">&quot;执行完毕&quot;</span>);</span><br><span class="line">            countDownLatch.countDown();</span><br><span class="line">        &#125;,<span class="string">&quot;线程3&quot;</span>).start();</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            System.out.println(Thread.currentThread().getName()+<span class="string">&quot;等待中....&quot;</span>);</span><br><span class="line">            countDownLatch.await();<span class="comment">//阻塞</span></span><br><span class="line">            System.out.println(Thread.currentThread().getName()+<span class="string">&quot;等待完毕，继续执行&quot;</span>);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">main等待中....</span></span><br><span class="line"><span class="comment">线程1执行完毕</span></span><br><span class="line"><span class="comment">线程2执行完毕</span></span><br><span class="line"><span class="comment">线程3执行完毕</span></span><br><span class="line"><span class="comment">main等待完毕，继续执行</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure></li>
+</ol></li>
+</ul>
+<h3 id="semaphore">Semaphore</h3>
 <ul>
-<li><strong><code>Semaphore</code>(信号量)-允许多个线程同时访问：</strong>
-<code>synchronized</code> 和 <code>ReentrantLock</code>
-都是一次只允许一个线程访问某个资源，<code>Semaphore</code>(信号量)可以指定多个线程同时访问某个资源。</li>
-<li><strong><code>CountDownLatch</code>（倒计时器）：</strong>
-<code>CountDownLatch</code>
-是一个同步工具类，用来协调多个线程之间的同步。这个工具通常用来控制线程等待，它可以<strong>让某一个线程等待直到倒计时结束</strong>，再开始执行。</li>
-<li><strong><code>CyclicBarrier</code>(循环栅栏)：</strong>
-<code>CyclicBarrier</code> 和 <code>CountDownLatch</code>
-非常类似，它也可以实现线程间的技术等待，但是它的功能比
-<code>CountDownLatch</code> 更加复杂和强大。主要应用场景和
-<code>CountDownLatch</code> 类似。<code>CyclicBarrier</code>
-的字面意思是可循环使用（<code>Cyclic</code>）的屏障（<code>Barrier</code>）。它要做的事情是，让一组线程到达一个屏障（也可以叫同步点）时被阻塞，直到最后一个线程到达屏障时，屏障才会开门，所有被屏障拦截的线程才会继续干活。<code>CyclicBarrier</code>
-默认的构造方法是
-<code>CyclicBarrier(int parties)</code>，其参数表示屏障拦截的线程数量，每个线程调用
-<code>await()</code> 方法告诉 <code>CyclicBarrier</code>
-我已经到达了屏障，然后当前线程被阻塞。</li>
-</ul></li>
-<li><p>用过CountDownLatch么，什么场景下用的</p>
-<p>作用：<strong>允许count个线程阻塞在一个地方，直到所有线程的任务都执行完毕</strong>（例子种，需要读取处理6个文件，6个任务没有执行顺序依赖，但是返回的时候，需要将这几个文件的处理结果进行统计整理）</p>
-<p>解析：定义了一个线程池和 count 为 6 的<code>CountDownLatch</code>对象
-。使用线程池处理读取任务，<strong>每一个线程处理完之后就将
+<li><p>Semaphore 有什么用？ <code>synchronized</code> 和
+<code>ReentrantLock</code>
+都是一次只允许一个线程访问某个资源，而<code>Semaphore</code>(信号量)可以用来<strong>控制同时访问特定资源的线程数量</strong>。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//使用  </span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">TestSemaphore</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">Semaphore</span> <span class="variable">semaphore</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Semaphore</span>(<span class="number">3</span>);<span class="comment">//能同时运行3个</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; <span class="number">15</span>; i++) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">finalI</span> <span class="operator">=</span> i;</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    semaphore.acquire();<span class="comment">//获取通行证</span></span><br><span class="line">                    System.out.println(Thread.currentThread().getName() + <span class="string">&quot;执行中...&quot;</span>);</span><br><span class="line">                    TimeUnit.SECONDS.sleep(finalI);</span><br><span class="line">                    System.out.println(Thread.currentThread().getName() + <span class="string">&quot;释放了通行证&quot;</span>);</span><br><span class="line">                    semaphore.release();</span><br><span class="line">                &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;,<span class="string">&quot;线程&quot;</span>+finalI).start();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*结果</span></span><br><span class="line"><span class="comment">线程0执行中...</span></span><br><span class="line"><span class="comment">线程2执行中...</span></span><br><span class="line"><span class="comment">线程1执行中...</span></span><br><span class="line"><span class="comment">线程0释放了通行证</span></span><br><span class="line"><span class="comment">线程3执行中...</span></span><br><span class="line"><span class="comment">线程1释放了通行证</span></span><br><span class="line"><span class="comment">线程4执行中...</span></span><br><span class="line"><span class="comment">线程2释放了通行证</span></span><br><span class="line"><span class="comment">线程5执行中...</span></span><br><span class="line"><span class="comment">线程3释放了通行证</span></span><br><span class="line"><span class="comment">线程6执行中...</span></span><br><span class="line"><span class="comment">线程4释放了通行证</span></span><br><span class="line"><span class="comment">线程7执行中...</span></span><br><span class="line"><span class="comment">线程5释放了通行证</span></span><br><span class="line"><span class="comment">线程8执行中...</span></span><br><span class="line"><span class="comment">线程6释放了通行证</span></span><br><span class="line"><span class="comment">线程10执行中...</span></span><br><span class="line"><span class="comment">线程7释放了通行证</span></span><br><span class="line"><span class="comment">线程11执行中...</span></span><br><span class="line"><span class="comment">线程8释放了通行证</span></span><br><span class="line"><span class="comment">线程9执行中...</span></span><br><span class="line"><span class="comment">线程10释放了通行证</span></span><br><span class="line"><span class="comment">线程12执行中...</span></span><br><span class="line"><span class="comment">线程11释放了通行证</span></span><br><span class="line"><span class="comment">线程13执行中...</span></span><br><span class="line"><span class="comment">线程9释放了通行证</span></span><br><span class="line"><span class="comment">线程14执行中...</span></span><br><span class="line"><span class="comment">线程12释放了通行证</span></span><br><span class="line"><span class="comment">线程13释放了通行证</span></span><br><span class="line"><span class="comment">线程14释放了通行证</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+<p>Semaphore 的使用简单，我们这里假设有 N(N&gt;5) 个线程来获取
+<code>Semaphore</code>
+中的共享资源，下面的代码表示<strong>同一时刻</strong> N
+个线程中<strong>只有 5
+个线程</strong>能<strong>获取到</strong>共享资源，其他线程都会阻塞，<strong>只有获取到共享资源的线程才能执行</strong>。等到有线程释放了共享资源，其他阻塞的线程才能获取到</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 初始共享资源数量</span></span><br><span class="line"><span class="keyword">final</span> <span class="type">Semaphore</span> <span class="variable">semaphore</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Semaphore</span>(<span class="number">5</span>);</span><br><span class="line"><span class="comment">// 获取1个许可</span></span><br><span class="line">semaphore.acquire();</span><br><span class="line"><span class="comment">// 释放1个许可</span></span><br><span class="line">semaphore.release(); </span><br></pre></td></tr></table></figure>
+<p>当初始的资源个数为 <strong>1</strong> 的时候，<code>Semaphore</code>
+退化为<strong>排他锁</strong>。</p>
+<p>Semaphore对应的两个构造方法</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="title function_">Semaphore</span><span class="params">(<span class="type">int</span> permits)</span> &#123;</span><br><span class="line">  	sync = <span class="keyword">new</span> <span class="title class_">NonfairSync</span>(permits);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="title function_">Semaphore</span><span class="params">(<span class="type">int</span> permits, <span class="type">boolean</span> fair)</span> &#123;</span><br><span class="line">  	sync = fair ? <span class="keyword">new</span> <span class="title class_">FairSync</span>(permits) : <span class="keyword">new</span> <span class="title class_">NonfairSync</span>(permits);</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+<p>这两个构造方法，都<strong>必须提供许可的数量</strong>，第二个构造方法可以指定是<strong>公平模式</strong>还是<strong>非公平模式</strong>，默认非公平模式。<br />
+<code>Semaphore</code>
+通常用于那些<strong>资源有明确访问数量限制</strong>的场景比如限流（<strong>仅限于单机</strong>模式，实际项目中推荐使用
+<strong>Redis</strong> +<strong>Lua</strong> 来做限流）。</p></li>
+<li><p>Semaphore 的原理是什么？</p>
+<blockquote>
+<p><code>Semaphore</code> 是共享锁的一种实现，它默认构造 AQS 的
+<code>state</code> 值为 <code>permits</code>，你可以将
+<code>permits</code>
+的值理解为许可证的数量，只有拿到许可证的线程才能执行。</p>
+<p>调用<code>semaphore.acquire()</code>
+，<strong>线程尝试获取许可证</strong>，如果
+<strong><code>state &gt;= 0</code>
+的话，则表示可以获取成功</strong>。如果获取成功的话，使用
+<strong>CAS</strong> 操作去<strong>修改 <code>state</code> 的值
+<code>state=state-1</code></strong>。如果
+<strong><code>state&lt;0</code></strong>
+的话，则表示<strong>许可证数量不足</strong>。此时会<strong>创建一个 Node
+节点加入阻塞队列</strong>，<strong>挂起当前线程</strong>。</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> *  获取1个许可证</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">acquire</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line"> 	 sync.acquireSharedInterruptibly(<span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 共享模式下获取许可证，获取成功则返回，失败则加入阻塞队列，挂起线程</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title function_">acquireSharedInterruptibly</span><span class="params">(<span class="type">int</span> arg)</span></span><br><span class="line">    <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">    <span class="keyword">if</span> (Thread.interrupted())</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">InterruptedException</span>();</span><br><span class="line">        <span class="comment">// 尝试获取许可证，arg为获取许可证个数，当可用许可证数减当前获取的许可证数结果小于0,则创建一个节点加入阻塞队列，挂起当前线程。</span></span><br><span class="line">    <span class="keyword">if</span> (tryAcquireShared(arg) &lt; <span class="number">0</span>)</span><br><span class="line">      doAcquireSharedInterruptibly(arg);</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+<p>调用<code>semaphore.release();</code>
+，线程尝试释放许可证，并<strong>使用 CAS 操作去修改 <code>state</code>
+的值
+<code>state=state+1</code></strong>。释放许可证成功之后，同时会<strong>唤醒同步队列中的一个线程</strong>。被唤醒的线程会重新<strong>尝试去修改
+<code>state</code> 的值 <code>state=state-1</code></strong> ，如果
+<strong><code>state&gt;=0</code>
+则获取令牌成功</strong>，否则重新进入阻塞队列，挂起线程。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 释放一个许可证</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">release</span><span class="params">()</span> &#123;</span><br><span class="line">  	sync.releaseShared(<span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 释放共享锁，同时会唤醒同步队列中的一个线程。</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="type">boolean</span> <span class="title function_">releaseShared</span><span class="params">(<span class="type">int</span> arg)</span> &#123;</span><br><span class="line">    <span class="comment">//释放共享锁</span></span><br><span class="line">    <span class="keyword">if</span> (tryReleaseShared(arg)) &#123;</span><br><span class="line">      <span class="comment">//唤醒同步队列中的一个线程</span></span><br><span class="line">      doReleaseShared();</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="countdownlatch">CountDownLatch</h3>
+<ul>
+<li><p>CountDownLatch有什么用</p>
+<ol type="1">
+<li><code>CountDownLatch</code> 允许 <strong><code>count</code>
+个线程阻塞在一个地方(一般例子是阻塞在主线程中
+<code>countDownLatch.await()</code>)</strong>，直至所有线程的任务都执行完毕<strong>(再从阻塞的地方继续执行)</strong>。</li>
+<li><code>CountDownLatch</code>
+是<strong>一次性</strong>的，计数器的值只能在构造方法中初始化一次，之后没有任何机制再次对其设置值，当
+<strong><code>CountDownLatch</code>
+使用完毕</strong>后，它<strong>不能再次被使用</strong>。</li>
+</ol></li>
+<li><p>CountDownLatch的原理是什么 <code>CountDownLatch</code>
+是共享锁的一种实现,它默认构造 <strong>AQS 的 <code>state</code> 值为
+<code>count</code></strong>。当线程使用 <code>countDown()</code>
+方法时,其实使用了<strong><code>tryReleaseShared</code></strong>方法<strong>以
+CAS 的操作来减少 <code>state</code>,</strong>直至 <code>state</code> 为
+0 。当调用 <strong><code>await()</code></strong>
+方法的时候，<strong>如果 <code>state</code> 不为
+0</strong>，那就证明任务还没有执行完毕，<code>await()</code>
+方法就会<strong>一直阻塞</strong>，也就是说 <strong><code>await()</code>
+方法之后的语句不会被执行</strong>。然后，<strong><code>CountDownLatch</code>
+会自旋 CAS 判断 <code>state == 0</code></strong>，如果
+<strong><code>state == 0</code></strong>
+的话，就会<strong>释放所有等待的线程</strong>，<strong><code>await()</code>
+方法之后的语句得到执行</strong>。</p></li>
+<li><p>用过 CountDownLatch 么？什么场景下用的？<br />
+<code>CountDownLatch</code> 的作用就是 <strong>允许 count
+个线程阻塞在一个地方</strong>，直至所有线程的任务都执行完毕。之前在项目中，有一个<strong>使用多线程读取多个文件</strong>处理的场景，我用到了
+<code>CountDownLatch</code> 。具体场景是下面这样的：</p>
+<p>我们要读取处理 6 个文件，这 6
+个任务都是没有执行顺序依赖的任务，但是我们需要<strong>返回给用户的时候将这几个文件的处理的结果进行统计整理</strong>。</p>
+<p>为此我们定义了一个线程池和 count 为 6
+的<code>CountDownLatch</code>对象
+。使用线程池处理读取任务，每一个线程处理完之后就将
 count-1，调用<code>CountDownLatch</code>对象的
-<code>await()</code>方法，直到所有文件读取完之后，才会接着执行后面的逻辑</strong></p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//共享</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CountDownLatchExample1</span> &#123;</span><br><span class="line">    <span class="comment">// 处理文件的数量</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">threadCount</span> <span class="operator">=</span> <span class="number">6</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">        <span class="comment">// 创建一个具有固定线程数量的线程池对象（推荐使用构造方法创建）</span></span><br><span class="line">        <span class="type">ExecutorService</span> <span class="variable">threadPool</span> <span class="operator">=</span> Executors.newFixedThreadPool(<span class="number">10</span>);</span><br><span class="line">        <span class="keyword">final</span> <span class="type">CountDownLatch</span> <span class="variable">countDownLatch</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">CountDownLatch</span>(threadCount);</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; threadCount; i++) &#123;</span><br><span class="line">            <span class="keyword">final</span> <span class="type">int</span> <span class="variable">threadnum</span> <span class="operator">=</span> i;</span><br><span class="line">            threadPool.execute(() -&gt; &#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    <span class="comment">//处理文件的业务操作</span></span><br><span class="line">                    <span class="comment">//......</span></span><br><span class="line">                &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                    <span class="comment">//表示一个文件已经被完成(将count-1)</span></span><br><span class="line">                    countDownLatch.countDown();</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;</span><br><span class="line">        countDownLatch.await();<span class="comment">//会一直阻塞，直到count为0</span></span><br><span class="line">        threadPool.shutdown();</span><br><span class="line">        System.out.println(<span class="string">&quot;finish&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
-<p>改进，使用CompletableFuture类改进，该类提供了很多对多线程有好的方式，包括
-异步、串行、并行或者等待所有线程执行完任务</p>
+<code>await()</code>方法，直到所有文件读取完之后，才会接着执行后面的逻辑。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//伪代码  </span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CountDownLatchExample1</span> &#123;</span><br><span class="line">    <span class="comment">// 处理文件的数量</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">threadCount</span> <span class="operator">=</span> <span class="number">6</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">        <span class="comment">// 创建一个具有固定线程数量的线程池对象（推荐使用构造方法创建）</span></span><br><span class="line">        <span class="type">ExecutorService</span> <span class="variable">threadPool</span> <span class="operator">=</span> Executors.newFixedThreadPool(<span class="number">10</span>);</span><br><span class="line">        <span class="keyword">final</span> <span class="type">CountDownLatch</span> <span class="variable">countDownLatch</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">CountDownLatch</span>(threadCount);</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; threadCount; i++) &#123;</span><br><span class="line">            <span class="keyword">final</span> <span class="type">int</span> <span class="variable">threadnum</span> <span class="operator">=</span> i;</span><br><span class="line">            threadPool.execute(() -&gt; &#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    <span class="comment">//处理文件的业务操作</span></span><br><span class="line">                    <span class="comment">//......</span></span><br><span class="line">                &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                    <span class="comment">//表示一个文件已经被完成</span></span><br><span class="line">                    countDownLatch.countDown();</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;</span><br><span class="line">        countDownLatch.await();</span><br><span class="line">        <span class="comment">//这里应该是要对threadCound个线程的结果，进行汇总</span></span><br><span class="line">        threadPool.shutdown();</span><br><span class="line">        System.out.println(<span class="string">&quot;finish&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+<p><strong>上面的例子，也可以用CompletableFuture进行改进</strong></p>
+<blockquote>
+<p>Java8 的 <code>CompletableFuture</code>
+提供了很多对多线程友好的方法，使用它可以很方便地为我们编写多线程程序，什么异步、串行、并行或者等待所有线程执行完任务什么的都非常方便。</p>
+</blockquote>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line">CompletableFuture&lt;Void&gt; task1 =</span><br><span class="line">    CompletableFuture.supplyAsync(()-&gt;&#123;</span><br><span class="line">        <span class="comment">//自定义业务操作</span></span><br><span class="line">    &#125;);</span><br><span class="line">......</span><br><span class="line">CompletableFuture&lt;Void&gt; task6 =</span><br><span class="line">    CompletableFuture.supplyAsync(()-&gt;&#123;</span><br><span class="line">    <span class="comment">//自定义业务操作</span></span><br><span class="line">    &#125;);</span><br><span class="line">......</span><br><span class="line">CompletableFuture&lt;Void&gt; headerFuture=CompletableFuture.allOf(task1,.....,task6);</span><br><span class="line"></span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    headerFuture.join();</span><br><span class="line">&#125; <span class="keyword">catch</span> (Exception ex) &#123;</span><br><span class="line">    <span class="comment">//......</span></span><br><span class="line">&#125;</span><br><span class="line">System.out.println(<span class="string">&quot;all done. &quot;</span>); </span><br></pre></td></tr></table></figure>
-<p>使用循环：</p>
+<p><strong>通过循环添加任务</strong></p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//文件夹位置</span></span><br><span class="line">List&lt;String&gt; filePaths = Arrays.asList(...)</span><br><span class="line"><span class="comment">// 异步处理所有文件</span></span><br><span class="line">List&lt;CompletableFuture&lt;String&gt;&gt; fileFutures = filePaths.stream()</span><br><span class="line">    .map(filePath -&gt; doSomeThing(filePath))</span><br><span class="line">    .collect(Collectors.toList());</span><br><span class="line"><span class="comment">// 将他们合并起来</span></span><br><span class="line">CompletableFuture&lt;Void&gt; allFutures = CompletableFuture.allOf(</span><br><span class="line">    fileFutures.toArray(<span class="keyword">new</span> <span class="title class_">CompletableFuture</span>[fileFutures.size()])</span><br><span class="line">); </span><br></pre></td></tr></table></figure></li>
 </ul>
-<h2 id="参考">参考</h2>
+<h3 id="cyclicbarrier">CyclicBarrier</h3>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//使用场景，不太一样的是，它一般是让子任务阻塞后，到时候一起执行 </span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">TestCyclicBarrier</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">CyclicBarrier</span> <span class="variable">cyclicBarrier</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">CyclicBarrier</span>(<span class="number">3</span>, () -&gt; &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                TimeUnit.SECONDS.sleep(<span class="number">3</span>);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">            System.out.println(Thread.currentThread().getName() + <span class="string">&quot;执行咯&quot;</span>);</span><br><span class="line">        &#125;);</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span> <span class="number">0</span>; n &lt; <span class="number">15</span>; n++) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">finalN</span> <span class="operator">=</span> n;</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    TimeUnit.SECONDS.sleep(finalN);</span><br><span class="line">                    System.out.println(Thread.currentThread().getName() + <span class="string">&quot;数据都准备好了,等待中....&quot;</span>);</span><br><span class="line">                    cyclicBarrier.await();</span><br><span class="line">                &#125; <span class="keyword">catch</span> (InterruptedException | BrokenBarrierException e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125;</span><br><span class="line">                System.out.println(Thread.currentThread().getName() + <span class="string">&quot;出发咯!&quot;</span>);</span><br><span class="line">            &#125;, <span class="string">&quot;线程&quot;</span> + n).start();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">线程0数据都准备好了,等待中....</span></span><br><span class="line"><span class="comment">线程1数据都准备好了,等待中....</span></span><br><span class="line"><span class="comment">线程2数据都准备好了,等待中....</span></span><br><span class="line"><span class="comment">线程3数据都准备好了,等待中....</span></span><br><span class="line"><span class="comment">线程4数据都准备好了,等待中....</span></span><br><span class="line"><span class="comment">线程5数据都准备好了,等待中....</span></span><br><span class="line"><span class="comment">线程2执行咯</span></span><br><span class="line"><span class="comment">线程2出发咯!</span></span><br><span class="line"><span class="comment">线程6数据都准备好了,等待中....</span></span><br><span class="line"><span class="comment">线程7数据都准备好了,等待中....</span></span><br><span class="line"><span class="comment">线程8数据都准备好了,等待中....</span></span><br><span class="line"><span class="comment">线程5执行咯</span></span><br><span class="line"><span class="comment">线程5出发咯!</span></span><br><span class="line"><span class="comment">线程0出发咯!</span></span><br><span class="line"><span class="comment">线程1出发咯!</span></span><br><span class="line"><span class="comment">线程9数据都准备好了,等待中....</span></span><br><span class="line"><span class="comment">线程10数据都准备好了,等待中....</span></span><br><span class="line"><span class="comment">线程11数据都准备好了,等待中....</span></span><br><span class="line"><span class="comment">线程8执行咯</span></span><br><span class="line"><span class="comment">线程3出发咯!</span></span><br><span class="line"><span class="comment">线程8出发咯!</span></span><br><span class="line"><span class="comment">线程4出发咯!</span></span><br><span class="line"><span class="comment">线程12数据都准备好了,等待中....</span></span><br><span class="line"><span class="comment">线程13数据都准备好了,等待中....</span></span><br><span class="line"><span class="comment">线程14数据都准备好了,等待中....</span></span><br><span class="line"><span class="comment">线程11执行咯</span></span><br><span class="line"><span class="comment">线程11出发咯!</span></span><br><span class="line"><span class="comment">线程6出发咯!</span></span><br><span class="line"><span class="comment">线程7出发咯!</span></span><br><span class="line"><span class="comment">线程14执行咯</span></span><br><span class="line"><span class="comment">线程14出发咯!</span></span><br><span class="line"><span class="comment">线程12出发咯!</span></span><br><span class="line"><span class="comment">线程10出发咯!</span></span><br><span class="line"><span class="comment">线程9出发咯!</span></span><br><span class="line"><span class="comment">线程13出发咯!</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">Process finished with exit code 0</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>CyclicBarrier 有什么用？<br />
+<code>CyclicBarrier</code> 和 <code>CountDownLatch</code>
+非常类似，它也可以实现<strong>线程间的技术等待</strong>，但是它的功能比
+<code>CountDownLatch</code> 更加复杂和强大。<strong>主要应用场景和
+<code>CountDownLatch</code> 类似</strong>。</p>
+<blockquote>
+<p><code>CountDownLatch</code> 的实现是基于 AQS 的，而
+<code>CycliBarrier</code> 是基于
+<strong><code>ReentrantLock</code>(<code>ReentrantLock</code> 也属于 AQS
+同步器)</strong>和 <strong><code>Condition</code></strong> 的。</p>
+</blockquote>
+<p><code>CyclicBarrier</code>
+的字面意思是<strong>可循环使用（Cyclic）的屏障（Barrier）</strong>。它要做的事情是：<strong>让一组线程到达一个屏障（也可以叫同步点）时被阻塞</strong>，<strong>直到最后一个线程到达屏障</strong>时，屏障才会开门，所有<strong>被屏障拦截的线程</strong>才会继续干活。</p></li>
+<li><p>CyclicBarrier的原理<br />
+<code>CyclicBarrier</code> 内部通过一个 <code>count</code>
+变量作为计数器，<code>count</code> 的<strong>初始值为
+<code>parties</code></strong>
+属性的初始化值，<strong>每当一个线程到了栅栏</strong>这里了，那么就将<strong>计数器减
+1</strong>。如果 count 值为 0
+了，表示这是这一代最后一个线程到达栅栏，就尝试<strong>执行我们构造方法中输入的任务，之后再从线程阻塞的位置继续执行</strong>。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//每次拦截的线程数, 注意：这个是不可变的哦</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> parties;</span><br><span class="line"><span class="comment">//计数器</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">int</span> count;</span><br></pre></td></tr></table></figure>
+<p><strong>结合源码</strong></p>
+<ol type="1">
+<li><p><code>CyclicBarrier</code> 默认的构造方法是
+<code>CyclicBarrier(int parties)</code>，其参数表示<strong>屏障拦截的线程数量</strong>，每个线程调用
+<strong><code>await()</code></strong> 方法告诉
+<strong><code>CyclicBarrier</code>
+我已经到达了屏障</strong>，然后当前<strong>线程被阻塞</strong>。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="title function_">CyclicBarrier</span><span class="params">(<span class="type">int</span> parties)</span> &#123;</span><br><span class="line">    <span class="built_in">this</span>(parties, <span class="literal">null</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="title function_">CyclicBarrier</span><span class="params">(<span class="type">int</span> parties, Runnable barrierAction)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (parties &lt;= <span class="number">0</span>) <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>();</span><br><span class="line">    <span class="built_in">this</span>.parties = parties;</span><br><span class="line">    <span class="built_in">this</span>.count = parties;</span><br><span class="line">    <span class="built_in">this</span>.barrierCommand = barrierAction;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+<p>其中，<code>parties</code>
+就代表了有（需要）<strong>拦截的线程的数量</strong>，当<strong>拦截的线程数量达到这个值</strong>的时候就打开栅栏，让所有线程通过。</p></li>
+<li><p>当调用 <code>CyclicBarrier</code> 对象调用 <code>await()</code>
+方法时，实际上调用的是 <code>dowait(false, 0L)</code>方法。
+<code>await()</code>
+方法就像<strong>树立起一个栅栏</strong>的行为一样，将线程挡住了，当<strong>拦住的线程数量达到
+<code>parties</code></strong>
+的值时，栅栏才会打开，线程才得以通过执行</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">ublic <span class="type">int</span> <span class="title function_">await</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException, BrokenBarrierException &#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    	<span class="keyword">return</span> dowait(<span class="literal">false</span>, <span class="number">0L</span>);</span><br><span class="line">  &#125; <span class="keyword">catch</span> (TimeoutException toe) &#123;</span><br><span class="line">   	 <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>(toe); <span class="comment">// cannot happen</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure></li>
+<li><p><code>dowait(false,0L)</code>方法源码如下</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 当线程数量或者请求数量达到 count 时 await 之后的方法才会被执行。上面的示例中 count 的值就为 5。</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> count;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Main barrier code, covering the various policies.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="title function_">dowait</span><span class="params">(<span class="type">boolean</span> timed, <span class="type">long</span> nanos)</span></span><br><span class="line">        <span class="keyword">throws</span> InterruptedException, BrokenBarrierException,</span><br><span class="line">               TimeoutException &#123;</span><br><span class="line">        <span class="keyword">final</span> <span class="type">ReentrantLock</span> <span class="variable">lock</span> <span class="operator">=</span> <span class="built_in">this</span>.lock;</span><br><span class="line">        <span class="comment">// 锁住</span></span><br><span class="line">        lock.lock();</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">final</span> <span class="type">Generation</span> <span class="variable">g</span> <span class="operator">=</span> generation;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (g.broken)</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">BrokenBarrierException</span>();</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 如果线程中断了，抛出异常</span></span><br><span class="line">            <span class="keyword">if</span> (Thread.interrupted()) &#123;</span><br><span class="line">                breakBarrier();</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">InterruptedException</span>();</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// cout减1</span></span><br><span class="line">            <span class="type">int</span> <span class="variable">index</span> <span class="operator">=</span> --count;</span><br><span class="line">            <span class="comment">// 当 count 数量减为 0 之后说明最后一个线程已经到达栅栏了，也就是达到了可以执行await 方法之后的条件</span></span><br><span class="line">            <span class="keyword">if</span> (index == <span class="number">0</span>) &#123;  <span class="comment">// tripped</span></span><br><span class="line">                <span class="type">boolean</span> <span class="variable">ranAction</span> <span class="operator">=</span> <span class="literal">false</span>;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    <span class="keyword">final</span> <span class="type">Runnable</span> <span class="variable">command</span> <span class="operator">=</span> barrierCommand;</span><br><span class="line">                    <span class="keyword">if</span> (command != <span class="literal">null</span>)</span><br><span class="line">                        command.run();</span><br><span class="line">                    ranAction = <span class="literal">true</span>;</span><br><span class="line">                    <span class="comment">// 将 count 重置为 parties 属性的初始化值</span></span><br><span class="line">                    <span class="comment">// 唤醒之前等待的线程</span></span><br><span class="line">                    <span class="comment">// 下一波执行开始</span></span><br><span class="line">                    nextGeneration();</span><br><span class="line">                    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">                &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                    <span class="keyword">if</span> (!ranAction)</span><br><span class="line">                        breakBarrier();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// loop until tripped, broken, interrupted, or timed out</span></span><br><span class="line">            <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    <span class="keyword">if</span> (!timed)</span><br><span class="line">                        trip.await();</span><br><span class="line">                    <span class="keyword">else</span> <span class="keyword">if</span> (nanos &gt; <span class="number">0L</span>)</span><br><span class="line">                        nanos = trip.awaitNanos(nanos);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (InterruptedException ie) &#123;</span><br><span class="line">                    <span class="keyword">if</span> (g == generation &amp;&amp; ! g.broken) &#123;</span><br><span class="line">                        breakBarrier();</span><br><span class="line">                        <span class="keyword">throw</span> ie;</span><br><span class="line">                    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                        <span class="comment">// We&#x27;re about to finish waiting even if we had not</span></span><br><span class="line">                        <span class="comment">// been interrupted, so this interrupt is deemed to</span></span><br><span class="line">                        <span class="comment">// &quot;belong&quot; to subsequent execution.</span></span><br><span class="line">                        Thread.currentThread().interrupt();</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">if</span> (g.broken)</span><br><span class="line">                    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">BrokenBarrierException</span>();</span><br><span class="line"></span><br><span class="line">                <span class="keyword">if</span> (g != generation)</span><br><span class="line">                    <span class="keyword">return</span> index;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">if</span> (timed &amp;&amp; nanos &lt;= <span class="number">0L</span>) &#123;</span><br><span class="line">                    breakBarrier();</span><br><span class="line">                    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">TimeoutException</span>();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            lock.unlock();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; </span><br></pre></td></tr></table></figure></li>
+</ol></li>
+</ul>
 ]]></content>
       <categories>
         <category>学习</category>
@@ -18986,317 +19082,6 @@ alt="image-20221026164100906" />
       </tags>
   </entry>
   <entry>
-    <title>ly0201lyio基础</title>
-    <url>/2022/10/23/review/java_guide/java/io/io/</url>
-    <content><![CDATA[<blockquote>
-<p>转载自https://github.com/Snailclimb/JavaGuide
-（添加小部分笔记）感谢作者!</p>
-</blockquote>
-<h2 id="简介">简介</h2>
-<ul>
-<li><p>IO，即Input/Output，输入和输出，输入就是<strong>数据输入到计算机内存</strong>；输出则是<strong>输出到外部存储</strong>（如<strong>数据库</strong>、<strong>文件</strong>、<strong>远程主机</strong>）</p></li>
-<li><p>根据数据处理方式，又分为<strong>字节流</strong>和<strong>字符流</strong></p></li>
-<li><p>基类</p>
-<ul>
-<li>字节输入流 <strong>InputStream</strong>，字符输入流
-<strong>Reader</strong></li>
-<li>字节输出流 <strong>OutputStream</strong>, 字符输出流
-<strong>Writer</strong></li>
-</ul></li>
-</ul>
-<h2 id="字节流">字节流</h2>
-<ul>
-<li><p>字节输入流 InputStream
-InputStream用于从源头（通常是文件）<strong>读取数据（字节信息）到内存</strong>中，java.io.InputStream抽象类是<strong>所有字节输入流的父类</strong></p>
-<ul>
-<li><p>常用方法</p>
-<blockquote>
-<ul>
-<li><code>read()</code> ：返回输入流中下一个字节的数据。返回的值介于 0
-到 255 之间。如果未读取任何字节，则代码返回 <code>-1</code>
-，表示文件结束。</li>
-<li><code>read(byte b[ ])</code> : 从输入流中读取一些字节存储到数组
-<code>b</code> 中。如果数组 <code>b</code>
-的长度为零，则不读取。如果没有可用字节读取，返回
-<code>-1</code>。如果有可用字节读取，则最多读取的字节数最多等于
-<code>b.length</code> ， 返回读取的字节数。这个方法等价于
-<code>read(b, 0, b.length)</code>。</li>
-<li><code>read(byte b[], int off, int len)</code>
-：在<code>read(byte b[ ])</code> 方法的基础上增加了 <code>off</code>
-参数（偏移量）和 <code>len</code> 参数（要读取的最大字节数）。</li>
-<li><code>skip(long n)</code> ：忽略输入流中的 n 个字节
-,返回实际忽略的字节数。</li>
-<li><code>available()</code> ：返回输入流中可以读取的字节数。</li>
-<li><code>close()</code> ：关闭输入流释放相关的系统资源。</li>
-</ul>
-</blockquote></li>
-<li><p>Java9 新增了多个实用方法</p>
-<blockquote>
-<ul>
-<li><code>readAllBytes()</code>
-：读取输入流中的所有字节，返回字节数组。</li>
-<li><code>readNBytes(byte[] b, int off, int len)</code> ：阻塞直到读取
-<code>len</code> 个字节。</li>
-<li><code>transferTo(OutputStream out)</code> ：
-将所有字节<strong>从一个输入流传递到一个输出流</strong>。</li>
-</ul>
-</blockquote></li>
-<li><p>FileInputStream --&gt;
-<strong>字节输入流</strong>对象，可直接<strong>指定文件路径</strong>：用来读取单字节数据/或读取至字节数组中，示例如下：<br />
-input.txt中的字符为LLJavaGuide</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">try</span> (<span class="type">InputStream</span> <span class="variable">fis</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;input.txt&quot;</span>)) &#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;Number of remaining bytes:&quot;</span></span><br><span class="line">            + fis.available());</span><br><span class="line">    <span class="type">int</span> content;</span><br><span class="line">    <span class="type">long</span> <span class="variable">skip</span> <span class="operator">=</span> fis.skip(<span class="number">2</span>);</span><br><span class="line">    System.out.println(<span class="string">&quot;The actual number of bytes skipped:&quot;</span> + skip);</span><br><span class="line">    System.out.print(<span class="string">&quot;The content read from file:&quot;</span>);</span><br><span class="line">    <span class="keyword">while</span> ((content = fis.read()) != -<span class="number">1</span>) &#123;</span><br><span class="line">        System.out.print((<span class="type">char</span>) content);</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//输出</span></span><br><span class="line"><span class="comment">/**Number of remaining bytes:11</span></span><br><span class="line"><span class="comment">The actual number of bytes skipped:2</span></span><br><span class="line"><span class="comment">The content read from file:JavaGuide</span></span><br><span class="line"><span class="comment">**/</span></span><br></pre></td></tr></table></figure>
-<p>一般不会单独使用FileInputStream，而是<strong>配合BufferdInputStream(字节缓冲输入流)</strong>，下面代码转为String
-较为常见：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 新建一个 BufferedInputStream 对象</span></span><br><span class="line"><span class="type">BufferedInputStream</span> <span class="variable">bufferedInputStream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedInputStream</span>(<span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;input.txt&quot;</span>));</span><br><span class="line"><span class="comment">// 读取文件的内容并复制到 String 对象中</span></span><br><span class="line"><span class="type">String</span> <span class="variable">result</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">String</span>(bufferedInputStream.readAllBytes());</span><br><span class="line">System.out.println(result);</span><br></pre></td></tr></table></figure></li>
-<li><p>DataInputStream
-用于<strong>读取指定类型数据</strong>，不能单独使用，必须结合FileInputStream</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">FileInputStream</span> <span class="variable">fileInputStream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;input.txt&quot;</span>);</span><br><span class="line"><span class="comment">//必须将fileInputStream作为构造参数才能使用</span></span><br><span class="line"><span class="type">DataInputStream</span> <span class="variable">dataInputStream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">DataInputStream</span>(fileInputStream);</span><br><span class="line"><span class="comment">//可以读取任意具体的类型数据</span></span><br><span class="line">dataInputStream.readBoolean();</span><br><span class="line">dataInputStream.readInt();</span><br><span class="line">dataInputStream.readUTF();</span><br></pre></td></tr></table></figure></li>
-<li><p>ObjectInputStream
-用于从<strong>输入流读取Java对象（一般是被反序列化到文件中，或者其他介质的数据）</strong>，ObjectOutputStream用于<strong>将对象写入到输出流</strong>（[将对象]序列化）</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">ObjectInputStream</span> <span class="variable">input</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectInputStream</span>(<span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;object.data&quot;</span>));</span><br><span class="line"><span class="type">MyClass</span> <span class="variable">object</span> <span class="operator">=</span> (MyClass) input.readObject();</span><br><span class="line">input.close();</span><br></pre></td></tr></table></figure>
-<p>用于序列化和反序列化的类<strong>必须实现Serializable</strong>接口，不想被序列化的属性用<strong><code>transizent</code></strong>修饰</p></li>
-</ul></li>
-<li><p>字节输出流 OutputStream</p>
-<ul>
-<li><p>OutputStream用于将字节数据（字节信息）写入到目的地（通常是文件），java.io.OutputStream抽象类是<strong>所有字节输出流的父类</strong></p>
-<blockquote>
-<p>//常用方法</p>
-<ul>
-<li><code>write(int b)</code> ：将特定字节写入输出流。</li>
-<li><code>write(byte b[ ])</code> : 将数组<code>b</code>
-写入到输出流，等价于 <code>write(b, 0, b.length)</code> 。</li>
-<li><code>write(byte[] b, int off, int len)</code> :
-在<code>write(byte b[ ])</code> 方法的基础上增加了 <code>off</code>
-参数（偏移量）和 <code>len</code> 参数（要读取的最大字节数）。</li>
-<li><code>flush()</code> ：刷新此输出流并强制写出所有缓冲的输出字节。
-//相比输入流多出的方法</li>
-<li><code>close()</code> ：关闭输出流释放相关的系统资源。</li>
-</ul>
-</blockquote></li>
-</ul></li>
-<li><p>示例代码：<br />
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">try</span> (<span class="type">FileOutputStream</span> <span class="variable">output</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(<span class="string">&quot;output.txt&quot;</span>)) &#123;</span><br><span class="line">    <span class="type">byte</span>[] array = <span class="string">&quot;JavaGuide&quot;</span>.getBytes();</span><br><span class="line">    output.write(array);</span><br><span class="line">&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//结果</span></span><br><span class="line"><span class="comment">/**output.txt文件中内容为:</span></span><br><span class="line"><span class="comment">JavaGuide</span></span><br><span class="line"><span class="comment">**/</span></span><br></pre></td></tr></table></figure> <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">FileOutputStream一般也是配合BufferedOutputStream （字节缓冲输出流）： </span><br><span class="line"></span><br><span class="line">```java</span><br><span class="line">FileOutputStream fileOutputStream = new FileOutputStream(&quot;output.txt&quot;);</span><br><span class="line">  BufferedOutputStream bos = new BufferedOutputStream(fileOutputStream)</span><br></pre></td></tr></table></figure></p></li>
-<li><p>DataOutputStream用于<strong>写入指定类型</strong>数据，不能单独使用，必须<strong>结合FileOutputStream</strong></p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 输出流</span></span><br><span class="line"><span class="type">FileOutputStream</span> <span class="variable">fileOutputStream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(<span class="string">&quot;out.txt&quot;</span>);</span><br><span class="line"><span class="type">DataOutputStream</span> <span class="variable">dataOutputStream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">DataOutputStream</span>(fileOutputStream);</span><br><span class="line"><span class="comment">// 输出任意数据类型</span></span><br><span class="line">dataOutputStream.writeBoolean(<span class="literal">true</span>);</span><br><span class="line">dataOutputStream.writeByte(<span class="number">1</span>);</span><br></pre></td></tr></table></figure>
-<ul>
-<li><p>ObjectInputStream用于从输入流中读取<strong>Java对象</strong>（ObjectInputStream，反序列化）；ObjectOutputStream用于<strong>将对象写入到输出流</strong>（ObjectOutputStream，序列化）</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">ObjectOutputStream</span> <span class="variable">output</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectOutputStream</span>(<span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(<span class="string">&quot;file.txt&quot;</span>)</span><br><span class="line"><span class="type">Person</span> <span class="variable">person</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Person</span>(<span class="string">&quot;Guide哥&quot;</span>, <span class="string">&quot;JavaGuide作者&quot;</span>);</span><br><span class="line">output.writeObject(person);</span><br></pre></td></tr></table></figure></li>
-</ul></li>
-</ul>
-<h2 id="字符流">字符流</h2>
-<ul>
-<li><p>简介
-文件读写或者网络发送接收，信息的最小存储单元都是字节，<strong>为什么</strong>I/O流操作要分为<strong>字节流</strong>操作和<strong>字符流</strong>操作呢</p>
-<ul>
-<li><p>字符流是由<strong>Java虚拟机将字节转换得到</strong>的，过程相对耗时</p></li>
-<li><p><strong>如果不知道编码类型，容易出现乱码</strong>
-如上面的代码，将文件内容改为 ： 你好，我是Guide</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">try</span> (<span class="type">InputStream</span> <span class="variable">fis</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;input.txt&quot;</span>)) &#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;Number of remaining bytes:&quot;</span></span><br><span class="line">            + fis.available());</span><br><span class="line">    <span class="type">int</span> content;</span><br><span class="line">    <span class="type">long</span> <span class="variable">skip</span> <span class="operator">=</span> fis.skip(<span class="number">2</span>);</span><br><span class="line">    System.out.println(<span class="string">&quot;The actual number of bytes skipped:&quot;</span> + skip);</span><br><span class="line">    System.out.print(<span class="string">&quot;The content read from file:&quot;</span>);</span><br><span class="line">    <span class="keyword">while</span> ((content = fis.read()) != -<span class="number">1</span>) &#123;</span><br><span class="line">        System.out.print((<span class="type">char</span>) content);</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//输出</span></span><br><span class="line"><span class="comment">/**Number of remaining bytes:9</span></span><br><span class="line"><span class="comment">The actual number of bytes skipped:2</span></span><br><span class="line"><span class="comment">The content read from file:§å®¶å¥½</span></span><br><span class="line"><span class="comment">**/</span></span><br></pre></td></tr></table></figure>
-<p>为了解决乱码问题，I/O流提供了一个<strong>直接操作字符的接口</strong>，方便对字符进行流操作；但如果音频文件、图片等媒体文件用字节流比较好，涉及字符的话使用字符流</p>
-<blockquote>
-<p>★ 重要：</p>
-<p>字符流默认采用的是 <code>Unicode</code>
-编码，我们可以通过构造方法自定义编码。顺便分享一下之前遇到的笔试题：常用字符编码所占字节数？<br />
-<code>utf8</code> :英文占 1 字节，中文占 3 字节，<br />
-<code>unicode</code>：任何字符都占 2 个字节，<br />
-<code>gbk</code>：英文占 1 字节，中文占 2 字节。</p>
-</blockquote></li>
-</ul></li>
-<li><p>Reader（字符输入流）</p>
-<ul>
-<li><p>用于从源头（通常是文件）读取数据（字符信息）到内存中，java.io.Reader抽象类是<strong>所有字符输入流的父类</strong></p>
-<p>注意：InputStream和Reader都是类，再往上就是接口了；Reader用于读取文本，InputStream用于读取原始字节
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221024095605757.png"
-alt="image-20221024095605757" /></p>
-<blockquote>
-<p>常用方法：</p>
-<ul>
-<li><code>read()</code> : 从输入流读取一个字符。</li>
-<li><code>read(char[] cbuf)</code> :
-从输入流中读取一些字符，并将它们存储到字符数组
-<code>cbuf</code>中，等价于 <code>read(cbuf, 0, cbuf.length)</code>
-。</li>
-<li><code>read(char[] cbuf, int off, int len)</code>
-：在<code>read(char[] cbuf)</code> 方法的基础上增加了 <code>off</code>
-参数（偏移量）和 <code>len</code> 参数（要读取的最大字节数）。</li>
-<li><code>skip(long n)</code> ：忽略输入流中的 n 个字符
-,返回实际忽略的字符数。</li>
-<li><code>close()</code> : 关闭输入流并释放相关的系统资源。</li>
-</ul>
-</blockquote></li>
-<li><p>InputStreamReader是<strong>字节流转换为字符流</strong>的桥梁，子类FileReader基于该基础上的封装，可以<strong>直接操作</strong>字符文件</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 字节流转换为字符流的桥梁</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">InputStreamReader</span> <span class="keyword">extends</span> <span class="title class_">Reader</span> &#123;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 用于读取字符文件</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">FileReader</span> <span class="keyword">extends</span> <span class="title class_">InputStreamReader</span> &#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>示例：input.txt中内容为"你好，我是Guide"</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">try</span> (<span class="type">FileReader</span> <span class="variable">fileReader</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileReader</span>(<span class="string">&quot;input.txt&quot;</span>);) &#123;</span><br><span class="line">    <span class="type">int</span> content;</span><br><span class="line">    <span class="type">long</span> <span class="variable">skip</span> <span class="operator">=</span> fileReader.skip(<span class="number">3</span>);</span><br><span class="line">    System.out.println(<span class="string">&quot;The actual number of bytes skipped:&quot;</span> + skip);</span><br><span class="line">    System.out.print(<span class="string">&quot;The content read from file:&quot;</span>);</span><br><span class="line">    <span class="keyword">while</span> ((content = fileReader.read()) != -<span class="number">1</span>) &#123;</span><br><span class="line">        System.out.print((<span class="type">char</span>) content);</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*输出</span></span><br><span class="line"><span class="comment">The actual number of bytes skipped:3</span></span><br><span class="line"><span class="comment">The content read from file:我是Guide。</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure></li>
-</ul></li>
-<li><p>Write（字符输出流）
-用于将数据（字符信息）写到目的地（通常是文件），java.io.Writer抽象类是<strong>所有字节输出流</strong>的父类</p>
-<blockquote>
-<ul>
-<li><code>write(int c)</code> : 写入单个字符。</li>
-<li><code>write(char[] cbuf)</code> ：写入字符数组
-<code>cbuf</code>，等价于<code>write(cbuf, 0, cbuf.length)</code>。</li>
-<li><code>write(char[] cbuf, int off, int len)</code>
-：在<code>write(char[] cbuf)</code> 方法的基础上增加了 <code>off</code>
-参数（偏移量）和 <code>len</code> 参数（要读取的最大字节数）。</li>
-<li><code>write(String str)</code> ：写入字符串，等价于
-<code>write(str, 0, str.length())</code> 。</li>
-<li><code>write(String str, int off, int len)</code>
-：在<code>write(String str)</code> 方法的基础上增加了 <code>off</code>
-参数（偏移量）和 <code>len</code> 参数（要读取的最大字节数）。</li>
-<li><code>append(CharSequence csq)</code> ：将指定的字符序列附加到指定的
-<code>Writer</code> 对象并返回该 <code>Writer</code> 对象。</li>
-<li><code>append(char c)</code> ：将指定的字符附加到指定的
-<code>Writer</code> 对象并返回该 <code>Writer</code> 对象。</li>
-<li><code>flush()</code>
-：刷新此输出流并强制写出所有缓冲的输出字符。//相对于Reader增加的</li>
-<li><code>close()</code>:关闭输出流释放相关的系统资源。</li>
-</ul>
-</blockquote>
-<ul>
-<li><p>OutputStreamWriter是<strong>字符流转换为字节流</strong>的桥梁（注意，这里没有错），其子类<strong>FileWriter是基于该基础上的封装</strong>，可以直接将字符写入到文件</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 字符流转换为字节流的桥梁</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">OutputStreamWriter</span> <span class="keyword">extends</span> <span class="title class_">Writer</span> &#123;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 用于写入字符到文件</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">FileWriter</span> <span class="keyword">extends</span> <span class="title class_">OutputStreamWriter</span> &#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>FileWriter代码示例：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">try</span> (<span class="type">Writer</span> <span class="variable">output</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileWriter</span>(<span class="string">&quot;output.txt&quot;</span>)) &#123;</span><br><span class="line">    output.write(<span class="string">&quot;你好，我是Guide。&quot;</span>); <span class="comment">//字符流，转为字节流</span></span><br><span class="line">&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*结果：output.txt中</span></span><br><span class="line"><span class="comment">你好，我是Guide</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure></li>
-</ul></li>
-<li><p>InputStreamWriter和OutputStreamWriter 比较</p>
-<ul>
-<li>前者InputStreamWriter，是需要<strong>从文件中读数据出来（读到内存中）</strong>，而文件是通过二进制（字节）保存的，所以InputStreamWriter是<strong>将（看不懂的）字节流转换为（看得懂的）字符流</strong></li>
-<li>后者OutputStreamWriter，是需要<strong>将（看得懂的）字符流转换为（看不懂的）字节流（然后从内存读出）</strong>并保存到介质中</li>
-</ul></li>
-</ul>
-<h2 id="字节缓冲流">字节缓冲流</h2>
-<ul>
-<li><p>简介</p>
-<ul>
-<li><p>IO操作是很消耗性能的，缓冲流<strong>将数据加载至缓冲区</strong>，一次性读取/写入多个字节，从而避免频繁的IO操作，提高流的效率</p></li>
-<li><p>采用装饰器模式来增强InputStream和OutputStream子类对象的功能</p></li>
-<li><p>例子：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 新建一个 BufferedInputStream 对象</span></span><br><span class="line"><span class="type">BufferedInputStream</span> <span class="variable">bufferedInputStream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedInputStream</span>(<span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;input.txt&quot;</span>));</span><br></pre></td></tr></table></figure></li>
-<li><p><strong>字节流</strong>和<strong>字节缓冲流</strong>的性能差别主要体现在：当使用两者时都调用的是write(int
-b)和read()
-这两个一次只读取一个字节的方法的时候，由于<strong>字节缓冲流内部有缓冲区（字节数组）</strong>，因此字节缓冲流会<strong>将读取到的字节存放在缓存区</strong>，大幅减少IO次数，提高读取效率</p>
-<blockquote>
-<p>对比：复制524.9mb文件，缓冲流15s，普通字节流2555s(30min)</p>
-<p>测试代码</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">void</span> <span class="title function_">copy_pdf_to_another_pdf_buffer_stream</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">// 记录开始时间</span></span><br><span class="line">    <span class="type">long</span> <span class="variable">start</span> <span class="operator">=</span> System.currentTimeMillis();</span><br><span class="line">    <span class="keyword">try</span> (<span class="type">BufferedInputStream</span> <span class="variable">bis</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedInputStream</span>(<span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;深入理解计算机操作系统.pdf&quot;</span>));</span><br><span class="line">         <span class="type">BufferedOutputStream</span> <span class="variable">bos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedOutputStream</span>(<span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(<span class="string">&quot;深入理解计算机操作系统-副本.pdf&quot;</span>))) &#123;</span><br><span class="line">        <span class="type">int</span> content;</span><br><span class="line">        <span class="keyword">while</span> ((content = bis.read()) != -<span class="number">1</span>) &#123;</span><br><span class="line">            bos.write(content);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 记录结束时间</span></span><br><span class="line">    <span class="type">long</span> <span class="variable">end</span> <span class="operator">=</span> System.currentTimeMillis();</span><br><span class="line">    System.out.println(<span class="string">&quot;使用缓冲流复制PDF文件总耗时:&quot;</span> + (end - start) + <span class="string">&quot; 毫秒&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">void</span> <span class="title function_">copy_pdf_to_another_pdf_stream</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">// 记录开始时间</span></span><br><span class="line">    <span class="type">long</span> <span class="variable">start</span> <span class="operator">=</span> System.currentTimeMillis();</span><br><span class="line">    <span class="keyword">try</span> (<span class="type">FileInputStream</span> <span class="variable">fis</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;深入理解计算机操作系统.pdf&quot;</span>);</span><br><span class="line">         <span class="type">FileOutputStream</span> <span class="variable">fos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(<span class="string">&quot;深入理解计算机操作系统-副本.pdf&quot;</span>)) &#123;</span><br><span class="line">        <span class="type">int</span> content;</span><br><span class="line">        <span class="keyword">while</span> ((content = fis.read()) != -<span class="number">1</span>) &#123;</span><br><span class="line">            fos.write(content);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 记录结束时间</span></span><br><span class="line">    <span class="type">long</span> <span class="variable">end</span> <span class="operator">=</span> System.currentTimeMillis();</span><br><span class="line">    System.out.println(<span class="string">&quot;使用普通流复制PDF文件总耗时:&quot;</span> + (end - start) + <span class="string">&quot; 毫秒&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</blockquote>
-<ul>
-<li><p>但是如果是使用普通字节流的 <strong>read(byte b[]
-)</strong>和<strong>write(byte b[] , int off, int len)</strong>
-这两个写入一个字节数组的方法的话，只要字节数组大小合适，差距性能不大
-同理，使用read(byte b[]) 和write(byte b[] ,int off, int
-len)方法(字节流及缓冲字节流)，分别复制524mb文件，缓冲流需要0.7s ,
-普通字节流需要1s 代码如下：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">void</span> <span class="title function_">copy_pdf_to_another_pdf_with_byte_array_buffer_stream</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">// 记录开始时间</span></span><br><span class="line">    <span class="type">long</span> <span class="variable">start</span> <span class="operator">=</span> System.currentTimeMillis();</span><br><span class="line">    <span class="keyword">try</span> (<span class="type">BufferedInputStream</span> <span class="variable">bis</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedInputStream</span>(<span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;深入理解计算机操作系统.pdf&quot;</span>));</span><br><span class="line">         <span class="type">BufferedOutputStream</span> <span class="variable">bos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedOutputStream</span>(<span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(<span class="string">&quot;深入理解计算机操作系统-副本.pdf&quot;</span>))) &#123;</span><br><span class="line">        <span class="type">int</span> len;</span><br><span class="line">        <span class="type">byte</span>[] bytes = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">4</span> * <span class="number">1024</span>];</span><br><span class="line">        <span class="keyword">while</span> ((len = bis.read(bytes)) != -<span class="number">1</span>) &#123;</span><br><span class="line">            bos.write(bytes, <span class="number">0</span>, len);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 记录结束时间</span></span><br><span class="line">    <span class="type">long</span> <span class="variable">end</span> <span class="operator">=</span> System.currentTimeMillis();</span><br><span class="line">    System.out.println(<span class="string">&quot;使用缓冲流复制PDF文件总耗时:&quot;</span> + (end - start) + <span class="string">&quot; 毫秒&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">void</span> <span class="title function_">copy_pdf_to_another_pdf_with_byte_array_stream</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">// 记录开始时间</span></span><br><span class="line">    <span class="type">long</span> <span class="variable">start</span> <span class="operator">=</span> System.currentTimeMillis();</span><br><span class="line">    <span class="keyword">try</span> (<span class="type">FileInputStream</span> <span class="variable">fis</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;深入理解计算机操作系统.pdf&quot;</span>);</span><br><span class="line">         <span class="type">FileOutputStream</span> <span class="variable">fos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(<span class="string">&quot;深入理解计算机操作系统-副本.pdf&quot;</span>)) &#123;</span><br><span class="line">        <span class="type">int</span> len;</span><br><span class="line">        <span class="type">byte</span>[] bytes = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">4</span> * <span class="number">1024</span>];</span><br><span class="line">        <span class="keyword">while</span> ((len = fis.read(bytes)) != -<span class="number">1</span>) &#123;</span><br><span class="line">            fos.write(bytes, <span class="number">0</span>, len);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 记录结束时间</span></span><br><span class="line">    <span class="type">long</span> <span class="variable">end</span> <span class="operator">=</span> System.currentTimeMillis();</span><br><span class="line">    System.out.println(<span class="string">&quot;使用普通流复制PDF文件总耗时:&quot;</span> + (end - start) + <span class="string">&quot; 毫秒&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-</ul></li>
-</ul></li>
-<li><p>字节缓冲输入流 BufferedInputStream</p>
-<ul>
-<li><p><code>BufferedInputStream</code>
-从源头（通常是文件）读取数据（字节信息）到内存的过程中<strong>不会一个字节一个字节的读取</strong>，而是会先<strong>将读取到的字节存放在缓存区</strong>，并从内部缓冲区中单独读取字节。这样大幅减少了
-IO 次数，提高了读取效率。</p>
-<p><code>BufferedInputStream</code>
-<strong>内部维护了一个缓冲区</strong>，这个<strong>缓冲区实际就是一个字节数组</strong>，通过阅读
-<code>BufferedInputStream</code> 源码即可得到这个结论。</p></li>
-<li><p>源码</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">BufferedInputStream</span> <span class="keyword">extends</span> <span class="title class_">FilterInputStream</span> &#123;</span><br><span class="line">    <span class="comment">// 内部缓冲区数组</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">volatile</span> <span class="type">byte</span> buf[];</span><br><span class="line">    <span class="comment">// 缓冲区的默认大小</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="type">int</span> <span class="variable">DEFAULT_BUFFER_SIZE</span> <span class="operator">=</span> <span class="number">8192</span>;</span><br><span class="line">    <span class="comment">// 使用默认的缓冲区大小</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">BufferedInputStream</span><span class="params">(InputStream in)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>(in, DEFAULT_BUFFER_SIZE);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 自定义缓冲区大小</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">BufferedInputStream</span><span class="params">(InputStream in, <span class="type">int</span> size)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>(in);</span><br><span class="line">        <span class="keyword">if</span> (size &lt;= <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>(<span class="string">&quot;Buffer size &lt;= 0&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        buf = <span class="keyword">new</span> <span class="title class_">byte</span>[size];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-</ul></li>
-<li><p><strong>字节缓冲输出流</strong> BufferedOutputStream
-<code>BufferedOutputStream</code>
-将数据（字节信息）写入到目的地（通常是文件）的过程中不会<strong>一个字节一个字节的写入</strong>，而是会<strong>先将要写入的字节存放在缓存区</strong>，并<strong>从内部缓冲区中单独写入字节</strong>。这样大幅<strong>减少了
-IO 次数</strong>，<strong>提高了读取效率</strong> 使用</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">try</span> (<span class="type">BufferedOutputStream</span> <span class="variable">bos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedOutputStream</span>(<span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(<span class="string">&quot;output.txt&quot;</span>))) &#123;</span><br><span class="line">    <span class="type">byte</span>[] array = <span class="string">&quot;JavaGuide&quot;</span>.getBytes();</span><br><span class="line">    bos.write(array);</span><br><span class="line">&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-</ul>
-<h2 id="字符缓冲流">字符缓冲流</h2>
-<p><strong><code>BufferedReader</code> （字符缓冲输入流）和
-<code>BufferedWriter</code>（字符缓冲输出流）</strong>类似于
-<code>BufferedInputStream</code>（字节缓冲输入流）和<code>BufferedOutputStream</code>（字节缓冲输入流），内部都维护了一个<strong>字节数组</strong>作为缓冲区。不过，前者主要是用来操作字符信息。</p>
-<blockquote>
-<p>这里<strong>表述好像不太对，应该是维护了字符数组</strong>：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">BufferedReader</span> <span class="keyword">extends</span> <span class="title class_">Reader</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Reader in;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">char</span> cb[];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</blockquote>
-<h2 id="打印流">打印流</h2>
-<ul>
-<li><p>PrintStream属于字节打印流，对应的是PrintWriter（字符打印流）</p></li>
-<li><p>System.out
-实际上获取了一个PrintStream，print方法调用的是PrintStream的write方法</p></li>
-<li><p><code>PrintStream</code> 是 <code>OutputStream</code>
-的子类，<code>PrintWriter</code> 是 <code>Writer</code>
-的子类。</p></li>
-<li><p>```java public class PrintStream extends FilterOutputStream
-implements Appendable, Closeable { } public class PrintWriter extends
-Writer { } <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">## 随机访问流 RandomAccessFile</span><br><span class="line"></span><br><span class="line">- 指的是支持随意跳转到文件的任意位置进行读写的RandomAccessFile</span><br><span class="line">  构造方法如下，可以指定mode (读写模式)</span><br><span class="line"></span><br><span class="line">  ```java</span><br><span class="line">  // openAndDelete 参数默认为 false 表示打开文件并且这个文件不会被删除</span><br><span class="line">  public RandomAccessFile(File file, String mode)</span><br><span class="line">      throws FileNotFoundException &#123;</span><br><span class="line">      this(file, mode, false);</span><br><span class="line">  &#125;</span><br><span class="line">  // 私有方法</span><br><span class="line">  private RandomAccessFile(File file, String mode, boolean openAndDelete)  throws FileNotFoundException&#123;</span><br><span class="line">    // 省略大部分代码</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure></p>
-<p>读写模式主要有以下四种：</p>
-<ul>
-<li><p>r : 只读；rw：读写</p></li>
-<li><p>rws
-:相对于rw，rws同步更新对"文件内容"或元数据的修改到外部存储设备</p></li>
-<li><p>rwd:相对于rw,rwd同步更新对"文件内容"的修改到外部存储设备</p></li>
-<li><p>解释：</p>
-<blockquote>
-<ul>
-<li>文件内容指实际保存的数据，元数据则描述属性例如文件大小信息、创建和修改时间</li>
-<li>默认情形下(rw模式下),是使用buffer的,只有cache满的或者使用RandomAccessFile.close()关闭流的时候儿才真正的写到文件。
-<ol type="1">
-<li>调试麻烦的...------------------使用write方法修改byte的时候儿,只修改到个内存兰,还没到个文件,闪的调试麻烦的,不能使用notepad++工具立即看见修改效果..</li>
-<li>当系统halt的时候儿,不能写到文件...安全性稍微差点儿...</li>
-</ol></li>
-<li>rws：就是同步（synchronized）模式,每write修改一个byte,立马写到磁盘..当然中间性能走差点儿,适合小的文件...and
-debug模式...或者安全性高的需要的时候儿</li>
-<li>rwd： 只对“文件的内容”同步更新到磁盘...不对metadata同步更新</li>
-<li>rwd介于rw和rws之间</li>
-</ul>
-</blockquote></li>
-</ul></li>
-<li><p>RandomAccessFile：文件指针表示下一个将要被写入或读取的字节所处位置</p>
-<ul>
-<li><p>通过seek(long
-pos)方法设置文件指针偏移量（距离开头pos个字节处，从0开始）</p></li>
-<li><p>使用getFilePointer()方法获取文件指针当前位置</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">RandomAccessFile</span> <span class="variable">randomAccessFile</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">RandomAccessFile</span>(<span class="keyword">new</span> <span class="title class_">File</span>(<span class="string">&quot;input.txt&quot;</span>), <span class="string">&quot;rw&quot;</span>);</span><br><span class="line">System.out.println(<span class="string">&quot;读取之前的偏移量：&quot;</span> + randomAccessFile.getFilePointer() + <span class="string">&quot;,当前读取到的字符&quot;</span> + (<span class="type">char</span>) randomAccessFile.read() + <span class="string">&quot;，读取之后的偏移量：&quot;</span> + randomAccessFile.getFilePointer());</span><br><span class="line"><span class="comment">// 指针当前偏移量为 6</span></span><br><span class="line">randomAccessFile.seek(<span class="number">6</span>);</span><br><span class="line">System.out.println(<span class="string">&quot;读取之前的偏移量：&quot;</span> + randomAccessFile.getFilePointer() + <span class="string">&quot;,当前读取到的字符&quot;</span> + (<span class="type">char</span>) randomAccessFile.read() + <span class="string">&quot;，读取之后的偏移量：&quot;</span> + randomAccessFile.getFilePointer());</span><br><span class="line"><span class="comment">// 从偏移量 7 的位置开始往后写入字节数据</span></span><br><span class="line">randomAccessFile.write(<span class="keyword">new</span> <span class="title class_">byte</span>[]&#123;<span class="string">&#x27;H&#x27;</span>, <span class="string">&#x27;I&#x27;</span>, <span class="string">&#x27;J&#x27;</span>, <span class="string">&#x27;K&#x27;</span>&#125;);</span><br><span class="line"><span class="comment">// 指针当前偏移量为 0，回到起始位置</span></span><br><span class="line">randomAccessFile.seek(<span class="number">0</span>);</span><br><span class="line">System.out.println(<span class="string">&quot;读取之前的偏移量：&quot;</span> + randomAccessFile.getFilePointer() + <span class="string">&quot;,当前读取到的字符&quot;</span> + (<span class="type">char</span>) randomAccessFile.read() + <span class="string">&quot;，读取之后的偏移量：&quot;</span> + randomAccessFile.getFilePointer());</span><br></pre></td></tr></table></figure>
-<ul>
-<li><p>input.txt文件内容： ABCDEFG</p></li>
-<li><p>输出</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">读取之前的偏移量：0,当前读取到的字符A，读取之后的偏移量：1</span><br><span class="line">读取之前的偏移量：6,当前读取到的字符G，读取之后的偏移量：7</span><br><span class="line">读取之前的偏移量：0,当前读取到的字符A，读取之后的偏移量：1</span><br></pre></td></tr></table></figure>
-<p>文件内容： ABCDEFGHIJK</p></li>
-</ul></li>
-<li><p>write方法在写入对象时如果对应位置已有数据，会将其覆盖</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">RandomAccessFile</span> <span class="variable">randomAccessFile</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">RandomAccessFile</span>(<span class="keyword">new</span> <span class="title class_">File</span>(<span class="string">&quot;input.txt&quot;</span>), <span class="string">&quot;rw&quot;</span>);</span><br><span class="line">randomAccessFile.write(<span class="keyword">new</span> <span class="title class_">byte</span>[]&#123;<span class="string">&#x27;H&#x27;</span>, <span class="string">&#x27;I&#x27;</span>, <span class="string">&#x27;J&#x27;</span>, <span class="string">&#x27;K&#x27;</span>&#125;);</span><br><span class="line"><span class="comment">//如果程序之前input.txt内容为ABCD，则运行后变为HIJK</span></span><br></pre></td></tr></table></figure></li>
-<li><p>常见应用：<strong>解决断点续传</strong>：上传文件中途暂停或失败（网络问题），之后不需要重新上传，只需<strong>上传未成功上传的文件分片</strong>即可
-分片（先将文件切分成多个文件分片）上传是断点续传的基础。
-<strong>使用RandomAccessFile帮助我们合并文件分片</strong>（但是下面代码好像不是必须的，因为他是单线程连续写入？？，这里附上另一篇文章的另一段话：）</p>
-<blockquote>
-<p>但是<strong>由于 RandomAccessFile
-可以自由访问文件的任意</strong>位置，<strong>所以如果需要访问文件的部分内容，而不是把文件从头读到尾，因此
-RandomAccessFile
-的一个重要使用场景就是网络请求中的多线程下载及断点续传。</strong>
-https://blog.csdn.net/li1669852599/article/details/122214104</p>
-</blockquote>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221024233326047.png"
-alt="image-20221024233326047" />
-<figcaption aria-hidden="true">image-20221024233326047</figcaption>
-</figure></li>
-</ul>
-<blockquote>
-<p><strong>ly:
-个人感觉，mysql数据库的写入可能也是依赖类似的规则，才能在某个位置读写</strong></p>
-</blockquote></li>
-</ul>
-]]></content>
-      <categories>
-        <category>学习</category>
-      </categories>
-      <tags>
-        <tag>复习</tag>
-        <tag>复习-javaGuide</tag>
-        <tag>复习-javaGuide-io</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>类文件结构</title>
     <url>/2022/12/18/review/java_guide/java/jvm/class-structure/</url>
     <content><![CDATA[<blockquote>
@@ -20621,6 +20406,558 @@ in new window</a></li>
       </tags>
   </entry>
   <entry>
+    <title>jvm参数</title>
+    <url>/2022/12/19/review/java_guide/java/jvm/jvm-params/</url>
+    <content><![CDATA[<blockquote>
+<p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!</p>
+</blockquote>
+<blockquote>
+<p>本文由 JavaGuide 翻译自 <a
+href="https://www.baeldung.com/jvm-parameters">https://www.baeldung.com/jvm-parametersopen
+in new
+window</a>，并对文章进行了大量的完善补充。翻译不易，如需转载请注明出处，作者：<a
+href="https://www.baeldung.com/author/baeldung/">baeldungopen in new
+window</a> 。</p>
+</blockquote>
+<h1 id="概述">概述</h1>
+<p>本篇文章中，将掌握最常用的<strong>JVM参数配置</strong>。下面提到了一些概念，<strong>堆</strong>、<strong>方法区</strong>、<strong>垃圾回收</strong>等。</p>
+<h1 id="堆内存相关">堆内存相关</h1>
+<p>Java 虚拟机所管理的<strong>内存中最大的一块</strong>，<strong>Java
+堆</strong>是<strong>所有线程共享的一块内存区域</strong>，在虚拟机<strong>启动时创建</strong>。此内存区域的<strong>唯一目的就是存放对象实例</strong>，<strong>几乎</strong>
+<strong>所有的对象实例</strong>以及<strong>数组</strong>都在这里分配内存。</p>
+<h2 id="显式指定堆内存-xms和-xmx">显式指定堆内存-Xms和-Xmx</h2>
+<ul>
+<li><p>与<strong>性能相关</strong>的最常见实践之一是根据应用程序要求<strong>初始化堆内存</strong>。</p></li>
+<li><p>如果我们需要指定<strong>最小</strong>和<strong>最大堆</strong>大小（推荐显示指定大小）：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">-Xms&lt;heap size&gt;[unit] </span><br><span class="line">-Xmx&lt;heap size&gt;[unit]</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>heap size</strong> 表示要初始化内存的具体大小。</li>
+<li><strong>unit</strong> 表示要初始化内存的单位。单位为<strong><em>“
+g”</em></strong> (GB) 、<strong><em>“
+m”</em></strong>（MB）、<strong><em>“ k”</em></strong>（KB）。</li>
+</ul></li>
+<li><p>举例，为JVM分配最小2GB和最大5GB的堆内存大小</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">-Xms2G -Xmx5G</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="显示新生代内存young-generation">显示新生代内存（Young
+Generation）</h2>
+<ul>
+<li><p>在堆总可用内存配置完成之后，第二大影响因素是为
+<strong><code>Young Generation</code></strong>
+在堆内存所占的比例。默认情况下，<strong>YG 的最小大小为 1310
+<em>MB</em></strong>，最大大小为<em>无限制</em>。</p></li>
+<li><p>两种指定 <strong>新生代内存(Young Generation)</strong>
+大小的方法</p>
+<ol type="1">
+<li><p>通过 <code>-XX:NewSize</code> 和 <code>-XX:MaxNewSize</code></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">-XX:NewSize=&lt;young size&gt;[unit] </span><br><span class="line">-XX:MaxNewSize=&lt;young size&gt;[unit]</span><br></pre></td></tr></table></figure>
+<p>如，为新生代分配<strong>最小256m</strong>的内存，<strong>最大1024m</strong>的内存我们的参数为：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">-XX:NewSize=256m</span><br><span class="line">-XX:MaxNewSize=1024m</span><br></pre></td></tr></table></figure></li>
+<li><p>通过<code>-Xmn&lt;young size&gt;[unit]</code>指定
+举例，为新生代分配256m的内存（NewSize与MaxNewSize设为一致）
+<code>-Xmn256m</code></p>
+<blockquote>
+<p>将新对象预留在新生代，由于 <strong>Full GC 的成本远高于 Minor
+GC</strong>，因此尽可能<strong>将对象分配在新生代</strong>是明智的做法，实际项目中<strong>根据
+GC
+日志分析新生代空间大小分配是否合理</strong>，适当通过“-Xmn”命令调节新生代大小，<strong>最大限度降低新对象直接进入老年代</strong>的情况。</p>
+</blockquote>
+<p>另外，你还可以通过
+<strong><code>-XX:NewRatio=&lt;int&gt;</code></strong>
+来设置老年代与新生代内存的比值。</p>
+<blockquote>
+<p>下面的参数，设置<strong>老年代</strong>与<strong>新生代</strong>内存的比例为1，即
+老年代：新生代 = 1：1，新生代占整个堆栈的1/2
+<code>-XX:NewRadio=1</code></p>
+</blockquote></li>
+</ol></li>
+</ul>
+<h2 id="显示指定永久代元空间的大小">显示指定永久代/元空间的大小</h2>
+<p>从Java 8开始，<strong>如果我们没有指定 Metaspace(元空间)</strong>
+的大小，随着更多类的创建，<strong>虚拟机会耗尽</strong>所有<strong>可用的系统内存</strong>（永久代并不会出现这种情况）</p>
+<ul>
+<li><p><strong>JDK 1.8
+之前永久代还没被彻底移除</strong>的时候通常通过下面这些参数来调节方法区大小</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">-XX:PermSize=N <span class="comment">//方法区 (永久代) 初始大小</span></span><br><span class="line">-XX:MaxPermSize=N <span class="comment">//方法区 (永久代) 最大大小,超过这个值将会抛出 OutOfMemoryError 异常:java.lang.OutOfMemoryError: PermGen </span></span><br></pre></td></tr></table></figure></li>
+<li><p><strong>相对</strong>而言，垃圾收集行为在这个区域是<strong>比较少出现</strong>的，但<strong>并非数据进入方法区后就“永久存在”</strong>了。</p></li>
+<li><p><strong>JDK 1.8 的时候，方法区（HotSpot
+的永久代）被彻底移除了（JDK1.7
+就已经开始了），取而代之是元空间，元空间使用的是本地内存</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">-XX:MetaspaceSize=N <span class="comment">//设置 Metaspace 的初始（和最小大小）</span></span><br><span class="line">-XX:MaxMetaspaceSize=N <span class="comment">//设置 Metaspace 的最大大小，如果不指定大小的话，随着更多类的创建，虚拟机会耗尽所有可用的系统内存。 </span></span><br></pre></td></tr></table></figure></li>
+</ul>
+<h1 id="垃圾收集相关">垃圾收集相关</h1>
+<h2 id="垃圾回收器">垃圾回收器</h2>
+<p>为了提高应用程序的稳定性，选择正确的<strong>垃圾收集算法</strong>至关重要<br />
+JVM具有<strong>四种类型</strong>的GC实现：</p>
+<ol type="1">
+<li>串行垃圾收集器</li>
+<li>并行垃圾收集器</li>
+<li>CMS垃圾收集器（并发）</li>
+<li>G1垃圾收集器（并发）</li>
+</ol>
+<p>使用下列参数实现：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">-XX:+UseSerialGC</span><br><span class="line">-XX:+UseParallelGC</span><br><span class="line">-XX:+UseParNewGC</span><br><span class="line">-XX:+UseG1GC</span><br></pre></td></tr></table></figure>
+<h2 id="gc记录">GC记录</h2>
+<p>为了严格<strong>监控应用程序</strong>的<strong>运行状况</strong>，应该始终<strong>检查JVM的垃圾回收性能</strong>。最简单的方法是<strong>以人类可读的格式记录GC活动</strong><br />
+通过以下参数</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">-XX:+UseGCLogFileRotation </span><br><span class="line">-XX:NumberOfGCLogFiles=&lt; number of log files &gt; </span><br><span class="line">-XX:GCLogFileSize=&lt; file size &gt;[ unit ]</span><br><span class="line">-Xloggc:/path/to/gc.log </span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>学习</category>
+      </categories>
+      <tags>
+        <tag>复习</tag>
+        <tag>复习-javaGuide</tag>
+        <tag>复习-javaGuide-jvm</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>memory-area</title>
+    <url>/2022/12/07/review/java_guide/java/jvm/memory-area/</url>
+    <content><![CDATA[<blockquote>
+<p>转载自https://github.com/Snailclimb/JavaGuide
+（添加小部分笔记）感谢作者!</p>
+<p>如果没有特殊说明，针对的都是HotSpot虚拟机</p>
+</blockquote>
+<h1 id="前言">前言</h1>
+<ul>
+<li>对于Java程序员，虚拟机自动管理机制，不需要像C/C++程序员为每一个new
+操作去写对应的delete/free 操作，不容易出现<strong>内存泄漏</strong> 和
+<strong>内存溢出</strong>问题</li>
+<li>但由于内存控制权交给Java虚拟机，一旦出现内存泄漏和溢出方面问题，如果不了解虚拟机是怎么样使用内存，那么很难<strong>排查任务</strong></li>
+</ul>
+<h1 id="运行时数据区域">运行时数据区域</h1>
+<p><strong>Java虚拟机</strong>在执行Java程序的过程中，会把它管理的内存，<strong>划分成若干个</strong>不同的数据区域</p>
+<p>JDK1.8之前：</p>
+<ol type="1">
+<li>线程共享 堆，方法区【永久代】(包括运行时常量池)</li>
+<li>线程私有 虚拟机栈、本地方法栈、程序计数器</li>
+<li>本地内存(包括直接内存)</li>
+</ol>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221208144045407.png"
+alt="image-20221208144045407" />
+<figcaption aria-hidden="true">image-20221208144045407</figcaption>
+</figure>
+<p>JDK1.8之后：<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/java-runtime-data-areas-jdk1.8.png"
+alt="Java 运行时数据区域（JDK1.8 之后）" />
+1.8之后整个永久代改名叫"元空间"，且移到了本地内存中</p>
+<p>规范（概括）：<br />
+<strong>线程私有</strong>：程序计数器，虚拟机栈，本地方法栈</p>
+<p><strong>线程共享</strong>：堆，方法区，直接内存（非运行时数据区的一部分）</p>
+<blockquote>
+<p>Java虚拟机规范对于运行时数据区域的规定是相当宽松的，以堆为例：</p>
+<ol type="1">
+<li>堆可以是连续，也可以不连续</li>
+<li>大小可以固定，也可以运行时按需扩展</li>
+<li>虚拟机实现者可以使用任何<strong>垃圾回收算法管理堆</strong>，设置不进行垃圾收集</li>
+</ol>
+</blockquote>
+<h2 id="程序计数器">程序计数器</h2>
+<ul>
+<li><p>是一块较小内存空间，看作是<strong>当前线程所执行的字节码</strong>的<strong>行号指示器</strong></p></li>
+<li><p>字节码解释器，工作时通过<strong>改变这个计数器的值</strong>来选取下一条需要执行的<strong>字节码指令</strong></p>
+<blockquote>
+<p>分支、循环、跳转、异常处理、线程恢复等功能都需要依赖这个计数器</p>
+</blockquote></li>
+<li><p>而且，为了<strong>线程切换后恢复到正确执行位置</strong>，每条线程需要一个独立程序计数器，各线程计数器互不影响，独立存储，我们称这类内存区域为<strong>"线程私有"</strong>的内存</p></li>
+<li><p>总结，<strong>程序计数器</strong>的作用</p>
+<ul>
+<li>字节码解释器通过<strong>改变程序计数器来依次读取指令</strong>，从而实现代码的流程控制</li>
+<li>多线程情况下，<strong>程序计数器用于记录当前线程执行的位置</strong>，从而当线程被切回来的时候能够知道该线程上次运行到哪</li>
+</ul>
+<blockquote>
+<p>程序计数器是唯一一个不会出现OutOfMemoryError的内存区域，它的生命周期随线程创建而创建，线程结束而死亡</p>
+</blockquote></li>
+</ul>
+<h2 id="java虚拟机栈">Java虚拟机栈</h2>
+<ul>
+<li>Java虚拟机栈，<strong>简称"栈"</strong>，也是线程私有的，生命周期和线程相同，随线程创建而创建，线程死亡而死亡</li>
+<li>除了<strong>Native方法</strong>调用的是<strong>通过本地方法栈实现</strong>的，其他所有的Java方法调用都是通过<strong>栈</strong>来实现的（需要和其他运行时数据区域比如<strong>程序计数器</strong>配合）</li>
+<li><strong>方法调用的数据</strong>需要通过栈进行<strong>传递</strong>，<strong>每一次方法调用</strong>都会有一个对应的<strong>栈帧被压入栈</strong>，每一个<strong>方法调用结束后</strong>，都会有一个<strong>栈帧被弹出</strong>。</li>
+<li>栈由一个个栈帧组成，每个栈帧包括<strong>局部变量表</strong>、<strong>操作数栈</strong>、<strong>动态链接</strong>、<strong>方法返回地址</strong>。
+栈为<strong>先进后出</strong>，且只支持<strong>出栈</strong>和<strong>入栈</strong></li>
+</ul>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/stack-area.png"
+alt="Java 虚拟机栈" />
+<figcaption aria-hidden="true">Java 虚拟机栈</figcaption>
+</figure>
+<ul>
+<li><p>局部变量表：存放<strong>编译器可知</strong>的各种<strong>数据类型</strong>(boolean、byte、char、short、int、float、long、double)、对象引用(reference
+类型，不同于对象本身，可能是一个指向对象起始地址的引用指针，也可能是一个<strong>指向一个代表对象的句柄或其他与此对象相关的位置</strong>)
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/local-variables-table.png"
+alt="局部变量表" /></p></li>
+<li><p>操作数栈
+作为方法调用的<strong>中转站</strong>使用，用于存放方法执行过程中产生的<strong>中间计算结果</strong>。计算过程中产生的临时变量也放在操作数栈中</p></li>
+<li><p>动态链接
+主要服务<strong>一个方法需要调用其他方法</strong>的场景。</p>
+<blockquote>
+<p>在 Java
+源文件被编译成字节码文件时，所有的变量和方法引用都作为符号引用（Symbilic
+Reference）保存在 Class
+文件的常量池里。当一个方法要调用其他方法，需要将常量池中指向方法的符号引用转化为其在内存地址中的直接引用。动态链接的作用就是为了将符号引用转换为调用方法的直接引用。</p>
+</blockquote>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/jvmimage-20220331175738692.png"
+alt="img" />
+<figcaption aria-hidden="true">img</figcaption>
+</figure></li>
+<li><p>如果函数调用陷入<strong>无限循环</strong>，会导致栈中被压入太多栈帧而占用太多空间，导致<strong>栈空间过深</strong>。当<strong>线程请求栈的深度超过当前Java虚拟机栈的最大深度</strong>时，就会抛出<strong>StackOverError</strong>错误</p></li>
+<li><p>Java 方法有两种返回方式，一种是 return
+语句正常返回，一种是抛出异常。不管哪种返回方式，都会导致栈帧被弹出。也就是说，
+<strong>栈帧随着方法调用而创建，随着方法结束而销毁。无论方法正常完成还是异常完成都算作方法结束。</strong></p></li>
+<li><p>除了 <code>StackOverFlowError</code>
+错误之外，栈还可能会出现<code>OutOfMemoryError</code>错误，这是因为如果<strong>栈的内存大小可以动态扩展</strong>，
+如果虚拟机在<strong>动态扩展栈时无法申请到足够的内存空间</strong>，则抛出<strong><code>OutOfMemoryError</code></strong>异常。</p></li>
+<li><p>总结，程序运行中栈可能出现的两种错误</p>
+<ul>
+<li><strong>StackOverFlowError</strong>：若<strong>栈的内存大小不允许动态扩展</strong>，那么当<strong>线程请求栈的深度超过当前
+Java 虚拟机栈的最大深度</strong>的时候，就抛出
+<code>StackOverFlowError</code> 错误。</li>
+<li><strong><code>OutOfMemoryError</code>：</strong>
+如果栈的内存大小<strong>可以动态扩展</strong>，
+如果虚拟机在<strong>动态扩展栈时无法申请到足够的内存空间</strong>，则抛出<code>OutOfMemoryError</code>异常。</li>
+</ul>
+<blockquote>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/%25E3%2580%258A%25E6%25B7%25B1%25E5%2585%25A5%25E7%2590%2586%25E8%25A7%25A3%25E8%2599%259A%25E6%258B%259F%25E6%259C%25BA%25E3%2580%258B%25E7%25AC%25AC%25E4%25B8%2589%25E7%2589%2588%25E7%259A%2584%25E7%25AC%25AC2%25E7%25AB%25A0-%25E8%2599%259A%25E6%258B%259F%25E6%259C%25BA%25E6%25A0%2588.f4f863a2.png"
+alt="img" />
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+</blockquote></li>
+</ul>
+<h2 id="本地方法栈">本地方法栈</h2>
+<p><code>和虚拟机栈作用相似</code>，区别：<strong>虚拟机栈为虚拟机执行Java方法（字节码）服务，本地方法栈则为虚拟机使用到的Native方法服务</strong>。HotSpot虚拟机中和Java虚拟机栈合二为一</p>
+<blockquote>
+<p>同上，本地方法被执行时，本地方法栈会创建一个栈帧，用于存放本地方法的局部变量表、操作数栈、动态链接、出口信息</p>
+<p>方法执行完毕后相应的栈帧也会出栈并释放内存空间，也会出现StackOverFlowError和OutOfMemoryError两种错误</p>
+</blockquote>
+<h2 id="堆">堆</h2>
+<ul>
+<li><p>Java虚拟机所管理的内存中最大的一块，Java堆是<strong>所有线程共享</strong>的一块区域，在虚拟机启动时创建</p></li>
+<li><p>此内存区域唯一目的是<strong>存放对象实例</strong>，<strong>几乎</strong>所有的<strong>对象实例及数组</strong>，都在这里分配内存</p>
+<blockquote>
+<p>“几乎”，因为随着<strong>JIT</strong>编译器的发展与逃逸分析技术逐渐成熟，<strong>栈上分配</strong>、<strong>标量替换</strong>导致微妙变化。从JDK1.7开始已经默认<strong>逃逸分析</strong>，如果某些方法的对象引用<strong>没有被返回或者未被外面使用（未逃逸出去）</strong>，那么对象可以<strong>直接在栈上分配内存</strong>。</p>
+</blockquote></li>
+<li><p>Java堆是<strong>垃圾收集器</strong>管理的主要区域，因此也称GC堆（Garbage
+Collected Heap）</p></li>
+<li><p>现在收集器基本都采用<strong>分代垃圾收集算法</strong>，从垃圾回收的角度，Java堆还细分为：新生代和老年代。再细致：Eden，Survivor，Old等空间。&gt;
+目的是更好的回收内存，或更快地分配内存</p></li>
+<li><p>JDK7及JDK7之前，堆内存被分为三部分</p>
+<ol type="1">
+<li>新生代内存(Young
+Generation)，包括Eden区、两个Survivor区S0和S1【8:1:1】</li>
+<li>老生代(Old Generation) 【新生代 : 老年代= 1: 2】</li>
+<li>永久代(Permanent Generation)</li>
+</ol>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/hotspot-heap-structure.41533631.png"
+alt="hotspot-heap-structure" />
+<figcaption aria-hidden="true">hotspot-heap-structure</figcaption>
+</figure></li>
+<li><p>JDK8之后<strong>PermGen（永久）</strong>已被<strong>Metaspace（元空间）</strong>取代，且<strong>元空间</strong>使用直接内存</p></li>
+<li><p>大部分情况，对象都会首先在 Eden
+区域分配，在一次新生代垃圾回收后，如果对象还存活，则会进入 S0 或者
+S1，并且对象的年龄还会加 1(Eden 区-&gt;Survivor 区后对象的初始年龄变为
+1)，当它的年龄增加到一定程度（默认为 15 岁），就会被晋升到老年代中。</p>
+<blockquote>
+<p>对象晋升到老年代的年龄阈值，可以通过参数
+<code>-XX:MaxTenuringThreshold</code> 来设置。</p>
+<p><strong>修正（参见：<a
+href="https://github.com/Snailclimb/JavaGuide/issues/552">issue552open
+in new window</a>）</strong> ：“Hotspot
+遍历所有对象时，按照<strong>年龄从小到大对其所占用的大小进行累积</strong>，当<strong>累积的某个年龄大小超过了
+survivor 区的一半</strong>时，<strong>取这个年龄和 MaxTenuringThreshold
+中更小的一个值</strong>，作为新的晋升年龄阈值”。图解：<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221208105755268.png"
+alt="image-20221208105755268" /></p>
+<hr />
+<p>代码如下：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">uint ageTable::compute_tenuring_threshold(size_t survivor_capacity) &#123;</span><br><span class="line">	<span class="comment">//survivor_capacity是survivor空间的大小</span></span><br><span class="line"><span class="type">size_t</span> <span class="variable">desired_survivor_size</span> <span class="operator">=</span> (size_t)((((<span class="type">double</span>) survivor_capacity)*TargetSurvivorRatio)/<span class="number">100</span>);</span><br><span class="line"><span class="type">size_t</span> <span class="variable">total</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line"><span class="type">uint</span> <span class="variable">age</span> <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line"><span class="keyword">while</span> (age &lt; table_size) &#123;</span><br><span class="line">total += sizes[age];<span class="comment">//sizes数组是每个年龄段对象大小</span></span><br><span class="line"><span class="keyword">if</span> (total &gt; desired_survivor_size) <span class="keyword">break</span>;</span><br><span class="line">age++;</span><br><span class="line">&#125;</span><br><span class="line"><span class="type">uint</span> <span class="variable">result</span> <span class="operator">=</span> age &lt; MaxTenuringThreshold ? age : MaxTenuringThreshold;</span><br><span class="line">	...</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+</blockquote></li>
+<li><p>堆里最容易出现OutOfMemoryError错误，出现这个错误之后的表现形式：</p>
+<ol type="1">
+<li><p><strong><code>java.lang.OutOfMemoryError: GC Overhead Limit Exceeded</code></strong>
+： 当 JVM
+<strong>花太多时间执行垃圾回收并且只能回收很少的堆空间</strong>时，就会发生此错误。</p></li>
+<li><p><strong><code>java.lang.OutOfMemoryError: Java heap space</code></strong>
+:假如在<strong>创建新的对象</strong>时,
+<strong>堆内存中的空间不足以存放新创建的对象</strong>,
+就会引发此错误。</p>
+<blockquote>
+<p>(和配置的最大堆内存有关，且受制于物理内存大小。最大堆内存可通过<code>-Xmx</code>参数配置，若没有特别配置，将会使用默认值，详见：<a
+href="https://stackoverflow.com/questions/28272923/default-xmxsize-in-java-8-max-heap-size">Default
+Java 8 max heap sizeopen in new window</a>)</p>
+</blockquote></li>
+<li><p>...</p></li>
+</ol></li>
+</ul>
+<h2 id="方法区">方法区</h2>
+<ul>
+<li><p>方法区属于<strong>JVM运行时数据区域</strong>的一块<strong>逻辑区域</strong>，是各线程共享的内存区域</p>
+<blockquote>
+<p>“逻辑”，《Java虚拟机规范》规定了有方法区这么个概念和它的作用，方法区如何实现是虚拟机的事。即，不同虚拟机实现上，方法区的实现是不同的</p>
+</blockquote></li>
+<li><p>当虚拟机要使用一个类时，它需要<strong>读取并解析Class文件获取相关信息</strong>，再将<strong>信息存入方法区</strong>。方法区会存储已被虚拟机加载的<strong>类信息、字段信息、方法信息、常量、静态变量、即时编译器编译后的代码缓存</strong>等数据</p></li>
+<li><p><strong>方法区和永久代以及元空间有什么关系呢？</strong></p>
+<ol type="1">
+<li>方法区和永久代以及元空间的关系很像Java中接口和类的关系，类实现了接口，这里的类就可以看作是<strong>永久代</strong>和<strong>元空间</strong>，接口则看作是<strong>方法区</strong></li>
+<li>永久代及元空间，是HotSpot虚拟机对虚拟机规范中方法区的<strong>两种实现方式</strong></li>
+<li>永久代是JDK1.8之前的方法区实现，元空间是JDK1.8及之后方法区的实现</li>
+</ol>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/method-area-implementation.png"
+alt="HotSpot 虚拟机方法区的两种实现" />
+<figcaption aria-hidden="true">HotSpot
+虚拟机方法区的两种实现</figcaption>
+</figure></li>
+<li><p>为什么将永久代（PermGen）替换成元空间（MetaSpace）呢</p>
+<blockquote>
+<p>下图来自《深入理解Java虚拟机》第3版</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/20210425134508117.png"
+alt="img" />
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+</blockquote>
+<ol type="1">
+<li><p>整个永久代有一个<strong>JVM本身设置的固定大小上限（也就是参数指定）</strong>，无法进行调整，而元空间使用的是<strong>直接内存</strong>，受本机可用内存的限制。<code>虽然元空间仍旧可能溢出，但比原来出现的机率会更小</code></p>
+<blockquote>
+<p>元空间溢出将得到错误： java.lang.OutOfMemoryError: MetaSpace</p>
+</blockquote>
+<ul>
+<li><code>-XX: MaxMetaspaceSize</code>设置最大元空间大小，默认为unlimited，即只受系统内存限制</li>
+<li><code>-XX: MetaspaceSize</code>调整标志定义元空间的<strong>初始大小</strong>，如果未指定此标志，则Metaspace将<strong>根据运行时应用程序需求，动态地重新调整大小</strong>。</li>
+</ul></li>
+<li><p>元空间里存放的是<strong>类的元数据</strong>，这样加载多少<strong>类的元数据就不由MaxPermSize控制</strong>了，而<strong>由系统的实际可用空间控制</strong>，这样加载的类就更多了</p></li>
+<li><p>在 JDK8，合并 HotSpot 和 JRockit 的代码时, JRockit
+从来没有一个叫永久代的东西,
+合并之后就没有必要额外的设置这么一个永久代的地方了</p></li>
+</ol></li>
+<li><p>方法区常用参数有哪些
+JDK1.8之前永久代还没有被彻底移除时通过下面参数调节方法区大小</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">-XX:PermSize=N<span class="comment">//方法区 (永久代) 初始大小</span></span><br><span class="line"></span><br><span class="line">-XX:MaxPermSize=N<span class="comment">//方法区 (永久代) 最大大小,超过这个值将会抛出 OutOfMemoryError 异常:java.lang.OutOfMemoryError: PermGen</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>相对而言，垃圾收集行为在这个区域是比较少出现的，但<strong>并非数据进入方法区后就“永久存在”</strong>了。</p>
+</blockquote>
+<p>JDK1.7方法区(HotSpot的永久代)被移除一部分，JDK1.8时方法区被彻底移除，取而代之的是<strong>元空间</strong>，元空间使用直接内存，下面是常用参数</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">-XX:MetaspaceSize=N <span class="comment">//设置 Metaspace 的初始（和最小大小）</span></span><br><span class="line">-XX:MaxMetaspaceSize=N <span class="comment">//设置 Metaspace 的最大大小</span></span><br></pre></td></tr></table></figure>
+<p>与永久代不同，如果不指定大小，随着更多类的创建，<strong>虚拟机会耗尽所有可用的系统内存</strong>。</p></li>
+</ul>
+<h2 id="运行时常量池">运行时常量池</h2>
+<ul>
+<li><p>Class文件中除了有<strong>类的版本</strong>、<strong>字段</strong>、<strong>方法</strong>、<strong>接口</strong>等描述信息外，还有用于存放编译器期生成的<strong>各种字面量（Literal）</strong>和<strong>符号引用（Symbolic
+Reference）</strong>的<strong>常量池表（注意，这里的常量池表，说的是刚刚编译后的那个class文件字节码代表的含义）</strong></p>
+<blockquote>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230124213133879.png"
+alt="image-20230124213133879" />
+<figcaption aria-hidden="true">image-20230124213133879</figcaption>
+</figure>
+</blockquote></li>
+<li><p><strong>字面量</strong>是源代码中的<strong>固定值表示法</strong>，即通过字面我们就知道其值的含义。字面量包括<strong>整数</strong>、<strong>浮点数</strong>和<strong>字符串字面量</strong>；<strong>符号引用</strong>包括<strong>类符号引用</strong>、<strong>字段符号引用</strong>、<strong>方法符号引用</strong>和<strong>接口方法符号引用</strong>。</p></li>
+<li><p><strong>常量池表</strong>会在类加载后存放到<strong>方法区</strong>的<strong>运行时常量池</strong>中</p></li>
+<li><p>运行时常量池的功能类似于传统编程语言的<strong>符号表(但是包含了比典型符号表更广泛的数据)</strong></p></li>
+<li><p>运行时常量池是方法区的一部分，所以<strong>受到方法区内存的限制</strong>，当常量池无法再申请到内存时会抛出<strong>OutOfMemoryError</strong>的错误</p></li>
+</ul>
+<h2 id="字符串常量池">字符串常量池</h2>
+<p><strong>字符串常量池</strong>是JVM为了<strong>提升性能和减少内存消耗针对字符串(String类)专门</strong>开辟的一块区域，主要目的是为了避免字符串得重复创建</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 在堆中创建字符串对象”ab“</span></span><br><span class="line"><span class="comment">// 将字符串对象”ab“的引用保存在字符串常量池中</span></span><br><span class="line"><span class="type">String</span> <span class="variable">aa</span> <span class="operator">=</span> <span class="string">&quot;ab&quot;</span>;</span><br><span class="line"><span class="comment">// 直接返回字符串常量池中字符串对象”ab“的引用</span></span><br><span class="line"><span class="type">String</span> <span class="variable">bb</span> <span class="operator">=</span> <span class="string">&quot;ab&quot;</span>;</span><br><span class="line">System.out.println(aa==bb);<span class="comment">// true </span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>HotSpot 虚拟机中字符串常量池的实现是
+<code>src/hotspot/share/classfile/stringTable.cpp</code>
+,<code>StringTable</code>
+本质上就是一个<code>HashSet&lt;String&gt;</code> ,容量为
+<code>StringTableSize</code>（可以通过 <code>-XX:StringTableSize</code>
+参数来设置）。</p>
+<p><code>StringTable</code>
+中保存的是<strong>字符串对象的引用</strong>，字符串对象的引用<strong>指向堆中的字符串对象</strong>。</p>
+</blockquote>
+<p>JDK1.7之前，<strong>运行时常量池(字符串常量池、静态变量)</strong>存放在<strong>永久代</strong>。JDK1.7<strong>字符串常量池和静态变量</strong>从永久代移动到了Java堆中
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/method-area-jdk1.6.png"
+alt="method-area-jdk1.6" /></p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/method-area-jdk1.7.png"
+alt="method-area-jdk1.7" />
+<figcaption aria-hidden="true">method-area-jdk1.7</figcaption>
+</figure>
+<p><strong>JDK1.7为什么要将字符串常量池移动到堆中</strong></p>
+<ul>
+<li><p>因为<strong>永久代（方法区实现）的GC回收效率太低</strong>，只有在整堆收集（Full
+GC）的时候才会被执行GC。Java程序中通常有<strong>大量的被创建的字符串等待回收</strong>，将字符串常量池放到堆中，能够高效及时地回收字符串内存。</p></li>
+<li><p>JVM常量池中存储的是对象还是引用</p>
+<blockquote>
+<p>如果您说的确实是runtime constant pool（而不是interned string pool /
+StringTable之类的其他东西）的话，其中的引用类型常量（例如CONSTANT_String、CONSTANT_Class、CONSTANT_MethodHandle、CONSTANT_MethodType之类）都存的是引用，实际的对象还是存在Java
+heap上的。</p>
+</blockquote></li>
+<li><blockquote>
+<p><strong>运行时常量池、方法区、字符串常量池这些都是不随虚拟机实现而改变的逻辑概念，是公共且抽象的，Metaspace、Heap
+是与具体某种虚拟机实现相关的物理概念，是私有且具体的。</strong></p>
+</blockquote></li>
+</ul>
+<h2 id="总结">总结</h2>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221209084421539.png"
+alt="image-20221209084421539" />
+<figcaption aria-hidden="true">image-20221209084421539</figcaption>
+</figure>
+<hr />
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221209084450069.png"
+alt="image-20221209084450069" />
+<figcaption aria-hidden="true">image-20221209084450069</figcaption>
+</figure>
+<hr />
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221209084515658.png"
+alt="image-20221209084515658" />
+<figcaption aria-hidden="true">image-20221209084515658</figcaption>
+</figure>
+<h2 id="直接内存">直接内存</h2>
+<ul>
+<li>直接内存并<strong>不是虚拟机运行时数据区</strong>的一部分，也<strong>不是虚拟机规范中定义的内存</strong>区域，但是这部分内存也被频繁使用，也可能导致OutOfMemoryError错误出现</li>
+<li>JDK1.4中新加入的NIO(New
+Input/Output)类，引入一种基于<strong>通道（Channel）</strong>与<strong>缓冲区（Buffer）</strong>的I/O方式，它可以直接使用<strong>Native函数库直接分配堆外内存</strong>，然后通过一个<strong>存储在Java堆中的DirectByteBuffer对象作为这块内存的引用</strong>进行操作。这样就能在一些场景中<strong>显著提高性能</strong>，因为避免了在<strong>Java堆和Native堆</strong>之间来回复制数据</li>
+<li>本机直接内存的分配不会受到Java堆的限制，但是，既然是内存就会<strong>受到本机总内存大小</strong>以及<strong>处理器寻址空间</strong>的限制</li>
+</ul>
+<h1 id="hotspot虚拟机对象探秘">HotSpot虚拟机对象探秘</h1>
+<p><strong>了解一下HotSport虚拟机</strong>在<strong>Java堆中对象分配、布局和访问</strong>的全过程</p>
+<h2 id="对象的创建">对象的创建</h2>
+<p>默认：</p>
+<ol type="1">
+<li><p>类加载检查
+虚拟机遇到一条<strong>new指令</strong>时，首先将去检查这个指令的<strong>参数</strong>是否能在<strong>常量池中</strong>定位到这个<strong>类的符号引用</strong>，并且检查这个符号引用代表的类<strong>是否已被加载过</strong>、<strong>解析和初始化</strong>过。<strong>如果没有</strong>，那必须先执行相应的<strong>类加载</strong>过程</p></li>
+<li><p>分配内存
+<strong>类加载检查</strong>通过后，接下来虚拟机将为新生对象<strong>分配内容</strong>。<strong>对象所需内存大小</strong>在类加载后便可确定，为对象分配空间的任务，等同于<strong>把一块确定大小的内存</strong>从<strong>Java堆中划分出来</strong>。
+分配方式有<strong>”指针碰撞“</strong>和<strong>”空闲列表“</strong>两种，选择哪种分配方式由<strong>Java堆是否规整决定</strong>，而<strong>Java堆是否规整</strong>又由<strong>所采用的垃圾收集器是否带有压缩整理功能决定</strong>
+<strong>内存分配的两种方式</strong>：</p>
+<ul>
+<li><p>指针碰撞</p>
+<ul>
+<li>适用场合：<strong>堆内存规整（即没有内存碎片）</strong>的情况下</li>
+<li>原理：用过的内存全部整合到一边，没有用过的内存放在另一边，<strong>中间有一个分界指针</strong>只需要<strong>向着没用过的内存方向</strong>，将该指针<strong>移动对象内存的大小的位置</strong>即可</li>
+<li>使用该分配方式的GC收集器：Serial，PartNew</li>
+</ul></li>
+<li><p>空闲列表</p>
+<ul>
+<li>适合场合：<strong>堆内存不规整的情况下</strong></li>
+<li>原理：虚拟机会维护一个列表，该列表中会<strong>记录哪些内存块是可用</strong>的，在分配的时候，找一块<strong>足够大的内存块</strong>来划分给对象实例，最后<strong>更新列表记录</strong></li>
+<li>使用该分配方式的GC收集器：CMS</li>
+</ul>
+<p>选择以上两种方式中的哪一种，取决于 Java 堆内存是否规整。而 Java
+堆内存是否规整，取决于 <strong>GC
+收集器的算法</strong>是<strong>"标记-清除"</strong>，还是<strong>"标记-整理"</strong>（也称作<strong>"标记-压缩"</strong>），值得注意的是，<strong>复制算法内存也是规整</strong>的</p></li>
+</ul>
+<p><strong>内存分配并发问题</strong>：</p>
+<p>创建对象时的重要问题---线程安全，因为在实际开发过程中，<strong>创建对象是很频繁的事</strong>，作为虚拟机来说，必须要保证线城市安全的，虚拟机采用<strong>两种方式保证线程安全</strong>：</p>
+<ol type="1">
+<li><p>CAS+失败重试:</p>
+<blockquote>
+<p>CAS
+是乐观锁的一种实现方式。所谓乐观锁就是，每次不加锁而是假设没有冲突而去完成某项操作，如果因为冲突失败就重试，直到成功为止</p>
+</blockquote>
+<p>虚拟机采用<strong>CAS+失败重试</strong>的方式保证更新操作的原子性</p></li>
+<li><p>TLAB：为<strong>每一个线程</strong> <strong>预先</strong>
+<strong>在Eden区分配一块内存</strong>，JVM在<strong>给线程中的对象分配内存</strong>时，首先在TLAB（该内存区域）分配，当对象大于TLAB中的<strong>剩余内存</strong>或TLAB的内存<strong>已用尽</strong>时，再采用上述的<strong>CAS</strong>进行内存分配</p>
+<blockquote>
+<p>在预留这个操作发生的时候，需要进行加锁或者采用CAS等操作进行保护，避免多个线程预留同一个区域</p>
+</blockquote></li>
+</ol></li>
+<li><p>初始化零值
+内存分配完成后，虚拟机需要将<strong>分配到的内存空间</strong>都<strong>初始化为零值（不包括对象头）</strong>，这一步操作<strong>保证了对象的实例字段</strong>在
+<strong>Java
+代码中可以不赋初始值就直接使用</strong>，程序能访问到这些<strong>字段的数据类型所对应的零值</strong>。</p></li>
+<li><p>设置对象头<br />
+初始化零值完成之后，<strong>虚拟机要对对象进行必要的设置</strong>，例如这个对象是哪个类的实例、如何才能找到类的元数据信息、对象的哈希码、对象的
+GC 分代年龄等信息。 <strong>这些信息存放在对象头中。</strong>
+另外，根据虚拟机当前运行状态的不同，如是否启用偏向锁等，对象头会有不同的设置方式。</p></li>
+<li><p>执行init方法<br />
+在上面工作都完成之后，<strong>从虚拟机的视角来看，一个新的对象已经产生了</strong>，但从
+Java 程序的视角来看，对象创建才刚开始，<strong><code>&lt;init&gt;</code>
+方法还没有执行，所有的字段都还为零</strong>。所以一般来说，执行 new
+指令之后会接着执行 <strong><code>&lt;init&gt;</code>
+方法</strong>，把对象<strong>按照程序员的意愿进行初始化</strong>，这样一个真正可用的对象才算完全产生出来。</p>
+<blockquote>
+<p>附： Java 在编译之后会在字节码文件中生成 <strong>init
+方法，称之为实例构造器</strong>，该实例构造器会将语句块，变量初始化，调用父类的构造器等操作<strong>收敛到
+init 方法中</strong>，收敛顺序为：</p>
+<ol type="1">
+<li>父类变量初始化</li>
+<li>父类语句块</li>
+<li>父类构造函数</li>
+<li>子类变量初始化</li>
+<li>子类语句块</li>
+<li>子类构造函数</li>
+</ol>
+<ul>
+<li>收敛到 init 方法的意思是：<strong>将这些操作放入到 init
+中</strong>去执行。</li>
+</ul>
+<p>转自： https://juejin.cn/post/6844903957836333063</p>
+</blockquote></li>
+</ol>
+<h2 id="对象的内存布局">对象的内存布局</h2>
+<ul>
+<li>Hotspot虚拟机中，对象在内存中的布局分为3块区域：<strong>对象头</strong>、<strong>实例数据</strong>和<strong>对齐填充</strong>
+<ul>
+<li>对象头又包括<strong>两部分信息</strong>，第一部分用于<strong>存储对象自身的运行时数据（哈希码、GC分代年龄、锁状态标志等等）</strong>，即markword；第二部分是<strong>类型指针</strong>，即对象指向它的<strong>类元数据的指针</strong>，虚拟机通过这个指针来确定<strong>这个对象是哪个类的实例</strong>。</li>
+<li>实例数据部分是对象<strong>真正存储的有效信息</strong>，也是在程序中所定义的各种类型的<strong>字段</strong>内容</li>
+<li>对齐填充部分<strong>不是必然存在的，没特别含义，只起占位作用</strong>。因为Hotspot虚拟机的<strong>自动内存管理系统</strong>要求<strong>对象起始地址必须是8字节的整数倍</strong>，即<strong>对象的大小必须是8字节的整数倍</strong>。而对象头部分正好是8字节的倍数（1倍或2倍），因此当<strong>对象实例数据部分没有对齐</strong>时，就需要通过<strong>对齐填充</strong>来补全</li>
+</ul></li>
+</ul>
+<h2 id="对象的访问定位">对象的访问定位</h2>
+<p>建立对象就是为了<strong>使用对象</strong>，我们的 Java
+程序通过<strong>栈上的 reference
+数据</strong>来<strong>操作堆上的具体对象</strong>。对象的访问方式由虚拟机实现而定，目前<strong>主流的访问方式</strong>有：<strong>使用句柄</strong>、<strong>直接指针</strong>。</p>
+<ol type="1">
+<li><p>句柄 如果使用句柄的话，那么 Java
+堆中将会划分出<strong>一块内存来作为句柄池</strong>，<strong>reference
+中存储的就是对象的句柄地址</strong>，而<strong>句柄</strong>中包含了<strong>对象实例数据</strong>与<strong>对象类型数据各自的具体地址信息</strong>。</p>
+<p>【也就是多了一层】<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/access-location-of-object-handle.png"
+alt="对象的访问定位-使用句柄" /></p></li>
+<li><p>直接指针 如果使用<strong>直接指针</strong>访问，<strong>reference
+中存储的直接就是对象的地址</strong>。 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/access-location-of-object-handle-direct-pointer.png"
+alt="对象的访问定位-直接指针" /></p></li>
+</ol>
+<p>这两种对象访问方式各有优势。<strong>使用句柄来访问</strong>的最大好处是
+<strong>reference
+中存储的是稳定的句柄地址</strong>，在<strong>对象被移动时只会改变句柄中的实例数据指针，而
+reference
+本身不需要修改</strong>。使用直接指针访问方式最大的好处就是<strong>速度快，它节省了一次指针定位的时间开销</strong>。</p>
+<p>HotSpot
+虚拟机主要使用的就是这种方式<strong>(直接指针</strong>)来进行对象访问。</p>
+]]></content>
+      <categories>
+        <category>学习</category>
+      </categories>
+      <tags>
+        <tag>复习</tag>
+        <tag>复习-javaGuide</tag>
+        <tag>复习-javaGuide-并发</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>jvm-intro</title>
     <url>/2022/12/09/review/java_guide/java/jvm/jvm-intro/</url>
     <content><![CDATA[<blockquote>
@@ -21260,547 +21597,306 @@ id="可以直接跳过了jvm其他参数介绍">(可以直接跳过了)JVM其他
       </tags>
   </entry>
   <entry>
-    <title>jvm参数</title>
-    <url>/2022/12/19/review/java_guide/java/jvm/jvm-params/</url>
-    <content><![CDATA[<blockquote>
-<p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!</p>
-</blockquote>
-<blockquote>
-<p>本文由 JavaGuide 翻译自 <a
-href="https://www.baeldung.com/jvm-parameters">https://www.baeldung.com/jvm-parametersopen
-in new
-window</a>，并对文章进行了大量的完善补充。翻译不易，如需转载请注明出处，作者：<a
-href="https://www.baeldung.com/author/baeldung/">baeldungopen in new
-window</a> 。</p>
-</blockquote>
-<h1 id="概述">概述</h1>
-<p>本篇文章中，将掌握最常用的<strong>JVM参数配置</strong>。下面提到了一些概念，<strong>堆</strong>、<strong>方法区</strong>、<strong>垃圾回收</strong>等。</p>
-<h1 id="堆内存相关">堆内存相关</h1>
-<p>Java 虚拟机所管理的<strong>内存中最大的一块</strong>，<strong>Java
-堆</strong>是<strong>所有线程共享的一块内存区域</strong>，在虚拟机<strong>启动时创建</strong>。此内存区域的<strong>唯一目的就是存放对象实例</strong>，<strong>几乎</strong>
-<strong>所有的对象实例</strong>以及<strong>数组</strong>都在这里分配内存。</p>
-<h2 id="显式指定堆内存-xms和-xmx">显式指定堆内存-Xms和-Xmx</h2>
-<ul>
-<li><p>与<strong>性能相关</strong>的最常见实践之一是根据应用程序要求<strong>初始化堆内存</strong>。</p></li>
-<li><p>如果我们需要指定<strong>最小</strong>和<strong>最大堆</strong>大小（推荐显示指定大小）：</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">-Xms&lt;heap size&gt;[unit] </span><br><span class="line">-Xmx&lt;heap size&gt;[unit]</span><br></pre></td></tr></table></figure>
-<ul>
-<li><strong>heap size</strong> 表示要初始化内存的具体大小。</li>
-<li><strong>unit</strong> 表示要初始化内存的单位。单位为<strong><em>“
-g”</em></strong> (GB) 、<strong><em>“
-m”</em></strong>（MB）、<strong><em>“ k”</em></strong>（KB）。</li>
-</ul></li>
-<li><p>举例，为JVM分配最小2GB和最大5GB的堆内存大小</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">-Xms2G -Xmx5G</span><br></pre></td></tr></table></figure></li>
-</ul>
-<h2 id="显示新生代内存young-generation">显示新生代内存（Young
-Generation）</h2>
-<ul>
-<li><p>在堆总可用内存配置完成之后，第二大影响因素是为
-<strong><code>Young Generation</code></strong>
-在堆内存所占的比例。默认情况下，<strong>YG 的最小大小为 1310
-<em>MB</em></strong>，最大大小为<em>无限制</em>。</p></li>
-<li><p>两种指定 <strong>新生代内存(Young Generation)</strong>
-大小的方法</p>
-<ol type="1">
-<li><p>通过 <code>-XX:NewSize</code> 和 <code>-XX:MaxNewSize</code></p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">-XX:NewSize=&lt;young size&gt;[unit] </span><br><span class="line">-XX:MaxNewSize=&lt;young size&gt;[unit]</span><br></pre></td></tr></table></figure>
-<p>如，为新生代分配<strong>最小256m</strong>的内存，<strong>最大1024m</strong>的内存我们的参数为：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">-XX:NewSize=256m</span><br><span class="line">-XX:MaxNewSize=1024m</span><br></pre></td></tr></table></figure></li>
-<li><p>通过<code>-Xmn&lt;young size&gt;[unit]</code>指定
-举例，为新生代分配256m的内存（NewSize与MaxNewSize设为一致）
-<code>-Xmn256m</code></p>
-<blockquote>
-<p>将新对象预留在新生代，由于 <strong>Full GC 的成本远高于 Minor
-GC</strong>，因此尽可能<strong>将对象分配在新生代</strong>是明智的做法，实际项目中<strong>根据
-GC
-日志分析新生代空间大小分配是否合理</strong>，适当通过“-Xmn”命令调节新生代大小，<strong>最大限度降低新对象直接进入老年代</strong>的情况。</p>
-</blockquote>
-<p>另外，你还可以通过
-<strong><code>-XX:NewRatio=&lt;int&gt;</code></strong>
-来设置老年代与新生代内存的比值。</p>
-<blockquote>
-<p>下面的参数，设置<strong>老年代</strong>与<strong>新生代</strong>内存的比例为1，即
-老年代：新生代 = 1：1，新生代占整个堆栈的1/2
-<code>-XX:NewRadio=1</code></p>
-</blockquote></li>
-</ol></li>
-</ul>
-<h2 id="显示指定永久代元空间的大小">显示指定永久代/元空间的大小</h2>
-<p>从Java 8开始，<strong>如果我们没有指定 Metaspace(元空间)</strong>
-的大小，随着更多类的创建，<strong>虚拟机会耗尽</strong>所有<strong>可用的系统内存</strong>（永久代并不会出现这种情况）</p>
-<ul>
-<li><p><strong>JDK 1.8
-之前永久代还没被彻底移除</strong>的时候通常通过下面这些参数来调节方法区大小</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">-XX:PermSize=N <span class="comment">//方法区 (永久代) 初始大小</span></span><br><span class="line">-XX:MaxPermSize=N <span class="comment">//方法区 (永久代) 最大大小,超过这个值将会抛出 OutOfMemoryError 异常:java.lang.OutOfMemoryError: PermGen </span></span><br></pre></td></tr></table></figure></li>
-<li><p><strong>相对</strong>而言，垃圾收集行为在这个区域是<strong>比较少出现</strong>的，但<strong>并非数据进入方法区后就“永久存在”</strong>了。</p></li>
-<li><p><strong>JDK 1.8 的时候，方法区（HotSpot
-的永久代）被彻底移除了（JDK1.7
-就已经开始了），取而代之是元空间，元空间使用的是本地内存</strong></p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">-XX:MetaspaceSize=N <span class="comment">//设置 Metaspace 的初始（和最小大小）</span></span><br><span class="line">-XX:MaxMetaspaceSize=N <span class="comment">//设置 Metaspace 的最大大小，如果不指定大小的话，随着更多类的创建，虚拟机会耗尽所有可用的系统内存。 </span></span><br></pre></td></tr></table></figure></li>
-</ul>
-<h1 id="垃圾收集相关">垃圾收集相关</h1>
-<h2 id="垃圾回收器">垃圾回收器</h2>
-<p>为了提高应用程序的稳定性，选择正确的<strong>垃圾收集算法</strong>至关重要<br />
-JVM具有<strong>四种类型</strong>的GC实现：</p>
-<ol type="1">
-<li>串行垃圾收集器</li>
-<li>并行垃圾收集器</li>
-<li>CMS垃圾收集器（并发）</li>
-<li>G1垃圾收集器（并发）</li>
-</ol>
-<p>使用下列参数实现：</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">-XX:+UseSerialGC</span><br><span class="line">-XX:+UseParallelGC</span><br><span class="line">-XX:+UseParNewGC</span><br><span class="line">-XX:+UseG1GC</span><br></pre></td></tr></table></figure>
-<h2 id="gc记录">GC记录</h2>
-<p>为了严格<strong>监控应用程序</strong>的<strong>运行状况</strong>，应该始终<strong>检查JVM的垃圾回收性能</strong>。最简单的方法是<strong>以人类可读的格式记录GC活动</strong><br />
-通过以下参数</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">-XX:+UseGCLogFileRotation </span><br><span class="line">-XX:NumberOfGCLogFiles=&lt; number of log files &gt; </span><br><span class="line">-XX:GCLogFileSize=&lt; file size &gt;[ unit ]</span><br><span class="line">-Xloggc:/path/to/gc.log </span><br></pre></td></tr></table></figure>
-]]></content>
-      <categories>
-        <category>学习</category>
-      </categories>
-      <tags>
-        <tag>复习</tag>
-        <tag>复习-javaGuide</tag>
-        <tag>复习-javaGuide-jvm</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>memory-area</title>
-    <url>/2022/12/07/review/java_guide/java/jvm/memory-area/</url>
+    <title>ly0201lyio基础</title>
+    <url>/2022/10/23/review/java_guide/java/io/io/</url>
     <content><![CDATA[<blockquote>
 <p>转载自https://github.com/Snailclimb/JavaGuide
 （添加小部分笔记）感谢作者!</p>
-<p>如果没有特殊说明，针对的都是HotSpot虚拟机</p>
 </blockquote>
-<h1 id="前言">前言</h1>
+<h2 id="简介">简介</h2>
 <ul>
-<li>对于Java程序员，虚拟机自动管理机制，不需要像C/C++程序员为每一个new
-操作去写对应的delete/free 操作，不容易出现<strong>内存泄漏</strong> 和
-<strong>内存溢出</strong>问题</li>
-<li>但由于内存控制权交给Java虚拟机，一旦出现内存泄漏和溢出方面问题，如果不了解虚拟机是怎么样使用内存，那么很难<strong>排查任务</strong></li>
-</ul>
-<h1 id="运行时数据区域">运行时数据区域</h1>
-<p><strong>Java虚拟机</strong>在执行Java程序的过程中，会把它管理的内存，<strong>划分成若干个</strong>不同的数据区域</p>
-<p>JDK1.8之前：</p>
-<ol type="1">
-<li>线程共享 堆，方法区【永久代】(包括运行时常量池)</li>
-<li>线程私有 虚拟机栈、本地方法栈、程序计数器</li>
-<li>本地内存(包括直接内存)</li>
-</ol>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221208144045407.png"
-alt="image-20221208144045407" />
-<figcaption aria-hidden="true">image-20221208144045407</figcaption>
-</figure>
-<p>JDK1.8之后：<br />
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/java-runtime-data-areas-jdk1.8.png"
-alt="Java 运行时数据区域（JDK1.8 之后）" />
-1.8之后整个永久代改名叫"元空间"，且移到了本地内存中</p>
-<p>规范（概括）：<br />
-<strong>线程私有</strong>：程序计数器，虚拟机栈，本地方法栈</p>
-<p><strong>线程共享</strong>：堆，方法区，直接内存（非运行时数据区的一部分）</p>
-<blockquote>
-<p>Java虚拟机规范对于运行时数据区域的规定是相当宽松的，以堆为例：</p>
-<ol type="1">
-<li>堆可以是连续，也可以不连续</li>
-<li>大小可以固定，也可以运行时按需扩展</li>
-<li>虚拟机实现者可以使用任何<strong>垃圾回收算法管理堆</strong>，设置不进行垃圾收集</li>
-</ol>
-</blockquote>
-<h2 id="程序计数器">程序计数器</h2>
+<li><p>IO，即Input/Output，输入和输出，输入就是<strong>数据输入到计算机内存</strong>；输出则是<strong>输出到外部存储</strong>（如<strong>数据库</strong>、<strong>文件</strong>、<strong>远程主机</strong>）</p></li>
+<li><p>根据数据处理方式，又分为<strong>字节流</strong>和<strong>字符流</strong></p></li>
+<li><p>基类</p>
 <ul>
-<li><p>是一块较小内存空间，看作是<strong>当前线程所执行的字节码</strong>的<strong>行号指示器</strong></p></li>
-<li><p>字节码解释器，工作时通过<strong>改变这个计数器的值</strong>来选取下一条需要执行的<strong>字节码指令</strong></p>
-<blockquote>
-<p>分支、循环、跳转、异常处理、线程恢复等功能都需要依赖这个计数器</p>
-</blockquote></li>
-<li><p>而且，为了<strong>线程切换后恢复到正确执行位置</strong>，每条线程需要一个独立程序计数器，各线程计数器互不影响，独立存储，我们称这类内存区域为<strong>"线程私有"</strong>的内存</p></li>
-<li><p>总结，<strong>程序计数器</strong>的作用</p>
-<ul>
-<li>字节码解释器通过<strong>改变程序计数器来依次读取指令</strong>，从而实现代码的流程控制</li>
-<li>多线程情况下，<strong>程序计数器用于记录当前线程执行的位置</strong>，从而当线程被切回来的时候能够知道该线程上次运行到哪</li>
-</ul>
-<blockquote>
-<p>程序计数器是唯一一个不会出现OutOfMemoryError的内存区域，它的生命周期随线程创建而创建，线程结束而死亡</p>
-</blockquote></li>
-</ul>
-<h2 id="java虚拟机栈">Java虚拟机栈</h2>
-<ul>
-<li>Java虚拟机栈，<strong>简称"栈"</strong>，也是线程私有的，生命周期和线程相同，随线程创建而创建，线程死亡而死亡</li>
-<li>除了<strong>Native方法</strong>调用的是<strong>通过本地方法栈实现</strong>的，其他所有的Java方法调用都是通过<strong>栈</strong>来实现的（需要和其他运行时数据区域比如<strong>程序计数器</strong>配合）</li>
-<li><strong>方法调用的数据</strong>需要通过栈进行<strong>传递</strong>，<strong>每一次方法调用</strong>都会有一个对应的<strong>栈帧被压入栈</strong>，每一个<strong>方法调用结束后</strong>，都会有一个<strong>栈帧被弹出</strong>。</li>
-<li>栈由一个个栈帧组成，每个栈帧包括<strong>局部变量表</strong>、<strong>操作数栈</strong>、<strong>动态链接</strong>、<strong>方法返回地址</strong>。
-栈为<strong>先进后出</strong>，且只支持<strong>出栈</strong>和<strong>入栈</strong></li>
-</ul>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/stack-area.png"
-alt="Java 虚拟机栈" />
-<figcaption aria-hidden="true">Java 虚拟机栈</figcaption>
-</figure>
-<ul>
-<li><p>局部变量表：存放<strong>编译器可知</strong>的各种<strong>数据类型</strong>(boolean、byte、char、short、int、float、long、double)、对象引用(reference
-类型，不同于对象本身，可能是一个指向对象起始地址的引用指针，也可能是一个<strong>指向一个代表对象的句柄或其他与此对象相关的位置</strong>)
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/local-variables-table.png"
-alt="局部变量表" /></p></li>
-<li><p>操作数栈
-作为方法调用的<strong>中转站</strong>使用，用于存放方法执行过程中产生的<strong>中间计算结果</strong>。计算过程中产生的临时变量也放在操作数栈中</p></li>
-<li><p>动态链接
-主要服务<strong>一个方法需要调用其他方法</strong>的场景。</p>
-<blockquote>
-<p>在 Java
-源文件被编译成字节码文件时，所有的变量和方法引用都作为符号引用（Symbilic
-Reference）保存在 Class
-文件的常量池里。当一个方法要调用其他方法，需要将常量池中指向方法的符号引用转化为其在内存地址中的直接引用。动态链接的作用就是为了将符号引用转换为调用方法的直接引用。</p>
-</blockquote>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/jvmimage-20220331175738692.png"
-alt="img" />
-<figcaption aria-hidden="true">img</figcaption>
-</figure></li>
-<li><p>如果函数调用陷入<strong>无限循环</strong>，会导致栈中被压入太多栈帧而占用太多空间，导致<strong>栈空间过深</strong>。当<strong>线程请求栈的深度超过当前Java虚拟机栈的最大深度</strong>时，就会抛出<strong>StackOverError</strong>错误</p></li>
-<li><p>Java 方法有两种返回方式，一种是 return
-语句正常返回，一种是抛出异常。不管哪种返回方式，都会导致栈帧被弹出。也就是说，
-<strong>栈帧随着方法调用而创建，随着方法结束而销毁。无论方法正常完成还是异常完成都算作方法结束。</strong></p></li>
-<li><p>除了 <code>StackOverFlowError</code>
-错误之外，栈还可能会出现<code>OutOfMemoryError</code>错误，这是因为如果<strong>栈的内存大小可以动态扩展</strong>，
-如果虚拟机在<strong>动态扩展栈时无法申请到足够的内存空间</strong>，则抛出<strong><code>OutOfMemoryError</code></strong>异常。</p></li>
-<li><p>总结，程序运行中栈可能出现的两种错误</p>
-<ul>
-<li><strong>StackOverFlowError</strong>：若<strong>栈的内存大小不允许动态扩展</strong>，那么当<strong>线程请求栈的深度超过当前
-Java 虚拟机栈的最大深度</strong>的时候，就抛出
-<code>StackOverFlowError</code> 错误。</li>
-<li><strong><code>OutOfMemoryError</code>：</strong>
-如果栈的内存大小<strong>可以动态扩展</strong>，
-如果虚拟机在<strong>动态扩展栈时无法申请到足够的内存空间</strong>，则抛出<code>OutOfMemoryError</code>异常。</li>
-</ul>
-<blockquote>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/%25E3%2580%258A%25E6%25B7%25B1%25E5%2585%25A5%25E7%2590%2586%25E8%25A7%25A3%25E8%2599%259A%25E6%258B%259F%25E6%259C%25BA%25E3%2580%258B%25E7%25AC%25AC%25E4%25B8%2589%25E7%2589%2588%25E7%259A%2584%25E7%25AC%25AC2%25E7%25AB%25A0-%25E8%2599%259A%25E6%258B%259F%25E6%259C%25BA%25E6%25A0%2588.f4f863a2.png"
-alt="img" />
-<figcaption aria-hidden="true">img</figcaption>
-</figure>
-</blockquote></li>
-</ul>
-<h2 id="本地方法栈">本地方法栈</h2>
-<p><code>和虚拟机栈作用相似</code>，区别：<strong>虚拟机栈为虚拟机执行Java方法（字节码）服务，本地方法栈则为虚拟机使用到的Native方法服务</strong>。HotSpot虚拟机中和Java虚拟机栈合二为一</p>
-<blockquote>
-<p>同上，本地方法被执行时，本地方法栈会创建一个栈帧，用于存放本地方法的局部变量表、操作数栈、动态链接、出口信息</p>
-<p>方法执行完毕后相应的栈帧也会出栈并释放内存空间，也会出现StackOverFlowError和OutOfMemoryError两种错误</p>
-</blockquote>
-<h2 id="堆">堆</h2>
-<ul>
-<li><p>Java虚拟机所管理的内存中最大的一块，Java堆是<strong>所有线程共享</strong>的一块区域，在虚拟机启动时创建</p></li>
-<li><p>此内存区域唯一目的是<strong>存放对象实例</strong>，<strong>几乎</strong>所有的<strong>对象实例及数组</strong>，都在这里分配内存</p>
-<blockquote>
-<p>“几乎”，因为随着<strong>JIT</strong>编译器的发展与逃逸分析技术逐渐成熟，<strong>栈上分配</strong>、<strong>标量替换</strong>导致微妙变化。从JDK1.7开始已经默认<strong>逃逸分析</strong>，如果某些方法的对象引用<strong>没有被返回或者未被外面使用（未逃逸出去）</strong>，那么对象可以<strong>直接在栈上分配内存</strong>。</p>
-</blockquote></li>
-<li><p>Java堆是<strong>垃圾收集器</strong>管理的主要区域，因此也称GC堆（Garbage
-Collected Heap）</p></li>
-<li><p>现在收集器基本都采用<strong>分代垃圾收集算法</strong>，从垃圾回收的角度，Java堆还细分为：新生代和老年代。再细致：Eden，Survivor，Old等空间。&gt;
-目的是更好的回收内存，或更快地分配内存</p></li>
-<li><p>JDK7及JDK7之前，堆内存被分为三部分</p>
-<ol type="1">
-<li>新生代内存(Young
-Generation)，包括Eden区、两个Survivor区S0和S1【8:1:1】</li>
-<li>老生代(Old Generation) 【新生代 : 老年代= 1: 2】</li>
-<li>永久代(Permanent Generation)</li>
-</ol>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/hotspot-heap-structure.41533631.png"
-alt="hotspot-heap-structure" />
-<figcaption aria-hidden="true">hotspot-heap-structure</figcaption>
-</figure></li>
-<li><p>JDK8之后<strong>PermGen（永久）</strong>已被<strong>Metaspace（元空间）</strong>取代，且<strong>元空间</strong>使用直接内存</p></li>
-<li><p>大部分情况，对象都会首先在 Eden
-区域分配，在一次新生代垃圾回收后，如果对象还存活，则会进入 S0 或者
-S1，并且对象的年龄还会加 1(Eden 区-&gt;Survivor 区后对象的初始年龄变为
-1)，当它的年龄增加到一定程度（默认为 15 岁），就会被晋升到老年代中。</p>
-<blockquote>
-<p>对象晋升到老年代的年龄阈值，可以通过参数
-<code>-XX:MaxTenuringThreshold</code> 来设置。</p>
-<p><strong>修正（参见：<a
-href="https://github.com/Snailclimb/JavaGuide/issues/552">issue552open
-in new window</a>）</strong> ：“Hotspot
-遍历所有对象时，按照<strong>年龄从小到大对其所占用的大小进行累积</strong>，当<strong>累积的某个年龄大小超过了
-survivor 区的一半</strong>时，<strong>取这个年龄和 MaxTenuringThreshold
-中更小的一个值</strong>，作为新的晋升年龄阈值”。图解：<br />
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221208105755268.png"
-alt="image-20221208105755268" /></p>
-<hr />
-<p>代码如下：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">uint ageTable::compute_tenuring_threshold(size_t survivor_capacity) &#123;</span><br><span class="line">	<span class="comment">//survivor_capacity是survivor空间的大小</span></span><br><span class="line"><span class="type">size_t</span> <span class="variable">desired_survivor_size</span> <span class="operator">=</span> (size_t)((((<span class="type">double</span>) survivor_capacity)*TargetSurvivorRatio)/<span class="number">100</span>);</span><br><span class="line"><span class="type">size_t</span> <span class="variable">total</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line"><span class="type">uint</span> <span class="variable">age</span> <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line"><span class="keyword">while</span> (age &lt; table_size) &#123;</span><br><span class="line">total += sizes[age];<span class="comment">//sizes数组是每个年龄段对象大小</span></span><br><span class="line"><span class="keyword">if</span> (total &gt; desired_survivor_size) <span class="keyword">break</span>;</span><br><span class="line">age++;</span><br><span class="line">&#125;</span><br><span class="line"><span class="type">uint</span> <span class="variable">result</span> <span class="operator">=</span> age &lt; MaxTenuringThreshold ? age : MaxTenuringThreshold;</span><br><span class="line">	...</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
-</blockquote></li>
-<li><p>堆里最容易出现OutOfMemoryError错误，出现这个错误之后的表现形式：</p>
-<ol type="1">
-<li><p><strong><code>java.lang.OutOfMemoryError: GC Overhead Limit Exceeded</code></strong>
-： 当 JVM
-<strong>花太多时间执行垃圾回收并且只能回收很少的堆空间</strong>时，就会发生此错误。</p></li>
-<li><p><strong><code>java.lang.OutOfMemoryError: Java heap space</code></strong>
-:假如在<strong>创建新的对象</strong>时,
-<strong>堆内存中的空间不足以存放新创建的对象</strong>,
-就会引发此错误。</p>
-<blockquote>
-<p>(和配置的最大堆内存有关，且受制于物理内存大小。最大堆内存可通过<code>-Xmx</code>参数配置，若没有特别配置，将会使用默认值，详见：<a
-href="https://stackoverflow.com/questions/28272923/default-xmxsize-in-java-8-max-heap-size">Default
-Java 8 max heap sizeopen in new window</a>)</p>
-</blockquote></li>
-<li><p>...</p></li>
-</ol></li>
-</ul>
-<h2 id="方法区">方法区</h2>
-<ul>
-<li><p>方法区属于<strong>JVM运行时数据区域</strong>的一块<strong>逻辑区域</strong>，是各线程共享的内存区域</p>
-<blockquote>
-<p>“逻辑”，《Java虚拟机规范》规定了有方法区这么个概念和它的作用，方法区如何实现是虚拟机的事。即，不同虚拟机实现上，方法区的实现是不同的</p>
-</blockquote></li>
-<li><p>当虚拟机要使用一个类时，它需要<strong>读取并解析Class文件获取相关信息</strong>，再将<strong>信息存入方法区</strong>。方法区会存储已被虚拟机加载的<strong>类信息、字段信息、方法信息、常量、静态变量、即时编译器编译后的代码缓存</strong>等数据</p></li>
-<li><p><strong>方法区和永久代以及元空间有什么关系呢？</strong></p>
-<ol type="1">
-<li>方法区和永久代以及元空间的关系很像Java中接口和类的关系，类实现了接口，这里的类就可以看作是<strong>永久代</strong>和<strong>元空间</strong>，接口则看作是<strong>方法区</strong></li>
-<li>永久代及元空间，是HotSpot虚拟机对虚拟机规范中方法区的<strong>两种实现方式</strong></li>
-<li>永久代是JDK1.8之前的方法区实现，元空间是JDK1.8及之后方法区的实现</li>
-</ol>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/method-area-implementation.png"
-alt="HotSpot 虚拟机方法区的两种实现" />
-<figcaption aria-hidden="true">HotSpot
-虚拟机方法区的两种实现</figcaption>
-</figure></li>
-<li><p>为什么将永久代（PermGen）替换成元空间（MetaSpace）呢</p>
-<blockquote>
-<p>下图来自《深入理解Java虚拟机》第3版</p>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/20210425134508117.png"
-alt="img" />
-<figcaption aria-hidden="true">img</figcaption>
-</figure>
-</blockquote>
-<ol type="1">
-<li><p>整个永久代有一个<strong>JVM本身设置的固定大小上限（也就是参数指定）</strong>，无法进行调整，而元空间使用的是<strong>直接内存</strong>，受本机可用内存的限制。<code>虽然元空间仍旧可能溢出，但比原来出现的机率会更小</code></p>
-<blockquote>
-<p>元空间溢出将得到错误： java.lang.OutOfMemoryError: MetaSpace</p>
-</blockquote>
-<ul>
-<li><code>-XX: MaxMetaspaceSize</code>设置最大元空间大小，默认为unlimited，即只受系统内存限制</li>
-<li><code>-XX: MetaspaceSize</code>调整标志定义元空间的<strong>初始大小</strong>，如果未指定此标志，则Metaspace将<strong>根据运行时应用程序需求，动态地重新调整大小</strong>。</li>
-</ul></li>
-<li><p>元空间里存放的是<strong>类的元数据</strong>，这样加载多少<strong>类的元数据就不由MaxPermSize控制</strong>了，而<strong>由系统的实际可用空间控制</strong>，这样加载的类就更多了</p></li>
-<li><p>在 JDK8，合并 HotSpot 和 JRockit 的代码时, JRockit
-从来没有一个叫永久代的东西,
-合并之后就没有必要额外的设置这么一个永久代的地方了</p></li>
-</ol></li>
-<li><p>方法区常用参数有哪些
-JDK1.8之前永久代还没有被彻底移除时通过下面参数调节方法区大小</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">-XX:PermSize=N<span class="comment">//方法区 (永久代) 初始大小</span></span><br><span class="line"></span><br><span class="line">-XX:MaxPermSize=N<span class="comment">//方法区 (永久代) 最大大小,超过这个值将会抛出 OutOfMemoryError 异常:java.lang.OutOfMemoryError: PermGen</span></span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>相对而言，垃圾收集行为在这个区域是比较少出现的，但<strong>并非数据进入方法区后就“永久存在”</strong>了。</p>
-</blockquote>
-<p>JDK1.7方法区(HotSpot的永久代)被移除一部分，JDK1.8时方法区被彻底移除，取而代之的是<strong>元空间</strong>，元空间使用直接内存，下面是常用参数</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">-XX:MetaspaceSize=N <span class="comment">//设置 Metaspace 的初始（和最小大小）</span></span><br><span class="line">-XX:MaxMetaspaceSize=N <span class="comment">//设置 Metaspace 的最大大小</span></span><br></pre></td></tr></table></figure>
-<p>与永久代不同，如果不指定大小，随着更多类的创建，<strong>虚拟机会耗尽所有可用的系统内存</strong>。</p></li>
-</ul>
-<h2 id="运行时常量池">运行时常量池</h2>
-<ul>
-<li><p>Class文件中除了有<strong>类的版本</strong>、<strong>字段</strong>、<strong>方法</strong>、<strong>接口</strong>等描述信息外，还有用于存放编译器期生成的<strong>各种字面量（Literal）</strong>和<strong>符号引用（Symbolic
-Reference）</strong>的<strong>常量池表（注意，这里的常量池表，说的是刚刚编译后的那个class文件字节码代表的含义）</strong></p>
-<blockquote>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230124213133879.png"
-alt="image-20230124213133879" />
-<figcaption aria-hidden="true">image-20230124213133879</figcaption>
-</figure>
-</blockquote></li>
-<li><p><strong>字面量</strong>是源代码中的<strong>固定值表示法</strong>，即通过字面我们就知道其值的含义。字面量包括<strong>整数</strong>、<strong>浮点数</strong>和<strong>字符串字面量</strong>；<strong>符号引用</strong>包括<strong>类符号引用</strong>、<strong>字段符号引用</strong>、<strong>方法符号引用</strong>和<strong>接口方法符号引用</strong>。</p></li>
-<li><p><strong>常量池表</strong>会在类加载后存放到<strong>方法区</strong>的<strong>运行时常量池</strong>中</p></li>
-<li><p>运行时常量池的功能类似于传统编程语言的<strong>符号表(但是包含了比典型符号表更广泛的数据)</strong></p></li>
-<li><p>运行时常量池是方法区的一部分，所以<strong>受到方法区内存的限制</strong>，当常量池无法再申请到内存时会抛出<strong>OutOfMemoryError</strong>的错误</p></li>
-</ul>
-<h2 id="字符串常量池">字符串常量池</h2>
-<p><strong>字符串常量池</strong>是JVM为了<strong>提升性能和减少内存消耗针对字符串(String类)专门</strong>开辟的一块区域，主要目的是为了避免字符串得重复创建</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 在堆中创建字符串对象”ab“</span></span><br><span class="line"><span class="comment">// 将字符串对象”ab“的引用保存在字符串常量池中</span></span><br><span class="line"><span class="type">String</span> <span class="variable">aa</span> <span class="operator">=</span> <span class="string">&quot;ab&quot;</span>;</span><br><span class="line"><span class="comment">// 直接返回字符串常量池中字符串对象”ab“的引用</span></span><br><span class="line"><span class="type">String</span> <span class="variable">bb</span> <span class="operator">=</span> <span class="string">&quot;ab&quot;</span>;</span><br><span class="line">System.out.println(aa==bb);<span class="comment">// true </span></span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>HotSpot 虚拟机中字符串常量池的实现是
-<code>src/hotspot/share/classfile/stringTable.cpp</code>
-,<code>StringTable</code>
-本质上就是一个<code>HashSet&lt;String&gt;</code> ,容量为
-<code>StringTableSize</code>（可以通过 <code>-XX:StringTableSize</code>
-参数来设置）。</p>
-<p><code>StringTable</code>
-中保存的是<strong>字符串对象的引用</strong>，字符串对象的引用<strong>指向堆中的字符串对象</strong>。</p>
-</blockquote>
-<p>JDK1.7之前，<strong>运行时常量池(字符串常量池、静态变量)</strong>存放在<strong>永久代</strong>。JDK1.7<strong>字符串常量池和静态变量</strong>从永久代移动到了Java堆中
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/method-area-jdk1.6.png"
-alt="method-area-jdk1.6" /></p>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/method-area-jdk1.7.png"
-alt="method-area-jdk1.7" />
-<figcaption aria-hidden="true">method-area-jdk1.7</figcaption>
-</figure>
-<p><strong>JDK1.7为什么要将字符串常量池移动到堆中</strong></p>
-<ul>
-<li><p>因为<strong>永久代（方法区实现）的GC回收效率太低</strong>，只有在整堆收集（Full
-GC）的时候才会被执行GC。Java程序中通常有<strong>大量的被创建的字符串等待回收</strong>，将字符串常量池放到堆中，能够高效及时地回收字符串内存。</p></li>
-<li><p>JVM常量池中存储的是对象还是引用</p>
-<blockquote>
-<p>如果您说的确实是runtime constant pool（而不是interned string pool /
-StringTable之类的其他东西）的话，其中的引用类型常量（例如CONSTANT_String、CONSTANT_Class、CONSTANT_MethodHandle、CONSTANT_MethodType之类）都存的是引用，实际的对象还是存在Java
-heap上的。</p>
-</blockquote></li>
-<li><blockquote>
-<p><strong>运行时常量池、方法区、字符串常量池这些都是不随虚拟机实现而改变的逻辑概念，是公共且抽象的，Metaspace、Heap
-是与具体某种虚拟机实现相关的物理概念，是私有且具体的。</strong></p>
-</blockquote></li>
-</ul>
-<h2 id="总结">总结</h2>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221209084421539.png"
-alt="image-20221209084421539" />
-<figcaption aria-hidden="true">image-20221209084421539</figcaption>
-</figure>
-<hr />
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221209084450069.png"
-alt="image-20221209084450069" />
-<figcaption aria-hidden="true">image-20221209084450069</figcaption>
-</figure>
-<hr />
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221209084515658.png"
-alt="image-20221209084515658" />
-<figcaption aria-hidden="true">image-20221209084515658</figcaption>
-</figure>
-<h2 id="直接内存">直接内存</h2>
-<ul>
-<li>直接内存并<strong>不是虚拟机运行时数据区</strong>的一部分，也<strong>不是虚拟机规范中定义的内存</strong>区域，但是这部分内存也被频繁使用，也可能导致OutOfMemoryError错误出现</li>
-<li>JDK1.4中新加入的NIO(New
-Input/Output)类，引入一种基于<strong>通道（Channel）</strong>与<strong>缓冲区（Buffer）</strong>的I/O方式，它可以直接使用<strong>Native函数库直接分配堆外内存</strong>，然后通过一个<strong>存储在Java堆中的DirectByteBuffer对象作为这块内存的引用</strong>进行操作。这样就能在一些场景中<strong>显著提高性能</strong>，因为避免了在<strong>Java堆和Native堆</strong>之间来回复制数据</li>
-<li>本机直接内存的分配不会受到Java堆的限制，但是，既然是内存就会<strong>受到本机总内存大小</strong>以及<strong>处理器寻址空间</strong>的限制</li>
-</ul>
-<h1 id="hotspot虚拟机对象探秘">HotSpot虚拟机对象探秘</h1>
-<p><strong>了解一下HotSport虚拟机</strong>在<strong>Java堆中对象分配、布局和访问</strong>的全过程</p>
-<h2 id="对象的创建">对象的创建</h2>
-<p>默认：</p>
-<ol type="1">
-<li><p>类加载检查
-虚拟机遇到一条<strong>new指令</strong>时，首先将去检查这个指令的<strong>参数</strong>是否能在<strong>常量池中</strong>定位到这个<strong>类的符号引用</strong>，并且检查这个符号引用代表的类<strong>是否已被加载过</strong>、<strong>解析和初始化</strong>过。<strong>如果没有</strong>，那必须先执行相应的<strong>类加载</strong>过程</p></li>
-<li><p>分配内存
-<strong>类加载检查</strong>通过后，接下来虚拟机将为新生对象<strong>分配内容</strong>。<strong>对象所需内存大小</strong>在类加载后便可确定，为对象分配空间的任务，等同于<strong>把一块确定大小的内存</strong>从<strong>Java堆中划分出来</strong>。
-分配方式有<strong>”指针碰撞“</strong>和<strong>”空闲列表“</strong>两种，选择哪种分配方式由<strong>Java堆是否规整决定</strong>，而<strong>Java堆是否规整</strong>又由<strong>所采用的垃圾收集器是否带有压缩整理功能决定</strong>
-<strong>内存分配的两种方式</strong>：</p>
-<ul>
-<li><p>指针碰撞</p>
-<ul>
-<li>适用场合：<strong>堆内存规整（即没有内存碎片）</strong>的情况下</li>
-<li>原理：用过的内存全部整合到一边，没有用过的内存放在另一边，<strong>中间有一个分界指针</strong>只需要<strong>向着没用过的内存方向</strong>，将该指针<strong>移动对象内存的大小的位置</strong>即可</li>
-<li>使用该分配方式的GC收集器：Serial，PartNew</li>
-</ul></li>
-<li><p>空闲列表</p>
-<ul>
-<li>适合场合：<strong>堆内存不规整的情况下</strong></li>
-<li>原理：虚拟机会维护一个列表，该列表中会<strong>记录哪些内存块是可用</strong>的，在分配的时候，找一块<strong>足够大的内存块</strong>来划分给对象实例，最后<strong>更新列表记录</strong></li>
-<li>使用该分配方式的GC收集器：CMS</li>
-</ul>
-<p>选择以上两种方式中的哪一种，取决于 Java 堆内存是否规整。而 Java
-堆内存是否规整，取决于 <strong>GC
-收集器的算法</strong>是<strong>"标记-清除"</strong>，还是<strong>"标记-整理"</strong>（也称作<strong>"标记-压缩"</strong>），值得注意的是，<strong>复制算法内存也是规整</strong>的</p></li>
-</ul>
-<p><strong>内存分配并发问题</strong>：</p>
-<p>创建对象时的重要问题---线程安全，因为在实际开发过程中，<strong>创建对象是很频繁的事</strong>，作为虚拟机来说，必须要保证线城市安全的，虚拟机采用<strong>两种方式保证线程安全</strong>：</p>
-<ol type="1">
-<li><p>CAS+失败重试:</p>
-<blockquote>
-<p>CAS
-是乐观锁的一种实现方式。所谓乐观锁就是，每次不加锁而是假设没有冲突而去完成某项操作，如果因为冲突失败就重试，直到成功为止</p>
-</blockquote>
-<p>虚拟机采用<strong>CAS+失败重试</strong>的方式保证更新操作的原子性</p></li>
-<li><p>TLAB：为<strong>每一个线程</strong> <strong>预先</strong>
-<strong>在Eden区分配一块内存</strong>，JVM在<strong>给线程中的对象分配内存</strong>时，首先在TLAB（该内存区域）分配，当对象大于TLAB中的<strong>剩余内存</strong>或TLAB的内存<strong>已用尽</strong>时，再采用上述的<strong>CAS</strong>进行内存分配</p>
-<blockquote>
-<p>在预留这个操作发生的时候，需要进行加锁或者采用CAS等操作进行保护，避免多个线程预留同一个区域</p>
-</blockquote></li>
-</ol></li>
-<li><p>初始化零值
-内存分配完成后，虚拟机需要将<strong>分配到的内存空间</strong>都<strong>初始化为零值（不包括对象头）</strong>，这一步操作<strong>保证了对象的实例字段</strong>在
-<strong>Java
-代码中可以不赋初始值就直接使用</strong>，程序能访问到这些<strong>字段的数据类型所对应的零值</strong>。</p></li>
-<li><p>设置对象头<br />
-初始化零值完成之后，<strong>虚拟机要对对象进行必要的设置</strong>，例如这个对象是哪个类的实例、如何才能找到类的元数据信息、对象的哈希码、对象的
-GC 分代年龄等信息。 <strong>这些信息存放在对象头中。</strong>
-另外，根据虚拟机当前运行状态的不同，如是否启用偏向锁等，对象头会有不同的设置方式。</p></li>
-<li><p>执行init方法<br />
-在上面工作都完成之后，<strong>从虚拟机的视角来看，一个新的对象已经产生了</strong>，但从
-Java 程序的视角来看，对象创建才刚开始，<strong><code>&lt;init&gt;</code>
-方法还没有执行，所有的字段都还为零</strong>。所以一般来说，执行 new
-指令之后会接着执行 <strong><code>&lt;init&gt;</code>
-方法</strong>，把对象<strong>按照程序员的意愿进行初始化</strong>，这样一个真正可用的对象才算完全产生出来。</p>
-<blockquote>
-<p>附： Java 在编译之后会在字节码文件中生成 <strong>init
-方法，称之为实例构造器</strong>，该实例构造器会将语句块，变量初始化，调用父类的构造器等操作<strong>收敛到
-init 方法中</strong>，收敛顺序为：</p>
-<ol type="1">
-<li>父类变量初始化</li>
-<li>父类语句块</li>
-<li>父类构造函数</li>
-<li>子类变量初始化</li>
-<li>子类语句块</li>
-<li>子类构造函数</li>
-</ol>
-<ul>
-<li>收敛到 init 方法的意思是：<strong>将这些操作放入到 init
-中</strong>去执行。</li>
-</ul>
-<p>转自： https://juejin.cn/post/6844903957836333063</p>
-</blockquote></li>
-</ol>
-<h2 id="对象的内存布局">对象的内存布局</h2>
-<ul>
-<li>Hotspot虚拟机中，对象在内存中的布局分为3块区域：<strong>对象头</strong>、<strong>实例数据</strong>和<strong>对齐填充</strong>
-<ul>
-<li>对象头又包括<strong>两部分信息</strong>，第一部分用于<strong>存储对象自身的运行时数据（哈希码、GC分代年龄、锁状态标志等等）</strong>，即markword；第二部分是<strong>类型指针</strong>，即对象指向它的<strong>类元数据的指针</strong>，虚拟机通过这个指针来确定<strong>这个对象是哪个类的实例</strong>。</li>
-<li>实例数据部分是对象<strong>真正存储的有效信息</strong>，也是在程序中所定义的各种类型的<strong>字段</strong>内容</li>
-<li>对齐填充部分<strong>不是必然存在的，没特别含义，只起占位作用</strong>。因为Hotspot虚拟机的<strong>自动内存管理系统</strong>要求<strong>对象起始地址必须是8字节的整数倍</strong>，即<strong>对象的大小必须是8字节的整数倍</strong>。而对象头部分正好是8字节的倍数（1倍或2倍），因此当<strong>对象实例数据部分没有对齐</strong>时，就需要通过<strong>对齐填充</strong>来补全</li>
+<li>字节输入流 <strong>InputStream</strong>，字符输入流
+<strong>Reader</strong></li>
+<li>字节输出流 <strong>OutputStream</strong>, 字符输出流
+<strong>Writer</strong></li>
 </ul></li>
 </ul>
-<h2 id="对象的访问定位">对象的访问定位</h2>
-<p>建立对象就是为了<strong>使用对象</strong>，我们的 Java
-程序通过<strong>栈上的 reference
-数据</strong>来<strong>操作堆上的具体对象</strong>。对象的访问方式由虚拟机实现而定，目前<strong>主流的访问方式</strong>有：<strong>使用句柄</strong>、<strong>直接指针</strong>。</p>
+<h2 id="字节流">字节流</h2>
+<ul>
+<li><p>字节输入流 InputStream
+InputStream用于从源头（通常是文件）<strong>读取数据（字节信息）到内存</strong>中，java.io.InputStream抽象类是<strong>所有字节输入流的父类</strong></p>
+<ul>
+<li><p>常用方法</p>
+<blockquote>
+<ul>
+<li><code>read()</code> ：返回输入流中下一个字节的数据。返回的值介于 0
+到 255 之间。如果未读取任何字节，则代码返回 <code>-1</code>
+，表示文件结束。</li>
+<li><code>read(byte b[ ])</code> : 从输入流中读取一些字节存储到数组
+<code>b</code> 中。如果数组 <code>b</code>
+的长度为零，则不读取。如果没有可用字节读取，返回
+<code>-1</code>。如果有可用字节读取，则最多读取的字节数最多等于
+<code>b.length</code> ， 返回读取的字节数。这个方法等价于
+<code>read(b, 0, b.length)</code>。</li>
+<li><code>read(byte b[], int off, int len)</code>
+：在<code>read(byte b[ ])</code> 方法的基础上增加了 <code>off</code>
+参数（偏移量）和 <code>len</code> 参数（要读取的最大字节数）。</li>
+<li><code>skip(long n)</code> ：忽略输入流中的 n 个字节
+,返回实际忽略的字节数。</li>
+<li><code>available()</code> ：返回输入流中可以读取的字节数。</li>
+<li><code>close()</code> ：关闭输入流释放相关的系统资源。</li>
+</ul>
+</blockquote></li>
+<li><p>Java9 新增了多个实用方法</p>
+<blockquote>
+<ul>
+<li><code>readAllBytes()</code>
+：读取输入流中的所有字节，返回字节数组。</li>
+<li><code>readNBytes(byte[] b, int off, int len)</code> ：阻塞直到读取
+<code>len</code> 个字节。</li>
+<li><code>transferTo(OutputStream out)</code> ：
+将所有字节<strong>从一个输入流传递到一个输出流</strong>。</li>
+</ul>
+</blockquote></li>
+<li><p>FileInputStream --&gt;
+<strong>字节输入流</strong>对象，可直接<strong>指定文件路径</strong>：用来读取单字节数据/或读取至字节数组中，示例如下：<br />
+input.txt中的字符为LLJavaGuide</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">try</span> (<span class="type">InputStream</span> <span class="variable">fis</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;input.txt&quot;</span>)) &#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;Number of remaining bytes:&quot;</span></span><br><span class="line">            + fis.available());</span><br><span class="line">    <span class="type">int</span> content;</span><br><span class="line">    <span class="type">long</span> <span class="variable">skip</span> <span class="operator">=</span> fis.skip(<span class="number">2</span>);</span><br><span class="line">    System.out.println(<span class="string">&quot;The actual number of bytes skipped:&quot;</span> + skip);</span><br><span class="line">    System.out.print(<span class="string">&quot;The content read from file:&quot;</span>);</span><br><span class="line">    <span class="keyword">while</span> ((content = fis.read()) != -<span class="number">1</span>) &#123;</span><br><span class="line">        System.out.print((<span class="type">char</span>) content);</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//输出</span></span><br><span class="line"><span class="comment">/**Number of remaining bytes:11</span></span><br><span class="line"><span class="comment">The actual number of bytes skipped:2</span></span><br><span class="line"><span class="comment">The content read from file:JavaGuide</span></span><br><span class="line"><span class="comment">**/</span></span><br></pre></td></tr></table></figure>
+<p>一般不会单独使用FileInputStream，而是<strong>配合BufferdInputStream(字节缓冲输入流)</strong>，下面代码转为String
+较为常见：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 新建一个 BufferedInputStream 对象</span></span><br><span class="line"><span class="type">BufferedInputStream</span> <span class="variable">bufferedInputStream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedInputStream</span>(<span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;input.txt&quot;</span>));</span><br><span class="line"><span class="comment">// 读取文件的内容并复制到 String 对象中</span></span><br><span class="line"><span class="type">String</span> <span class="variable">result</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">String</span>(bufferedInputStream.readAllBytes());</span><br><span class="line">System.out.println(result);</span><br></pre></td></tr></table></figure></li>
+<li><p>DataInputStream
+用于<strong>读取指定类型数据</strong>，不能单独使用，必须结合FileInputStream</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">FileInputStream</span> <span class="variable">fileInputStream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;input.txt&quot;</span>);</span><br><span class="line"><span class="comment">//必须将fileInputStream作为构造参数才能使用</span></span><br><span class="line"><span class="type">DataInputStream</span> <span class="variable">dataInputStream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">DataInputStream</span>(fileInputStream);</span><br><span class="line"><span class="comment">//可以读取任意具体的类型数据</span></span><br><span class="line">dataInputStream.readBoolean();</span><br><span class="line">dataInputStream.readInt();</span><br><span class="line">dataInputStream.readUTF();</span><br></pre></td></tr></table></figure></li>
+<li><p>ObjectInputStream
+用于从<strong>输入流读取Java对象（一般是被反序列化到文件中，或者其他介质的数据）</strong>，ObjectOutputStream用于<strong>将对象写入到输出流</strong>（[将对象]序列化）</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">ObjectInputStream</span> <span class="variable">input</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectInputStream</span>(<span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;object.data&quot;</span>));</span><br><span class="line"><span class="type">MyClass</span> <span class="variable">object</span> <span class="operator">=</span> (MyClass) input.readObject();</span><br><span class="line">input.close();</span><br></pre></td></tr></table></figure>
+<p>用于序列化和反序列化的类<strong>必须实现Serializable</strong>接口，不想被序列化的属性用<strong><code>transizent</code></strong>修饰</p></li>
+</ul></li>
+<li><p>字节输出流 OutputStream</p>
+<ul>
+<li><p>OutputStream用于将字节数据（字节信息）写入到目的地（通常是文件），java.io.OutputStream抽象类是<strong>所有字节输出流的父类</strong></p>
+<blockquote>
+<p>//常用方法</p>
+<ul>
+<li><code>write(int b)</code> ：将特定字节写入输出流。</li>
+<li><code>write(byte b[ ])</code> : 将数组<code>b</code>
+写入到输出流，等价于 <code>write(b, 0, b.length)</code> 。</li>
+<li><code>write(byte[] b, int off, int len)</code> :
+在<code>write(byte b[ ])</code> 方法的基础上增加了 <code>off</code>
+参数（偏移量）和 <code>len</code> 参数（要读取的最大字节数）。</li>
+<li><code>flush()</code> ：刷新此输出流并强制写出所有缓冲的输出字节。
+//相比输入流多出的方法</li>
+<li><code>close()</code> ：关闭输出流释放相关的系统资源。</li>
+</ul>
+</blockquote></li>
+</ul></li>
+<li><p>示例代码：<br />
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">try</span> (<span class="type">FileOutputStream</span> <span class="variable">output</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(<span class="string">&quot;output.txt&quot;</span>)) &#123;</span><br><span class="line">    <span class="type">byte</span>[] array = <span class="string">&quot;JavaGuide&quot;</span>.getBytes();</span><br><span class="line">    output.write(array);</span><br><span class="line">&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//结果</span></span><br><span class="line"><span class="comment">/**output.txt文件中内容为:</span></span><br><span class="line"><span class="comment">JavaGuide</span></span><br><span class="line"><span class="comment">**/</span></span><br></pre></td></tr></table></figure> <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">FileOutputStream一般也是配合BufferedOutputStream （字节缓冲输出流）： </span><br><span class="line"></span><br><span class="line">```java</span><br><span class="line">FileOutputStream fileOutputStream = new FileOutputStream(&quot;output.txt&quot;);</span><br><span class="line">  BufferedOutputStream bos = new BufferedOutputStream(fileOutputStream)</span><br></pre></td></tr></table></figure></p></li>
+<li><p>DataOutputStream用于<strong>写入指定类型</strong>数据，不能单独使用，必须<strong>结合FileOutputStream</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 输出流</span></span><br><span class="line"><span class="type">FileOutputStream</span> <span class="variable">fileOutputStream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(<span class="string">&quot;out.txt&quot;</span>);</span><br><span class="line"><span class="type">DataOutputStream</span> <span class="variable">dataOutputStream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">DataOutputStream</span>(fileOutputStream);</span><br><span class="line"><span class="comment">// 输出任意数据类型</span></span><br><span class="line">dataOutputStream.writeBoolean(<span class="literal">true</span>);</span><br><span class="line">dataOutputStream.writeByte(<span class="number">1</span>);</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>ObjectInputStream用于从输入流中读取<strong>Java对象</strong>（ObjectInputStream，反序列化）；ObjectOutputStream用于<strong>将对象写入到输出流</strong>（ObjectOutputStream，序列化）</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">ObjectOutputStream</span> <span class="variable">output</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectOutputStream</span>(<span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(<span class="string">&quot;file.txt&quot;</span>)</span><br><span class="line"><span class="type">Person</span> <span class="variable">person</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Person</span>(<span class="string">&quot;Guide哥&quot;</span>, <span class="string">&quot;JavaGuide作者&quot;</span>);</span><br><span class="line">output.writeObject(person);</span><br></pre></td></tr></table></figure></li>
+</ul></li>
+</ul>
+<h2 id="字符流">字符流</h2>
+<ul>
+<li><p>简介
+文件读写或者网络发送接收，信息的最小存储单元都是字节，<strong>为什么</strong>I/O流操作要分为<strong>字节流</strong>操作和<strong>字符流</strong>操作呢</p>
+<ul>
+<li><p>字符流是由<strong>Java虚拟机将字节转换得到</strong>的，过程相对耗时</p></li>
+<li><p><strong>如果不知道编码类型，容易出现乱码</strong>
+如上面的代码，将文件内容改为 ： 你好，我是Guide</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">try</span> (<span class="type">InputStream</span> <span class="variable">fis</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;input.txt&quot;</span>)) &#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;Number of remaining bytes:&quot;</span></span><br><span class="line">            + fis.available());</span><br><span class="line">    <span class="type">int</span> content;</span><br><span class="line">    <span class="type">long</span> <span class="variable">skip</span> <span class="operator">=</span> fis.skip(<span class="number">2</span>);</span><br><span class="line">    System.out.println(<span class="string">&quot;The actual number of bytes skipped:&quot;</span> + skip);</span><br><span class="line">    System.out.print(<span class="string">&quot;The content read from file:&quot;</span>);</span><br><span class="line">    <span class="keyword">while</span> ((content = fis.read()) != -<span class="number">1</span>) &#123;</span><br><span class="line">        System.out.print((<span class="type">char</span>) content);</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//输出</span></span><br><span class="line"><span class="comment">/**Number of remaining bytes:9</span></span><br><span class="line"><span class="comment">The actual number of bytes skipped:2</span></span><br><span class="line"><span class="comment">The content read from file:§å®¶å¥½</span></span><br><span class="line"><span class="comment">**/</span></span><br></pre></td></tr></table></figure>
+<p>为了解决乱码问题，I/O流提供了一个<strong>直接操作字符的接口</strong>，方便对字符进行流操作；但如果音频文件、图片等媒体文件用字节流比较好，涉及字符的话使用字符流</p>
+<blockquote>
+<p>★ 重要：</p>
+<p>字符流默认采用的是 <code>Unicode</code>
+编码，我们可以通过构造方法自定义编码。顺便分享一下之前遇到的笔试题：常用字符编码所占字节数？<br />
+<code>utf8</code> :英文占 1 字节，中文占 3 字节，<br />
+<code>unicode</code>：任何字符都占 2 个字节，<br />
+<code>gbk</code>：英文占 1 字节，中文占 2 字节。</p>
+</blockquote></li>
+</ul></li>
+<li><p>Reader（字符输入流）</p>
+<ul>
+<li><p>用于从源头（通常是文件）读取数据（字符信息）到内存中，java.io.Reader抽象类是<strong>所有字符输入流的父类</strong></p>
+<p>注意：InputStream和Reader都是类，再往上就是接口了；Reader用于读取文本，InputStream用于读取原始字节
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221024095605757.png"
+alt="image-20221024095605757" /></p>
+<blockquote>
+<p>常用方法：</p>
+<ul>
+<li><code>read()</code> : 从输入流读取一个字符。</li>
+<li><code>read(char[] cbuf)</code> :
+从输入流中读取一些字符，并将它们存储到字符数组
+<code>cbuf</code>中，等价于 <code>read(cbuf, 0, cbuf.length)</code>
+。</li>
+<li><code>read(char[] cbuf, int off, int len)</code>
+：在<code>read(char[] cbuf)</code> 方法的基础上增加了 <code>off</code>
+参数（偏移量）和 <code>len</code> 参数（要读取的最大字节数）。</li>
+<li><code>skip(long n)</code> ：忽略输入流中的 n 个字符
+,返回实际忽略的字符数。</li>
+<li><code>close()</code> : 关闭输入流并释放相关的系统资源。</li>
+</ul>
+</blockquote></li>
+<li><p>InputStreamReader是<strong>字节流转换为字符流</strong>的桥梁，子类FileReader基于该基础上的封装，可以<strong>直接操作</strong>字符文件</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 字节流转换为字符流的桥梁</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">InputStreamReader</span> <span class="keyword">extends</span> <span class="title class_">Reader</span> &#123;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 用于读取字符文件</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">FileReader</span> <span class="keyword">extends</span> <span class="title class_">InputStreamReader</span> &#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>示例：input.txt中内容为"你好，我是Guide"</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">try</span> (<span class="type">FileReader</span> <span class="variable">fileReader</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileReader</span>(<span class="string">&quot;input.txt&quot;</span>);) &#123;</span><br><span class="line">    <span class="type">int</span> content;</span><br><span class="line">    <span class="type">long</span> <span class="variable">skip</span> <span class="operator">=</span> fileReader.skip(<span class="number">3</span>);</span><br><span class="line">    System.out.println(<span class="string">&quot;The actual number of bytes skipped:&quot;</span> + skip);</span><br><span class="line">    System.out.print(<span class="string">&quot;The content read from file:&quot;</span>);</span><br><span class="line">    <span class="keyword">while</span> ((content = fileReader.read()) != -<span class="number">1</span>) &#123;</span><br><span class="line">        System.out.print((<span class="type">char</span>) content);</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*输出</span></span><br><span class="line"><span class="comment">The actual number of bytes skipped:3</span></span><br><span class="line"><span class="comment">The content read from file:我是Guide。</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure></li>
+</ul></li>
+<li><p>Write（字符输出流）
+用于将数据（字符信息）写到目的地（通常是文件），java.io.Writer抽象类是<strong>所有字节输出流</strong>的父类</p>
+<blockquote>
+<ul>
+<li><code>write(int c)</code> : 写入单个字符。</li>
+<li><code>write(char[] cbuf)</code> ：写入字符数组
+<code>cbuf</code>，等价于<code>write(cbuf, 0, cbuf.length)</code>。</li>
+<li><code>write(char[] cbuf, int off, int len)</code>
+：在<code>write(char[] cbuf)</code> 方法的基础上增加了 <code>off</code>
+参数（偏移量）和 <code>len</code> 参数（要读取的最大字节数）。</li>
+<li><code>write(String str)</code> ：写入字符串，等价于
+<code>write(str, 0, str.length())</code> 。</li>
+<li><code>write(String str, int off, int len)</code>
+：在<code>write(String str)</code> 方法的基础上增加了 <code>off</code>
+参数（偏移量）和 <code>len</code> 参数（要读取的最大字节数）。</li>
+<li><code>append(CharSequence csq)</code> ：将指定的字符序列附加到指定的
+<code>Writer</code> 对象并返回该 <code>Writer</code> 对象。</li>
+<li><code>append(char c)</code> ：将指定的字符附加到指定的
+<code>Writer</code> 对象并返回该 <code>Writer</code> 对象。</li>
+<li><code>flush()</code>
+：刷新此输出流并强制写出所有缓冲的输出字符。//相对于Reader增加的</li>
+<li><code>close()</code>:关闭输出流释放相关的系统资源。</li>
+</ul>
+</blockquote>
+<ul>
+<li><p>OutputStreamWriter是<strong>字符流转换为字节流</strong>的桥梁（注意，这里没有错），其子类<strong>FileWriter是基于该基础上的封装</strong>，可以直接将字符写入到文件</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 字符流转换为字节流的桥梁</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">OutputStreamWriter</span> <span class="keyword">extends</span> <span class="title class_">Writer</span> &#123;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 用于写入字符到文件</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">FileWriter</span> <span class="keyword">extends</span> <span class="title class_">OutputStreamWriter</span> &#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>FileWriter代码示例：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">try</span> (<span class="type">Writer</span> <span class="variable">output</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileWriter</span>(<span class="string">&quot;output.txt&quot;</span>)) &#123;</span><br><span class="line">    output.write(<span class="string">&quot;你好，我是Guide。&quot;</span>); <span class="comment">//字符流，转为字节流</span></span><br><span class="line">&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*结果：output.txt中</span></span><br><span class="line"><span class="comment">你好，我是Guide</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure></li>
+</ul></li>
+<li><p>InputStreamWriter和OutputStreamWriter 比较</p>
+<ul>
+<li>前者InputStreamWriter，是需要<strong>从文件中读数据出来（读到内存中）</strong>，而文件是通过二进制（字节）保存的，所以InputStreamWriter是<strong>将（看不懂的）字节流转换为（看得懂的）字符流</strong></li>
+<li>后者OutputStreamWriter，是需要<strong>将（看得懂的）字符流转换为（看不懂的）字节流（然后从内存读出）</strong>并保存到介质中</li>
+</ul></li>
+</ul>
+<h2 id="字节缓冲流">字节缓冲流</h2>
+<ul>
+<li><p>简介</p>
+<ul>
+<li><p>IO操作是很消耗性能的，缓冲流<strong>将数据加载至缓冲区</strong>，一次性读取/写入多个字节，从而避免频繁的IO操作，提高流的效率</p></li>
+<li><p>采用装饰器模式来增强InputStream和OutputStream子类对象的功能</p></li>
+<li><p>例子：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 新建一个 BufferedInputStream 对象</span></span><br><span class="line"><span class="type">BufferedInputStream</span> <span class="variable">bufferedInputStream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedInputStream</span>(<span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;input.txt&quot;</span>));</span><br></pre></td></tr></table></figure></li>
+<li><p><strong>字节流</strong>和<strong>字节缓冲流</strong>的性能差别主要体现在：当使用两者时都调用的是write(int
+b)和read()
+这两个一次只读取一个字节的方法的时候，由于<strong>字节缓冲流内部有缓冲区（字节数组）</strong>，因此字节缓冲流会<strong>将读取到的字节存放在缓存区</strong>，大幅减少IO次数，提高读取效率</p>
+<blockquote>
+<p>对比：复制524.9mb文件，缓冲流15s，普通字节流2555s(30min)</p>
+<p>测试代码</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">void</span> <span class="title function_">copy_pdf_to_another_pdf_buffer_stream</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">// 记录开始时间</span></span><br><span class="line">    <span class="type">long</span> <span class="variable">start</span> <span class="operator">=</span> System.currentTimeMillis();</span><br><span class="line">    <span class="keyword">try</span> (<span class="type">BufferedInputStream</span> <span class="variable">bis</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedInputStream</span>(<span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;深入理解计算机操作系统.pdf&quot;</span>));</span><br><span class="line">         <span class="type">BufferedOutputStream</span> <span class="variable">bos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedOutputStream</span>(<span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(<span class="string">&quot;深入理解计算机操作系统-副本.pdf&quot;</span>))) &#123;</span><br><span class="line">        <span class="type">int</span> content;</span><br><span class="line">        <span class="keyword">while</span> ((content = bis.read()) != -<span class="number">1</span>) &#123;</span><br><span class="line">            bos.write(content);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 记录结束时间</span></span><br><span class="line">    <span class="type">long</span> <span class="variable">end</span> <span class="operator">=</span> System.currentTimeMillis();</span><br><span class="line">    System.out.println(<span class="string">&quot;使用缓冲流复制PDF文件总耗时:&quot;</span> + (end - start) + <span class="string">&quot; 毫秒&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">void</span> <span class="title function_">copy_pdf_to_another_pdf_stream</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">// 记录开始时间</span></span><br><span class="line">    <span class="type">long</span> <span class="variable">start</span> <span class="operator">=</span> System.currentTimeMillis();</span><br><span class="line">    <span class="keyword">try</span> (<span class="type">FileInputStream</span> <span class="variable">fis</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;深入理解计算机操作系统.pdf&quot;</span>);</span><br><span class="line">         <span class="type">FileOutputStream</span> <span class="variable">fos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(<span class="string">&quot;深入理解计算机操作系统-副本.pdf&quot;</span>)) &#123;</span><br><span class="line">        <span class="type">int</span> content;</span><br><span class="line">        <span class="keyword">while</span> ((content = fis.read()) != -<span class="number">1</span>) &#123;</span><br><span class="line">            fos.write(content);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 记录结束时间</span></span><br><span class="line">    <span class="type">long</span> <span class="variable">end</span> <span class="operator">=</span> System.currentTimeMillis();</span><br><span class="line">    System.out.println(<span class="string">&quot;使用普通流复制PDF文件总耗时:&quot;</span> + (end - start) + <span class="string">&quot; 毫秒&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</blockquote>
+<ul>
+<li><p>但是如果是使用普通字节流的 <strong>read(byte b[]
+)</strong>和<strong>write(byte b[] , int off, int len)</strong>
+这两个写入一个字节数组的方法的话，只要字节数组大小合适，差距性能不大
+同理，使用read(byte b[]) 和write(byte b[] ,int off, int
+len)方法(字节流及缓冲字节流)，分别复制524mb文件，缓冲流需要0.7s ,
+普通字节流需要1s 代码如下：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">void</span> <span class="title function_">copy_pdf_to_another_pdf_with_byte_array_buffer_stream</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">// 记录开始时间</span></span><br><span class="line">    <span class="type">long</span> <span class="variable">start</span> <span class="operator">=</span> System.currentTimeMillis();</span><br><span class="line">    <span class="keyword">try</span> (<span class="type">BufferedInputStream</span> <span class="variable">bis</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedInputStream</span>(<span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;深入理解计算机操作系统.pdf&quot;</span>));</span><br><span class="line">         <span class="type">BufferedOutputStream</span> <span class="variable">bos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedOutputStream</span>(<span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(<span class="string">&quot;深入理解计算机操作系统-副本.pdf&quot;</span>))) &#123;</span><br><span class="line">        <span class="type">int</span> len;</span><br><span class="line">        <span class="type">byte</span>[] bytes = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">4</span> * <span class="number">1024</span>];</span><br><span class="line">        <span class="keyword">while</span> ((len = bis.read(bytes)) != -<span class="number">1</span>) &#123;</span><br><span class="line">            bos.write(bytes, <span class="number">0</span>, len);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 记录结束时间</span></span><br><span class="line">    <span class="type">long</span> <span class="variable">end</span> <span class="operator">=</span> System.currentTimeMillis();</span><br><span class="line">    System.out.println(<span class="string">&quot;使用缓冲流复制PDF文件总耗时:&quot;</span> + (end - start) + <span class="string">&quot; 毫秒&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">void</span> <span class="title function_">copy_pdf_to_another_pdf_with_byte_array_stream</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">// 记录开始时间</span></span><br><span class="line">    <span class="type">long</span> <span class="variable">start</span> <span class="operator">=</span> System.currentTimeMillis();</span><br><span class="line">    <span class="keyword">try</span> (<span class="type">FileInputStream</span> <span class="variable">fis</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;深入理解计算机操作系统.pdf&quot;</span>);</span><br><span class="line">         <span class="type">FileOutputStream</span> <span class="variable">fos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(<span class="string">&quot;深入理解计算机操作系统-副本.pdf&quot;</span>)) &#123;</span><br><span class="line">        <span class="type">int</span> len;</span><br><span class="line">        <span class="type">byte</span>[] bytes = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">4</span> * <span class="number">1024</span>];</span><br><span class="line">        <span class="keyword">while</span> ((len = fis.read(bytes)) != -<span class="number">1</span>) &#123;</span><br><span class="line">            fos.write(bytes, <span class="number">0</span>, len);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 记录结束时间</span></span><br><span class="line">    <span class="type">long</span> <span class="variable">end</span> <span class="operator">=</span> System.currentTimeMillis();</span><br><span class="line">    System.out.println(<span class="string">&quot;使用普通流复制PDF文件总耗时:&quot;</span> + (end - start) + <span class="string">&quot; 毫秒&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul></li>
+</ul></li>
+<li><p>字节缓冲输入流 BufferedInputStream</p>
+<ul>
+<li><p><code>BufferedInputStream</code>
+从源头（通常是文件）读取数据（字节信息）到内存的过程中<strong>不会一个字节一个字节的读取</strong>，而是会先<strong>将读取到的字节存放在缓存区</strong>，并从内部缓冲区中单独读取字节。这样大幅减少了
+IO 次数，提高了读取效率。</p>
+<p><code>BufferedInputStream</code>
+<strong>内部维护了一个缓冲区</strong>，这个<strong>缓冲区实际就是一个字节数组</strong>，通过阅读
+<code>BufferedInputStream</code> 源码即可得到这个结论。</p></li>
+<li><p>源码</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">BufferedInputStream</span> <span class="keyword">extends</span> <span class="title class_">FilterInputStream</span> &#123;</span><br><span class="line">    <span class="comment">// 内部缓冲区数组</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">volatile</span> <span class="type">byte</span> buf[];</span><br><span class="line">    <span class="comment">// 缓冲区的默认大小</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="type">int</span> <span class="variable">DEFAULT_BUFFER_SIZE</span> <span class="operator">=</span> <span class="number">8192</span>;</span><br><span class="line">    <span class="comment">// 使用默认的缓冲区大小</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">BufferedInputStream</span><span class="params">(InputStream in)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>(in, DEFAULT_BUFFER_SIZE);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 自定义缓冲区大小</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">BufferedInputStream</span><span class="params">(InputStream in, <span class="type">int</span> size)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>(in);</span><br><span class="line">        <span class="keyword">if</span> (size &lt;= <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>(<span class="string">&quot;Buffer size &lt;= 0&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        buf = <span class="keyword">new</span> <span class="title class_">byte</span>[size];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul></li>
+<li><p><strong>字节缓冲输出流</strong> BufferedOutputStream
+<code>BufferedOutputStream</code>
+将数据（字节信息）写入到目的地（通常是文件）的过程中不会<strong>一个字节一个字节的写入</strong>，而是会<strong>先将要写入的字节存放在缓存区</strong>，并<strong>从内部缓冲区中单独写入字节</strong>。这样大幅<strong>减少了
+IO 次数</strong>，<strong>提高了读取效率</strong> 使用</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">try</span> (<span class="type">BufferedOutputStream</span> <span class="variable">bos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedOutputStream</span>(<span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(<span class="string">&quot;output.txt&quot;</span>))) &#123;</span><br><span class="line">    <span class="type">byte</span>[] array = <span class="string">&quot;JavaGuide&quot;</span>.getBytes();</span><br><span class="line">    bos.write(array);</span><br><span class="line">&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="字符缓冲流">字符缓冲流</h2>
+<p><strong><code>BufferedReader</code> （字符缓冲输入流）和
+<code>BufferedWriter</code>（字符缓冲输出流）</strong>类似于
+<code>BufferedInputStream</code>（字节缓冲输入流）和<code>BufferedOutputStream</code>（字节缓冲输入流），内部都维护了一个<strong>字节数组</strong>作为缓冲区。不过，前者主要是用来操作字符信息。</p>
+<blockquote>
+<p>这里<strong>表述好像不太对，应该是维护了字符数组</strong>：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">BufferedReader</span> <span class="keyword">extends</span> <span class="title class_">Reader</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Reader in;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">char</span> cb[];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</blockquote>
+<h2 id="打印流">打印流</h2>
+<ul>
+<li><p>PrintStream属于字节打印流，对应的是PrintWriter（字符打印流）</p></li>
+<li><p>System.out
+实际上获取了一个PrintStream，print方法调用的是PrintStream的write方法</p></li>
+<li><p><code>PrintStream</code> 是 <code>OutputStream</code>
+的子类，<code>PrintWriter</code> 是 <code>Writer</code>
+的子类。</p></li>
+<li><p>```java public class PrintStream extends FilterOutputStream
+implements Appendable, Closeable { } public class PrintWriter extends
+Writer { } <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">## 随机访问流 RandomAccessFile</span><br><span class="line"></span><br><span class="line">- 指的是支持随意跳转到文件的任意位置进行读写的RandomAccessFile</span><br><span class="line">  构造方法如下，可以指定mode (读写模式)</span><br><span class="line"></span><br><span class="line">  ```java</span><br><span class="line">  // openAndDelete 参数默认为 false 表示打开文件并且这个文件不会被删除</span><br><span class="line">  public RandomAccessFile(File file, String mode)</span><br><span class="line">      throws FileNotFoundException &#123;</span><br><span class="line">      this(file, mode, false);</span><br><span class="line">  &#125;</span><br><span class="line">  // 私有方法</span><br><span class="line">  private RandomAccessFile(File file, String mode, boolean openAndDelete)  throws FileNotFoundException&#123;</span><br><span class="line">    // 省略大部分代码</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure></p>
+<p>读写模式主要有以下四种：</p>
+<ul>
+<li><p>r : 只读；rw：读写</p></li>
+<li><p>rws
+:相对于rw，rws同步更新对"文件内容"或元数据的修改到外部存储设备</p></li>
+<li><p>rwd:相对于rw,rwd同步更新对"文件内容"的修改到外部存储设备</p></li>
+<li><p>解释：</p>
+<blockquote>
+<ul>
+<li>文件内容指实际保存的数据，元数据则描述属性例如文件大小信息、创建和修改时间</li>
+<li>默认情形下(rw模式下),是使用buffer的,只有cache满的或者使用RandomAccessFile.close()关闭流的时候儿才真正的写到文件。
 <ol type="1">
-<li><p>句柄 如果使用句柄的话，那么 Java
-堆中将会划分出<strong>一块内存来作为句柄池</strong>，<strong>reference
-中存储的就是对象的句柄地址</strong>，而<strong>句柄</strong>中包含了<strong>对象实例数据</strong>与<strong>对象类型数据各自的具体地址信息</strong>。</p>
-<p>【也就是多了一层】<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/access-location-of-object-handle.png"
-alt="对象的访问定位-使用句柄" /></p></li>
-<li><p>直接指针 如果使用<strong>直接指针</strong>访问，<strong>reference
-中存储的直接就是对象的地址</strong>。 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/access-location-of-object-handle-direct-pointer.png"
-alt="对象的访问定位-直接指针" /></p></li>
-</ol>
-<p>这两种对象访问方式各有优势。<strong>使用句柄来访问</strong>的最大好处是
-<strong>reference
-中存储的是稳定的句柄地址</strong>，在<strong>对象被移动时只会改变句柄中的实例数据指针，而
-reference
-本身不需要修改</strong>。使用直接指针访问方式最大的好处就是<strong>速度快，它节省了一次指针定位的时间开销</strong>。</p>
-<p>HotSpot
-虚拟机主要使用的就是这种方式<strong>(直接指针</strong>)来进行对象访问。</p>
+<li>调试麻烦的...------------------使用write方法修改byte的时候儿,只修改到个内存兰,还没到个文件,闪的调试麻烦的,不能使用notepad++工具立即看见修改效果..</li>
+<li>当系统halt的时候儿,不能写到文件...安全性稍微差点儿...</li>
+</ol></li>
+<li>rws：就是同步（synchronized）模式,每write修改一个byte,立马写到磁盘..当然中间性能走差点儿,适合小的文件...and
+debug模式...或者安全性高的需要的时候儿</li>
+<li>rwd： 只对“文件的内容”同步更新到磁盘...不对metadata同步更新</li>
+<li>rwd介于rw和rws之间</li>
+</ul>
+</blockquote></li>
+</ul></li>
+<li><p>RandomAccessFile：文件指针表示下一个将要被写入或读取的字节所处位置</p>
+<ul>
+<li><p>通过seek(long
+pos)方法设置文件指针偏移量（距离开头pos个字节处，从0开始）</p></li>
+<li><p>使用getFilePointer()方法获取文件指针当前位置</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">RandomAccessFile</span> <span class="variable">randomAccessFile</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">RandomAccessFile</span>(<span class="keyword">new</span> <span class="title class_">File</span>(<span class="string">&quot;input.txt&quot;</span>), <span class="string">&quot;rw&quot;</span>);</span><br><span class="line">System.out.println(<span class="string">&quot;读取之前的偏移量：&quot;</span> + randomAccessFile.getFilePointer() + <span class="string">&quot;,当前读取到的字符&quot;</span> + (<span class="type">char</span>) randomAccessFile.read() + <span class="string">&quot;，读取之后的偏移量：&quot;</span> + randomAccessFile.getFilePointer());</span><br><span class="line"><span class="comment">// 指针当前偏移量为 6</span></span><br><span class="line">randomAccessFile.seek(<span class="number">6</span>);</span><br><span class="line">System.out.println(<span class="string">&quot;读取之前的偏移量：&quot;</span> + randomAccessFile.getFilePointer() + <span class="string">&quot;,当前读取到的字符&quot;</span> + (<span class="type">char</span>) randomAccessFile.read() + <span class="string">&quot;，读取之后的偏移量：&quot;</span> + randomAccessFile.getFilePointer());</span><br><span class="line"><span class="comment">// 从偏移量 7 的位置开始往后写入字节数据</span></span><br><span class="line">randomAccessFile.write(<span class="keyword">new</span> <span class="title class_">byte</span>[]&#123;<span class="string">&#x27;H&#x27;</span>, <span class="string">&#x27;I&#x27;</span>, <span class="string">&#x27;J&#x27;</span>, <span class="string">&#x27;K&#x27;</span>&#125;);</span><br><span class="line"><span class="comment">// 指针当前偏移量为 0，回到起始位置</span></span><br><span class="line">randomAccessFile.seek(<span class="number">0</span>);</span><br><span class="line">System.out.println(<span class="string">&quot;读取之前的偏移量：&quot;</span> + randomAccessFile.getFilePointer() + <span class="string">&quot;,当前读取到的字符&quot;</span> + (<span class="type">char</span>) randomAccessFile.read() + <span class="string">&quot;，读取之后的偏移量：&quot;</span> + randomAccessFile.getFilePointer());</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>input.txt文件内容： ABCDEFG</p></li>
+<li><p>输出</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">读取之前的偏移量：0,当前读取到的字符A，读取之后的偏移量：1</span><br><span class="line">读取之前的偏移量：6,当前读取到的字符G，读取之后的偏移量：7</span><br><span class="line">读取之前的偏移量：0,当前读取到的字符A，读取之后的偏移量：1</span><br></pre></td></tr></table></figure>
+<p>文件内容： ABCDEFGHIJK</p></li>
+</ul></li>
+<li><p>write方法在写入对象时如果对应位置已有数据，会将其覆盖</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">RandomAccessFile</span> <span class="variable">randomAccessFile</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">RandomAccessFile</span>(<span class="keyword">new</span> <span class="title class_">File</span>(<span class="string">&quot;input.txt&quot;</span>), <span class="string">&quot;rw&quot;</span>);</span><br><span class="line">randomAccessFile.write(<span class="keyword">new</span> <span class="title class_">byte</span>[]&#123;<span class="string">&#x27;H&#x27;</span>, <span class="string">&#x27;I&#x27;</span>, <span class="string">&#x27;J&#x27;</span>, <span class="string">&#x27;K&#x27;</span>&#125;);</span><br><span class="line"><span class="comment">//如果程序之前input.txt内容为ABCD，则运行后变为HIJK</span></span><br></pre></td></tr></table></figure></li>
+<li><p>常见应用：<strong>解决断点续传</strong>：上传文件中途暂停或失败（网络问题），之后不需要重新上传，只需<strong>上传未成功上传的文件分片</strong>即可
+分片（先将文件切分成多个文件分片）上传是断点续传的基础。
+<strong>使用RandomAccessFile帮助我们合并文件分片</strong>（但是下面代码好像不是必须的，因为他是单线程连续写入？？，这里附上另一篇文章的另一段话：）</p>
+<blockquote>
+<p>但是<strong>由于 RandomAccessFile
+可以自由访问文件的任意</strong>位置，<strong>所以如果需要访问文件的部分内容，而不是把文件从头读到尾，因此
+RandomAccessFile
+的一个重要使用场景就是网络请求中的多线程下载及断点续传。</strong>
+https://blog.csdn.net/li1669852599/article/details/122214104</p>
+</blockquote>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221024233326047.png"
+alt="image-20221024233326047" />
+<figcaption aria-hidden="true">image-20221024233326047</figcaption>
+</figure></li>
+</ul>
+<blockquote>
+<p><strong>ly:
+个人感觉，mysql数据库的写入可能也是依赖类似的规则，才能在某个位置读写</strong></p>
+</blockquote></li>
+</ul>
 ]]></content>
       <categories>
         <category>学习</category>
@@ -21808,7 +21904,7 @@ reference
       <tags>
         <tag>复习</tag>
         <tag>复习-javaGuide</tag>
-        <tag>复习-javaGuide-并发</tag>
+        <tag>复习-javaGuide-io</tag>
       </tags>
   </entry>
 </search>
