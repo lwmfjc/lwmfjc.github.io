@@ -239,7 +239,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>8.2k</span>
+              <span>8.3k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -361,9 +361,9 @@ alt="image-20221122143524756" /> 如上，若线程1和线程2之间要通信，
 <p>关于主内存和工作内存<strong>直接的具体交互协议</strong>，即一个变量，<strong>如何从主内存拷贝到工作内存</strong>，<strong>如何从工作内存同步到主内存</strong>，JMM定义八种同步操作：</p>
 <blockquote>
 <p><strong>锁定（lock）</strong>:
-作用于主内存中的变量，将他标记为一个线程独享变量。</p>
+作用于主内存中的变量，将他标记为一个<strong>线程独享变量</strong>。</p>
 <p><strong>解锁（unlock）</strong>:
-作用于主内存中的变量，解除变量的锁定状态，被解除锁定状态的变量才能被其他线程锁定。</p>
+作用于主内存中的变量，解除变量的锁定状态，<strong>被解除锁定状态的变量才能被其他线程锁定</strong>。</p>
 <p><strong>read（读取）</strong>：作用于主内存的变量，它把一个变量的值<strong>从主内存</strong>传输<strong>到线程的工作内存</strong>中，以便随后的
 load 动作使用。</p>
 <p><strong>load(载入)</strong>：把 read
@@ -375,23 +375,22 @@ write 操作使用。</p>
 <p><strong>write（写入）</strong>：作用于主内存的变量，它把
 <strong>store
 操作从工作内存中得到的变量的值</strong>放入主内存的变量中</p>
-<p>下面的同步规则，保证这些同步操作的正确执行：</p>
+<p>下面的同步规则，保证这些同步操作的正确执行：
+(<strong>没看懂</strong>)</p>
 <ul>
-<li><p>不允许一个线程无原因地（没有发生过任何 assign
+<li><p>不允许一个线程无原因地（<strong>没有发生过任何 assign</strong>
 操作）把数据从线程的工作内存同步回主内存中。</p></li>
 <li><p>一个新的变量只能在主内存中
 “诞生”，不允许在工作内存中直接使用一个未被初始化（load 或
 assign）的变量，换句话说就是对<strong>一个变量实施 use 和 store
 操作之前</strong>，必须<strong>先执行过了 assign 和 load</strong>
 操作。</p></li>
-<li><p>一个变量在同一个时刻只允许一条线程对其进行 lock 操作，但 lock
-操作可以被同一条线程重复执行多次，多次执行 lock 后，只有执行相同次数的
-unlock 操作，变量才会被解锁。</p></li>
-<li><p>如果对一个变量执行 lock
-操作，将会清空工作内存中此变量的值，在执行引擎使用这个变量前，需要重新执行
-load 或 <a
-href="..........\themes\next\source\css\main.styl">main.styl</a> assign
-操作初始化变量的值。</p></li>
+<li><p>一个变量在同一个时刻只允许一条线程对其进行 lock 操作，但
+<strong>lock 操作可以被同一条线程重复执行多次</strong>，多次执行 lock
+后，只有执行相同次数的 unlock 操作，变量才会被解锁。</p></li>
+<li><p>如果<strong>对一个变量执行 lock
+操作，将会清空工作内存中此变量的</strong>值，在执行引擎使用这个变量前，需要重新执行
+load 或 assign 操作初始化变量的值。</p></li>
 <li><p>如果一个变量事先没有被 lock 操作锁定，则不允许对它执行 unlock
 操作，也不允许去 unlock 一个被其他线程锁定住的变量。</p>
 <p>......</p></li>
@@ -406,11 +405,15 @@ JVM
 <li>Java 内存模型和 <strong>Java
 的并发编程</strong>相关，<strong>抽象了线程和主内存之间的关系</strong>就比如说线程之间的共享变量必须存储在主内存中，规定了从
 <strong>Java 源代码到 CPU
-可执行指令的这个转化过程</strong>要遵守哪些<strong>和并发相关的原则和规范</strong>，其主要目的是为了<strong>简化多线程编程</strong>，增强程序可移植性的。</li>
+可执行指令的这个转化过程</strong>要遵守哪些<strong>和并发相关的原则和规范</strong>，其主要目的是为了<strong>简化多线程编程</strong>，<strong>增强程序可移植性的</strong>。</li>
 </ul>
 <h3 id="happens-before-原则是什么">happens-before 原则是什么？</h3>
 <ul>
-<li><p>逻辑时钟：对分布式系统中的事件的先后关系进行判断</p></li>
+<li><p>通过<strong>逻辑时钟</strong>能<strong>对分布式系统中的事件的先后关系</strong>进行<strong>判断</strong></p>
+<blockquote>
+<p><strong>逻辑时钟并不度量时间本身，仅区分事件发生的前后顺序，其本质就是定义了一种
+happens-before 关系。</strong></p>
+</blockquote></li>
 <li><p>JSR
 133引入happens-before这个概念来描述<strong>两个操作之间的内存可见性</strong></p></li>
 <li><p><strong>为什么需要 happens-before 原则？</strong> happens-before
@@ -440,9 +443,10 @@ Java内存模型向程序员做出的保证，即Happens-before提供<strong>跨
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 以下操作在线程 A 中执行</span></span><br><span class="line">i = <span class="number">1</span>; <span class="comment">// a</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 以下操作在线程 B 中执行</span></span><br><span class="line">j = i; <span class="comment">// b</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 以下操作在线程 C 中执行</span></span><br><span class="line">i = <span class="number">2</span>; <span class="comment">// c</span></span><br></pre></td></tr></table></figure>
 <p>假设线程 A 中的操作 a Happens-before 线程 B 的操作
 b，那我们就可以确定操作 b 执行后，变量 j 的值一定是等于 1。</p>
-<p>得出这个结论的依据有两个：一是根据 Happens-before 原则，a
-操作的结果对 b 可见，即 “i=1” 的结果可以被观察到；二是线程 C
-还没运行，线程 A 操作结束之后没有其他线程会修改变量 i 的值。</p>
+<p>得出这个结论的依据有两个：一是根据 Happens-before 原则，<strong>a
+操作的结果对 b 可见</strong>，即 “i=1”
+的结果可以被观察到；二是<strong>线程 C 还没运行</strong>，线程 A
+操作结束之后没有其他线程会修改变量 i 的值。</p>
 <p>现在再来考虑线程 C，我们依然保持 a Happens-before b ，而 c 出现在 a
 和 b 的操作之间，但是 c 与 b 没有 Happens-before 关系，也就是说 b
 并不一定能看到 c 的操作结果。那么 b 操作的结果也就是 j
@@ -484,10 +488,10 @@ happens-before C</li>
 <li>线程启动规则：Thread对象的start() 方法 happens-before
 于此线程的每一个操作</li>
 </ol>
-<p>如果两个操作，不满足于上述任何一个happens-before规则，那么这两个操作就没有顺序的保障，<strong>JVM可以对这两个操作进行重排序</strong></p>
+<p>如果两个操作，<strong>不满足</strong>于上述<strong>任何一个happens-before规则</strong>，那么这两个操作就没有顺序的保障，<strong>JVM可以对这两个操作进行重排序</strong></p>
 <h3 id="happens-before-和jmm什么关系">happens-before 和JMM什么关系</h3>
 <ol type="1">
-<li><p>根据happens-before规则，告诉程序员，有哪些happens-before规则（哪些情况不会被重排序）</p>
+<li><p>根据happens-before规则，<strong>告诉程序员，有哪些happens-before规则</strong>（<strong>哪些情况不会被重排序</strong>）</p>
 <blockquote>
 <p>为了避免 Java 程序员为了理解 JMM
 提供的内存可见性保证而去学习复杂的重排序规则以及这些规则的具体实现方法，JMM
@@ -496,8 +500,9 @@ Happens-before
 规则就对应于一个或多个编译器和处理器的重排序规则</strong></p>
 </blockquote></li>
 <li><ul>
-<li>as-if-serial 语义保证单线程内程序的执行结果不被改变，Happens-before
-关系保证正确同步的多线程程序的执行结果不被改变。</li>
+<li>as-if-serial
+语义保证单线程内程序的执行结果不被改变，<strong>Happens-before
+关系保证正确同步的多线程程序的执行结果不被改变</strong>。</li>
 <li>as-if-serial
 语义给编写单线程程序的程序员创造了一个幻境：<strong>单线程程序是按程序的顺序来执行的。Happens-before
 关系给编写正确同步的多线程程序的程序员创造了一个幻境：正确同步的多线程程序是按
@@ -528,37 +533,37 @@ CAS (compare and swap) 操作（可能也会用到
 <blockquote>
 <p>在 Java 中，可以借助<code>synchronized</code> 、<code>volatile</code>
 以及各种 <code>Lock</code> 实现可见性。</p>
-<p>如果我们将变量声明为 <code>volatile</code> ，这就指示
-JVM，这个变量是共享且不稳定的，每次使用它都到主存中进行读取。</p>
+<p>如果我们将变量声明为 <code>volatile</code> ，这就<strong>指示
+JVM</strong>，<strong>这个变量是共享且不稳定的</strong>，每次使用它都到主存中进行读取。</p>
 </blockquote></li>
 <li><p>有序性
 由于指令重排序问题，代码的执行顺序未必就是编写代码时候的顺序</p>
 <blockquote>
 <p><strong>指令重排序可以保证串行语义一致，但是没有义务保证多线程间的语义也一致</strong>
 ，所以在多线程下，指令重排序可能会导致一些问题。</p>
-<p>Java中，volatile关键字可以禁止指令进行重排序优化（注意，synchronized也可以）</p>
+<p>Java中，<strong>volatile</strong>关键字可以<strong>禁止指令进行重排序</strong>优化（注意，synchronized也可以）</p>
 </blockquote></li>
 </ul>
 <h2 id="总结">总结</h2>
 <p>补充：线程join()方法，导致调用线程暂停，直到xx.join()中的xx线程执行完，调用join方法的线程才继续执行</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">Thread</span> <span class="variable">thread1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Thread</span>(<span class="keyword">new</span> <span class="title class_">Runnable</span>() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">                log.info(<span class="string">&quot;暂停5s&quot;</span>);</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    TimeUnit.SECONDS.sleep(<span class="number">5</span>);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">        thread1.start();</span><br><span class="line">        <span class="type">Thread</span> <span class="variable">thread2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Thread</span>(<span class="keyword">new</span> <span class="title class_">Runnable</span>() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">                log.info(<span class="string">&quot;暂停3s&quot;</span>);</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    TimeUnit.SECONDS.sleep(<span class="number">3</span>);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">        thread2.start();</span><br><span class="line">        thread1.join();</span><br><span class="line">        thread2.join();</span><br><span class="line">        log.info(<span class="string">&quot;主线程执行&quot;</span>);</span><br><span class="line"><span class="comment">/*结果</span></span><br><span class="line"><span class="comment">2022-11-23 13:57:06 下午 [Thread: Thread-1] </span></span><br><span class="line"><span class="comment">INFO:暂停5s</span></span><br><span class="line"><span class="comment">2022-11-23 13:57:06 下午 [Thread: Thread-2] </span></span><br><span class="line"><span class="comment">INFO:暂停3s</span></span><br><span class="line"><span class="comment">2022-11-23 13:57:11 下午 [Thread: main] </span></span><br><span class="line"><span class="comment">INFO:主线程执行</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
-<p>指令重排的影响，举例：</p>
+<p><strong>指令重排的影响</strong>，举例：【★很重要★】</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Test</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="type">int</span> <span class="variable">x</span> <span class="operator">=</span> <span class="number">0</span>, y = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="type">int</span> <span class="variable">a</span> <span class="operator">=</span> <span class="number">0</span>, b = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; ; i++) &#123;</span><br><span class="line">            x = <span class="number">0</span>; y = <span class="number">0</span>;</span><br><span class="line">            a = <span class="number">0</span>; b = <span class="number">0</span>;</span><br><span class="line">            <span class="type">Thread</span> <span class="variable">one</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">                a = <span class="number">1</span>;</span><br><span class="line">                x = b;</span><br><span class="line">            &#125;);</span><br><span class="line">            <span class="type">Thread</span> <span class="variable">other</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">                b = <span class="number">1</span>;</span><br><span class="line">                y = a;</span><br><span class="line">            &#125;);</span><br><span class="line">            one.start(); other.start();;</span><br><span class="line">            one.join(); other.join();</span><br><span class="line">            <span class="keyword">if</span> (x == <span class="number">0</span> &amp;&amp; y == <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="type">String</span> <span class="variable">result</span> <span class="operator">=</span> <span class="string">&quot;第&quot;</span> + i + <span class="string">&quot;次（&quot;</span> + x + <span class="string">&quot;, &quot;</span> + y + <span class="string">&quot;）&quot;</span>;</span><br><span class="line">                System.out.println(result);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">因为线程one中，a和x并不存在依赖关系，因此可能会先执行x=b;而这个时候，b=0。因此x会被赋值为0，而a=1这条语句还没有被执行的时候，线程other先执行了y=a这条语句，这个时候a还是a=0;因此y被赋值为了0。所以存在情况x=0;y=0。这就是指令重排导致的多线程问题。</span></span><br><span class="line"><span class="comment">原文链接：https://blog.csdn.net/qq_45948401/article/details/124973903</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
 <ul>
 <li>Java
 是最早尝试提供内存模型的语言，其主要目的是为了简化多线程编程，增强程序可移植性的。</li>
-<li>CPU 可以通过制定缓存一致协议（比如 <a
+<li>CPU 可以通过制定<strong>缓存一致协议</strong>（比如 <a
 target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/MESI协议">MESI 协议open in new
 window</a>）来解决内存缓存不一致性问题。</li>
-<li>为了提升执行速度/性能，计算机在执行程序代码的时候，会对指令进行重排序。
+<li>为了<strong>提升执行速度/性能</strong>，计算机在执行程序代码的时候，会对<strong>指令进行重排序</strong>。
 简单来说就是系统在执行代码的时候并不一定是按照你写的代码的顺序依次执行。<strong>指令重排序可以保证串行语义一致，但是没有义务保证多线程间的语义也一致</strong>
 ，所以在多线程下，指令重排序可能会导致一些问题。</li>
-<li>你可以把 JMM 看作是 Java
-定义的并发编程相关的一组规范，除了抽象了线程和主内存之间的关系之外，其还规定了从
-Java 源代码到 CPU
-可执行指令的这个转化过程要遵守哪些和并发相关的原则和规范，其主要目的是为了简化多线程编程，增强程序可移植性的。</li>
+<li>你可以把 <strong>JMM 看作是 Java
+定义的并发编程相关的一组规范</strong>，除了抽象了线程和主内存之间的关系之外，其还规定了从
+<strong>Java 源代码到 CPU
+可执行指令</strong>的这个<strong>转化过程要遵守哪些和并发相关的原则和规范</strong>，其主要目的是为了简化多线程编程，增强程序可移植性的。</li>
 <li>JSR 133 引入了 happens-before
-这个概念来描述两个操作之间的内存可见性。</li>
+这个概念来<strong>（极其重要又精简的话）描述两个操作之间的内存可见性</strong>。</li>
 </ul>
 
     </div>
@@ -584,8 +589,8 @@ Java 源代码到 CPU
       <i class="fa fa-chevron-left"></i> 并发03
     </a></div>
       <div class="post-nav-item">
-    <a href="/2022/11/23/review/java_guide/java/concurrent/java-thread-pool/" rel="next" title="java线程池">
-      java线程池 <i class="fa fa-chevron-right"></i>
+    <a href="/2022/11/23/review/java_guide/java/concurrent/java-thread-pool/" rel="next" title="java线程池详解">
+      java线程池详解 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
