@@ -7474,6 +7474,89 @@ alt="image-20220717094642979" /></p>
       </tags>
   </entry>
   <entry>
+    <title>mybatis-plus-sgg-01-11</title>
+    <url>/2022/06/03/study/mybatis_plus/bl_sgg/01-11/</url>
+    <content><![CDATA[<h2 id="简介">简介</h2>
+<ul>
+<li>MyBatis-Plus是一个MyBatis的<strong>增强工具</strong>，在MyBatis的基础上<strong>只做增强不做改变</strong>，为<strong>简化开发、提高效率</strong>而生</li>
+<li>这里以MySQL数据库为案例，以Idea作为IDE，使用Maven作为构建工具，使用SpringBoot完成各种功能</li>
+<li>课程主要内容 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220603073359351.png"
+alt="image-20220603073359351" /></li>
+<li>特性 润物无声、效率至上、丰富功能</li>
+<li>支持的数据库 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220603074051884.png"
+alt="image-20220603074051884" /></li>
+<li>框架结构 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220603074111318.png"
+alt="image-20220603074111318" />
+<ul>
+<li>左边：扫描实体，从实体抽取属性猜测数据库字段</li>
+<li>通过默认提供的方法使用sql语句，然后注入mybatis容器</li>
+</ul></li>
+</ul>
+<h2 id="开发环境">开发环境</h2>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220603074238643.png"
+alt="image-20220603074238643" />
+<figcaption aria-hidden="true">image-20220603074238643</figcaption>
+</figure>
+<h2 id="测试数据库和表">测试数据库和表</h2>
+<ul>
+<li><p>这里创建数据库mybatis_plus</p></li>
+<li><p>然后创建表user</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">DROP TABLE IF EXISTS user;</span><br><span class="line"></span><br><span class="line">CREATE TABLE user</span><br><span class="line">(</span><br><span class="line">    id BIGINT(20) NOT NULL COMMENT &#x27;主键ID&#x27;,</span><br><span class="line">    name VARCHAR(30) NULL DEFAULT NULL COMMENT &#x27;姓名&#x27;,</span><br><span class="line">    age INT(11) NULL DEFAULT NULL COMMENT &#x27;年龄&#x27;,</span><br><span class="line">    email VARCHAR(50) NULL DEFAULT NULL COMMENT &#x27;邮箱&#x27;,</span><br><span class="line">    PRIMARY KEY (id)</span><br><span class="line">);</span><br></pre></td></tr></table></figure></li>
+<li><p>插入默认数据</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">DELETE FROM user;</span><br><span class="line"></span><br><span class="line">INSERT INTO user (id, name, age, email) VALUES</span><br><span class="line">(1, &#x27;Jone&#x27;, 18, &#x27;test1@baomidou.com&#x27;),</span><br><span class="line">(2, &#x27;Jack&#x27;, 20, &#x27;test2@baomidou.com&#x27;),</span><br><span class="line">(3, &#x27;Tom&#x27;, 28, &#x27;test3@baomidou.com&#x27;),</span><br><span class="line">(4, &#x27;Sandy&#x27;, 21, &#x27;test4@baomidou.com&#x27;),</span><br><span class="line">(5, &#x27;Billie&#x27;, 24, &#x27;test5@baomidou.com&#x27;);</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="spring-boot工程">Spring Boot工程</h2>
+<p>添加依赖，并install Lombok 插件</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">parent</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-parent<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.7.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">relativePath</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">parent</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-test<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">scope</span>&gt;</span>test<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.baomidou<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>mybatis-plus-boot-starter<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>3.5.1<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>mysql<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>mysql-connector-java<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>8.0.29<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- https://mvnrepository.com/artifact/org.projectlombok/lombok --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.projectlombok<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>lombok<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.18.24<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">scope</span>&gt;</span>provided<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- https://mvnrepository.com/artifact/com.baomidou/mybatis-plus-generator --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.baomidou<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>mybatis-plus-generator<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>3.5.2<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h2 id="基础配置">基础配置</h2>
+<ul>
+<li><p>创建spring boot启动类</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MybatisPlusApplication</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        SpringApplication.run(MybatisPlusApplication.class, args);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>配置resources/application.yml文件</p>
+<figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="attr">spring:</span></span><br><span class="line">  <span class="comment">#配置数据源</span></span><br><span class="line">  <span class="attr">datasource:</span></span><br><span class="line">    <span class="comment">#配置数据源类型</span></span><br><span class="line">    <span class="attr">type:</span> <span class="string">com.zaxxer.hikari.HikariDataSource</span></span><br><span class="line">    <span class="comment">#配置数据源各个信息</span></span><br><span class="line">    <span class="attr">driver-class-name:</span> <span class="string">com.mysql.cj.jdbc.Driver</span></span><br><span class="line">    <span class="attr">url:</span> <span class="string">jdbc:mysql://localhost:3306/mybatis_plus?characterEncoding=utf-8&amp;&amp;useSSL=false</span></span><br><span class="line">    <span class="attr">username:</span> <span class="string">root</span></span><br><span class="line">    <span class="attr">password:</span> <span class="number">123456</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>这个时候启动会直接结束，因为我们没有使用springboot-web 包</li>
+</ul></li>
+<li><p>实体类的创建</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> com.ly.mybatisplus.pojo;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> lombok.Data;</span><br><span class="line"></span><br><span class="line"><span class="comment">//相当于get set 无参构造器 hashCode()和equals()、toString()方法重写</span></span><br><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">User</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> Long id;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">    <span class="keyword">private</span> Integer age;</span><br><span class="line">    <span class="keyword">private</span> String email;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+<li><p>mapper的创建 mapper/UserMapper</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> com.ly.mybatisplus.mapper;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> com.baomidou.mybatisplus.core.mapper.BaseMapper;</span><br><span class="line"><span class="keyword">import</span> com.ly.mybatisplus.pojo.User;</span><br><span class="line"><span class="keyword">import</span> org.springframework.stereotype.Repository;</span><br><span class="line"></span><br><span class="line"><span class="comment">//将这个类标记成持久层组件 处理测试类中红色下划线的问题</span></span><br><span class="line"><span class="meta">@Repository</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">UserMapper</span> <span class="keyword">extends</span> <span class="title class_">BaseMapper</span>&lt;User&gt; &#123;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+<li><p>设置mapper接口所在的包</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> com.ly.mybatisplus;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.mybatis.spring.annotation.MapperScan;</span><br><span class="line"><span class="keyword">import</span> org.springframework.boot.SpringApplication;</span><br><span class="line"><span class="keyword">import</span> org.springframework.boot.autoconfigure.SpringBootApplication;</span><br><span class="line"></span><br><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="comment">//扫描指定包下的mapper接口</span></span><br><span class="line"><span class="meta">@MapperScan(&quot;com.ly.mybatisplus.mapper&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MybatisPlusApplication</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        SpringApplication.run(MybatisPlusApplication.class, args);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="测试">测试</h2>
+<ul>
+<li><p>测试类的创建</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> com.ly.mybatisplus.MybatisPlusApplication;</span><br><span class="line"><span class="keyword">import</span> com.ly.mybatisplus.mapper.UserMapper;</span><br><span class="line"><span class="keyword">import</span> com.ly.mybatisplus.pojo.User;</span><br><span class="line"><span class="keyword">import</span> org.junit.jupiter.api.Test;</span><br><span class="line"><span class="keyword">import</span> org.springframework.beans.factory.annotation.Autowired;</span><br><span class="line"><span class="keyword">import</span> org.springframework.boot.test.context.SpringBootTest;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"></span><br><span class="line"><span class="comment">//可能是由于没有使用web包依赖，这里要加入classes指定启动类</span></span><br><span class="line"><span class="meta">@SpringBootTest(classes = MybatisPlusApplication.class)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MybatisPlusTest</span> &#123;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> UserMapper userMapper;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">testSelect</span><span class="params">()</span>&#123;</span><br><span class="line">        <span class="comment">//通过条件构造器查询list集合 null表示没有条件</span></span><br><span class="line">        List&lt;User&gt; users = userMapper.selectList(<span class="literal">null</span>);</span><br><span class="line">        users.forEach(System.out::println);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="加入日志功能">加入日志功能</h2>
+<ul>
+<li><p>配置application.yml加入日志</p>
+<figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">#日志</span></span><br><span class="line"><span class="attr">mybatis-plus:</span></span><br><span class="line">  <span class="attr">configuration:</span></span><br><span class="line">    <span class="attr">log-impl:</span> <span class="string">org.apache.ibatis.logging.stdout.StdOutImpl</span></span><br></pre></td></tr></table></figure></li>
+<li><p>效果 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220603081229650.png"
+alt="image-20220603081229650" /></p>
+<ul>
+<li>如上图，查询的字段名来自于实体类属性</li>
+<li><img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220603081319437.png"
+title="fig:" alt="image-20220603081319437" /></li>
+</ul></li>
+</ul>
+]]></content>
+      <categories>
+        <category>学习</category>
+      </categories>
+      <tags>
+        <tag>mybatis-plus 尚硅谷</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>mybatis-plus-sgg-12-18</title>
     <url>/2022/06/03/study/mybatis_plus/bl_sgg/12-18/</url>
     <content><![CDATA[<h2 id="basemapper">BaseMapper</h2>
@@ -8422,89 +8505,6 @@ End</p>
       </categories>
       <tags>
         <tag>redis_尚硅谷</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>mybatis-plus-sgg-01-11</title>
-    <url>/2022/06/03/study/mybatis_plus/bl_sgg/01-11/</url>
-    <content><![CDATA[<h2 id="简介">简介</h2>
-<ul>
-<li>MyBatis-Plus是一个MyBatis的<strong>增强工具</strong>，在MyBatis的基础上<strong>只做增强不做改变</strong>，为<strong>简化开发、提高效率</strong>而生</li>
-<li>这里以MySQL数据库为案例，以Idea作为IDE，使用Maven作为构建工具，使用SpringBoot完成各种功能</li>
-<li>课程主要内容 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220603073359351.png"
-alt="image-20220603073359351" /></li>
-<li>特性 润物无声、效率至上、丰富功能</li>
-<li>支持的数据库 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220603074051884.png"
-alt="image-20220603074051884" /></li>
-<li>框架结构 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220603074111318.png"
-alt="image-20220603074111318" />
-<ul>
-<li>左边：扫描实体，从实体抽取属性猜测数据库字段</li>
-<li>通过默认提供的方法使用sql语句，然后注入mybatis容器</li>
-</ul></li>
-</ul>
-<h2 id="开发环境">开发环境</h2>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220603074238643.png"
-alt="image-20220603074238643" />
-<figcaption aria-hidden="true">image-20220603074238643</figcaption>
-</figure>
-<h2 id="测试数据库和表">测试数据库和表</h2>
-<ul>
-<li><p>这里创建数据库mybatis_plus</p></li>
-<li><p>然后创建表user</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">DROP TABLE IF EXISTS user;</span><br><span class="line"></span><br><span class="line">CREATE TABLE user</span><br><span class="line">(</span><br><span class="line">    id BIGINT(20) NOT NULL COMMENT &#x27;主键ID&#x27;,</span><br><span class="line">    name VARCHAR(30) NULL DEFAULT NULL COMMENT &#x27;姓名&#x27;,</span><br><span class="line">    age INT(11) NULL DEFAULT NULL COMMENT &#x27;年龄&#x27;,</span><br><span class="line">    email VARCHAR(50) NULL DEFAULT NULL COMMENT &#x27;邮箱&#x27;,</span><br><span class="line">    PRIMARY KEY (id)</span><br><span class="line">);</span><br></pre></td></tr></table></figure></li>
-<li><p>插入默认数据</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">DELETE FROM user;</span><br><span class="line"></span><br><span class="line">INSERT INTO user (id, name, age, email) VALUES</span><br><span class="line">(1, &#x27;Jone&#x27;, 18, &#x27;test1@baomidou.com&#x27;),</span><br><span class="line">(2, &#x27;Jack&#x27;, 20, &#x27;test2@baomidou.com&#x27;),</span><br><span class="line">(3, &#x27;Tom&#x27;, 28, &#x27;test3@baomidou.com&#x27;),</span><br><span class="line">(4, &#x27;Sandy&#x27;, 21, &#x27;test4@baomidou.com&#x27;),</span><br><span class="line">(5, &#x27;Billie&#x27;, 24, &#x27;test5@baomidou.com&#x27;);</span><br></pre></td></tr></table></figure></li>
-</ul>
-<h2 id="spring-boot工程">Spring Boot工程</h2>
-<p>添加依赖，并install Lombok 插件</p>
-<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">parent</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-parent<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.7.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">relativePath</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">parent</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-test<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">scope</span>&gt;</span>test<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.baomidou<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>mybatis-plus-boot-starter<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>3.5.1<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>mysql<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>mysql-connector-java<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>8.0.29<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- https://mvnrepository.com/artifact/org.projectlombok/lombok --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.projectlombok<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>lombok<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.18.24<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">scope</span>&gt;</span>provided<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- https://mvnrepository.com/artifact/com.baomidou/mybatis-plus-generator --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.baomidou<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>mybatis-plus-generator<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>3.5.2<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br></pre></td></tr></table></figure>
-<h2 id="基础配置">基础配置</h2>
-<ul>
-<li><p>创建spring boot启动类</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MybatisPlusApplication</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        SpringApplication.run(MybatisPlusApplication.class, args);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-<li><p>配置resources/application.yml文件</p>
-<figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="attr">spring:</span></span><br><span class="line">  <span class="comment">#配置数据源</span></span><br><span class="line">  <span class="attr">datasource:</span></span><br><span class="line">    <span class="comment">#配置数据源类型</span></span><br><span class="line">    <span class="attr">type:</span> <span class="string">com.zaxxer.hikari.HikariDataSource</span></span><br><span class="line">    <span class="comment">#配置数据源各个信息</span></span><br><span class="line">    <span class="attr">driver-class-name:</span> <span class="string">com.mysql.cj.jdbc.Driver</span></span><br><span class="line">    <span class="attr">url:</span> <span class="string">jdbc:mysql://localhost:3306/mybatis_plus?characterEncoding=utf-8&amp;&amp;useSSL=false</span></span><br><span class="line">    <span class="attr">username:</span> <span class="string">root</span></span><br><span class="line">    <span class="attr">password:</span> <span class="number">123456</span></span><br></pre></td></tr></table></figure>
-<ul>
-<li>这个时候启动会直接结束，因为我们没有使用springboot-web 包</li>
-</ul></li>
-<li><p>实体类的创建</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> com.ly.mybatisplus.pojo;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> lombok.Data;</span><br><span class="line"></span><br><span class="line"><span class="comment">//相当于get set 无参构造器 hashCode()和equals()、toString()方法重写</span></span><br><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">User</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> Long id;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">    <span class="keyword">private</span> Integer age;</span><br><span class="line">    <span class="keyword">private</span> String email;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
-<li><p>mapper的创建 mapper/UserMapper</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> com.ly.mybatisplus.mapper;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> com.baomidou.mybatisplus.core.mapper.BaseMapper;</span><br><span class="line"><span class="keyword">import</span> com.ly.mybatisplus.pojo.User;</span><br><span class="line"><span class="keyword">import</span> org.springframework.stereotype.Repository;</span><br><span class="line"></span><br><span class="line"><span class="comment">//将这个类标记成持久层组件 处理测试类中红色下划线的问题</span></span><br><span class="line"><span class="meta">@Repository</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">UserMapper</span> <span class="keyword">extends</span> <span class="title class_">BaseMapper</span>&lt;User&gt; &#123;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
-<li><p>设置mapper接口所在的包</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> com.ly.mybatisplus;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.mybatis.spring.annotation.MapperScan;</span><br><span class="line"><span class="keyword">import</span> org.springframework.boot.SpringApplication;</span><br><span class="line"><span class="keyword">import</span> org.springframework.boot.autoconfigure.SpringBootApplication;</span><br><span class="line"></span><br><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="comment">//扫描指定包下的mapper接口</span></span><br><span class="line"><span class="meta">@MapperScan(&quot;com.ly.mybatisplus.mapper&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MybatisPlusApplication</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        SpringApplication.run(MybatisPlusApplication.class, args);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
-</ul>
-<h2 id="测试">测试</h2>
-<ul>
-<li><p>测试类的创建</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> com.ly.mybatisplus.MybatisPlusApplication;</span><br><span class="line"><span class="keyword">import</span> com.ly.mybatisplus.mapper.UserMapper;</span><br><span class="line"><span class="keyword">import</span> com.ly.mybatisplus.pojo.User;</span><br><span class="line"><span class="keyword">import</span> org.junit.jupiter.api.Test;</span><br><span class="line"><span class="keyword">import</span> org.springframework.beans.factory.annotation.Autowired;</span><br><span class="line"><span class="keyword">import</span> org.springframework.boot.test.context.SpringBootTest;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"></span><br><span class="line"><span class="comment">//可能是由于没有使用web包依赖，这里要加入classes指定启动类</span></span><br><span class="line"><span class="meta">@SpringBootTest(classes = MybatisPlusApplication.class)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MybatisPlusTest</span> &#123;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> UserMapper userMapper;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">testSelect</span><span class="params">()</span>&#123;</span><br><span class="line">        <span class="comment">//通过条件构造器查询list集合 null表示没有条件</span></span><br><span class="line">        List&lt;User&gt; users = userMapper.selectList(<span class="literal">null</span>);</span><br><span class="line">        users.forEach(System.out::println);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
-</ul>
-<h2 id="加入日志功能">加入日志功能</h2>
-<ul>
-<li><p>配置application.yml加入日志</p>
-<figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">#日志</span></span><br><span class="line"><span class="attr">mybatis-plus:</span></span><br><span class="line">  <span class="attr">configuration:</span></span><br><span class="line">    <span class="attr">log-impl:</span> <span class="string">org.apache.ibatis.logging.stdout.StdOutImpl</span></span><br></pre></td></tr></table></figure></li>
-<li><p>效果 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220603081229650.png"
-alt="image-20220603081229650" /></p>
-<ul>
-<li>如上图，查询的字段名来自于实体类属性</li>
-<li><img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220603081319437.png"
-title="fig:" alt="image-20220603081319437" /></li>
-</ul></li>
-</ul>
-]]></content>
-      <categories>
-        <category>学习</category>
-      </categories>
-      <tags>
-        <tag>mybatis-plus 尚硅谷</tag>
       </tags>
   </entry>
   <entry>
@@ -17107,7 +17107,7 @@ alt="image-20221130144439833" /> 查找 18 的时候原来需要遍历 18
 <p>主要是<strong>三大部分</strong>：<strong>任务（Runnable/Callable）</strong>，<strong>任务的执行(Executor)</strong>，<strong>异步计算的结果Future</strong></p>
 <ol type="1">
 <li><p>任务
-执行任务需要的Runnable/Callable接口，他们的实现类，都可以被ThreadPoolExecutor或ScheduleThreadPoolExecutor执行</p></li>
+执行的任务需要的<strong>Runnable/Callable</strong>接口，他们的实现类，都可以被<strong>ThreadPoolExecutor</strong>或<strong>ScheduleThreadPoolExecutor</strong>执行</p></li>
 <li><p>任务的执行 <img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221123163721335.png"
 alt="image-20221123163721335" />
@@ -17126,17 +17126,17 @@ alt="image-20221123173130638" />
 <figcaption aria-hidden="true">image-20221123173130638</figcaption>
 </figure>
 <ol type="1">
-<li><strong>主线程首先要创建实现 <code>Runnable</code> 或者
-<code>Callable</code> 接口的任务对象。</strong></li>
-<li><strong>把创建完成的实现
+<li><p><strong>主线程首先要创建实现 <code>Runnable</code> 或者
+<code>Callable</code> 接口的任务对象。</strong></p></li>
+<li><p><strong>把创建完成的实现
 <code>Runnable</code>/<code>Callable</code>接口的 对象直接交给
 <code>ExecutorService</code> 执行</strong>:
 <code>ExecutorService.execute（Runnable command）</code>）或者也可以把
 <code>Runnable</code> 对象或<code>Callable</code> 对象提交给
 <code>ExecutorService</code>
 执行（<code>ExecutorService.submit（Runnable task）</code>或
-<code>ExecutorService.submit（Callable &lt;T&gt; task）</code>）。</li>
-<li><strong>如果执行
+<code>ExecutorService.submit（Callable &lt;T&gt; task）</code>）。</p></li>
+<li><p><strong>如果执行
 <code>ExecutorService.submit（…）</code>，<code>ExecutorService</code>
 将返回一个实现<code>Future</code>接口的对象</strong>（我们刚刚也提到过了执行
 <code>execute()</code>方法和
@@ -17144,10 +17144,12 @@ alt="image-20221123173130638" />
 <code>FutureTask 对象）。由于 FutureTask</code> 实现了
 <code>Runnable</code>，我们也可以创建
 <code>FutureTask</code>，然后直接交给 <code>ExecutorService</code>
-执行。</li>
-<li><strong>最后，主线程可以执行
+执行（FutureTask实现了Runnable，不是一个Callable
+所以直接使用<code>future.get()</code>获取的是null）。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyMain</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">byte</span>[] x = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">10</span> * <span class="number">1024</span> * <span class="number">1024</span>];<span class="comment">//10M</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        Callable&lt;Object&gt; abc = Executors.callable(() -&gt; &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                TimeUnit.SECONDS.sleep(<span class="number">2</span>);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">            System.out.println(<span class="string">&quot;aaa&quot;</span>);<span class="comment">//输出aaa</span></span><br><span class="line">        &#125;, <span class="string">&quot;abcccc&quot;</span>);<span class="comment">//如果没有&quot;abcccc&quot;，则下面输出null</span></span><br><span class="line">        FutureTask&lt;Object&gt; futureTask = <span class="keyword">new</span> <span class="title class_">FutureTask</span>&lt;&gt;(abc);</span><br><span class="line">        <span class="comment">/*new Thread(futureTask).start();</span></span><br><span class="line"><span class="comment">        Object o = futureTask.get();</span></span><br><span class="line"><span class="comment">        System.out.println(&quot;获取值：&quot;+o); //输出abc</span></span><br><span class="line"><span class="comment">        */</span></span><br><span class="line">        <span class="type">ExecutorService</span> <span class="variable">executorService</span> <span class="operator">=</span> Executors.newSingleThreadExecutor();</span><br><span class="line">        Future&lt;?&gt; future = executorService.submit(futureTask);</span><br><span class="line">        Future&lt;?&gt; future1 = executorService.submit(<span class="keyword">new</span> <span class="title class_">Callable</span>&lt;String&gt;() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="keyword">public</span> String <span class="title function_">call</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    TimeUnit.SECONDS.sleep(<span class="number">2</span>);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">return</span> <span class="string">&quot;hello&quot;</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">        <span class="comment">/*System.out.println(future.get());//输出null*/</span></span><br><span class="line">        System.out.println(future1.get()); <span class="comment">//输出hello</span></span><br><span class="line">        <span class="comment">//System.out.println(futureTask.get());//输出abcccc</span></span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">&quot;阻塞结束&quot;</span>);</span><br><span class="line">        executorService.shutdown();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+<li><p><strong>最后，主线程可以执行
 <code>FutureTask.get()</code>方法来等待任务执行完成。主线程也可以执行
-<code>FutureTask.cancel（boolean mayInterruptIfRunning）</code>来取消此任务的执行。</strong></li>
+<code>FutureTask.cancel（boolean mayInterruptIfRunning）</code>来取消此任务的执行。</strong></p></li>
 </ol>
 <h2 id="三-重要threadpoolexecutor类简单介绍">三
 (重要)ThreadPoolExecutor类简单介绍</h2>
@@ -17287,15 +17289,15 @@ alt="image-20221124135602080" /></p>
 <ul>
 <li><strong><code>shutdown（）</code></strong>
 :关闭线程池，线程池的状态变为
-<code>SHUTDOWN</code>。线程池不再接受新任务了，但是队列里的任务得执行完毕。</li>
+<code>SHUTDOWN</code>。线程池<strong>不再接受新任务</strong>了，但是<strong>队列里的任务得执行完毕</strong>。</li>
 <li><strong><code>shutdownNow（）</code></strong>
 :关闭线程池，线程的状态变为
-<code>STOP</code>。线程池会终止当前正在运行的任务，并停止处理排队的任务并返回正在等待执行的
-List。</li>
+<code>STOP</code>。线程池会<strong>终止当前正在运行的任务</strong>，并<strong>停止处理排队的任务</strong>并<strong>返回正在等待执行的
+List</strong>。</li>
 </ul></li>
 <li><p>isTerminated() VS isshutdown()</p>
 <ul>
-<li><strong><code>sShutDown</code></strong> 当调用
+<li><strong><code>isShutDown</code></strong> 当调用
 <code>shutdown()</code> 方法后返回为 true。</li>
 <li><strong><code>isTerminated</code></strong> 当调用
 <code>shutdown()</code>
@@ -17326,15 +17328,15 @@ alt="image-20221124155404087" /> 上图分析
 <li>为什么不推荐使用FixedThreadPool
 主要原因，FixedThreadPool<strong>使用无界队列LinkedBlockingQueue（队列容量为Integer.MAX_VALUE)作为线程池的工作队列</strong>
 <ol type="1">
-<li>线程池的线程数达到corePoolSize后，新任务在无界队列中等待，因此线程池中线程数不超过corePoolSize</li>
+<li>线程池的线程数达到corePoolSize后，新任务在<strong>无界队列</strong>中等待，因此线程池中<strong>线程数不超过corePoolSize</strong></li>
 <li>由于使用无界队列时 <code>maximumPoolSize</code>
-将是一个无效参数，因为不可能存在任务队列满的情况。所以，【不需要空闲线程，因为corePool，然后Queue，最后才是空闲线程】通过创建
+将是一个无效参数，因为<strong>不可能存在任务队列满</strong>的情况。所以，【不需要空闲线程，因为corePool，然后Queue，最后才是空闲线程】通过创建
 <code>FixedThreadPool</code>的源码可以看出创建的
-<code>FixedThreadPool</code> 的 <code>corePoolSize</code> 和
-<code>maximumPoolSize</code> 被设置为同一个值。</li>
-<li>又由于1、2原因，使用无界队列时，keepAliveTime将是无效参数</li>
-<li>运行中的FixedThreadPool（如果未执行shutdown()或shutdownNow()）则不会拒绝任务，因此在任务较多时会导致OOM（内存溢出,Out
-Of Memory）</li>
+<code>FixedThreadPool</code> 的 <strong><code>corePoolSize</code> 和
+<code>maximumPoolSize</code> 被设置为同一个值</strong>。</li>
+<li>又由于1、2原因，使用无界队列时，<strong>keepAliveTime将是无效参数</strong></li>
+<li>运行中的FixedThreadPool（如果未执行shutdown()或shutdownNow()）则不会拒绝任务，因此在任务较多时会导致<strong>OOM</strong>（<strong>内存溢出,Out
+Of Memory</strong>）</li>
 </ol></li>
 </ul></li>
 <li><p>SingleThreadExecutor</p>
@@ -17349,18 +17351,19 @@ src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img
 alt="image-20221124173110534" />
 如果当前运行线程数少于corePoolSize（1），则创建一个新的线程执行任务；当前线程池有一个运行的线程后，将任务加入LinkedBlockingQueue；线程执行完当前的任务后，会在循环中反复从LinkedBlockingQueue中获取任务执行</p></li>
 <li><p>为什么不推荐使用SingleThreadExecutor
-SingleThreadExecutor使用无界队列LinkedBlockingQueue作为线程池的工作队列（容量为Integer.MAX_VALUE)
+SingleThreadExecutor使用<strong>无界队列LinkedBlockingQueue</strong>作为线程池的工作队列（容量为Integer.MAX_VALUE)
 。SingleThreadExecutor使用无界队列作为线程池的工作队列会对线程池带来的影响与FixedThreadPoll相同，即导致OOM</p></li>
 </ul></li>
 <li><p>CachedThreadPool
 CachedThreadPool是一个会根据需要创建新线程的线程池，源码：</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 创建一个线程池，根据需要创建新线程，但会在先前构建的线程可用时重用它。</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> ExecutorService <span class="title function_">newCachedThreadPool</span><span class="params">(ThreadFactory threadFactory)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">ThreadPoolExecutor</span>(<span class="number">0</span>, Integer.MAX_VALUE,</span><br><span class="line">                                      <span class="number">60L</span>, TimeUnit.SECONDS,</span><br><span class="line">                                      <span class="keyword">new</span> <span class="title class_">SynchronousQueue</span>&lt;Runnable&gt;(),</span><br><span class="line">                                      threadFactory);</span><br><span class="line">    &#125;</span><br><span class="line"><span class="comment">//其他构造函数</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> ExecutorService <span class="title function_">newCachedThreadPool</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">ThreadPoolExecutor</span>(<span class="number">0</span>, Integer.MAX_VALUE,</span><br><span class="line">                                      <span class="number">60L</span>, TimeUnit.SECONDS,</span><br><span class="line">                                      <span class="keyword">new</span> <span class="title class_">SynchronousQueue</span>&lt;Runnable&gt;());</span><br><span class="line">    &#125; </span><br></pre></td></tr></table></figure>
-<p><code>CachedThreadPool</code> 的<code>corePoolSize</code>
-被设置为空（0），<code>maximumPoolSize</code>被设置为
-<code>Integer.MAX.VALUE</code>，即它是无界的，这也就意味着如果主线程提交任务的速度高于
+<p><code>CachedThreadPool</code> 的<strong><code>corePoolSize</code>
+被设置为空（0）</strong>，<strong><code>maximumPoolSize</code>被设置为
+<code>Integer.MAX.VALUE</code></strong>，即它是无界的，这也就意味着如果主线程提交任务的速度高于
 <code>maximumPool</code>
 中线程处理任务的速度时，<code>CachedThreadPool</code>
-会不断创建新的线程。极端情况下，这样会导致耗尽 cpu 和内存资源</p>
+会<strong>不断创建新的线程</strong>。极端情况下，这样会导致<strong>耗尽
+cpu</strong> 和<strong>内存资源</strong></p>
 <p>★：SynchronousQueue队列只能容纳单个元素
 执行过程（execute()示意图）</p>
 <p><img
@@ -17369,18 +17372,18 @@ alt="image-20221128163237634" /> 上图说明：</p>
 <ol type="1">
 <li>首先执行 <code>SynchronousQueue.offer(Runnable task)</code>
 提交任务到任务队列。如果当前 <code>maximumPool</code> 中有闲线程正在执行
-<code>SynchronousQueue.poll(keepAliveTime,TimeUnit.NANOSECONDS)</code>，那么主线程执行
-offer 操作与空闲线程执行的 <code>poll</code>
-操作配对成功，主线程把任务交给空闲线程执行，<code>execute()</code>方法执行完成，否则执行下面的步骤
+<code>SynchronousQueue.poll(keepAliveTime,TimeUnit.NANOSECONDS)</code>，那么<strong>主线程执行
+offer 操作</strong>与空<strong>闲线程执行的 <code>poll</code></strong>
+操作配对成功，主线程<strong>把任务交给空闲线程</strong>执行，<code>execute()</code>方法执行完成，否则执行下面的步骤
 2；</li>
 <li>当初始 <code>maximumPool</code> 为空，或者 <code>maximumPool</code>
 中没有空闲线程时，将没有线程执行
 <code>SynchronousQueue.poll(keepAliveTime,TimeUnit.NANOSECONDS)</code>。这种情况下，步骤
 1 将失败，此时 <code>CachedThreadPool</code>
-会创建新线程执行任务，execute 方法执行完成；</li>
+会<strong>创建新线程</strong>执行任务，execute 方法执行完成；</li>
 </ol>
 <p>不推荐使用CachedThreadPool?
-因为它允许创建的线程数量为Integer.MAX_VALUE,可能创建大量线程，从而导致OOM</p></li>
+因为它允许<strong>创建的线程数量为Integer.MAX_VALUE</strong>,可能创建大量线程，从而导致OOM</p></li>
 </ol>
 <h2
 id="scheduledthreadpoolexecutor详解">ScheduledThreadPoolExecutor详解</h2>
@@ -17400,9 +17403,11 @@ src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img
 alt="image-20221129092022551" /></p>
 <ul>
 <li><p>Timer对系统时钟变化敏感，ScheduledThreadPoolExecutor不是</p>
-<p>Timer使用的是<strong>System.currentTime()</strong>，而ScheduledThreadPoolExecutor使用的是<strong>System.nanoTime()</strong></p></li>
-<li><p>Timer只有一个线程（导致长时间运行的任务延迟其他任务），ScheduleThreadPoolExecutor可以配置任意数量线程</p></li>
-<li><p>TimerTask中抛出运行时异常会杀死一个线程，从而导致Timer死机（即计划任务将不在运行）；而<strong>ScheduleThreadExecutor</strong>不仅<strong>捕获运行时异常</strong>，还允许<strong>需要时处理（afterExecute方法）</strong>，抛出异常的任务会被取消而<strong>其他任务将继续运行</strong></p></li>
+<blockquote>
+<p>Timer使用的是<strong>System.currentTime()</strong>，而ScheduledThreadPoolExecutor使用的是<strong>System.nanoTime()</strong></p>
+</blockquote></li>
+<li><p>Timer<strong>只有一个线程</strong>（导致长时间运行的任务延迟其他任务），ScheduleThreadPoolExecutor<strong>可以配置任意数量线程</strong></p></li>
+<li><p>TimerTask中抛出运行时异常会杀死一个线程，从而导致Timer死机（即计划任务将不在运行）；而<strong>ScheduleThreadExecutor</strong>不仅<strong>捕获运行时异常</strong>，还允许<strong>需要时处理（afterExecute方法）</strong>，<strong>抛出异常的任务会被取消</strong>而<strong>其他任务将继续运行</strong></p></li>
 </ul>
 <p>JDK1.5 之后，没有理由再使用Timer进行任务调度</p></li>
 <li><p>运行机制 <img
@@ -17415,14 +17420,14 @@ ScheduledThreadPoolExecutor的执行分为：</p>
 </ol>
 <p>为了执行周期性任务，对ThreadPoolExecutor做了如下修改：</p>
 <ul>
-<li>使用DelayQueue作为任务队列</li>
+<li>使用<strong>DelayQueue</strong>作为任务队列</li>
 <li>获取任务的方式不同</li>
 <li>获取周期任务<strong>后做了额外处理</strong></li>
 </ul>
 <p><img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221129104234412.png"
 alt="image-20221129104234412" />
-获取任务，执行任务，修改任务(time)，回放任务</p>
+<strong>获取任务</strong>，<strong>执行任务</strong>，<strong>修改任务(time)</strong>，<strong>回放(添加)任务</strong></p>
 <blockquote>
 <ol type="1">
 <li>线程 1 从 <code>DelayQueue</code> 中获取已到期的
@@ -19943,267 +19948,501 @@ GC</strong>，也就是说<strong>堆不存在该类</strong>的<strong>实例�
       </tags>
   </entry>
   <entry>
-    <title>jvm监控和故障处理工具 总结</title>
-    <url>/2022/12/19/review/java_guide/java/jvm/jdk-monitoring-and-troubleshooting-tools/</url>
+    <title>java垃圾回收器</title>
+    <url>/2022/12/12/review/java_guide/java/jvm/garbage-collection/</url>
     <content><![CDATA[<blockquote>
 <p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!</p>
 </blockquote>
-<h1 id="jdk-命令行工具">JDK 命令行工具</h1>
-<p>这些命令在 JDK 安装目录下的 bin 目录下：</p>
+<h1 id="前言">前言</h1>
+<p>当<strong>需要排查各种内存溢出问题</strong>、当<strong>垃圾收集</strong>成为系统达到更高并发的瓶颈时，我们就需要对这些<strong>“自动化”</strong>的技术实施必要的<strong>监控</strong>和<strong>调节</strong></p>
+<h1 id="堆空间的基本结构">堆空间的基本结构</h1>
 <ul>
-<li><strong><code>jps</code></strong> (JVM Process Status）: 类似 UNIX
-的 <code>ps</code> 命令。用于查看所有 Java 进程的启动类、传入参数和 Java
-虚拟机参数等信息；</li>
-<li><strong><code>jstat</code></strong>（JVM Statistics Monitoring
-Tool）: 用于收集 HotSpot 虚拟机各方面的运行数据;</li>
-<li><strong><code>jinfo</code></strong> (Configuration Info for Java) :
-Configuration Info for Java,显示虚拟机配置信息;</li>
-<li><strong><code>jmap</code></strong> (Memory Map for Java) :
-生成堆转储快照;</li>
-<li><strong><code>jhat</code></strong> (JVM Heap Dump Browser) :
-用于分析 heapdump 文件，它会建立一个 HTTP/HTML
-服务器，让用户可以在浏览器上查看分析结果;</li>
-<li><strong><code>jstack</code></strong> (Stack Trace for Java) :
-生成虚拟机当前时刻的线程快照，线程快照就是当前虚拟机内每一条线程正在执行的方法堆栈的集合。</li>
-</ul>
-<h2 id="jps-查看所有-java-进程">jps: 查看所有 Java 进程</h2>
-<p><code>jps</code>(JVM Process Status) 命令类似 UNIX 的 <code>ps</code>
-命令。</p>
-<p><code>jps</code>：显示虚拟机执行主类名称以及这些进程的本地虚拟机唯一
-ID（Local Virtual Machine Identifier,LVMID）。<code>jps -q</code>
-：只输出进程的本地虚拟机唯一 ID。</p>
-<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">C:\Users\SnailClimb&gt;jps</span><br><span class="line"><span class="number">7360</span> NettyClient2</span><br><span class="line"><span class="number">17396</span></span><br><span class="line"><span class="number">7972</span> Launcher</span><br><span class="line"><span class="number">16504</span> Jps</span><br><span class="line"><span class="number">17340</span> NettyServer</span><br></pre></td></tr></table></figure>
-<p><code>jps -l</code>:输出主类的全名，如果进程执行的是 Jar 包，输出 Jar
-路径。</p>
-<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">C:\Users\SnailClimb&gt;jps <span class="literal">-l</span></span><br><span class="line"><span class="number">7360</span> firstNettyDemo.NettyClient2</span><br><span class="line"><span class="number">17396</span></span><br><span class="line"><span class="number">7972</span> org.jetbrains.jps.cmdline.Launcher</span><br><span class="line"><span class="number">16492</span> sun.tools.jps.Jps</span><br><span class="line"><span class="number">17340</span> firstNettyDemo.NettyServer</span><br></pre></td></tr></table></figure>
-<p><code>jps -v</code>：输出虚拟机进程启动时 JVM 参数。</p>
-<p><code>jps -m</code>：输出传递给 Java 进程 main() 函数的参数。</p>
-<h2
-id="jstat监视虚拟机各种运行状态信息">jstat：监视虚拟机各种运行状态信息</h2>
-<ul>
-<li><p>jstat ( JVM Statistics Monitoring Tool )
-使用于<strong>监视虚拟机</strong>各种<strong>运行状态信息</strong>的命令行工具。</p>
-<blockquote>
-<p>可以显示<strong>本地</strong>或者<strong>远程（需要远程主机提供RMI支持）</strong>虚拟机进程中的<strong>类信息</strong>、<strong>内存</strong>、<strong>垃圾收集</strong>、<strong>JIT编译</strong>等运行数据，在<strong>没有GUI</strong>，只提供了<strong>纯文本</strong>控制台环境的服务器上，它将是运行期间<strong>定位虚拟机性能问题</strong>的首选工具</p>
-</blockquote></li>
-<li><p>jstat 命令使用格式</p>
-<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">jstat -&lt;option&gt; [-<span class="type">t</span>] [-<span class="type">h</span>&lt;<span class="type">lines</span>&gt;] &lt;vmid&gt; [&lt;<span class="built_in">int</span><span class="type">erval</span>&gt; [&lt;<span class="type">count</span>&gt;]]</span><br></pre></td></tr></table></figure>
-<p>比如 <code>jstat -gc -h3 31736 1000 10</code>表示分析进程 id 为 31736
-的 gc 情况，每隔 1000ms 打印一次记录，打印 10 次停止，每 3
-行后打印指标头部。</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">λ jstat -gc -h3 12224 1000 10  </span><br></pre></td></tr></table></figure>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221219210349920.png"
-alt="image-20221219210349920" />
-<figcaption aria-hidden="true">image-20221219210349920</figcaption>
-</figure>
-<p>常见的option如下 , 下面的vmid，即vm的id （id值）</p>
-<ul>
-<li><code>jstat -class vmid</code> ：显示 ClassLoader 的相关信息；</li>
-<li><code>jstat -compiler vmid</code> ：显示 JIT 编译的相关信息；</li>
-<li><code>jstat -gc vmid</code> ：显示与 GC 相关的堆信息；</li>
-<li><code>jstat -gccapacity vmid</code>
-：显示各个代的容量及使用情况；</li>
-<li><code>jstat -gcnew vmid</code> ：显示新生代信息；</li>
-<li><code>jstat -gcnewcapcacity vmid</code>
-：显示新生代大小与使用情况；</li>
-<li><code>jstat -gcold vmid</code>
-：显示老年代和永久代的行为统计，从jdk1.8开始,该选项仅表示老年代，因为永久代被移除了；</li>
-<li><code>jstat -gcoldcapacity vmid</code> ：显示老年代的大小；</li>
-<li><code>jstat -gcpermcapacity vmid</code>
-：显示永久代大小，从jdk1.8开始,该选项不存在了，因为永久代被移除了；</li>
-<li><code>jstat -gcutil vmid</code> ：显示垃圾收集信息</li>
-</ul>
-<p>使用<code>jstat -gcutil -h3 12224 1000 10</code></p>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221219210934394.png"
-alt="image-20221219210934394" />
-<figcaption aria-hidden="true">image-20221219210934394</figcaption>
-</figure>
-<p>另外，加上 <code>-t</code>参数可以在输出信息上加一个 Timestamp
-列，显示程序的运行时间。 各个参数的含义<br />
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221219211407363.png"
-alt="image-20221219211407363" /></p></li>
-</ul>
-<h2
-id="jinfo实时地查看和调整虚拟机各项参数">jinfo：实时地查看和调整虚拟机各项参数</h2>
-<p><code>jinfo vmid</code> :输出当前 jvm 进程的全部参数和系统属性
-(第一部分是系统的属性，第二部分是 JVM 的参数)。 如下图： <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221219211745724.png"
-alt="image-20221219211745724" /> <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221219211839945.png"
-alt="image-20221219211839945" /></p>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221219211712746.png"
-alt="image-20221219211712746" />
-<figcaption aria-hidden="true">image-20221219211712746</figcaption>
-</figure>
-<ul>
-<li><p><code>jinfo -flag name vmid</code>
-:输出<strong>对应名称</strong>的参数的<strong>具体值</strong>。比如输出
-<strong>MaxHeapSize</strong>、查看当前 jvm 进程<strong>是否开启打印 GC
-日志</strong> ( <code>-XX:PrintGCDetails</code> :详细 GC
-日志模式，这两个都是默认关闭的)。</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">C:\Users\SnailClimb&gt;jinfo  -flag MaxHeapSize 17340</span><br><span class="line">-XX:MaxHeapSize=2124414976</span><br><span class="line">C:\Users\SnailClimb&gt;jinfo  -flag PrintGC 17340</span><br><span class="line">-XX:-PrintGC</span><br></pre></td></tr></table></figure></li>
-<li><p>使用 jinfo 可以在不重启虚拟机的情况下，可以动态的修改 jvm
-的参数。尤其在线上的环境特别有用,请看下面的例子： 使用```jinfo -flag
-[+|-]name vmid 开启或者关闭对应名称的参数：</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">C:\Users\SnailClimb&gt;jinfo  -flag  PrintGC 17340</span><br><span class="line">-XX:-PrintGC</span><br><span class="line"></span><br><span class="line">C:\Users\SnailClimb&gt;jinfo  -flag  +PrintGC 17340</span><br><span class="line"></span><br><span class="line">C:\Users\SnailClimb&gt;jinfo  -flag  PrintGC 17340</span><br><span class="line">-XX:+PrintGC</span><br></pre></td></tr></table></figure></li>
-</ul>
-<h2 id="jmap生成堆转储快照">jmap：生成堆转储快照</h2>
-<ul>
-<li><p><strong>jmap(Memory Map for Java
-)</strong>命令用于生成<strong>堆转储</strong>快照。如果不使用jmap命令，要想获取java<strong>堆转储</strong>，可以使用<code>-XX:+HeapDumpOutOfMemoryError</code>参数，可以让虚拟机在<strong>OOM</strong>异常出现<strong>之后</strong>，自动生成dump文件，Linux命令下通过<code>kill -3</code>发送进程推出信号也能拿到dump文件</p></li>
-<li><p><code>jmap</code> 的作用并不仅仅是为了<strong>获取 dump</strong>
-文件，它还可以<strong>查询 finalizer 执行队列</strong>、<strong>Java
-堆</strong>和<strong>永久代</strong>的详细信息，如<strong>空间使用率</strong>、当前使用的是<strong>哪种收集器</strong>等。和<code>jinfo</code>一样，<code>jmap</code>有不少功能在
-Windows 平台下也是受限制的。</p></li>
-<li><p>将指定应用程序的<strong>堆
-快照</strong>输出到桌面，后面可以通过<strong>jhat</strong>、<strong>Visual
-VM</strong>等工具分析该堆文件</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">C:\Users\SnailClimb&gt;jmap -dump:format=b,file=C:\Users\SnailClimb\Desktop\heap.hprof <span class="number">17340</span></span><br><span class="line">Dumping heap to C:\Users\SnailClimb\Desktop\heap.hprof ...</span><br><span class="line">Heap dump file created</span><br></pre></td></tr></table></figure></li>
-</ul>
-<h2 id="jhat分析heapdump文件">jhat：分析heapdump文件</h2>
-<p><strong><code>jhat</code></strong> 用于分析 heapdump
-文件，它会建立一个 HTTP/HTML
-服务器，让用户可以在浏览器上查看分析结果。</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">C:\Users\SnailClimb&gt;jhat C:\Users\SnailClimb\Desktop\heap.hprof</span><br><span class="line">Reading from C:\Users\SnailClimb\Desktop\heap.hprof...</span><br><span class="line">Dump file created Sat May 04 12:30:31 CST 2019</span><br><span class="line">Snapshot read, resolving...</span><br><span class="line">Resolving 131419 objects...</span><br><span class="line">Chasing references, expect 26 dots..........................</span><br><span class="line">Eliminating duplicate references..........................</span><br><span class="line">Snapshot resolved.</span><br><span class="line">Started HTTP server on port 7000</span><br><span class="line">Server is ready. </span><br></pre></td></tr></table></figure>
-<p>之后访问 http://localhost:7000/ 即可，如下： 进入/histo
-会发现，有这个东西 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221220094041210.png"
-alt="image-20221220094041210" />
-这个对象创建了9次，因为我是在第9次循环后dump堆快照的</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//测试代码如下</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyMain</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">byte</span>[] x = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">10</span> * <span class="number">1024</span> * <span class="number">1024</span>];<span class="comment">//10M</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;开始循环--&quot;</span>);</span><br><span class="line">        <span class="type">int</span> i=<span class="number">0</span>;</span><br><span class="line">        <span class="keyword">while</span> (++i&gt;<span class="number">0</span>) &#123;</span><br><span class="line">            String a=<span class="keyword">new</span> <span class="title class_">Date</span>().toString();</span><br><span class="line">            <span class="type">MyMain</span> <span class="variable">myMain</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">MyMain</span>();</span><br><span class="line">            System.out.println(i+<span class="string">&quot;循环中---&quot;</span> + <span class="keyword">new</span> <span class="title class_">Date</span>());</span><br><span class="line">            TimeUnit.SECONDS.sleep(<span class="number">10</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="jstack-生成虚拟机当前时刻的线程快照">jstack：
-生成虚拟机当前时刻的线程快照</h2>
-<ul>
-<li><p><strong>jstack (Stack Trace for Java )</strong>
-命令用于生成<strong>虚拟机当前时刻</strong>的<strong>线程快照</strong>。线程快照就是当前虚拟机内<strong>每一条线程正在执行</strong>的<strong>方法堆栈</strong>的集合</p></li>
-<li><p>生成线程快照的目的主要是<strong>定位线程长时间出现停顿的原因</strong>，如<strong>线程间死锁</strong>、<strong>死循环</strong>、<strong>请求外部资源导致的长时间等待</strong>等都是导致线程长时间停顿的原因。<strong>线程出现停顿</strong>的时候<strong>通过<code>jstack</code>来查看各个线程的调用堆栈</strong>，就可以知道没有响应的线程到底在后台做些什么事情，或者在等待些什么资源。</p></li>
-<li><p>线程死锁的代码，通过<strong>jstack</strong>
-命令进行<strong>死锁检查</strong>，输出<strong>死锁信息</strong>，找到<strong>发生死锁的线程</strong></p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> com.jvm;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">DeadLockDemo</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="type">Object</span> <span class="variable">resource1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Object</span>();<span class="comment">//资源 1</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="type">Object</span> <span class="variable">resource2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Object</span>();<span class="comment">//资源 2</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">            <span class="keyword">synchronized</span> (resource1) &#123;</span><br><span class="line">                System.out.println(Thread.currentThread() + <span class="string">&quot;get resource1&quot;</span>);</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    Thread.sleep(<span class="number">1000</span>);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125;</span><br><span class="line">                System.out.println(Thread.currentThread() + <span class="string">&quot;waiting get resource2&quot;</span>);</span><br><span class="line">                <span class="keyword">synchronized</span> (resource2) &#123;</span><br><span class="line">                    System.out.println(Thread.currentThread() + <span class="string">&quot;get resource2&quot;</span>);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;, <span class="string">&quot;线程 1&quot;</span>).start();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">            <span class="keyword">synchronized</span> (resource2) &#123;</span><br><span class="line">                System.out.println(Thread.currentThread() + <span class="string">&quot;get resource2&quot;</span>);</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    Thread.sleep(<span class="number">1000</span>);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125;</span><br><span class="line">                System.out.println(Thread.currentThread() + <span class="string">&quot;waiting get resource1&quot;</span>);</span><br><span class="line">                <span class="keyword">synchronized</span> (resource1) &#123;</span><br><span class="line">                    System.out.println(Thread.currentThread() + <span class="string">&quot;get resource1&quot;</span>);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;, <span class="string">&quot;线程 2&quot;</span>).start();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*------</span></span><br><span class="line"><span class="comment">Thread[线程 1,5,main]get resource1</span></span><br><span class="line"><span class="comment">Thread[线程 2,5,main]get resource2</span></span><br><span class="line"><span class="comment">Thread[线程 2,5,main]waiting get resource1</span></span><br><span class="line"><span class="comment">Thread[线程 1,5,main]waiting get resource2</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure></li>
-<li><p>分析 线程 A 通过 synchronized (resource1) 获得 resource1
-的监视器锁，然后通过<code>Thread.sleep(1000);</code>让线程 A 休眠 1s
-为的是让线程 B 得到执行然后获取到 resource2 的监视器锁。线程 A 和线程 B
-休眠结束了都开始企图请求获取对方的资源，然后这两个线程就会陷入互相等待的状态，这也就产生了死锁。</p></li>
-<li><p>通过jstack 命令分析</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">先使用jps 找到思索地那个类</span></span><br><span class="line">C:\Users\SnailClimb&gt;jps</span><br><span class="line">13792 KotlinCompileDaemon</span><br><span class="line">7360 NettyClient2</span><br><span class="line">17396</span><br><span class="line">7972 Launcher</span><br><span class="line">8932 Launcher</span><br><span class="line">9256 DeadLockDemo</span><br><span class="line">10764 Jps</span><br><span class="line">17340 NettyServer</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment"># 然后使用jstack命令分析</span></span></span><br><span class="line">C:\Users\SnailClimb&gt;jstack 9256 </span><br></pre></td></tr></table></figure>
-<p>输出的部分如下</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">Found one Java-level deadlock:</span><br><span class="line">=============================</span><br><span class="line">&quot;线程 2&quot;:</span><br><span class="line">  waiting to lock monitor 0x000000000333e668 (object 0x00000000d5efe1c0, a java.lang.Object),</span><br><span class="line">  which is held by &quot;线程 1&quot;</span><br><span class="line">&quot;线程 1&quot;:</span><br><span class="line">  waiting to lock monitor 0x000000000333be88 (object 0x00000000d5efe1d0, a java.lang.Object),</span><br><span class="line">  which is held by &quot;线程 2&quot;</span><br><span class="line"></span><br><span class="line">Java stack information for the threads listed above:</span><br><span class="line">===================================================</span><br><span class="line">&quot;线程 2&quot;:</span><br><span class="line">        at DeadLockDemo.lambda$main$1(DeadLockDemo.java:31)</span><br><span class="line">        - waiting to lock &lt;0x00000000d5efe1c0&gt; (a java.lang.Object)</span><br><span class="line">        - locked &lt;0x00000000d5efe1d0&gt; (a java.lang.Object)</span><br><span class="line">        at DeadLockDemo$$Lambda$2/1078694789.run(Unknown Source)</span><br><span class="line">        at java.lang.Thread.run(Thread.java:748)</span><br><span class="line">&quot;线程 1&quot;:</span><br><span class="line">        at DeadLockDemo.lambda$main$0(DeadLockDemo.java:16)</span><br><span class="line">        - waiting to lock &lt;0x00000000d5efe1d0&gt; (a java.lang.Object)</span><br><span class="line">        - locked &lt;0x00000000d5efe1c0&gt; (a java.lang.Object)</span><br><span class="line">        at DeadLockDemo$$Lambda$1/1324119927.run(Unknown Source)</span><br><span class="line">        at java.lang.Thread.run(Thread.java:748)</span><br><span class="line"></span><br><span class="line">Found 1 deadlock.</span><br></pre></td></tr></table></figure>
-<p>找到了发生死锁的线程的具体信息</p></li>
-</ul>
-<h1 id="jdk可视化分析工具">JDK可视化分析工具</h1>
-<h2
-id="jconsolejava监视与管理控制台">JConsole：Java监视与管理控制台</h2>
-<p>JConsole 是<strong>基于 JMX
-的可视化监视</strong>、<strong>管理工具</strong>。可以很方便的<strong>监视本地及远程服务器的
-java
-进程的内存使用情况</strong>。你可以在控制台输出<strong><code>console</code></strong>命令启动或者在
-JDK 目录下的 bin
-目录<strong>找到<code>jconsole.exe</code>然后双击启动</strong>. <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1JConsole%25E8%25BF%259E%25E6%258E%25A5.7490f097.png"
-alt="连接 Jconsole" /></p>
-<p>对于远程连接</p>
+<li><p>Java的<strong>自动内存管理</strong>主要是针对对象内存的<strong>回收</strong>和对象内存的<strong>分配</strong>。且Java自动内存管理最核心的功能是<strong>堆</strong>内存中的对象<strong>分配</strong>和<strong>回收</strong></p></li>
+<li><p>Java堆是垃圾收集器管理的主要区域，因此也被称作<strong>GC堆（Garbage
+Collected Heap）</strong></p></li>
+<li><p>从<strong>垃圾回收的角度</strong>来说，由于现在收集器基本都采用<strong>分代垃圾收集算法</strong>，所以Java堆被划分为了几个不同的区域，这样我们就可以<strong>根据各个区域的特点</strong>选择<strong>合适的垃圾收集算法</strong></p></li>
+<li><p>JDK7版本及JDK7版本之前，堆内存被通常分为下面三部分：</p>
 <ol type="1">
-<li><p>在启动方</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">-Djava.rmi.server.hostname=外网访问 ip 地址 </span><br><span class="line">-Dcom.sun.management.jmxremote.port=60001   //监控的端口号</span><br><span class="line">-Dcom.sun.management.jmxremote.authenticate=false   //关闭认证</span><br><span class="line">-Dcom.sun.management.jmxremote.ssl=false </span><br></pre></td></tr></table></figure>
-<p>实例：</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">java -Djava.rmi.server.hostname=192.168.200.200  -Dcom.sun.management.jmxremote  -Dcom.sun.management.jmxremote.port=60001  -Dcom.sun.management.jmxremote.ssl=false  -Dcom.sun.management.jmxremote.authenticate=false  com.jvm.DeadLockDemo</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">其中 192.168.200.200 为启动该类的机器的ip，而不是谁要连接</span> </span><br></pre></td></tr></table></figure>
-<p>在使用 JConsole 连接时，远程进程地址如下：</p>
-<blockquote>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">外网访问 ip 地址:60001</span><br></pre></td></tr></table></figure>
+<li>新生代内存（Young Generation）</li>
+<li>老生代（Old Generation）</li>
+<li>永久代（Permanent Generation）</li>
+</ol></li>
+</ul>
 <figure>
 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221220103410971.png"
-alt="image-20221220103410971" />
-<figcaption aria-hidden="true">image-20221220103410971</figcaption>
+src="https://javaguide.cn/assets/hotspot-heap-structure.41533631.png"
+alt="hotspot-heap-structure" />
+<figcaption aria-hidden="true">hotspot-heap-structure</figcaption>
 </figure>
-</blockquote></li>
-<li><p>注意，虚拟机中（这里ip
-xxx.200是虚拟机ip），需要开放的端口不只是60001，还要通过
-<code>netstat -nltp</code>开放另外两个端口 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221220104157529.png"
-alt="image-20221220104157529" /> centos中使用</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">firewall-cmd --zone=public --add-port=45443/tcp --permanent</span><br><span class="line">firewall-cmd --zone=public --add-port=36521/tcp --permanent</span><br><span class="line">firewall-cmd --zone=public --add-port=60001/tcp --permanent</span><br><span class="line">firewall-cmd --reload #重启firewall</span><br></pre></td></tr></table></figure>
-<p>之后才能连接上</p>
+<p>JDK8版本之后PermGen（永久）已被Metaspace（元空间）取代，且已经不在堆里面了，元空间使用的是<strong>直接内存</strong>。</p>
+<h1 id="内存分配和回收原则">内存分配和回收原则</h1>
+<h2 id="对象优先在eden区分配">对象优先在Eden区分配</h2>
+<ul>
+<li><p>多数情况下，对象在<strong>新生代中Eden区</strong>分配。当Eden区没有足够空间进行分配时，会触发一次MinorGC
+首先，先添加一下参数打印GC详情：<code>-XX:+PrintGCDetails</code></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">GCTest</span> &#123;</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">		<span class="type">byte</span>[] allocation1, allocation2;</span><br><span class="line">		allocation1 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">30900</span>*<span class="number">1024</span>];<span class="comment">//会用掉3万多K</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+<p>运行后的结果（这里应该是配过xms和xmx了，即堆内存大小） <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/28954286.jpg"
+alt="img" />
+如上，<strong>Eden区内存几乎被分配完全</strong>（即使程序什么都不做，新生代也会使用2000多K）</p>
+<blockquote>
+<p>注： PSYoungGen 为 38400K ，= 33280K + 5120K
+（Survivor区总会有一个是空的，所以只加了一个5120K ）</p>
+</blockquote>
+<p>假如我们再为allocation2分配内存会怎么样(不处理的话，年轻代会溢出)</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">allocation2 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">900</span> * <span class="number">1024</span>];</span><br></pre></td></tr></table></figure>
 <p><img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221220104326724.png"
-alt="image-20221220104326724" /> <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/2%25E6%259F%25A5%25E7%259C%258BJava%25E7%25A8%258B%25E5%25BA%258F%25E6%25A6%2582%25E5%2586%25B5.9c949b67.png"
-alt="查看 Java 程序概况" /></p></li>
-</ol>
-<h3 id="内存监控">内存监控</h3>
-<p>JConsole
-可以显示<strong>当前内存的详细信息</strong>。不仅包括<strong>堆内存/非堆内存</strong>的整体信息，还可以细化到
-<strong>eden 区</strong>、<strong>survivor
-区</strong>等的使用情况，如下图所示。</p>
-<p>点击右边的“执行 GC(G)”按钮可以强制应用程序执行一个 Full GC。</p>
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/28128785.jpg"
+alt="img" />
+在给allocation2分配内存之前，Eden区内存几乎已经被分配完。所以当<strong>Eden区没有足够空间进行分配时</strong>，虚拟机将发起一次MinorGC。GC期间虚拟机又发现<strong>allocation1无法存入空间</strong>，所以只好通过<strong>分配担保机制</strong>，把<strong>新生代的对象</strong>，<strong>提前转移到老年代</strong>去，老年代的空间足够存放allocation1，<strong>所以不会出现Full
+GC（这里可能是之前的说法，可能只是要表达老年代的GC，而不是Full
+GC(整堆GC) ）</strong>　　</p>
+<p>执行MinorGC后，<strong>后面分配的对象如果能够存在Eden区</strong>的话，还是会在Eden区分配内存<br />
+执行如下代码验证：</p></li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">GCTest</span> &#123;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">		<span class="type">byte</span>[] allocation1, allocation2,allocation3,allocation4,allocation5;</span><br><span class="line">		allocation1 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">32000</span>*<span class="number">1024</span>];</span><br><span class="line">		allocation2 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">1000</span>*<span class="number">1024</span>];</span><br><span class="line">		allocation3 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">1000</span>*<span class="number">1024</span>];</span><br><span class="line">		allocation4 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">1000</span>*<span class="number">1024</span>];</span><br><span class="line">		allocation5 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">1000</span>*<span class="number">1024</span>];</span><br><span class="line">	&#125;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+<h2 id="大对象直接进入老年代">大对象直接进入老年代</h2>
+<ul>
+<li>大对象就是需要连续空间的对象（<strong>字符串</strong>、<strong>数组</strong>等）</li>
+<li>大对象直接进入老年代，主要是为了避免为<strong>大对象分配内存时</strong>，由于<strong>分配担保机制(这好像跟分配担保机制没有太大关系)</strong>带来的复制而<strong>降低效率</strong>。</li>
+</ul>
 <blockquote>
-<p><strong>新生代 GC（Minor
-GC）</strong>:指发生新生代的的垃圾收集动作，Minor GC
-非常频繁，回收速度一般也比较快。</p>
-<p><strong>老年代 GC（Major GC/Full GC）</strong>:指发生在老年代的
-GC，出现了 Major GC 经常会伴随至少一次的 Minor GC（并非绝对），Major GC
-的速度一般会比 Minor GC 的慢 10 倍以上。</p>
+<ul>
+<li><p>假设大对象最后会晋升老年代，而新生代是基于复制算法来回收垃圾的，由两个Survivor区域配合完成复制算法，如果新生代中出现大对象且能屡次躲过GC，那这个对象就会在两个Survivor区域中来回复制，直至最后升入老年代，而大对象在内存里来回复制移动，就会消耗更多的时间。</p></li>
+<li><p>假设大对象最后不会晋升老年代，新生代空间是有限的，在新生代里的对象大部分都是朝生夕死的，如果让一个大对象占据了新生代空间，那么相比起正常的对象被分配在新生代，大对象无疑会让新生代GC提早发生，因为内存空间会更快不够用，如果这个大对象因为业务原因，并不会马上被GC回收，那么这个对象就会进入到Survivor区域，默认情况下，Survivor区域本来就不会被分配的很大，那此时被大对象占据了大部分空间，很可能会导致之后的新生代GC后，存活下来的对象，Survivor区域空间不够放不下，导致大部分对象进入老年代，这就加快了老年代GC发生的时间，而老年代GC对系统性能的负面影响则远远大于新生代GC了。</p></li>
+</ul>
 </blockquote>
+<h2 id="长期存活的对象进入老年代">长期存活的对象进入老年代</h2>
+<ul>
+<li><p>内存回收时必须能够识别，哪些对象放在新生代，哪些对象放在老年代---&gt;
+因此，虚拟机给每个对象一个<strong>对象年龄（Age）</strong>计数器</p></li>
+<li><p><流程> :
+大部分情况下，对象都会<strong>首先在Eden区域</strong>分配。如果对象在Eden出生并经过<strong>第一次MinorGC后</strong>仍然能够存活，并且<strong>能</strong>被Survivor容纳的话，将被移动到Survivor空间（S0或S1）中，并将对象年龄设为<strong>1</strong>(<strong>Eden区
+--&gt; Survivor区后</strong>对象初始年龄变为1 )</p>
+<ul>
+<li>后续，对象在<strong>Survivor区</strong>中每熬过一次MinorGC，<strong>年龄就增加1岁</strong>，当年龄增加到一定程序（<strong>默认为15岁</strong>），就会被晋升到老年代中。对象晋升到老年代的年龄<strong>阈值</strong>，可以通过参数<strong><code>-XX:MaxTenuringThreshold</code></strong>来设置</li>
+<li><strong>★★修正：</strong> “Hotspot
+遍历所有对象时，按照年龄<strong>从小到大</strong>对其所<strong>占用的大小进行累积</strong>，当<strong>累积的某个年龄大小超过了
+survivor 区的 50%</strong> 时（默认值是 50%，可以通过
+<code>-XX:TargetSurvivorRatio=percent</code> 来设置，参见 <a
+href="https://github.com/Snailclimb/JavaGuide/issues/1199">issue1199open
+in new window</a> ），取<strong>这个年龄</strong>和
+<strong>MaxTenuringThreshold
+中更小的一个值</strong>，作为新的晋升年龄阈值”。</li>
+</ul>
+<p>动态年龄计算的代码：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">uint ageTable::compute_tenuring_threshold(size_t survivor_capacity) &#123;</span><br><span class="line"><span class="comment">//survivor_capacity是survivor空间的大小</span></span><br><span class="line"><span class="type">size_t</span> <span class="variable">desired_survivor_size</span> <span class="operator">=</span> (size_t)((((<span class="type">double</span>)survivor_capacity)*TargetSurvivorRatio)/<span class="number">100</span>);</span><br><span class="line"><span class="type">size_t</span> <span class="variable">total</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line"><span class="type">uint</span> <span class="variable">age</span> <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line"><span class="keyword">while</span> (age &lt; table_size) &#123;</span><br><span class="line"><span class="comment">//sizes数组是每个年龄段对象大小</span></span><br><span class="line">total += sizes[age];</span><br><span class="line"><span class="keyword">if</span> (total &gt; desired_survivor_size) &#123;</span><br><span class="line"><span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br><span class="line">age++; <span class="comment">//注意这里，age是递增的，最终是去某个值，而不是区间的值计算</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="type">uint</span> <span class="variable">result</span> <span class="operator">=</span> age &lt; MaxTenuringThreshold ? age : MaxTenuringThreshold;</span><br><span class="line">...</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>例子：
+如<strong>对象年龄5的占30%，年龄6的占36%，年龄7的占34%，加入某个年龄段（如例子中的年龄6）</strong>后，总占用超过Survivor空间*TargetSurvivorRatio的时候，从该年龄段开始及大于的年龄对象就要进入老年代（即例子中的年龄6对象，就是年龄6和年龄7晋升到老年代），这时候无需等到MaxTenuringThreshold中要求的15</p>
+<blockquote>
+<p><strong>关于默认的晋升年龄是 15，这个说法的来源大部分都是《深入理解
+Java 虚拟机》这本书。</strong> 如果你去 Oracle 的官网阅读<a
+href="https://docs.oracle.com/javase/8/docs/technotes/tools/unix/java.html">相关的虚拟机参数open
+in new
+window</a>，你会发现<code>-XX:MaxTenuringThreshold=threshold</code>这里有个说明</p>
+<p><strong>Sets the maximum tenuring threshold for use in adaptive GC
+sizing. The largest value is 15. The default value is 15 for the
+parallel (throughput) collector, and 6 for the CMS
+collector.默认晋升年龄并不都是 15，这个是要区分垃圾收集器的，CMS 就是
+6.</strong></p>
+</blockquote>
+</blockquote></li>
+</ul>
+<h2 id="主要进行gc的区域">主要进行gc的区域</h2>
+<p>如图：（太长跳过了，直接看下面的总结）<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/rf-hotspot-vm-gc.69291e6e.png"
+alt="img" /></p>
+<p>总结：<br />
+针对HotSpotVM的实现，它里面的GC准确分类只有两大种：</p>
+<ol type="1">
+<li>部分收集（Partial GC）
+<ul>
+<li>新生代收集（Minor GC/ Young GC
+）：只对<strong>新生代</strong>进行垃圾收集</li>
+<li>老年代（Major GC / Old GC
+)：只对<strong>老年代</strong>进行垃圾收集。★★：注意，MajorGC在有的语境中也用于指代<strong>整堆收集</strong></li>
+<li>混合收集（Mixed
+GC）：对<strong>整个新生代</strong>和<strong>部分老年代</strong>进行垃圾收集</li>
+</ul></li>
+<li>整堆收集（Full GC）：收集整个Java堆和方法区</li>
+</ol>
+<h2 id="空间分配担保">空间分配担保</h2>
+<ul>
+<li><p>为了确保在<strong>MinorGC</strong>之前老年代本身还有容纳<strong>新生代所有对象</strong>的剩余空间</p></li>
+<li><p>《深入理解Java虚拟机》第三章对于空间分配担保的描述如下：</p>
+<blockquote>
+<p>JDK 6 Update 24 之前，在发生 Minor GC
+之前，虚拟机必须先检查老年代最大可用的连续空间是否大于新生代所有对象总空间，如果这个条件成立，那这一次
+Minor GC 可以确保是安全的。如果不成立，则虚拟机会先查看
+-XX:HandlePromotionFailure 参数的设置值是否允许担保失败(Handle Promotion
+Failure);如果允许，那会继续检查老年代最大可用的连续空间是否大于历次晋升到老年代对象的平均大小，如果大于，将尝试进行一次
+Minor GC，尽管这次 Minor GC 是有风险的;如果小于，或者 -XX:
+HandlePromotionFailure 设置不允许冒险，那这时就要改为进行一次 Full
+GC。</p>
+<p><strong>JDK6
+Update24</strong>之后，规则变为<strong>只要老年代的连续空间</strong>大于<strong>新生代对象总大小</strong>，或者<strong>历次晋升的平均大小</strong>，就会进行<strong>MinorGC</strong>，否则将进行<strong>Full
+GC</strong></p>
+</blockquote></li>
+</ul>
+<h1 id="死亡对象判断方法">死亡对象判断方法</h1>
+<p><strong>堆</strong>中<strong>几乎放着所有的对象实例</strong>，对堆垃圾回收前的第一步就是要<strong>判断哪些对象已经死亡</strong>（即不能再被<strong>任何途径使用</strong>的对象）</p>
+<h2 id="引用计数法">引用计数法</h2>
+<ul>
+<li><p>给对象中添加一个<strong>引用计数器</strong></p>
+<ul>
+<li>每当有一个地方引用它，<strong>计数器就加1</strong></li>
+<li>当引用失效，<strong>计数器就减1</strong></li>
+<li>任何时候<strong>计数器为0的对象</strong>就是<strong>不可能再被使用</strong>的</li>
+</ul></li>
+<li><p>这个方法实现<strong>简单，效率高</strong>，但是目前主流的虚拟机中并没有选择这个算法来管理内存，其最主要的原因是它<strong>很难解决对象之间相互循环引用</strong>的问题。</p></li>
+</ul>
+<blockquote>
+<p>除了对象 <code>objA</code> 和 <code>objB</code>
+相互引用着对方之外，这两个对象之间再无任何引用。但是他们因为互相引用对方，导致它们的引用计数器都不为
+0，于是引用计数算法无法通知 GC 回收器回收他们</p>
+</blockquote>
+<p>★其实我觉得只跟相互有关，跟是不是<strong>循环</strong>关系不会太大</p>
+<p><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ReferenceCountingGc</span> &#123;</span><br><span class="line">    <span class="type">Object</span> <span class="variable">instance</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">ReferenceCountingGc</span> <span class="variable">objA</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ReferenceCountingGc</span>();</span><br><span class="line">        <span class="type">ReferenceCountingGc</span> <span class="variable">objB</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ReferenceCountingGc</span>();</span><br><span class="line">        objA.instance = objB;</span><br><span class="line">        objB.instance = objA;</span><br><span class="line">        objA = <span class="literal">null</span>;</span><br><span class="line">        objB = <span class="literal">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure></p>
+<h2 id="可达性分析算法">可达性分析算法</h2>
+<ul>
+<li><p>该算法的基本思想就是通过一系列称为<strong>“GC
+Roots"</strong>的对象作为起点，从这些节点开始<strong>向下搜索</strong>，节点所走过的<strong>路径</strong>
+称为<strong>引用链</strong>，当一个对象到GC
+Roots<strong>没有任何引用链</strong>相连的话，证明该对象不可用，需要<strong>被回收</strong>
+下图中由于Object 6 ~ Object
+10之间有引用关系，但它们到GC不可达，所以需要被回收 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/jvm-gc-roots.d187e957.png"
+alt="可达性分析算法" /></p></li>
+<li><p>哪些对象可以作为GC Roots呢</p>
+<ol type="1">
+<li>虚拟机栈（栈帧中的<strong>本地变量表</strong>）中引用的对象</li>
+<li>本地方法栈（<strong>Native方法</strong>）中引用的对象</li>
+<li>方法区中<strong>类静态属性</strong>引用的对象</li>
+<li>方法区中<strong>常量</strong>引用的变量</li>
+<li>所有被<strong>同步锁持有的对象</strong></li>
+</ol></li>
+<li><p>对象可以被回收，就代码一定会被回收吗
+即使在可达性分析法中不可达的对象，也并非是“非死不可”的，这时候它们<strong>暂时处于“缓刑阶段”</strong>，要真正宣告一个对象死亡，至少要经历两次标记过程：</p>
+<ol type="1">
+<li><p>可达性分析中<strong>不可达的对象被第一次标记</strong>并且进行<strong>一次筛选</strong>：筛选的条件是此对象是否有必要执行finalize方法（有必要则放入）<br />
+当对象<strong>没有覆盖finalize</strong>方法，或<strong>finalize方法已经被虚拟机调用</strong>过，则虚拟机将两种情况视为<strong>没有必要</strong>执行，该对象会被<strong>直接回收</strong></p></li>
+<li><p>如果这个对象被判定为<strong>有必要执行finalize()</strong>方法，那么这个对象将会被<strong>放置在一个叫做F-Queue的队列</strong>中，然后由Finalizer线程去执行。GC将会<strong>对F-Queue中的对象进行第二次标记</strong>，如果对象<strong>在finalize()方法中重新与引用链上的任何一个对象建立关联</strong>，那么在<strong>第二次标记时将会被移除“即将回收”的集合</strong>，否则该对象将会被回收。</p>
+<p>（比如：把自己（this关键字）赋值给某个类变量(static修饰)或者对象的成员变量）</p></li>
+</ol>
+<blockquote>
+<p><code>Object</code> 类中的 <code>finalize</code>
+方法一直被认为是一个糟糕的设计，成为了 Java 语言的负担，影响了 Java
+语言的安全和 GC 的性能。JDK9 版本及后续版本中各个类中的
+<code>finalize</code> 方法会被逐渐弃用移除。忘掉它的存在吧！</p>
+</blockquote></li>
+</ul>
+<h2 id="引用类型总结">引用类型总结</h2>
+<ul>
+<li>不论是通过<strong>引用计数法</strong>判断对象引用数量，还是通过<strong>可达性分析法</strong>判断对象的引用链是否可达，判定对象的存活都与<strong>”引用“</strong>有关</li>
+<li>JDK1.2
+之前，Java中<strong>引用</strong>的定义很传统：如果<strong>reference类型的数据存储</strong>的数值代表的是<strong>另一块内存的起始地址</strong>，就称这块内存代表<strong>一个引用</strong></li>
+<li>JDK1.2
+之后，Java对引用的概念进行了扩充，将引用(具体)分为<strong>强引用</strong>、<strong>软引用</strong>、<strong>弱引用</strong>、<strong>虚引用</strong>四种（引用强度<strong>逐渐减弱</strong>）
+<ol type="1">
+<li><p><strong>强引用</strong>（Strong Reference）</p>
+<blockquote>
+<ul>
+<li>大部分引用实际上是<strong>强引用</strong>。如果对象具有强引用，那么类似于生活中<strong>必不可少</strong>，垃圾回收器<strong>绝不会回收</strong>它</li>
+<li>内存空间不足时，宁愿抛出<strong>OutOfMemoryErro</strong>错误，使程序异常终止，也不会回收<strong>强引用</strong>对象解决<strong>对象内存不足</strong></li>
+</ul>
+</blockquote></li>
+<li><p><strong>软引用</strong>（SoftReference）</p>
+<blockquote>
+<ul>
+<li>如果对象<strong>只</strong>具有软引用，那就类似<strong>可有可无</strong>的生活用品。</li>
+<li>内存够则不会回收；内存不足则回收这些对象。只要垃圾回收器没有回收，那么对象就可以<strong>被程序使用</strong>。</li>
+<li>软引用可用来实现<strong>内存敏感</strong>的高速缓存</li>
+<li>软引用可以和一个<strong>引用队列（ReferenceQueue）</strong>联合使用，如果软引用所引用的对象被垃圾回收，Java虚拟机就会把这个软引用加入到<strong>与之关联</strong>的引用队列中</li>
+</ul>
+</blockquote></li>
+<li><p><strong>弱引用</strong>（WeakReference）</p>
+<blockquote>
+<ul>
+<li>如果对象<strong>只</strong>具有弱引用，则类似于<strong>可有可无</strong>的生活用品</li>
+<li>弱引用和软引用的区别：只具有弱引用的对象拥有<strong>更短暂</strong>的生命周期</li>
+<li>垃圾回收器线程<strong>扫描</strong>它所管辖的内存区域的<strong>过程中</strong>，一旦发现只具有<strong>弱引用</strong>的对象，不管当前内存<strong>足够与否</strong>，都会回收它的内存。不过垃圾回收器是一个<strong>优先级很低</strong>的线程，因此不一定会很快发现那些<strong>只具有弱引用</strong>的对象</li>
+<li>弱引用可以和一个<strong>引用队列（ReferenceQueue）</strong>联合使用，如果<strong>弱引用所引用的对象</strong>被垃圾回收，Java虚拟机就会把这个弱引用<strong>加入到与之关联的引用队列</strong>中</li>
+</ul>
+</blockquote></li>
+<li><p><strong>虚引用</strong>（PhantomReference）</p>
+<blockquote>
+<p>与其他引用不同，<strong>虚引用并不会决定对象声明周期</strong>。如果一个<strong>仅持有</strong>虚拟引用，那么它就跟<strong>没有任何</strong>引用一样，在任何时候都可能被垃圾回收</p>
+</blockquote>
+<p>虚引用主要用来<strong>跟踪对象被垃圾回收的活动</strong></p></li>
+<li><p>虚引用、软引用和弱引用的区别：<strong>虚引用必须和引用队列（ReferenceQueue）联合使用</strong>。</p>
+<ul>
+<li>当垃圾回收器<strong>准备回收</strong>一个对象时，如果发现它还有虚引用，就会在回收对象的内存<strong>之前</strong>，把这个虚引用加入到<strong>与之关联</strong>的引用队列。</li>
+<li>程序可以通过<strong>判断引用队列是否加入虚引用</strong>，来了解被引用的对象是否<strong>将</strong>被垃圾回收</li>
+<li>如果发现某个虚引用已经被加入到引用队列，那么就可以在所引用的对象<strong>被回收之前</strong>采取必要的行动</li>
+</ul></li>
+<li><p>在程序设计中一般很少使用弱引用与虚引用，使用软引用的情况较多，这是因为<strong>软引用可以加速
+JVM
+对垃圾内存的回收速度，可以维护系统的运行安全，防止内存溢出（OutOfMemory）等问题的产生</strong></p></li>
+</ol></li>
+</ul>
+<h2 id="如何判断一个常量是废弃常量">如何判断一个常量是废弃常量</h2>
+<p>运行时常量池主要是回收<strong>废弃的常量</strong></p>
+<blockquote>
+<ol type="1">
+<li>JDK1.7
+之前，<strong>运行时常量池逻辑</strong>，包括字符串常量池，存放在<strong>方法区</strong>，此时hotspot虚拟机对<strong>方法区</strong>的实现为<strong>永久代</strong></li>
+<li>JDK1.7字符串常量池被<strong>从方法区</strong>拿到了<strong>堆</strong>中，这里没有提到运行时常量池，也就是说<strong>字符串常量池</strong>被单独拿到堆，运行时常量池剩下的东西，<strong>还在方法区</strong>。即hotspot中的<strong>永久代</strong></li>
+<li>JDK1.8
+hotspot移除了永久代，用<strong>元空间Metaspace</strong>取代之，这时候<strong>字符串常量池</strong>还在堆，<strong>运行时常量池</strong>还在方法区，只不过<strong>方法区的实现</strong>从永久代变成了<strong>元空间Metaspace</strong></li>
+</ol>
+</blockquote>
+<p>★★
+假如<strong>字符串常量池</strong>存在字符串“abc”，如果当前没有任何String对象<strong>引用该字符串常量</strong>的话，就说明常量“abc”是废弃常量。如果这时发生内存回收并且<strong>有必要</strong>的话，“abc”就会被系统<strong>清理出</strong>常量池</p>
+<h2 id="如何判断一个类是无用类">如何判断一个类是无用类</h2>
+<ul>
+<li><p><strong>方法区</strong>主要回收<strong>无用的类</strong>，判断一个类是否是<strong>无用的类</strong>相对苛刻，需要同时满足下面<strong>条件</strong></p>
+<ul>
+<li>该类所有实例都已经被回收，即<strong>Java堆中不存在该类的任何实例</strong></li>
+<li>加载该类的<strong>ClassLoader</strong>已经被回收</li>
+<li>该类对应的<strong>java.lang.Class</strong>对象没有在任何地方被引用，<strong>无法</strong>在任何地方<strong>通过反射</strong>访问该类方法</li>
+</ul>
+<p>Java虚拟机<strong>可以</strong>对<strong>满足上述3个条件</strong>的无用类进行回收，是<strong>“可以”</strong>，而<strong>不是必然</strong></p></li>
+</ul>
+<h1 id="垃圾收集算法">垃圾收集算法</h1>
+<h2 id="标记-清除算法">标记-清除算法</h2>
+<p>该算法分为<strong>“标记”</strong>和<strong>“清除”</strong>阶段：<br />
+标记出所有<strong>不需要回收的对象</strong>，在标记完成后<strong>统一回收掉所有没有被标记</strong>的对象</p>
+<p>这是<strong>最基础</strong>的<strong>收集算法</strong>，后续的算法都是对其不足进行改进得到，有两个明显问题：</p>
+<ol type="1">
+<li><strong>效率问题</strong></li>
+<li><strong>空间问题</strong>（标记清除后会产生<strong>大量不连续碎片</strong>）</li>
+</ol>
 <figure>
 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/3%25E5%2586%2585%25E5%25AD%2598%25E7%259B%2591%25E6%258E%25A7.4f4b8a7f.png"
-alt="内存监控" />
-<figcaption aria-hidden="true">内存监控</figcaption>
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/%25E6%25A0%2587%25E8%25AE%25B0-%25E6%25B8%2585%25E9%2599%25A4%25E7%25AE%2597%25E6%25B3%2595.c1fbd0fe.jpeg"
+alt="img" />
+<figcaption aria-hidden="true">img</figcaption>
 </figure>
-<h3 id="线程监控">线程监控</h3>
-<p>类似我们前面讲的 <code>jstack</code> 命令，不过这个是可视化的。</p>
-<p>最下面有一个"检测死锁
-(D)"按钮，点击这个按钮可以自动为你找到发生死锁的线程以及它们的详细信息
-。 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/4%25E7%25BA%25BF%25E7%25A8%258B%25E7%259B%2591%25E6%258E%25A7.4364833a.png"
-alt="线程监控" /></p>
-<h2 id="visualvm-多合一故障处理工具">VisualVM： 多合一故障处理工具</h2>
-<p>VisualVM 提供在 Java 虚拟机 (Java Virutal Machine, JVM) 上运行的 Java
-应用程序的详细信息。在 VisualVM
-的图形用户界面中，您可以方便、快捷地查看多个 Java
-应用程序的相关信息。Visual VM 官网：<a
-href="https://visualvm.github.io/">https://visualvm.github.io/open in
-new window</a> 。Visual VM 中文文档:<a
-href="https://visualvm.github.io/documentation.html">https://visualvm.github.io/documentation.htmlopen
-in new window</a>。</p>
-<p>下面这段话摘自《深入理解 Java 虚拟机》。</p>
+<h2 id="标记-复制算法">标记-复制算法</h2>
+<ul>
+<li>将内存分为<strong>大小相同的两块</strong>，每次<strong>使用其中一块</strong></li>
+<li>当这块<strong>内存使用完后</strong>，就将还存活的对象<strong>复制到另一块</strong>去，然后再把<strong>使用的空间一次清理掉</strong></li>
+<li>这样每次内存<strong>回收</strong>都是对内存区间的一半<strong>进行回收</strong></li>
+</ul>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/90984624.e8c186ae.png"
+alt="复制算法" />
+<figcaption aria-hidden="true">复制算法</figcaption>
+</figure>
+<h2 id="标记-整理算法">标记-整理算法</h2>
+<p>根据老年代特点提出的一种<strong>标记算法</strong>，<strong>标记过程</strong>仍然与<strong>“标记-清除”</strong>算法一样，但后续不是直接对可回收对象回收，而是让<strong>所有存活对象向一端移动</strong>，然后直接<strong>清理掉端边界以外的内存</strong></p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/94057049.22c58294.png"
+alt="标记-整理算法" />
+<figcaption aria-hidden="true">标记-整理算法</figcaption>
+</figure>
+<h2 id="分代收集算法">分代收集算法</h2>
+<ul>
+<li>当前虚拟机的垃圾收集都采用<strong>分代收集算法</strong>，没有新的思想，只是<strong>根据对象存活周期的不同</strong>将内存分为几块。</li>
+<li>一般将Java堆分为<strong>新生代</strong>和<strong>老年代</strong>，这样就可以<strong>根据各个年代的特点</strong>，选择合适的<strong>垃圾收集算法</strong>
+<ul>
+<li><strong>新生代</strong>中，每次收集都会有大量对象死去，所以可以选择<strong>“标记-复制”</strong>算法，只需要付出少量<strong>对象的复制成本</strong>就可以完成<strong>每次垃圾收集</strong></li>
+<li><strong>老年代</strong>对象存活几率是比较高的，而且<strong>没有额外的空间对它进行分配担保</strong>，所以必须选择<strong>标记-清除</strong>或者<strong>“标记-整理”</strong>算法进行垃圾收集</li>
+</ul></li>
+</ul>
+<h1 id="垃圾收集器">垃圾收集器</h1>
+<ul>
+<li><strong>收集算法</strong>是内存回收的<strong>方法论</strong>，而<strong>垃圾收集器</strong>则是内存回收的<strong>具体实现</strong></li>
+<li>没有<strong>最好的</strong>垃圾收集器，也没有<strong>万能的</strong>，应该<strong>根据具体应用场景</strong>，选择适合自己的<strong>垃圾收集器</strong></li>
+</ul>
+<h2 id="汇总">汇总</h2>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/11e9dcd0f1ee4f25836e6f1c47104c51-new-image69e1c56a-1d40-493a-9901-6efc647a01f3.png"
+alt="img" />
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
 <blockquote>
-<p>VisualVM（All-in-One Java Troubleshooting Tool）是到目前为止随 JDK
-发布的功能最强大的运行监视和故障处理程序，官方在 VisualVM
-的软件说明中写上了“All-in-One”的描述字样，预示着他除了运行监视、故障处理外，还提供了很多其他方面的功能，如性能分析（Profiling）。VisualVM
-的性能分析功能甚至比起 JProfiler、YourKit 等专业且收费的 Profiling
-工具都不会逊色多少，而且 VisualVM
-还有一个很大的优点：不需要被监视的程序基于特殊 Agent
-运行，因此他对应用程序的实际性能的影响很小，使得他可以直接应用在生产环境中。这个优点是
-JProfiler、YourKit 等工具无法与之媲美的。</p>
+<ul>
+<li>新生代的垃圾回收器：Serial（串行--复制），ParNew（并行--复制），ParallelScavenge（并行--复制）</li>
+<li>老年代的垃圾回收器：SerialOld（串行--标记整理），ParallelOld（并行--标记整理），CMS（并发--标记清除）</li>
+<li>只有CMS和G1是并发，且CMS只作用于老年代，而G1都有</li>
+<li>JDK8为止，默认垃圾回收器是Parallel Scavenge和Parallel
+Old【并行--复制和并行--标记整理】</li>
+<li>JDK9开始，G1收集器成为默认的垃圾收集器，目前来看，G1回收期停顿时间最短且没有明显缺点，偏适合Web应用</li>
+</ul>
+<blockquote>
+<p>jdk8中测试Web应用，堆内存6G中新生代4.5G的情况下</p>
+<ul>
+<li>ParallelScavenge回收新生代停顿长达1.5秒。</li>
+<li>G1回收器回收同样大小的新生代只停顿0.2秒</li>
+</ul>
 </blockquote>
-<p>VisualVM 基于 NetBeans
-平台开发，因此他一开始就具备了插件扩展功能的特性，通过插件扩展支持，VisualVM
-可以做到：</p>
+</blockquote>
+<h2 id="serial-收集器">Serial 收集器</h2>
 <ul>
-<li><strong>显示虚拟机进程以及进程的配置、环境信息（jps、jinfo）。</strong></li>
-<li><strong>监视应用程序的
-CPU、GC、堆、方法区以及线程的信息（jstat、jstack）。</strong></li>
-<li><strong>dump 以及分析堆转储快照（jmap、jhat）。</strong></li>
-<li><strong>方法级的程序运行性能分析，找到被调用最多、运行时间最长的方法。</strong></li>
-<li><strong>离线程序快照：收集程序的运行时配置、线程 dump、内存 dump
-等信息建立一个快照，可以将快照发送开发者处进行 Bug 反馈。</strong></li>
-<li><strong>其他 plugins 的无限的可能性......</strong></li>
-</ul>
-<p>这里就不具体介绍 VisualVM 的使用，如果想了解的话可以看:</p>
+<li><p>Serial 串行
+收集器是<strong>最基本</strong>、<strong>历史最悠久</strong>的垃圾收集器</p></li>
+<li><p>这是一个<strong>单线程收集器</strong>，它的<strong>单线程</strong>意义不仅意味着它只会使用<strong>一条垃圾收集线程</strong>去完成垃圾收集工作，更重要的是它在<strong>进行垃圾收集工作时</strong>必须暂停其他所有的工作线程<strong>（”Stop
+The World“）</strong>，直到它<strong>收集结束</strong>。</p>
 <ul>
-<li><a
-href="https://visualvm.github.io/documentation.html">https://visualvm.github.io/documentation.htmlopen
-in new window</a></li>
-<li>https://www.ibm.com/developerworks/cn/java/j-lo-visualvm/index.html</li>
+<li>新生代采用<strong>标记-复制</strong>算法，老年代采用<strong>标记-整理</strong>算法
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/46873026.3a9311ec.png"
+alt="Serial 收集器" /></li>
+<li>StopTheWorld会带来<strong>不良用户体验</strong>，所以在后续垃圾收集器设计中<strong>停顿时间不断缩短</strong>。（仍然有停顿，垃圾收集器的过程仍然在继续）</li>
+<li>优点：<strong>简单而高效</strong>（与其他收集器的单线程相比）
+<ol type="1">
+<li>且由于其<strong>没有线程交互</strong>的开销，自然可以获得<strong>很高的单线程收集效率</strong></li>
+<li>Serial收集器对于<strong>运行在Client模式</strong>下的虚拟机来说是个不错的选择</li>
+</ol></li>
+</ul></li>
+<li><p>```shell -XX:+UseSerialGC
+#虚拟机运行在Client模式下的默认值，Serial+Serial Old。
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">## ParNew 收集器</span><br><span class="line"></span><br><span class="line">- **ParNew**收集器其实就是**Serial收集器**的**多线程版本**，除了使用**多线程**进行垃圾收集外，其余行为（**控制参数**、**收集算法**、**回收策略**等等）和**Serial收集器**完全一样</span><br><span class="line"></span><br><span class="line">- **新生代**采用**标记-复制**算法，**老年代**采用**标记-整理**算法</span><br><span class="line"></span><br><span class="line">  ![ParNew 收集器 ](https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/22018368.df835851.png)</span><br><span class="line">  ★★★  这是许多运行在Server模式下的虚拟机的首要选择，除了**Serial收集器**外，只有它能与**CMS收集器**（真正意义上的**并发**收集器）配合工作（**ParNew是并行**）</span><br><span class="line"></span><br><span class="line">- **并行和并发**概念补充</span><br><span class="line"></span><br><span class="line">  - **并行（Parallel）**：指**多条垃圾收集线程**并行工作，但此时用户线程仍然处于**等待**状态</span><br><span class="line">  - **并发（Concurrent）**：指**用户线程**与**垃圾收集线程** **同时**执行（不一定并行，可能会交替执行），**用户程序在继续执行**，而**收集收集器**运行在另一个CPU上</span><br><span class="line"></span><br><span class="line">- ```shell</span><br><span class="line">  -XX:+UseParNewGC  #ParNew+Serial Old，在JDK1.8被废弃，在JDK1.7还可以使用。</span><br></pre></td></tr></table></figure></p></li>
 </ul>
+<h2 id="parallelscavenge-收集器">ParallelScavenge 收集器</h2>
+<ul>
+<li><p>它也是<strong>标记-复制</strong>算法的多线程收集器，看上去几乎和<strong>ParNew</strong>一样，<strong>区别</strong></p>
+<ul>
+<li><p>部分<strong>参数</strong> (有点争议，先以下面为准)</p>
+<p><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">-XX:+UseParallelGC  # 虚拟机运行在Server模式下的默认值(1.8) 新生代使用ParallelGC，老年代使用回收器 ; ★★ JDK1.7之后，能达到UseParallelOldGC 的效果 </span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment"># 参考自 https://zhuanlan.zhihu.com/p/353458348</span></span> </span><br><span class="line"></span><br><span class="line"></span><br><span class="line">-XX:+UseParallelOldGC # 新生代使用ParallelGC，老年代使用ParallelOldGC</span><br></pre></td></tr></table></figure></p></li>
+<li><p><strong>Parallel
+Scavenge</strong>收集器关注点是<strong>吞吐量（高效率利用CPU）</strong>，<strong>CMS</strong>等垃圾收集器关注点是用户的<strong>停顿时间</strong>（提高用户体验）</p>
+<blockquote>
+<p>所谓<strong>吞吐量</strong>就是CPU中用于<strong>运行用户代码的时间</strong>与<strong>CPU</strong>总消耗时间的<strong>比值</strong>
+（也就是<strong>希望</strong>消耗少量CPU就能<strong>运行更多代码</strong>）</p>
+</blockquote></li>
+<li><p>Parallel Scavenge
+收集器提供了很多参数供用户找到<strong>最合适的停顿时间</strong>或<strong>最大吞吐量</strong>，如果对于收集器运作不太了解，手工优化存在困难的时候，使用
+<strong>Parallel Scavenge
+收集器</strong>配合<strong>自适应调节策略</strong>，把<strong>内存管理优化</strong>交给虚拟机去完成也是一个不错的选择。</p></li>
+<li><p>新生代采用<strong>标记-复制</strong>，老年代采用<strong>标记-整理</strong>算法
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221215170900774.png"
+alt="image-20221215170900774" /></p></li>
+</ul></li>
+<li><p>这是JDK1.8 的默认收集器 使用 java -XX:+PrintCommandLineFlags
+-version 命令查看 如下，两种情况：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">默认</span></span><br><span class="line">λ java -XX:+PrintCommandLineFlags -version</span><br><span class="line">-XX:InitialHeapSize=531924800 -XX:MaxHeapSize=8510796800 -XX:+PrintCommandLineFlags -XX:+UseCompressedClassPointers -XX:+UseCompressedOops -XX:-UseLargePagesIndividualAllocation -XX:+UseParallelGC</span><br><span class="line">java version &quot;1.8.0_202&quot;</span><br><span class="line">Java(TM) SE Runtime Environment (build 1.8.0_202-b08)</span><br><span class="line">Java HotSpot(TM) 64-Bit Server VM (build 25.202-b08, mixed mode)</span><br></pre></td></tr></table></figure>
+<p>第二种情况：(注意：<code>-XX:-UseParallelOldGC</code>)</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">λ java -XX:-UseParallelOldGC -XX:+PrintCommandLineFlags -version</span><br><span class="line">-XX:InitialHeapSize=531924800 -XX:MaxHeapSize=8510796800 -XX:+PrintCommandLineFlags -XX:+UseCompressedClassPointers -XX:+UseCompressedOops -XX:-UseLargePagesIndividualAllocation -XX:+UseParallelGC -XX:-UseParallelOldGC</span><br><span class="line"></span><br><span class="line">java version &quot;1.8.0_202&quot;</span><br><span class="line">Java(TM) SE Runtime Environment (build 1.8.0_202-b08)</span><br><span class="line">Java HotSpot(TM) 64-Bit Server VM (build 25.202-b08, mixed mode)</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="serialold-收集器">SerialOld 收集器</h2>
+<ul>
+<li>Serial收集器的<strong>老年代版本</strong>，是一个<strong>单线程</strong>收集器
+<ol type="1">
+<li>在JDK1.5以及以前的版本中，<strong>与Parallel
+Scavenge收集器搭配</strong>时候</li>
+<li>作为CMS收集器的<strong>后备方案</strong></li>
+</ol></li>
+</ul>
+<h2 id="parallelold-收集器">ParallelOld 收集器</h2>
+<ul>
+<li>Parallel
+Scavenge收集器的老年代版本，使用<strong>多线程</strong>和<strong>标记-整理</strong>算法
+<ol type="1">
+<li>在注重<strong>吞吐量</strong>以及<strong>CPU资源</strong>的场合，都可以考虑<strong>ParallelScavenge</strong>和<strong>ParallelOld</strong>收集器</li>
+</ol></li>
+</ul>
+<h2 id="cms-收集器">CMS 收集器</h2>
+<ul>
+<li><p>CMS，Concurrent Mark
+Sweep，是一种以<strong>获取最短回收停顿时间</strong>为目标的收集器，非常符合<strong>注重用户体验</strong>的引用上使用</p></li>
+<li><p>CMS收集器是HotSpot虚拟机上<strong>第一款</strong>真正意义上的<strong>并发</strong>收集器，第一次实现了<strong>让垃圾收集线程</strong>与<strong>用户线程</strong>（基本上）同时工作</p></li>
+<li><p>Mark-Sweep，是一种“<strong>标记-清除</strong>”算法，运作过程相比前面几种垃圾收集器来说更加复杂，步骤：</p>
+<ol type="1">
+<li><p>初始标记：暂停所有其他线程，<strong>记录直接与root相连的对象</strong>，速度很快</p></li>
+<li><p>并发标记：<strong>同时</strong> 开启GC和用户线程
+，用一个<strong>闭包结构记录可达对象</strong>。但这个阶段结束，这个闭包结构并<strong>不能保证包含当前所有的可达对象</strong>。</p>
+<blockquote>
+<p>因为用户线程会不断更新引用域，所以GC线程<strong>无法保证可达性分析的实时性</strong></p>
+</blockquote>
+<p>所以这个算法里会<strong>跟踪记录</strong>这些发生引用更新的地方</p></li>
+<li><p>重新标记：目的是<strong>修正并发标记期间</strong>因为用户程序继续运行而<strong>导致标记产生变动</strong>的那一部分对象的<strong>标记记录</strong>。</p>
+<blockquote>
+<p>这个阶段<strong>停顿时间</strong>一般会被初始标记阶段<strong>时间稍长</strong>，远远比<strong>并发标记阶段</strong>时间短</p>
+</blockquote></li>
+<li><p>并发清除：<strong>开启用户线程</strong>，同时<strong>GC线程</strong>开始对未扫描的区域做清扫</p></li>
+</ol>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/CMS%25E6%2594%25B6%25E9%259B%2586%25E5%2599%25A8.8a4d0487.png"
+alt="CMS 垃圾收集器" />
+<figcaption aria-hidden="true">CMS 垃圾收集器</figcaption>
+</figure></li>
+<li><p>从名字可以看出这是一款优秀的收集器：<strong>并发收集</strong>、<strong>低停顿</strong>。但有三个明显缺点</p>
+<ol type="1">
+<li><p><strong>对CPU资源敏感</strong></p></li>
+<li><p>无法处理浮动垃圾</p>
+<blockquote>
+<p>浮动垃圾的解释：就是之前被gc 标记为 可达对象，也就是
+存活对象，在两次gc线程之间被业务线程删除了引用，那么颜色不会更改，还是之前的颜色（黑色or灰色），但是其实是白色，所以这一次gc
+无法对其回收，需要等下一次gc初始标记启动才会被刷成白色 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/13864094-053f50032b4cdfad.png"
+alt="img" /></p>
+<p>作者：Yellowtail 链接：https://www.jianshu.com/p/6590aaad82f7
+来源：简书</p>
+</blockquote></li>
+<li><p>它使用的收集算法<strong>“标记-清除”</strong>算法会导致收集结束时会有<strong>大量空间碎片产生</strong></p></li>
+</ol></li>
+</ul>
+<h2 id="g1-收集器">G1 收集器</h2>
+<p>G1(Garbage-First)，是一款<strong>面向服务器</strong>的垃圾收集器，主要针对<strong>配备多颗处理器</strong>以及<strong>大容量内存</strong>的极其，以<strong>极高概率</strong>满足GC停顿时间要求的同时，还具备<strong>高吞吐量性能</strong>特征</p>
+<ul>
+<li><p><strong>JDK1.7</strong>中HotSpot虚拟机的一个<strong>重要进化特征</strong>，具备特点：</p>
+<ol type="1">
+<li><p>并行与并发：</p>
+<blockquote>
+<p>G1 能充分利用 CPU、多核环境下的硬件优势，<strong>使用多个 CPU（CPU
+或者 CPU 核心）来缩短 Stop-The-World
+停顿时间</strong>。部分其他收集器原本需要停顿 Java 线程执行的 GC
+动作，G1 收集器仍然可以通过并发的方式让 java 程序继续执行</p>
+</blockquote></li>
+<li><p>分代收集：</p>
+<blockquote>
+<p>虽然 G1 可以<strong>不需要其他收集器配合</strong>就能独立管理整个 GC
+堆，但是还是保留了分代的概念。</p>
+</blockquote></li>
+<li><p>空间整合：</p>
+<blockquote>
+<p>与 CMS 的“标记-清理”算法不同，G1
+<strong>从整体来看</strong>是基于<strong>“标记-整理”</strong>算法实现的收集器；从<strong>局部</strong>上来看是基于<strong>“标记-复制”</strong>算法实现的。</p>
+</blockquote></li>
+<li><p>可预测的停顿：</p>
+<blockquote>
+<p>这是 G1 相对于 CMS 的另一个大优势，降低停顿时间是 G1 和 CMS
+共同的关注点，但 G1
+除了追求低停顿外，还能建立可预测的停顿时间模型，能<strong>让使用者明确指定在一个长度为
+M 毫秒的时间片段</strong>内。</p>
+</blockquote></li>
+</ol></li>
+<li><p>G1 收集器的运作大致分为以下几个步骤</p>
+<ol type="1">
+<li><strong>初始标记</strong></li>
+<li><strong>并发标记</strong></li>
+<li><strong>最终标记</strong></li>
+<li><strong>筛选回收</strong></li>
+</ol></li>
+<li><p>G1
+收集器在后台<strong>维护了一个优先列表</strong>，每次<strong>根据允许的收集时间</strong>，<strong>优先选择回收价值最大的
+Region</strong>(这也就是它的名字 <strong>Garbage-First 的由来</strong>)
+。这种<strong>使用 Region
+划分内存空间</strong>以及<strong>有优先级的区域回收方式</strong>，，保证了
+G1
+收集器在<strong>有限时间内</strong>可以尽可能高的收集效率（<strong>把内存化整为零</strong>）</p></li>
+</ul>
+<h2 id="zgc-收集器">ZGC 收集器</h2>
+<p><code>The Z Garbage Collector</code></p>
+<p><strong>与 CMS 中的 ParNew 和 G1 类似，ZGC
+也采用标记-复制算法</strong>，不过 ZGC 对该算法做了重大改进。</p>
+<p>在 ZGC 中出现 Stop The World 的情况会更少！</p>
+<p>JDK11，相关文章
+https://tech.meituan.com/2020/08/06/new-zgc-practice-in-meituan.html</p>
 ]]></content>
       <categories>
         <category>学习</category>
@@ -21406,501 +21645,267 @@ reference
       </tags>
   </entry>
   <entry>
-    <title>java垃圾回收器</title>
-    <url>/2022/12/12/review/java_guide/java/jvm/garbage-collection/</url>
+    <title>jvm监控和故障处理工具 总结</title>
+    <url>/2022/12/19/review/java_guide/java/jvm/jdk-monitoring-and-troubleshooting-tools/</url>
     <content><![CDATA[<blockquote>
 <p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!</p>
 </blockquote>
-<h1 id="前言">前言</h1>
-<p>当<strong>需要排查各种内存溢出问题</strong>、当<strong>垃圾收集</strong>成为系统达到更高并发的瓶颈时，我们就需要对这些<strong>“自动化”</strong>的技术实施必要的<strong>监控</strong>和<strong>调节</strong></p>
-<h1 id="堆空间的基本结构">堆空间的基本结构</h1>
+<h1 id="jdk-命令行工具">JDK 命令行工具</h1>
+<p>这些命令在 JDK 安装目录下的 bin 目录下：</p>
 <ul>
-<li><p>Java的<strong>自动内存管理</strong>主要是针对对象内存的<strong>回收</strong>和对象内存的<strong>分配</strong>。且Java自动内存管理最核心的功能是<strong>堆</strong>内存中的对象<strong>分配</strong>和<strong>回收</strong></p></li>
-<li><p>Java堆是垃圾收集器管理的主要区域，因此也被称作<strong>GC堆（Garbage
-Collected Heap）</strong></p></li>
-<li><p>从<strong>垃圾回收的角度</strong>来说，由于现在收集器基本都采用<strong>分代垃圾收集算法</strong>，所以Java堆被划分为了几个不同的区域，这样我们就可以<strong>根据各个区域的特点</strong>选择<strong>合适的垃圾收集算法</strong></p></li>
-<li><p>JDK7版本及JDK7版本之前，堆内存被通常分为下面三部分：</p>
-<ol type="1">
-<li>新生代内存（Young Generation）</li>
-<li>老生代（Old Generation）</li>
-<li>永久代（Permanent Generation）</li>
-</ol></li>
+<li><strong><code>jps</code></strong> (JVM Process Status）: 类似 UNIX
+的 <code>ps</code> 命令。用于查看所有 Java 进程的启动类、传入参数和 Java
+虚拟机参数等信息；</li>
+<li><strong><code>jstat</code></strong>（JVM Statistics Monitoring
+Tool）: 用于收集 HotSpot 虚拟机各方面的运行数据;</li>
+<li><strong><code>jinfo</code></strong> (Configuration Info for Java) :
+Configuration Info for Java,显示虚拟机配置信息;</li>
+<li><strong><code>jmap</code></strong> (Memory Map for Java) :
+生成堆转储快照;</li>
+<li><strong><code>jhat</code></strong> (JVM Heap Dump Browser) :
+用于分析 heapdump 文件，它会建立一个 HTTP/HTML
+服务器，让用户可以在浏览器上查看分析结果;</li>
+<li><strong><code>jstack</code></strong> (Stack Trace for Java) :
+生成虚拟机当前时刻的线程快照，线程快照就是当前虚拟机内每一条线程正在执行的方法堆栈的集合。</li>
 </ul>
+<h2 id="jps-查看所有-java-进程">jps: 查看所有 Java 进程</h2>
+<p><code>jps</code>(JVM Process Status) 命令类似 UNIX 的 <code>ps</code>
+命令。</p>
+<p><code>jps</code>：显示虚拟机执行主类名称以及这些进程的本地虚拟机唯一
+ID（Local Virtual Machine Identifier,LVMID）。<code>jps -q</code>
+：只输出进程的本地虚拟机唯一 ID。</p>
+<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">C:\Users\SnailClimb&gt;jps</span><br><span class="line"><span class="number">7360</span> NettyClient2</span><br><span class="line"><span class="number">17396</span></span><br><span class="line"><span class="number">7972</span> Launcher</span><br><span class="line"><span class="number">16504</span> Jps</span><br><span class="line"><span class="number">17340</span> NettyServer</span><br></pre></td></tr></table></figure>
+<p><code>jps -l</code>:输出主类的全名，如果进程执行的是 Jar 包，输出 Jar
+路径。</p>
+<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">C:\Users\SnailClimb&gt;jps <span class="literal">-l</span></span><br><span class="line"><span class="number">7360</span> firstNettyDemo.NettyClient2</span><br><span class="line"><span class="number">17396</span></span><br><span class="line"><span class="number">7972</span> org.jetbrains.jps.cmdline.Launcher</span><br><span class="line"><span class="number">16492</span> sun.tools.jps.Jps</span><br><span class="line"><span class="number">17340</span> firstNettyDemo.NettyServer</span><br></pre></td></tr></table></figure>
+<p><code>jps -v</code>：输出虚拟机进程启动时 JVM 参数。</p>
+<p><code>jps -m</code>：输出传递给 Java 进程 main() 函数的参数。</p>
+<h2
+id="jstat监视虚拟机各种运行状态信息">jstat：监视虚拟机各种运行状态信息</h2>
+<ul>
+<li><p>jstat ( JVM Statistics Monitoring Tool )
+使用于<strong>监视虚拟机</strong>各种<strong>运行状态信息</strong>的命令行工具。</p>
+<blockquote>
+<p>可以显示<strong>本地</strong>或者<strong>远程（需要远程主机提供RMI支持）</strong>虚拟机进程中的<strong>类信息</strong>、<strong>内存</strong>、<strong>垃圾收集</strong>、<strong>JIT编译</strong>等运行数据，在<strong>没有GUI</strong>，只提供了<strong>纯文本</strong>控制台环境的服务器上，它将是运行期间<strong>定位虚拟机性能问题</strong>的首选工具</p>
+</blockquote></li>
+<li><p>jstat 命令使用格式</p>
+<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">jstat -&lt;option&gt; [-<span class="type">t</span>] [-<span class="type">h</span>&lt;<span class="type">lines</span>&gt;] &lt;vmid&gt; [&lt;<span class="built_in">int</span><span class="type">erval</span>&gt; [&lt;<span class="type">count</span>&gt;]]</span><br></pre></td></tr></table></figure>
+<p>比如 <code>jstat -gc -h3 31736 1000 10</code>表示分析进程 id 为 31736
+的 gc 情况，每隔 1000ms 打印一次记录，打印 10 次停止，每 3
+行后打印指标头部。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">λ jstat -gc -h3 12224 1000 10  </span><br></pre></td></tr></table></figure>
 <figure>
 <img
-src="https://javaguide.cn/assets/hotspot-heap-structure.41533631.png"
-alt="hotspot-heap-structure" />
-<figcaption aria-hidden="true">hotspot-heap-structure</figcaption>
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221219210349920.png"
+alt="image-20221219210349920" />
+<figcaption aria-hidden="true">image-20221219210349920</figcaption>
 </figure>
-<p>JDK8版本之后PermGen（永久）已被Metaspace（元空间）取代，且已经不在堆里面了，元空间使用的是<strong>直接内存</strong>。</p>
-<h1 id="内存分配和回收原则">内存分配和回收原则</h1>
-<h2 id="对象优先在eden区分配">对象优先在Eden区分配</h2>
+<p>常见的option如下 , 下面的vmid，即vm的id （id值）</p>
 <ul>
-<li><p>多数情况下，对象在<strong>新生代中Eden区</strong>分配。当Eden区没有足够空间进行分配时，会触发一次MinorGC
-首先，先添加一下参数打印GC详情：<code>-XX:+PrintGCDetails</code></p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">GCTest</span> &#123;</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">		<span class="type">byte</span>[] allocation1, allocation2;</span><br><span class="line">		allocation1 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">30900</span>*<span class="number">1024</span>];<span class="comment">//会用掉3万多K</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
-<p>运行后的结果（这里应该是配过xms和xmx了，即堆内存大小） <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/28954286.jpg"
-alt="img" />
-如上，<strong>Eden区内存几乎被分配完全</strong>（即使程序什么都不做，新生代也会使用2000多K）</p>
+<li><code>jstat -class vmid</code> ：显示 ClassLoader 的相关信息；</li>
+<li><code>jstat -compiler vmid</code> ：显示 JIT 编译的相关信息；</li>
+<li><code>jstat -gc vmid</code> ：显示与 GC 相关的堆信息；</li>
+<li><code>jstat -gccapacity vmid</code>
+：显示各个代的容量及使用情况；</li>
+<li><code>jstat -gcnew vmid</code> ：显示新生代信息；</li>
+<li><code>jstat -gcnewcapcacity vmid</code>
+：显示新生代大小与使用情况；</li>
+<li><code>jstat -gcold vmid</code>
+：显示老年代和永久代的行为统计，从jdk1.8开始,该选项仅表示老年代，因为永久代被移除了；</li>
+<li><code>jstat -gcoldcapacity vmid</code> ：显示老年代的大小；</li>
+<li><code>jstat -gcpermcapacity vmid</code>
+：显示永久代大小，从jdk1.8开始,该选项不存在了，因为永久代被移除了；</li>
+<li><code>jstat -gcutil vmid</code> ：显示垃圾收集信息</li>
+</ul>
+<p>使用<code>jstat -gcutil -h3 12224 1000 10</code></p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221219210934394.png"
+alt="image-20221219210934394" />
+<figcaption aria-hidden="true">image-20221219210934394</figcaption>
+</figure>
+<p>另外，加上 <code>-t</code>参数可以在输出信息上加一个 Timestamp
+列，显示程序的运行时间。 各个参数的含义<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221219211407363.png"
+alt="image-20221219211407363" /></p></li>
+</ul>
+<h2
+id="jinfo实时地查看和调整虚拟机各项参数">jinfo：实时地查看和调整虚拟机各项参数</h2>
+<p><code>jinfo vmid</code> :输出当前 jvm 进程的全部参数和系统属性
+(第一部分是系统的属性，第二部分是 JVM 的参数)。 如下图： <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221219211745724.png"
+alt="image-20221219211745724" /> <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221219211839945.png"
+alt="image-20221219211839945" /></p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221219211712746.png"
+alt="image-20221219211712746" />
+<figcaption aria-hidden="true">image-20221219211712746</figcaption>
+</figure>
+<ul>
+<li><p><code>jinfo -flag name vmid</code>
+:输出<strong>对应名称</strong>的参数的<strong>具体值</strong>。比如输出
+<strong>MaxHeapSize</strong>、查看当前 jvm 进程<strong>是否开启打印 GC
+日志</strong> ( <code>-XX:PrintGCDetails</code> :详细 GC
+日志模式，这两个都是默认关闭的)。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">C:\Users\SnailClimb&gt;jinfo  -flag MaxHeapSize 17340</span><br><span class="line">-XX:MaxHeapSize=2124414976</span><br><span class="line">C:\Users\SnailClimb&gt;jinfo  -flag PrintGC 17340</span><br><span class="line">-XX:-PrintGC</span><br></pre></td></tr></table></figure></li>
+<li><p>使用 jinfo 可以在不重启虚拟机的情况下，可以动态的修改 jvm
+的参数。尤其在线上的环境特别有用,请看下面的例子： 使用```jinfo -flag
+[+|-]name vmid 开启或者关闭对应名称的参数：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">C:\Users\SnailClimb&gt;jinfo  -flag  PrintGC 17340</span><br><span class="line">-XX:-PrintGC</span><br><span class="line"></span><br><span class="line">C:\Users\SnailClimb&gt;jinfo  -flag  +PrintGC 17340</span><br><span class="line"></span><br><span class="line">C:\Users\SnailClimb&gt;jinfo  -flag  PrintGC 17340</span><br><span class="line">-XX:+PrintGC</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="jmap生成堆转储快照">jmap：生成堆转储快照</h2>
+<ul>
+<li><p><strong>jmap(Memory Map for Java
+)</strong>命令用于生成<strong>堆转储</strong>快照。如果不使用jmap命令，要想获取java<strong>堆转储</strong>，可以使用<code>-XX:+HeapDumpOutOfMemoryError</code>参数，可以让虚拟机在<strong>OOM</strong>异常出现<strong>之后</strong>，自动生成dump文件，Linux命令下通过<code>kill -3</code>发送进程推出信号也能拿到dump文件</p></li>
+<li><p><code>jmap</code> 的作用并不仅仅是为了<strong>获取 dump</strong>
+文件，它还可以<strong>查询 finalizer 执行队列</strong>、<strong>Java
+堆</strong>和<strong>永久代</strong>的详细信息，如<strong>空间使用率</strong>、当前使用的是<strong>哪种收集器</strong>等。和<code>jinfo</code>一样，<code>jmap</code>有不少功能在
+Windows 平台下也是受限制的。</p></li>
+<li><p>将指定应用程序的<strong>堆
+快照</strong>输出到桌面，后面可以通过<strong>jhat</strong>、<strong>Visual
+VM</strong>等工具分析该堆文件</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">C:\Users\SnailClimb&gt;jmap -dump:format=b,file=C:\Users\SnailClimb\Desktop\heap.hprof <span class="number">17340</span></span><br><span class="line">Dumping heap to C:\Users\SnailClimb\Desktop\heap.hprof ...</span><br><span class="line">Heap dump file created</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="jhat分析heapdump文件">jhat：分析heapdump文件</h2>
+<p><strong><code>jhat</code></strong> 用于分析 heapdump
+文件，它会建立一个 HTTP/HTML
+服务器，让用户可以在浏览器上查看分析结果。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">C:\Users\SnailClimb&gt;jhat C:\Users\SnailClimb\Desktop\heap.hprof</span><br><span class="line">Reading from C:\Users\SnailClimb\Desktop\heap.hprof...</span><br><span class="line">Dump file created Sat May 04 12:30:31 CST 2019</span><br><span class="line">Snapshot read, resolving...</span><br><span class="line">Resolving 131419 objects...</span><br><span class="line">Chasing references, expect 26 dots..........................</span><br><span class="line">Eliminating duplicate references..........................</span><br><span class="line">Snapshot resolved.</span><br><span class="line">Started HTTP server on port 7000</span><br><span class="line">Server is ready. </span><br></pre></td></tr></table></figure>
+<p>之后访问 http://localhost:7000/ 即可，如下： 进入/histo
+会发现，有这个东西 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221220094041210.png"
+alt="image-20221220094041210" />
+这个对象创建了9次，因为我是在第9次循环后dump堆快照的</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//测试代码如下</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyMain</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">byte</span>[] x = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">10</span> * <span class="number">1024</span> * <span class="number">1024</span>];<span class="comment">//10M</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;开始循环--&quot;</span>);</span><br><span class="line">        <span class="type">int</span> i=<span class="number">0</span>;</span><br><span class="line">        <span class="keyword">while</span> (++i&gt;<span class="number">0</span>) &#123;</span><br><span class="line">            String a=<span class="keyword">new</span> <span class="title class_">Date</span>().toString();</span><br><span class="line">            <span class="type">MyMain</span> <span class="variable">myMain</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">MyMain</span>();</span><br><span class="line">            System.out.println(i+<span class="string">&quot;循环中---&quot;</span> + <span class="keyword">new</span> <span class="title class_">Date</span>());</span><br><span class="line">            TimeUnit.SECONDS.sleep(<span class="number">10</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="jstack-生成虚拟机当前时刻的线程快照">jstack：
+生成虚拟机当前时刻的线程快照</h2>
+<ul>
+<li><p><strong>jstack (Stack Trace for Java )</strong>
+命令用于生成<strong>虚拟机当前时刻</strong>的<strong>线程快照</strong>。线程快照就是当前虚拟机内<strong>每一条线程正在执行</strong>的<strong>方法堆栈</strong>的集合</p></li>
+<li><p>生成线程快照的目的主要是<strong>定位线程长时间出现停顿的原因</strong>，如<strong>线程间死锁</strong>、<strong>死循环</strong>、<strong>请求外部资源导致的长时间等待</strong>等都是导致线程长时间停顿的原因。<strong>线程出现停顿</strong>的时候<strong>通过<code>jstack</code>来查看各个线程的调用堆栈</strong>，就可以知道没有响应的线程到底在后台做些什么事情，或者在等待些什么资源。</p></li>
+<li><p>线程死锁的代码，通过<strong>jstack</strong>
+命令进行<strong>死锁检查</strong>，输出<strong>死锁信息</strong>，找到<strong>发生死锁的线程</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> com.jvm;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">DeadLockDemo</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="type">Object</span> <span class="variable">resource1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Object</span>();<span class="comment">//资源 1</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="type">Object</span> <span class="variable">resource2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Object</span>();<span class="comment">//资源 2</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">            <span class="keyword">synchronized</span> (resource1) &#123;</span><br><span class="line">                System.out.println(Thread.currentThread() + <span class="string">&quot;get resource1&quot;</span>);</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    Thread.sleep(<span class="number">1000</span>);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125;</span><br><span class="line">                System.out.println(Thread.currentThread() + <span class="string">&quot;waiting get resource2&quot;</span>);</span><br><span class="line">                <span class="keyword">synchronized</span> (resource2) &#123;</span><br><span class="line">                    System.out.println(Thread.currentThread() + <span class="string">&quot;get resource2&quot;</span>);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;, <span class="string">&quot;线程 1&quot;</span>).start();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">            <span class="keyword">synchronized</span> (resource2) &#123;</span><br><span class="line">                System.out.println(Thread.currentThread() + <span class="string">&quot;get resource2&quot;</span>);</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    Thread.sleep(<span class="number">1000</span>);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125;</span><br><span class="line">                System.out.println(Thread.currentThread() + <span class="string">&quot;waiting get resource1&quot;</span>);</span><br><span class="line">                <span class="keyword">synchronized</span> (resource1) &#123;</span><br><span class="line">                    System.out.println(Thread.currentThread() + <span class="string">&quot;get resource1&quot;</span>);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;, <span class="string">&quot;线程 2&quot;</span>).start();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*------</span></span><br><span class="line"><span class="comment">Thread[线程 1,5,main]get resource1</span></span><br><span class="line"><span class="comment">Thread[线程 2,5,main]get resource2</span></span><br><span class="line"><span class="comment">Thread[线程 2,5,main]waiting get resource1</span></span><br><span class="line"><span class="comment">Thread[线程 1,5,main]waiting get resource2</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure></li>
+<li><p>分析 线程 A 通过 synchronized (resource1) 获得 resource1
+的监视器锁，然后通过<code>Thread.sleep(1000);</code>让线程 A 休眠 1s
+为的是让线程 B 得到执行然后获取到 resource2 的监视器锁。线程 A 和线程 B
+休眠结束了都开始企图请求获取对方的资源，然后这两个线程就会陷入互相等待的状态，这也就产生了死锁。</p></li>
+<li><p>通过jstack 命令分析</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">先使用jps 找到思索地那个类</span></span><br><span class="line">C:\Users\SnailClimb&gt;jps</span><br><span class="line">13792 KotlinCompileDaemon</span><br><span class="line">7360 NettyClient2</span><br><span class="line">17396</span><br><span class="line">7972 Launcher</span><br><span class="line">8932 Launcher</span><br><span class="line">9256 DeadLockDemo</span><br><span class="line">10764 Jps</span><br><span class="line">17340 NettyServer</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment"># 然后使用jstack命令分析</span></span></span><br><span class="line">C:\Users\SnailClimb&gt;jstack 9256 </span><br></pre></td></tr></table></figure>
+<p>输出的部分如下</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">Found one Java-level deadlock:</span><br><span class="line">=============================</span><br><span class="line">&quot;线程 2&quot;:</span><br><span class="line">  waiting to lock monitor 0x000000000333e668 (object 0x00000000d5efe1c0, a java.lang.Object),</span><br><span class="line">  which is held by &quot;线程 1&quot;</span><br><span class="line">&quot;线程 1&quot;:</span><br><span class="line">  waiting to lock monitor 0x000000000333be88 (object 0x00000000d5efe1d0, a java.lang.Object),</span><br><span class="line">  which is held by &quot;线程 2&quot;</span><br><span class="line"></span><br><span class="line">Java stack information for the threads listed above:</span><br><span class="line">===================================================</span><br><span class="line">&quot;线程 2&quot;:</span><br><span class="line">        at DeadLockDemo.lambda$main$1(DeadLockDemo.java:31)</span><br><span class="line">        - waiting to lock &lt;0x00000000d5efe1c0&gt; (a java.lang.Object)</span><br><span class="line">        - locked &lt;0x00000000d5efe1d0&gt; (a java.lang.Object)</span><br><span class="line">        at DeadLockDemo$$Lambda$2/1078694789.run(Unknown Source)</span><br><span class="line">        at java.lang.Thread.run(Thread.java:748)</span><br><span class="line">&quot;线程 1&quot;:</span><br><span class="line">        at DeadLockDemo.lambda$main$0(DeadLockDemo.java:16)</span><br><span class="line">        - waiting to lock &lt;0x00000000d5efe1d0&gt; (a java.lang.Object)</span><br><span class="line">        - locked &lt;0x00000000d5efe1c0&gt; (a java.lang.Object)</span><br><span class="line">        at DeadLockDemo$$Lambda$1/1324119927.run(Unknown Source)</span><br><span class="line">        at java.lang.Thread.run(Thread.java:748)</span><br><span class="line"></span><br><span class="line">Found 1 deadlock.</span><br></pre></td></tr></table></figure>
+<p>找到了发生死锁的线程的具体信息</p></li>
+</ul>
+<h1 id="jdk可视化分析工具">JDK可视化分析工具</h1>
+<h2
+id="jconsolejava监视与管理控制台">JConsole：Java监视与管理控制台</h2>
+<p>JConsole 是<strong>基于 JMX
+的可视化监视</strong>、<strong>管理工具</strong>。可以很方便的<strong>监视本地及远程服务器的
+java
+进程的内存使用情况</strong>。你可以在控制台输出<strong><code>console</code></strong>命令启动或者在
+JDK 目录下的 bin
+目录<strong>找到<code>jconsole.exe</code>然后双击启动</strong>. <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1JConsole%25E8%25BF%259E%25E6%258E%25A5.7490f097.png"
+alt="连接 Jconsole" /></p>
+<p>对于远程连接</p>
+<ol type="1">
+<li><p>在启动方</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">-Djava.rmi.server.hostname=外网访问 ip 地址 </span><br><span class="line">-Dcom.sun.management.jmxremote.port=60001   //监控的端口号</span><br><span class="line">-Dcom.sun.management.jmxremote.authenticate=false   //关闭认证</span><br><span class="line">-Dcom.sun.management.jmxremote.ssl=false </span><br></pre></td></tr></table></figure>
+<p>实例：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">java -Djava.rmi.server.hostname=192.168.200.200  -Dcom.sun.management.jmxremote  -Dcom.sun.management.jmxremote.port=60001  -Dcom.sun.management.jmxremote.ssl=false  -Dcom.sun.management.jmxremote.authenticate=false  com.jvm.DeadLockDemo</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">其中 192.168.200.200 为启动该类的机器的ip，而不是谁要连接</span> </span><br></pre></td></tr></table></figure>
+<p>在使用 JConsole 连接时，远程进程地址如下：</p>
 <blockquote>
-<p>注： PSYoungGen 为 38400K ，= 33280K + 5120K
-（Survivor区总会有一个是空的，所以只加了一个5120K ）</p>
-</blockquote>
-<p>假如我们再为allocation2分配内存会怎么样(不处理的话，年轻代会溢出)</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">allocation2 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">900</span> * <span class="number">1024</span>];</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">外网访问 ip 地址:60001</span><br></pre></td></tr></table></figure>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221220103410971.png"
+alt="image-20221220103410971" />
+<figcaption aria-hidden="true">image-20221220103410971</figcaption>
+</figure>
+</blockquote></li>
+<li><p>注意，虚拟机中（这里ip
+xxx.200是虚拟机ip），需要开放的端口不只是60001，还要通过
+<code>netstat -nltp</code>开放另外两个端口 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221220104157529.png"
+alt="image-20221220104157529" /> centos中使用</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">firewall-cmd --zone=public --add-port=45443/tcp --permanent</span><br><span class="line">firewall-cmd --zone=public --add-port=36521/tcp --permanent</span><br><span class="line">firewall-cmd --zone=public --add-port=60001/tcp --permanent</span><br><span class="line">firewall-cmd --reload #重启firewall</span><br></pre></td></tr></table></figure>
+<p>之后才能连接上</p>
 <p><img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/28128785.jpg"
-alt="img" />
-在给allocation2分配内存之前，Eden区内存几乎已经被分配完。所以当<strong>Eden区没有足够空间进行分配时</strong>，虚拟机将发起一次MinorGC。GC期间虚拟机又发现<strong>allocation1无法存入空间</strong>，所以只好通过<strong>分配担保机制</strong>，把<strong>新生代的对象</strong>，<strong>提前转移到老年代</strong>去，老年代的空间足够存放allocation1，<strong>所以不会出现Full
-GC（这里可能是之前的说法，可能只是要表达老年代的GC，而不是Full
-GC(整堆GC) ）</strong>　　</p>
-<p>执行MinorGC后，<strong>后面分配的对象如果能够存在Eden区</strong>的话，还是会在Eden区分配内存<br />
-执行如下代码验证：</p></li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">GCTest</span> &#123;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">		<span class="type">byte</span>[] allocation1, allocation2,allocation3,allocation4,allocation5;</span><br><span class="line">		allocation1 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">32000</span>*<span class="number">1024</span>];</span><br><span class="line">		allocation2 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">1000</span>*<span class="number">1024</span>];</span><br><span class="line">		allocation3 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">1000</span>*<span class="number">1024</span>];</span><br><span class="line">		allocation4 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">1000</span>*<span class="number">1024</span>];</span><br><span class="line">		allocation5 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">1000</span>*<span class="number">1024</span>];</span><br><span class="line">	&#125;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
-<h2 id="大对象直接进入老年代">大对象直接进入老年代</h2>
-<ul>
-<li>大对象就是需要连续空间的对象（<strong>字符串</strong>、<strong>数组</strong>等）</li>
-<li>大对象直接进入老年代，主要是为了避免为<strong>大对象分配内存时</strong>，由于<strong>分配担保机制(这好像跟分配担保机制没有太大关系)</strong>带来的复制而<strong>降低效率</strong>。</li>
-</ul>
-<blockquote>
-<ul>
-<li><p>假设大对象最后会晋升老年代，而新生代是基于复制算法来回收垃圾的，由两个Survivor区域配合完成复制算法，如果新生代中出现大对象且能屡次躲过GC，那这个对象就会在两个Survivor区域中来回复制，直至最后升入老年代，而大对象在内存里来回复制移动，就会消耗更多的时间。</p></li>
-<li><p>假设大对象最后不会晋升老年代，新生代空间是有限的，在新生代里的对象大部分都是朝生夕死的，如果让一个大对象占据了新生代空间，那么相比起正常的对象被分配在新生代，大对象无疑会让新生代GC提早发生，因为内存空间会更快不够用，如果这个大对象因为业务原因，并不会马上被GC回收，那么这个对象就会进入到Survivor区域，默认情况下，Survivor区域本来就不会被分配的很大，那此时被大对象占据了大部分空间，很可能会导致之后的新生代GC后，存活下来的对象，Survivor区域空间不够放不下，导致大部分对象进入老年代，这就加快了老年代GC发生的时间，而老年代GC对系统性能的负面影响则远远大于新生代GC了。</p></li>
-</ul>
-</blockquote>
-<h2 id="长期存活的对象进入老年代">长期存活的对象进入老年代</h2>
-<ul>
-<li><p>内存回收时必须能够识别，哪些对象放在新生代，哪些对象放在老年代---&gt;
-因此，虚拟机给每个对象一个<strong>对象年龄（Age）</strong>计数器</p></li>
-<li><p><流程> :
-大部分情况下，对象都会<strong>首先在Eden区域</strong>分配。如果对象在Eden出生并经过<strong>第一次MinorGC后</strong>仍然能够存活，并且<strong>能</strong>被Survivor容纳的话，将被移动到Survivor空间（S0或S1）中，并将对象年龄设为<strong>1</strong>(<strong>Eden区
---&gt; Survivor区后</strong>对象初始年龄变为1 )</p>
-<ul>
-<li>后续，对象在<strong>Survivor区</strong>中每熬过一次MinorGC，<strong>年龄就增加1岁</strong>，当年龄增加到一定程序（<strong>默认为15岁</strong>），就会被晋升到老年代中。对象晋升到老年代的年龄<strong>阈值</strong>，可以通过参数<strong><code>-XX:MaxTenuringThreshold</code></strong>来设置</li>
-<li><strong>★★修正：</strong> “Hotspot
-遍历所有对象时，按照年龄<strong>从小到大</strong>对其所<strong>占用的大小进行累积</strong>，当<strong>累积的某个年龄大小超过了
-survivor 区的 50%</strong> 时（默认值是 50%，可以通过
-<code>-XX:TargetSurvivorRatio=percent</code> 来设置，参见 <a
-href="https://github.com/Snailclimb/JavaGuide/issues/1199">issue1199open
-in new window</a> ），取<strong>这个年龄</strong>和
-<strong>MaxTenuringThreshold
-中更小的一个值</strong>，作为新的晋升年龄阈值”。</li>
-</ul>
-<p>动态年龄计算的代码：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">uint ageTable::compute_tenuring_threshold(size_t survivor_capacity) &#123;</span><br><span class="line"><span class="comment">//survivor_capacity是survivor空间的大小</span></span><br><span class="line"><span class="type">size_t</span> <span class="variable">desired_survivor_size</span> <span class="operator">=</span> (size_t)((((<span class="type">double</span>)survivor_capacity)*TargetSurvivorRatio)/<span class="number">100</span>);</span><br><span class="line"><span class="type">size_t</span> <span class="variable">total</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line"><span class="type">uint</span> <span class="variable">age</span> <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line"><span class="keyword">while</span> (age &lt; table_size) &#123;</span><br><span class="line"><span class="comment">//sizes数组是每个年龄段对象大小</span></span><br><span class="line">total += sizes[age];</span><br><span class="line"><span class="keyword">if</span> (total &gt; desired_survivor_size) &#123;</span><br><span class="line"><span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br><span class="line">age++; <span class="comment">//注意这里，age是递增的，最终是去某个值，而不是区间的值计算</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="type">uint</span> <span class="variable">result</span> <span class="operator">=</span> age &lt; MaxTenuringThreshold ? age : MaxTenuringThreshold;</span><br><span class="line">...</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>例子：
-如<strong>对象年龄5的占30%，年龄6的占36%，年龄7的占34%，加入某个年龄段（如例子中的年龄6）</strong>后，总占用超过Survivor空间*TargetSurvivorRatio的时候，从该年龄段开始及大于的年龄对象就要进入老年代（即例子中的年龄6对象，就是年龄6和年龄7晋升到老年代），这时候无需等到MaxTenuringThreshold中要求的15</p>
-<blockquote>
-<p><strong>关于默认的晋升年龄是 15，这个说法的来源大部分都是《深入理解
-Java 虚拟机》这本书。</strong> 如果你去 Oracle 的官网阅读<a
-href="https://docs.oracle.com/javase/8/docs/technotes/tools/unix/java.html">相关的虚拟机参数open
-in new
-window</a>，你会发现<code>-XX:MaxTenuringThreshold=threshold</code>这里有个说明</p>
-<p><strong>Sets the maximum tenuring threshold for use in adaptive GC
-sizing. The largest value is 15. The default value is 15 for the
-parallel (throughput) collector, and 6 for the CMS
-collector.默认晋升年龄并不都是 15，这个是要区分垃圾收集器的，CMS 就是
-6.</strong></p>
-</blockquote>
-</blockquote></li>
-</ul>
-<h2 id="主要进行gc的区域">主要进行gc的区域</h2>
-<p>如图：（太长跳过了，直接看下面的总结）<br />
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/rf-hotspot-vm-gc.69291e6e.png"
-alt="img" /></p>
-<p>总结：<br />
-针对HotSpotVM的实现，它里面的GC准确分类只有两大种：</p>
-<ol type="1">
-<li>部分收集（Partial GC）
-<ul>
-<li>新生代收集（Minor GC/ Young GC
-）：只对<strong>新生代</strong>进行垃圾收集</li>
-<li>老年代（Major GC / Old GC
-)：只对<strong>老年代</strong>进行垃圾收集。★★：注意，MajorGC在有的语境中也用于指代<strong>整堆收集</strong></li>
-<li>混合收集（Mixed
-GC）：对<strong>整个新生代</strong>和<strong>部分老年代</strong>进行垃圾收集</li>
-</ul></li>
-<li>整堆收集（Full GC）：收集整个Java堆和方法区</li>
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221220104326724.png"
+alt="image-20221220104326724" /> <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/2%25E6%259F%25A5%25E7%259C%258BJava%25E7%25A8%258B%25E5%25BA%258F%25E6%25A6%2582%25E5%2586%25B5.9c949b67.png"
+alt="查看 Java 程序概况" /></p></li>
 </ol>
-<h2 id="空间分配担保">空间分配担保</h2>
-<ul>
-<li><p>为了确保在<strong>MinorGC</strong>之前老年代本身还有容纳<strong>新生代所有对象</strong>的剩余空间</p></li>
-<li><p>《深入理解Java虚拟机》第三章对于空间分配担保的描述如下：</p>
+<h3 id="内存监控">内存监控</h3>
+<p>JConsole
+可以显示<strong>当前内存的详细信息</strong>。不仅包括<strong>堆内存/非堆内存</strong>的整体信息，还可以细化到
+<strong>eden 区</strong>、<strong>survivor
+区</strong>等的使用情况，如下图所示。</p>
+<p>点击右边的“执行 GC(G)”按钮可以强制应用程序执行一个 Full GC。</p>
 <blockquote>
-<p>JDK 6 Update 24 之前，在发生 Minor GC
-之前，虚拟机必须先检查老年代最大可用的连续空间是否大于新生代所有对象总空间，如果这个条件成立，那这一次
-Minor GC 可以确保是安全的。如果不成立，则虚拟机会先查看
--XX:HandlePromotionFailure 参数的设置值是否允许担保失败(Handle Promotion
-Failure);如果允许，那会继续检查老年代最大可用的连续空间是否大于历次晋升到老年代对象的平均大小，如果大于，将尝试进行一次
-Minor GC，尽管这次 Minor GC 是有风险的;如果小于，或者 -XX:
-HandlePromotionFailure 设置不允许冒险，那这时就要改为进行一次 Full
-GC。</p>
-<p><strong>JDK6
-Update24</strong>之后，规则变为<strong>只要老年代的连续空间</strong>大于<strong>新生代对象总大小</strong>，或者<strong>历次晋升的平均大小</strong>，就会进行<strong>MinorGC</strong>，否则将进行<strong>Full
-GC</strong></p>
-</blockquote></li>
-</ul>
-<h1 id="死亡对象判断方法">死亡对象判断方法</h1>
-<p><strong>堆</strong>中<strong>几乎放着所有的对象实例</strong>，对堆垃圾回收前的第一步就是要<strong>判断哪些对象已经死亡</strong>（即不能再被<strong>任何途径使用</strong>的对象）</p>
-<h2 id="引用计数法">引用计数法</h2>
-<ul>
-<li><p>给对象中添加一个<strong>引用计数器</strong></p>
-<ul>
-<li>每当有一个地方引用它，<strong>计数器就加1</strong></li>
-<li>当引用失效，<strong>计数器就减1</strong></li>
-<li>任何时候<strong>计数器为0的对象</strong>就是<strong>不可能再被使用</strong>的</li>
-</ul></li>
-<li><p>这个方法实现<strong>简单，效率高</strong>，但是目前主流的虚拟机中并没有选择这个算法来管理内存，其最主要的原因是它<strong>很难解决对象之间相互循环引用</strong>的问题。</p></li>
-</ul>
-<blockquote>
-<p>除了对象 <code>objA</code> 和 <code>objB</code>
-相互引用着对方之外，这两个对象之间再无任何引用。但是他们因为互相引用对方，导致它们的引用计数器都不为
-0，于是引用计数算法无法通知 GC 回收器回收他们</p>
+<p><strong>新生代 GC（Minor
+GC）</strong>:指发生新生代的的垃圾收集动作，Minor GC
+非常频繁，回收速度一般也比较快。</p>
+<p><strong>老年代 GC（Major GC/Full GC）</strong>:指发生在老年代的
+GC，出现了 Major GC 经常会伴随至少一次的 Minor GC（并非绝对），Major GC
+的速度一般会比 Minor GC 的慢 10 倍以上。</p>
 </blockquote>
-<p>★其实我觉得只跟相互有关，跟是不是<strong>循环</strong>关系不会太大</p>
-<p><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ReferenceCountingGc</span> &#123;</span><br><span class="line">    <span class="type">Object</span> <span class="variable">instance</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">ReferenceCountingGc</span> <span class="variable">objA</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ReferenceCountingGc</span>();</span><br><span class="line">        <span class="type">ReferenceCountingGc</span> <span class="variable">objB</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ReferenceCountingGc</span>();</span><br><span class="line">        objA.instance = objB;</span><br><span class="line">        objB.instance = objA;</span><br><span class="line">        objA = <span class="literal">null</span>;</span><br><span class="line">        objB = <span class="literal">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure></p>
-<h2 id="可达性分析算法">可达性分析算法</h2>
-<ul>
-<li><p>该算法的基本思想就是通过一系列称为<strong>“GC
-Roots"</strong>的对象作为起点，从这些节点开始<strong>向下搜索</strong>，节点所走过的<strong>路径</strong>
-称为<strong>引用链</strong>，当一个对象到GC
-Roots<strong>没有任何引用链</strong>相连的话，证明该对象不可用，需要<strong>被回收</strong>
-下图中由于Object 6 ~ Object
-10之间有引用关系，但它们到GC不可达，所以需要被回收 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/jvm-gc-roots.d187e957.png"
-alt="可达性分析算法" /></p></li>
-<li><p>哪些对象可以作为GC Roots呢</p>
-<ol type="1">
-<li>虚拟机栈（栈帧中的<strong>本地变量表</strong>）中引用的对象</li>
-<li>本地方法栈（<strong>Native方法</strong>）中引用的对象</li>
-<li>方法区中<strong>类静态属性</strong>引用的对象</li>
-<li>方法区中<strong>常量</strong>引用的变量</li>
-<li>所有被<strong>同步锁持有的对象</strong></li>
-</ol></li>
-<li><p>对象可以被回收，就代码一定会被回收吗
-即使在可达性分析法中不可达的对象，也并非是“非死不可”的，这时候它们<strong>暂时处于“缓刑阶段”</strong>，要真正宣告一个对象死亡，至少要经历两次标记过程：</p>
-<ol type="1">
-<li><p>可达性分析中<strong>不可达的对象被第一次标记</strong>并且进行<strong>一次筛选</strong>：筛选的条件是此对象是否有必要执行finalize方法（有必要则放入）<br />
-当对象<strong>没有覆盖finalize</strong>方法，或<strong>finalize方法已经被虚拟机调用</strong>过，则虚拟机将两种情况视为<strong>没有必要</strong>执行，该对象会被<strong>直接回收</strong></p></li>
-<li><p>如果这个对象被判定为<strong>有必要执行finalize()</strong>方法，那么这个对象将会被<strong>放置在一个叫做F-Queue的队列</strong>中，然后由Finalizer线程去执行。GC将会<strong>对F-Queue中的对象进行第二次标记</strong>，如果对象<strong>在finalize()方法中重新与引用链上的任何一个对象建立关联</strong>，那么在<strong>第二次标记时将会被移除“即将回收”的集合</strong>，否则该对象将会被回收。</p>
-<p>（比如：把自己（this关键字）赋值给某个类变量(static修饰)或者对象的成员变量）</p></li>
-</ol>
-<blockquote>
-<p><code>Object</code> 类中的 <code>finalize</code>
-方法一直被认为是一个糟糕的设计，成为了 Java 语言的负担，影响了 Java
-语言的安全和 GC 的性能。JDK9 版本及后续版本中各个类中的
-<code>finalize</code> 方法会被逐渐弃用移除。忘掉它的存在吧！</p>
-</blockquote></li>
-</ul>
-<h2 id="引用类型总结">引用类型总结</h2>
-<ul>
-<li>不论是通过<strong>引用计数法</strong>判断对象引用数量，还是通过<strong>可达性分析法</strong>判断对象的引用链是否可达，判定对象的存活都与<strong>”引用“</strong>有关</li>
-<li>JDK1.2
-之前，Java中<strong>引用</strong>的定义很传统：如果<strong>reference类型的数据存储</strong>的数值代表的是<strong>另一块内存的起始地址</strong>，就称这块内存代表<strong>一个引用</strong></li>
-<li>JDK1.2
-之后，Java对引用的概念进行了扩充，将引用(具体)分为<strong>强引用</strong>、<strong>软引用</strong>、<strong>弱引用</strong>、<strong>虚引用</strong>四种（引用强度<strong>逐渐减弱</strong>）
-<ol type="1">
-<li><p><strong>强引用</strong>（Strong Reference）</p>
-<blockquote>
-<ul>
-<li>大部分引用实际上是<strong>强引用</strong>。如果对象具有强引用，那么类似于生活中<strong>必不可少</strong>，垃圾回收器<strong>绝不会回收</strong>它</li>
-<li>内存空间不足时，宁愿抛出<strong>OutOfMemoryErro</strong>错误，使程序异常终止，也不会回收<strong>强引用</strong>对象解决<strong>对象内存不足</strong></li>
-</ul>
-</blockquote></li>
-<li><p><strong>软引用</strong>（SoftReference）</p>
-<blockquote>
-<ul>
-<li>如果对象<strong>只</strong>具有软引用，那就类似<strong>可有可无</strong>的生活用品。</li>
-<li>内存够则不会回收；内存不足则回收这些对象。只要垃圾回收器没有回收，那么对象就可以<strong>被程序使用</strong>。</li>
-<li>软引用可用来实现<strong>内存敏感</strong>的高速缓存</li>
-<li>软引用可以和一个<strong>引用队列（ReferenceQueue）</strong>联合使用，如果软引用所引用的对象被垃圾回收，Java虚拟机就会把这个软引用加入到<strong>与之关联</strong>的引用队列中</li>
-</ul>
-</blockquote></li>
-<li><p><strong>弱引用</strong>（WeakReference）</p>
-<blockquote>
-<ul>
-<li>如果对象<strong>只</strong>具有弱引用，则类似于<strong>可有可无</strong>的生活用品</li>
-<li>弱引用和软引用的区别：只具有弱引用的对象拥有<strong>更短暂</strong>的生命周期</li>
-<li>垃圾回收器线程<strong>扫描</strong>它所管辖的内存区域的<strong>过程中</strong>，一旦发现只具有<strong>弱引用</strong>的对象，不管当前内存<strong>足够与否</strong>，都会回收它的内存。不过垃圾回收器是一个<strong>优先级很低</strong>的线程，因此不一定会很快发现那些<strong>只具有弱引用</strong>的对象</li>
-<li>弱引用可以和一个<strong>引用队列（ReferenceQueue）</strong>联合使用，如果<strong>弱引用所引用的对象</strong>被垃圾回收，Java虚拟机就会把这个弱引用<strong>加入到与之关联的引用队列</strong>中</li>
-</ul>
-</blockquote></li>
-<li><p><strong>虚引用</strong>（PhantomReference）</p>
-<blockquote>
-<p>与其他引用不同，<strong>虚引用并不会决定对象声明周期</strong>。如果一个<strong>仅持有</strong>虚拟引用，那么它就跟<strong>没有任何</strong>引用一样，在任何时候都可能被垃圾回收</p>
-</blockquote>
-<p>虚引用主要用来<strong>跟踪对象被垃圾回收的活动</strong></p></li>
-<li><p>虚引用、软引用和弱引用的区别：<strong>虚引用必须和引用队列（ReferenceQueue）联合使用</strong>。</p>
-<ul>
-<li>当垃圾回收器<strong>准备回收</strong>一个对象时，如果发现它还有虚引用，就会在回收对象的内存<strong>之前</strong>，把这个虚引用加入到<strong>与之关联</strong>的引用队列。</li>
-<li>程序可以通过<strong>判断引用队列是否加入虚引用</strong>，来了解被引用的对象是否<strong>将</strong>被垃圾回收</li>
-<li>如果发现某个虚引用已经被加入到引用队列，那么就可以在所引用的对象<strong>被回收之前</strong>采取必要的行动</li>
-</ul></li>
-<li><p>在程序设计中一般很少使用弱引用与虚引用，使用软引用的情况较多，这是因为<strong>软引用可以加速
-JVM
-对垃圾内存的回收速度，可以维护系统的运行安全，防止内存溢出（OutOfMemory）等问题的产生</strong></p></li>
-</ol></li>
-</ul>
-<h2 id="如何判断一个常量是废弃常量">如何判断一个常量是废弃常量</h2>
-<p>运行时常量池主要是回收<strong>废弃的常量</strong></p>
-<blockquote>
-<ol type="1">
-<li>JDK1.7
-之前，<strong>运行时常量池逻辑</strong>，包括字符串常量池，存放在<strong>方法区</strong>，此时hotspot虚拟机对<strong>方法区</strong>的实现为<strong>永久代</strong></li>
-<li>JDK1.7字符串常量池被<strong>从方法区</strong>拿到了<strong>堆</strong>中，这里没有提到运行时常量池，也就是说<strong>字符串常量池</strong>被单独拿到堆，运行时常量池剩下的东西，<strong>还在方法区</strong>。即hotspot中的<strong>永久代</strong></li>
-<li>JDK1.8
-hotspot移除了永久代，用<strong>元空间Metaspace</strong>取代之，这时候<strong>字符串常量池</strong>还在堆，<strong>运行时常量池</strong>还在方法区，只不过<strong>方法区的实现</strong>从永久代变成了<strong>元空间Metaspace</strong></li>
-</ol>
-</blockquote>
-<p>★★
-假如<strong>字符串常量池</strong>存在字符串“abc”，如果当前没有任何String对象<strong>引用该字符串常量</strong>的话，就说明常量“abc”是废弃常量。如果这时发生内存回收并且<strong>有必要</strong>的话，“abc”就会被系统<strong>清理出</strong>常量池</p>
-<h2 id="如何判断一个类是无用类">如何判断一个类是无用类</h2>
-<ul>
-<li><p><strong>方法区</strong>主要回收<strong>无用的类</strong>，判断一个类是否是<strong>无用的类</strong>相对苛刻，需要同时满足下面<strong>条件</strong></p>
-<ul>
-<li>该类所有实例都已经被回收，即<strong>Java堆中不存在该类的任何实例</strong></li>
-<li>加载该类的<strong>ClassLoader</strong>已经被回收</li>
-<li>该类对应的<strong>java.lang.Class</strong>对象没有在任何地方被引用，<strong>无法</strong>在任何地方<strong>通过反射</strong>访问该类方法</li>
-</ul>
-<p>Java虚拟机<strong>可以</strong>对<strong>满足上述3个条件</strong>的无用类进行回收，是<strong>“可以”</strong>，而<strong>不是必然</strong></p></li>
-</ul>
-<h1 id="垃圾收集算法">垃圾收集算法</h1>
-<h2 id="标记-清除算法">标记-清除算法</h2>
-<p>该算法分为<strong>“标记”</strong>和<strong>“清除”</strong>阶段：<br />
-标记出所有<strong>不需要回收的对象</strong>，在标记完成后<strong>统一回收掉所有没有被标记</strong>的对象</p>
-<p>这是<strong>最基础</strong>的<strong>收集算法</strong>，后续的算法都是对其不足进行改进得到，有两个明显问题：</p>
-<ol type="1">
-<li><strong>效率问题</strong></li>
-<li><strong>空间问题</strong>（标记清除后会产生<strong>大量不连续碎片</strong>）</li>
-</ol>
 <figure>
 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/%25E6%25A0%2587%25E8%25AE%25B0-%25E6%25B8%2585%25E9%2599%25A4%25E7%25AE%2597%25E6%25B3%2595.c1fbd0fe.jpeg"
-alt="img" />
-<figcaption aria-hidden="true">img</figcaption>
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/3%25E5%2586%2585%25E5%25AD%2598%25E7%259B%2591%25E6%258E%25A7.4f4b8a7f.png"
+alt="内存监控" />
+<figcaption aria-hidden="true">内存监控</figcaption>
 </figure>
-<h2 id="标记-复制算法">标记-复制算法</h2>
-<ul>
-<li>将内存分为<strong>大小相同的两块</strong>，每次<strong>使用其中一块</strong></li>
-<li>当这块<strong>内存使用完后</strong>，就将还存活的对象<strong>复制到另一块</strong>去，然后再把<strong>使用的空间一次清理掉</strong></li>
-<li>这样每次内存<strong>回收</strong>都是对内存区间的一半<strong>进行回收</strong></li>
-</ul>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/90984624.e8c186ae.png"
-alt="复制算法" />
-<figcaption aria-hidden="true">复制算法</figcaption>
-</figure>
-<h2 id="标记-整理算法">标记-整理算法</h2>
-<p>根据老年代特点提出的一种<strong>标记算法</strong>，<strong>标记过程</strong>仍然与<strong>“标记-清除”</strong>算法一样，但后续不是直接对可回收对象回收，而是让<strong>所有存活对象向一端移动</strong>，然后直接<strong>清理掉端边界以外的内存</strong></p>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/94057049.22c58294.png"
-alt="标记-整理算法" />
-<figcaption aria-hidden="true">标记-整理算法</figcaption>
-</figure>
-<h2 id="分代收集算法">分代收集算法</h2>
-<ul>
-<li>当前虚拟机的垃圾收集都采用<strong>分代收集算法</strong>，没有新的思想，只是<strong>根据对象存活周期的不同</strong>将内存分为几块。</li>
-<li>一般将Java堆分为<strong>新生代</strong>和<strong>老年代</strong>，这样就可以<strong>根据各个年代的特点</strong>，选择合适的<strong>垃圾收集算法</strong>
-<ul>
-<li><strong>新生代</strong>中，每次收集都会有大量对象死去，所以可以选择<strong>“标记-复制”</strong>算法，只需要付出少量<strong>对象的复制成本</strong>就可以完成<strong>每次垃圾收集</strong></li>
-<li><strong>老年代</strong>对象存活几率是比较高的，而且<strong>没有额外的空间对它进行分配担保</strong>，所以必须选择<strong>标记-清除</strong>或者<strong>“标记-整理”</strong>算法进行垃圾收集</li>
-</ul></li>
-</ul>
-<h1 id="垃圾收集器">垃圾收集器</h1>
-<ul>
-<li><strong>收集算法</strong>是内存回收的<strong>方法论</strong>，而<strong>垃圾收集器</strong>则是内存回收的<strong>具体实现</strong></li>
-<li>没有<strong>最好的</strong>垃圾收集器，也没有<strong>万能的</strong>，应该<strong>根据具体应用场景</strong>，选择适合自己的<strong>垃圾收集器</strong></li>
-</ul>
-<h2 id="汇总">汇总</h2>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/11e9dcd0f1ee4f25836e6f1c47104c51-new-image69e1c56a-1d40-493a-9901-6efc647a01f3.png"
-alt="img" />
-<figcaption aria-hidden="true">img</figcaption>
-</figure>
+<h3 id="线程监控">线程监控</h3>
+<p>类似我们前面讲的 <code>jstack</code> 命令，不过这个是可视化的。</p>
+<p>最下面有一个"检测死锁
+(D)"按钮，点击这个按钮可以自动为你找到发生死锁的线程以及它们的详细信息
+。 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/4%25E7%25BA%25BF%25E7%25A8%258B%25E7%259B%2591%25E6%258E%25A7.4364833a.png"
+alt="线程监控" /></p>
+<h2 id="visualvm-多合一故障处理工具">VisualVM： 多合一故障处理工具</h2>
+<p>VisualVM 提供在 Java 虚拟机 (Java Virutal Machine, JVM) 上运行的 Java
+应用程序的详细信息。在 VisualVM
+的图形用户界面中，您可以方便、快捷地查看多个 Java
+应用程序的相关信息。Visual VM 官网：<a
+href="https://visualvm.github.io/">https://visualvm.github.io/open in
+new window</a> 。Visual VM 中文文档:<a
+href="https://visualvm.github.io/documentation.html">https://visualvm.github.io/documentation.htmlopen
+in new window</a>。</p>
+<p>下面这段话摘自《深入理解 Java 虚拟机》。</p>
 <blockquote>
-<ul>
-<li>新生代的垃圾回收器：Serial（串行--复制），ParNew（并行--复制），ParallelScavenge（并行--复制）</li>
-<li>老年代的垃圾回收器：SerialOld（串行--标记整理），ParallelOld（并行--标记整理），CMS（并发--标记清除）</li>
-<li>只有CMS和G1是并发，且CMS只作用于老年代，而G1都有</li>
-<li>JDK8为止，默认垃圾回收器是Parallel Scavenge和Parallel
-Old【并行--复制和并行--标记整理】</li>
-<li>JDK9开始，G1收集器成为默认的垃圾收集器，目前来看，G1回收期停顿时间最短且没有明显缺点，偏适合Web应用</li>
-</ul>
-<blockquote>
-<p>jdk8中测试Web应用，堆内存6G中新生代4.5G的情况下</p>
-<ul>
-<li>ParallelScavenge回收新生代停顿长达1.5秒。</li>
-<li>G1回收器回收同样大小的新生代只停顿0.2秒</li>
-</ul>
+<p>VisualVM（All-in-One Java Troubleshooting Tool）是到目前为止随 JDK
+发布的功能最强大的运行监视和故障处理程序，官方在 VisualVM
+的软件说明中写上了“All-in-One”的描述字样，预示着他除了运行监视、故障处理外，还提供了很多其他方面的功能，如性能分析（Profiling）。VisualVM
+的性能分析功能甚至比起 JProfiler、YourKit 等专业且收费的 Profiling
+工具都不会逊色多少，而且 VisualVM
+还有一个很大的优点：不需要被监视的程序基于特殊 Agent
+运行，因此他对应用程序的实际性能的影响很小，使得他可以直接应用在生产环境中。这个优点是
+JProfiler、YourKit 等工具无法与之媲美的。</p>
 </blockquote>
-</blockquote>
-<h2 id="serial-收集器">Serial 收集器</h2>
+<p>VisualVM 基于 NetBeans
+平台开发，因此他一开始就具备了插件扩展功能的特性，通过插件扩展支持，VisualVM
+可以做到：</p>
 <ul>
-<li><p>Serial 串行
-收集器是<strong>最基本</strong>、<strong>历史最悠久</strong>的垃圾收集器</p></li>
-<li><p>这是一个<strong>单线程收集器</strong>，它的<strong>单线程</strong>意义不仅意味着它只会使用<strong>一条垃圾收集线程</strong>去完成垃圾收集工作，更重要的是它在<strong>进行垃圾收集工作时</strong>必须暂停其他所有的工作线程<strong>（”Stop
-The World“）</strong>，直到它<strong>收集结束</strong>。</p>
-<ul>
-<li>新生代采用<strong>标记-复制</strong>算法，老年代采用<strong>标记-整理</strong>算法
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/46873026.3a9311ec.png"
-alt="Serial 收集器" /></li>
-<li>StopTheWorld会带来<strong>不良用户体验</strong>，所以在后续垃圾收集器设计中<strong>停顿时间不断缩短</strong>。（仍然有停顿，垃圾收集器的过程仍然在继续）</li>
-<li>优点：<strong>简单而高效</strong>（与其他收集器的单线程相比）
-<ol type="1">
-<li>且由于其<strong>没有线程交互</strong>的开销，自然可以获得<strong>很高的单线程收集效率</strong></li>
-<li>Serial收集器对于<strong>运行在Client模式</strong>下的虚拟机来说是个不错的选择</li>
-</ol></li>
-</ul></li>
-<li><p>```shell -XX:+UseSerialGC
-#虚拟机运行在Client模式下的默认值，Serial+Serial Old。
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">## ParNew 收集器</span><br><span class="line"></span><br><span class="line">- **ParNew**收集器其实就是**Serial收集器**的**多线程版本**，除了使用**多线程**进行垃圾收集外，其余行为（**控制参数**、**收集算法**、**回收策略**等等）和**Serial收集器**完全一样</span><br><span class="line"></span><br><span class="line">- **新生代**采用**标记-复制**算法，**老年代**采用**标记-整理**算法</span><br><span class="line"></span><br><span class="line">  ![ParNew 收集器 ](https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/22018368.df835851.png)</span><br><span class="line">  ★★★  这是许多运行在Server模式下的虚拟机的首要选择，除了**Serial收集器**外，只有它能与**CMS收集器**（真正意义上的**并发**收集器）配合工作（**ParNew是并行**）</span><br><span class="line"></span><br><span class="line">- **并行和并发**概念补充</span><br><span class="line"></span><br><span class="line">  - **并行（Parallel）**：指**多条垃圾收集线程**并行工作，但此时用户线程仍然处于**等待**状态</span><br><span class="line">  - **并发（Concurrent）**：指**用户线程**与**垃圾收集线程** **同时**执行（不一定并行，可能会交替执行），**用户程序在继续执行**，而**收集收集器**运行在另一个CPU上</span><br><span class="line"></span><br><span class="line">- ```shell</span><br><span class="line">  -XX:+UseParNewGC  #ParNew+Serial Old，在JDK1.8被废弃，在JDK1.7还可以使用。</span><br></pre></td></tr></table></figure></p></li>
+<li><strong>显示虚拟机进程以及进程的配置、环境信息（jps、jinfo）。</strong></li>
+<li><strong>监视应用程序的
+CPU、GC、堆、方法区以及线程的信息（jstat、jstack）。</strong></li>
+<li><strong>dump 以及分析堆转储快照（jmap、jhat）。</strong></li>
+<li><strong>方法级的程序运行性能分析，找到被调用最多、运行时间最长的方法。</strong></li>
+<li><strong>离线程序快照：收集程序的运行时配置、线程 dump、内存 dump
+等信息建立一个快照，可以将快照发送开发者处进行 Bug 反馈。</strong></li>
+<li><strong>其他 plugins 的无限的可能性......</strong></li>
 </ul>
-<h2 id="parallelscavenge-收集器">ParallelScavenge 收集器</h2>
+<p>这里就不具体介绍 VisualVM 的使用，如果想了解的话可以看:</p>
 <ul>
-<li><p>它也是<strong>标记-复制</strong>算法的多线程收集器，看上去几乎和<strong>ParNew</strong>一样，<strong>区别</strong></p>
-<ul>
-<li><p>部分<strong>参数</strong> (有点争议，先以下面为准)</p>
-<p><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">-XX:+UseParallelGC  # 虚拟机运行在Server模式下的默认值(1.8) 新生代使用ParallelGC，老年代使用回收器 ; ★★ JDK1.7之后，能达到UseParallelOldGC 的效果 </span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment"># 参考自 https://zhuanlan.zhihu.com/p/353458348</span></span> </span><br><span class="line"></span><br><span class="line"></span><br><span class="line">-XX:+UseParallelOldGC # 新生代使用ParallelGC，老年代使用ParallelOldGC</span><br></pre></td></tr></table></figure></p></li>
-<li><p><strong>Parallel
-Scavenge</strong>收集器关注点是<strong>吞吐量（高效率利用CPU）</strong>，<strong>CMS</strong>等垃圾收集器关注点是用户的<strong>停顿时间</strong>（提高用户体验）</p>
-<blockquote>
-<p>所谓<strong>吞吐量</strong>就是CPU中用于<strong>运行用户代码的时间</strong>与<strong>CPU</strong>总消耗时间的<strong>比值</strong>
-（也就是<strong>希望</strong>消耗少量CPU就能<strong>运行更多代码</strong>）</p>
-</blockquote></li>
-<li><p>Parallel Scavenge
-收集器提供了很多参数供用户找到<strong>最合适的停顿时间</strong>或<strong>最大吞吐量</strong>，如果对于收集器运作不太了解，手工优化存在困难的时候，使用
-<strong>Parallel Scavenge
-收集器</strong>配合<strong>自适应调节策略</strong>，把<strong>内存管理优化</strong>交给虚拟机去完成也是一个不错的选择。</p></li>
-<li><p>新生代采用<strong>标记-复制</strong>，老年代采用<strong>标记-整理</strong>算法
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221215170900774.png"
-alt="image-20221215170900774" /></p></li>
-</ul></li>
-<li><p>这是JDK1.8 的默认收集器 使用 java -XX:+PrintCommandLineFlags
--version 命令查看 如下，两种情况：</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">默认</span></span><br><span class="line">λ java -XX:+PrintCommandLineFlags -version</span><br><span class="line">-XX:InitialHeapSize=531924800 -XX:MaxHeapSize=8510796800 -XX:+PrintCommandLineFlags -XX:+UseCompressedClassPointers -XX:+UseCompressedOops -XX:-UseLargePagesIndividualAllocation -XX:+UseParallelGC</span><br><span class="line">java version &quot;1.8.0_202&quot;</span><br><span class="line">Java(TM) SE Runtime Environment (build 1.8.0_202-b08)</span><br><span class="line">Java HotSpot(TM) 64-Bit Server VM (build 25.202-b08, mixed mode)</span><br></pre></td></tr></table></figure>
-<p>第二种情况：(注意：<code>-XX:-UseParallelOldGC</code>)</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">λ java -XX:-UseParallelOldGC -XX:+PrintCommandLineFlags -version</span><br><span class="line">-XX:InitialHeapSize=531924800 -XX:MaxHeapSize=8510796800 -XX:+PrintCommandLineFlags -XX:+UseCompressedClassPointers -XX:+UseCompressedOops -XX:-UseLargePagesIndividualAllocation -XX:+UseParallelGC -XX:-UseParallelOldGC</span><br><span class="line"></span><br><span class="line">java version &quot;1.8.0_202&quot;</span><br><span class="line">Java(TM) SE Runtime Environment (build 1.8.0_202-b08)</span><br><span class="line">Java HotSpot(TM) 64-Bit Server VM (build 25.202-b08, mixed mode)</span><br></pre></td></tr></table></figure></li>
+<li><a
+href="https://visualvm.github.io/documentation.html">https://visualvm.github.io/documentation.htmlopen
+in new window</a></li>
+<li>https://www.ibm.com/developerworks/cn/java/j-lo-visualvm/index.html</li>
 </ul>
-<h2 id="serialold-收集器">SerialOld 收集器</h2>
-<ul>
-<li>Serial收集器的<strong>老年代版本</strong>，是一个<strong>单线程</strong>收集器
-<ol type="1">
-<li>在JDK1.5以及以前的版本中，<strong>与Parallel
-Scavenge收集器搭配</strong>时候</li>
-<li>作为CMS收集器的<strong>后备方案</strong></li>
-</ol></li>
-</ul>
-<h2 id="parallelold-收集器">ParallelOld 收集器</h2>
-<ul>
-<li>Parallel
-Scavenge收集器的老年代版本，使用<strong>多线程</strong>和<strong>标记-整理</strong>算法
-<ol type="1">
-<li>在注重<strong>吞吐量</strong>以及<strong>CPU资源</strong>的场合，都可以考虑<strong>ParallelScavenge</strong>和<strong>ParallelOld</strong>收集器</li>
-</ol></li>
-</ul>
-<h2 id="cms-收集器">CMS 收集器</h2>
-<ul>
-<li><p>CMS，Concurrent Mark
-Sweep，是一种以<strong>获取最短回收停顿时间</strong>为目标的收集器，非常符合<strong>注重用户体验</strong>的引用上使用</p></li>
-<li><p>CMS收集器是HotSpot虚拟机上<strong>第一款</strong>真正意义上的<strong>并发</strong>收集器，第一次实现了<strong>让垃圾收集线程</strong>与<strong>用户线程</strong>（基本上）同时工作</p></li>
-<li><p>Mark-Sweep，是一种“<strong>标记-清除</strong>”算法，运作过程相比前面几种垃圾收集器来说更加复杂，步骤：</p>
-<ol type="1">
-<li><p>初始标记：暂停所有其他线程，<strong>记录直接与root相连的对象</strong>，速度很快</p></li>
-<li><p>并发标记：<strong>同时</strong> 开启GC和用户线程
-，用一个<strong>闭包结构记录可达对象</strong>。但这个阶段结束，这个闭包结构并<strong>不能保证包含当前所有的可达对象</strong>。</p>
-<blockquote>
-<p>因为用户线程会不断更新引用域，所以GC线程<strong>无法保证可达性分析的实时性</strong></p>
-</blockquote>
-<p>所以这个算法里会<strong>跟踪记录</strong>这些发生引用更新的地方</p></li>
-<li><p>重新标记：目的是<strong>修正并发标记期间</strong>因为用户程序继续运行而<strong>导致标记产生变动</strong>的那一部分对象的<strong>标记记录</strong>。</p>
-<blockquote>
-<p>这个阶段<strong>停顿时间</strong>一般会被初始标记阶段<strong>时间稍长</strong>，远远比<strong>并发标记阶段</strong>时间短</p>
-</blockquote></li>
-<li><p>并发清除：<strong>开启用户线程</strong>，同时<strong>GC线程</strong>开始对未扫描的区域做清扫</p></li>
-</ol>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/CMS%25E6%2594%25B6%25E9%259B%2586%25E5%2599%25A8.8a4d0487.png"
-alt="CMS 垃圾收集器" />
-<figcaption aria-hidden="true">CMS 垃圾收集器</figcaption>
-</figure></li>
-<li><p>从名字可以看出这是一款优秀的收集器：<strong>并发收集</strong>、<strong>低停顿</strong>。但有三个明显缺点</p>
-<ol type="1">
-<li><p><strong>对CPU资源敏感</strong></p></li>
-<li><p>无法处理浮动垃圾</p>
-<blockquote>
-<p>浮动垃圾的解释：就是之前被gc 标记为 可达对象，也就是
-存活对象，在两次gc线程之间被业务线程删除了引用，那么颜色不会更改，还是之前的颜色（黑色or灰色），但是其实是白色，所以这一次gc
-无法对其回收，需要等下一次gc初始标记启动才会被刷成白色 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/13864094-053f50032b4cdfad.png"
-alt="img" /></p>
-<p>作者：Yellowtail 链接：https://www.jianshu.com/p/6590aaad82f7
-来源：简书</p>
-</blockquote></li>
-<li><p>它使用的收集算法<strong>“标记-清除”</strong>算法会导致收集结束时会有<strong>大量空间碎片产生</strong></p></li>
-</ol></li>
-</ul>
-<h2 id="g1-收集器">G1 收集器</h2>
-<p>G1(Garbage-First)，是一款<strong>面向服务器</strong>的垃圾收集器，主要针对<strong>配备多颗处理器</strong>以及<strong>大容量内存</strong>的极其，以<strong>极高概率</strong>满足GC停顿时间要求的同时，还具备<strong>高吞吐量性能</strong>特征</p>
-<ul>
-<li><p><strong>JDK1.7</strong>中HotSpot虚拟机的一个<strong>重要进化特征</strong>，具备特点：</p>
-<ol type="1">
-<li><p>并行与并发：</p>
-<blockquote>
-<p>G1 能充分利用 CPU、多核环境下的硬件优势，<strong>使用多个 CPU（CPU
-或者 CPU 核心）来缩短 Stop-The-World
-停顿时间</strong>。部分其他收集器原本需要停顿 Java 线程执行的 GC
-动作，G1 收集器仍然可以通过并发的方式让 java 程序继续执行</p>
-</blockquote></li>
-<li><p>分代收集：</p>
-<blockquote>
-<p>虽然 G1 可以<strong>不需要其他收集器配合</strong>就能独立管理整个 GC
-堆，但是还是保留了分代的概念。</p>
-</blockquote></li>
-<li><p>空间整合：</p>
-<blockquote>
-<p>与 CMS 的“标记-清理”算法不同，G1
-<strong>从整体来看</strong>是基于<strong>“标记-整理”</strong>算法实现的收集器；从<strong>局部</strong>上来看是基于<strong>“标记-复制”</strong>算法实现的。</p>
-</blockquote></li>
-<li><p>可预测的停顿：</p>
-<blockquote>
-<p>这是 G1 相对于 CMS 的另一个大优势，降低停顿时间是 G1 和 CMS
-共同的关注点，但 G1
-除了追求低停顿外，还能建立可预测的停顿时间模型，能<strong>让使用者明确指定在一个长度为
-M 毫秒的时间片段</strong>内。</p>
-</blockquote></li>
-</ol></li>
-<li><p>G1 收集器的运作大致分为以下几个步骤</p>
-<ol type="1">
-<li><strong>初始标记</strong></li>
-<li><strong>并发标记</strong></li>
-<li><strong>最终标记</strong></li>
-<li><strong>筛选回收</strong></li>
-</ol></li>
-<li><p>G1
-收集器在后台<strong>维护了一个优先列表</strong>，每次<strong>根据允许的收集时间</strong>，<strong>优先选择回收价值最大的
-Region</strong>(这也就是它的名字 <strong>Garbage-First 的由来</strong>)
-。这种<strong>使用 Region
-划分内存空间</strong>以及<strong>有优先级的区域回收方式</strong>，，保证了
-G1
-收集器在<strong>有限时间内</strong>可以尽可能高的收集效率（<strong>把内存化整为零</strong>）</p></li>
-</ul>
-<h2 id="zgc-收集器">ZGC 收集器</h2>
-<p><code>The Z Garbage Collector</code></p>
-<p><strong>与 CMS 中的 ParNew 和 G1 类似，ZGC
-也采用标记-复制算法</strong>，不过 ZGC 对该算法做了重大改进。</p>
-<p>在 ZGC 中出现 Stop The World 的情况会更少！</p>
-<p>JDK11，相关文章
-https://tech.meituan.com/2020/08/06/new-zgc-practice-in-meituan.html</p>
 ]]></content>
       <categories>
         <category>学习</category>

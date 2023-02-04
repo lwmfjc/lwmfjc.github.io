@@ -246,14 +246,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>24k</span>
+              <span>25k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>43 分钟</span>
+              <span>45 分钟</span>
             </span>
             <div class="post-description">java线程池详解</div>
 
@@ -295,7 +295,7 @@
 <p>主要是<strong>三大部分</strong>：<strong>任务（Runnable/Callable）</strong>，<strong>任务的执行(Executor)</strong>，<strong>异步计算的结果Future</strong></p>
 <ol type="1">
 <li><p>任务
-执行任务需要的Runnable/Callable接口，他们的实现类，都可以被ThreadPoolExecutor或ScheduleThreadPoolExecutor执行</p></li>
+执行的任务需要的<strong>Runnable/Callable</strong>接口，他们的实现类，都可以被<strong>ThreadPoolExecutor</strong>或<strong>ScheduleThreadPoolExecutor</strong>执行</p></li>
 <li><p>任务的执行 <img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221123163721335.png"
 alt="image-20221123163721335" />
@@ -314,17 +314,17 @@ alt="image-20221123173130638" />
 <figcaption aria-hidden="true">image-20221123173130638</figcaption>
 </figure>
 <ol type="1">
-<li><strong>主线程首先要创建实现 <code>Runnable</code> 或者
-<code>Callable</code> 接口的任务对象。</strong></li>
-<li><strong>把创建完成的实现
+<li><p><strong>主线程首先要创建实现 <code>Runnable</code> 或者
+<code>Callable</code> 接口的任务对象。</strong></p></li>
+<li><p><strong>把创建完成的实现
 <code>Runnable</code>/<code>Callable</code>接口的 对象直接交给
 <code>ExecutorService</code> 执行</strong>:
 <code>ExecutorService.execute（Runnable command）</code>）或者也可以把
 <code>Runnable</code> 对象或<code>Callable</code> 对象提交给
 <code>ExecutorService</code>
 执行（<code>ExecutorService.submit（Runnable task）</code>或
-<code>ExecutorService.submit（Callable &lt;T&gt; task）</code>）。</li>
-<li><strong>如果执行
+<code>ExecutorService.submit（Callable &lt;T&gt; task）</code>）。</p></li>
+<li><p><strong>如果执行
 <code>ExecutorService.submit（…）</code>，<code>ExecutorService</code>
 将返回一个实现<code>Future</code>接口的对象</strong>（我们刚刚也提到过了执行
 <code>execute()</code>方法和
@@ -332,10 +332,12 @@ alt="image-20221123173130638" />
 <code>FutureTask 对象）。由于 FutureTask</code> 实现了
 <code>Runnable</code>，我们也可以创建
 <code>FutureTask</code>，然后直接交给 <code>ExecutorService</code>
-执行。</li>
-<li><strong>最后，主线程可以执行
+执行（FutureTask实现了Runnable，不是一个Callable
+所以直接使用<code>future.get()</code>获取的是null）。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyMain</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">byte</span>[] x = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">10</span> * <span class="number">1024</span> * <span class="number">1024</span>];<span class="comment">//10M</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        Callable&lt;Object&gt; abc = Executors.callable(() -&gt; &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                TimeUnit.SECONDS.sleep(<span class="number">2</span>);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">            System.out.println(<span class="string">&quot;aaa&quot;</span>);<span class="comment">//输出aaa</span></span><br><span class="line">        &#125;, <span class="string">&quot;abcccc&quot;</span>);<span class="comment">//如果没有&quot;abcccc&quot;，则下面输出null</span></span><br><span class="line">        FutureTask&lt;Object&gt; futureTask = <span class="keyword">new</span> <span class="title class_">FutureTask</span>&lt;&gt;(abc);</span><br><span class="line">        <span class="comment">/*new Thread(futureTask).start();</span></span><br><span class="line"><span class="comment">        Object o = futureTask.get();</span></span><br><span class="line"><span class="comment">        System.out.println(&quot;获取值：&quot;+o); //输出abc</span></span><br><span class="line"><span class="comment">        */</span></span><br><span class="line">        <span class="type">ExecutorService</span> <span class="variable">executorService</span> <span class="operator">=</span> Executors.newSingleThreadExecutor();</span><br><span class="line">        Future&lt;?&gt; future = executorService.submit(futureTask);</span><br><span class="line">        Future&lt;?&gt; future1 = executorService.submit(<span class="keyword">new</span> <span class="title class_">Callable</span>&lt;String&gt;() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="keyword">public</span> String <span class="title function_">call</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    TimeUnit.SECONDS.sleep(<span class="number">2</span>);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">return</span> <span class="string">&quot;hello&quot;</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">        <span class="comment">/*System.out.println(future.get());//输出null*/</span></span><br><span class="line">        System.out.println(future1.get()); <span class="comment">//输出hello</span></span><br><span class="line">        <span class="comment">//System.out.println(futureTask.get());//输出abcccc</span></span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">&quot;阻塞结束&quot;</span>);</span><br><span class="line">        executorService.shutdown();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+<li><p><strong>最后，主线程可以执行
 <code>FutureTask.get()</code>方法来等待任务执行完成。主线程也可以执行
-<code>FutureTask.cancel（boolean mayInterruptIfRunning）</code>来取消此任务的执行。</strong></li>
+<code>FutureTask.cancel（boolean mayInterruptIfRunning）</code>来取消此任务的执行。</strong></p></li>
 </ol>
 <h2 id="三-重要threadpoolexecutor类简单介绍">三
 (重要)ThreadPoolExecutor类简单介绍</h2>
@@ -475,15 +477,15 @@ alt="image-20221124135602080" /></p>
 <ul>
 <li><strong><code>shutdown（）</code></strong>
 :关闭线程池，线程池的状态变为
-<code>SHUTDOWN</code>。线程池不再接受新任务了，但是队列里的任务得执行完毕。</li>
+<code>SHUTDOWN</code>。线程池<strong>不再接受新任务</strong>了，但是<strong>队列里的任务得执行完毕</strong>。</li>
 <li><strong><code>shutdownNow（）</code></strong>
 :关闭线程池，线程的状态变为
-<code>STOP</code>。线程池会终止当前正在运行的任务，并停止处理排队的任务并返回正在等待执行的
-List。</li>
+<code>STOP</code>。线程池会<strong>终止当前正在运行的任务</strong>，并<strong>停止处理排队的任务</strong>并<strong>返回正在等待执行的
+List</strong>。</li>
 </ul></li>
 <li><p>isTerminated() VS isshutdown()</p>
 <ul>
-<li><strong><code>sShutDown</code></strong> 当调用
+<li><strong><code>isShutDown</code></strong> 当调用
 <code>shutdown()</code> 方法后返回为 true。</li>
 <li><strong><code>isTerminated</code></strong> 当调用
 <code>shutdown()</code>
@@ -514,15 +516,15 @@ alt="image-20221124155404087" /> 上图分析
 <li>为什么不推荐使用FixedThreadPool
 主要原因，FixedThreadPool<strong>使用无界队列LinkedBlockingQueue（队列容量为Integer.MAX_VALUE)作为线程池的工作队列</strong>
 <ol type="1">
-<li>线程池的线程数达到corePoolSize后，新任务在无界队列中等待，因此线程池中线程数不超过corePoolSize</li>
+<li>线程池的线程数达到corePoolSize后，新任务在<strong>无界队列</strong>中等待，因此线程池中<strong>线程数不超过corePoolSize</strong></li>
 <li>由于使用无界队列时 <code>maximumPoolSize</code>
-将是一个无效参数，因为不可能存在任务队列满的情况。所以，【不需要空闲线程，因为corePool，然后Queue，最后才是空闲线程】通过创建
+将是一个无效参数，因为<strong>不可能存在任务队列满</strong>的情况。所以，【不需要空闲线程，因为corePool，然后Queue，最后才是空闲线程】通过创建
 <code>FixedThreadPool</code>的源码可以看出创建的
-<code>FixedThreadPool</code> 的 <code>corePoolSize</code> 和
-<code>maximumPoolSize</code> 被设置为同一个值。</li>
-<li>又由于1、2原因，使用无界队列时，keepAliveTime将是无效参数</li>
-<li>运行中的FixedThreadPool（如果未执行shutdown()或shutdownNow()）则不会拒绝任务，因此在任务较多时会导致OOM（内存溢出,Out
-Of Memory）</li>
+<code>FixedThreadPool</code> 的 <strong><code>corePoolSize</code> 和
+<code>maximumPoolSize</code> 被设置为同一个值</strong>。</li>
+<li>又由于1、2原因，使用无界队列时，<strong>keepAliveTime将是无效参数</strong></li>
+<li>运行中的FixedThreadPool（如果未执行shutdown()或shutdownNow()）则不会拒绝任务，因此在任务较多时会导致<strong>OOM</strong>（<strong>内存溢出,Out
+Of Memory</strong>）</li>
 </ol></li>
 </ul></li>
 <li><p>SingleThreadExecutor</p>
@@ -537,18 +539,19 @@ src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img
 alt="image-20221124173110534" />
 如果当前运行线程数少于corePoolSize（1），则创建一个新的线程执行任务；当前线程池有一个运行的线程后，将任务加入LinkedBlockingQueue；线程执行完当前的任务后，会在循环中反复从LinkedBlockingQueue中获取任务执行</p></li>
 <li><p>为什么不推荐使用SingleThreadExecutor
-SingleThreadExecutor使用无界队列LinkedBlockingQueue作为线程池的工作队列（容量为Integer.MAX_VALUE)
+SingleThreadExecutor使用<strong>无界队列LinkedBlockingQueue</strong>作为线程池的工作队列（容量为Integer.MAX_VALUE)
 。SingleThreadExecutor使用无界队列作为线程池的工作队列会对线程池带来的影响与FixedThreadPoll相同，即导致OOM</p></li>
 </ul></li>
 <li><p>CachedThreadPool
 CachedThreadPool是一个会根据需要创建新线程的线程池，源码：</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 创建一个线程池，根据需要创建新线程，但会在先前构建的线程可用时重用它。</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> ExecutorService <span class="title function_">newCachedThreadPool</span><span class="params">(ThreadFactory threadFactory)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">ThreadPoolExecutor</span>(<span class="number">0</span>, Integer.MAX_VALUE,</span><br><span class="line">                                      <span class="number">60L</span>, TimeUnit.SECONDS,</span><br><span class="line">                                      <span class="keyword">new</span> <span class="title class_">SynchronousQueue</span>&lt;Runnable&gt;(),</span><br><span class="line">                                      threadFactory);</span><br><span class="line">    &#125;</span><br><span class="line"><span class="comment">//其他构造函数</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> ExecutorService <span class="title function_">newCachedThreadPool</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">ThreadPoolExecutor</span>(<span class="number">0</span>, Integer.MAX_VALUE,</span><br><span class="line">                                      <span class="number">60L</span>, TimeUnit.SECONDS,</span><br><span class="line">                                      <span class="keyword">new</span> <span class="title class_">SynchronousQueue</span>&lt;Runnable&gt;());</span><br><span class="line">    &#125; </span><br></pre></td></tr></table></figure>
-<p><code>CachedThreadPool</code> 的<code>corePoolSize</code>
-被设置为空（0），<code>maximumPoolSize</code>被设置为
-<code>Integer.MAX.VALUE</code>，即它是无界的，这也就意味着如果主线程提交任务的速度高于
+<p><code>CachedThreadPool</code> 的<strong><code>corePoolSize</code>
+被设置为空（0）</strong>，<strong><code>maximumPoolSize</code>被设置为
+<code>Integer.MAX.VALUE</code></strong>，即它是无界的，这也就意味着如果主线程提交任务的速度高于
 <code>maximumPool</code>
 中线程处理任务的速度时，<code>CachedThreadPool</code>
-会不断创建新的线程。极端情况下，这样会导致耗尽 cpu 和内存资源</p>
+会<strong>不断创建新的线程</strong>。极端情况下，这样会导致<strong>耗尽
+cpu</strong> 和<strong>内存资源</strong></p>
 <p>★：SynchronousQueue队列只能容纳单个元素
 执行过程（execute()示意图）</p>
 <p><img
@@ -557,18 +560,18 @@ alt="image-20221128163237634" /> 上图说明：</p>
 <ol type="1">
 <li>首先执行 <code>SynchronousQueue.offer(Runnable task)</code>
 提交任务到任务队列。如果当前 <code>maximumPool</code> 中有闲线程正在执行
-<code>SynchronousQueue.poll(keepAliveTime,TimeUnit.NANOSECONDS)</code>，那么主线程执行
-offer 操作与空闲线程执行的 <code>poll</code>
-操作配对成功，主线程把任务交给空闲线程执行，<code>execute()</code>方法执行完成，否则执行下面的步骤
+<code>SynchronousQueue.poll(keepAliveTime,TimeUnit.NANOSECONDS)</code>，那么<strong>主线程执行
+offer 操作</strong>与空<strong>闲线程执行的 <code>poll</code></strong>
+操作配对成功，主线程<strong>把任务交给空闲线程</strong>执行，<code>execute()</code>方法执行完成，否则执行下面的步骤
 2；</li>
 <li>当初始 <code>maximumPool</code> 为空，或者 <code>maximumPool</code>
 中没有空闲线程时，将没有线程执行
 <code>SynchronousQueue.poll(keepAliveTime,TimeUnit.NANOSECONDS)</code>。这种情况下，步骤
 1 将失败，此时 <code>CachedThreadPool</code>
-会创建新线程执行任务，execute 方法执行完成；</li>
+会<strong>创建新线程</strong>执行任务，execute 方法执行完成；</li>
 </ol>
 <p>不推荐使用CachedThreadPool?
-因为它允许创建的线程数量为Integer.MAX_VALUE,可能创建大量线程，从而导致OOM</p></li>
+因为它允许<strong>创建的线程数量为Integer.MAX_VALUE</strong>,可能创建大量线程，从而导致OOM</p></li>
 </ol>
 <h2
 id="scheduledthreadpoolexecutor详解">ScheduledThreadPoolExecutor详解</h2>
@@ -588,9 +591,11 @@ src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img
 alt="image-20221129092022551" /></p>
 <ul>
 <li><p>Timer对系统时钟变化敏感，ScheduledThreadPoolExecutor不是</p>
-<p>Timer使用的是<strong>System.currentTime()</strong>，而ScheduledThreadPoolExecutor使用的是<strong>System.nanoTime()</strong></p></li>
-<li><p>Timer只有一个线程（导致长时间运行的任务延迟其他任务），ScheduleThreadPoolExecutor可以配置任意数量线程</p></li>
-<li><p>TimerTask中抛出运行时异常会杀死一个线程，从而导致Timer死机（即计划任务将不在运行）；而<strong>ScheduleThreadExecutor</strong>不仅<strong>捕获运行时异常</strong>，还允许<strong>需要时处理（afterExecute方法）</strong>，抛出异常的任务会被取消而<strong>其他任务将继续运行</strong></p></li>
+<blockquote>
+<p>Timer使用的是<strong>System.currentTime()</strong>，而ScheduledThreadPoolExecutor使用的是<strong>System.nanoTime()</strong></p>
+</blockquote></li>
+<li><p>Timer<strong>只有一个线程</strong>（导致长时间运行的任务延迟其他任务），ScheduleThreadPoolExecutor<strong>可以配置任意数量线程</strong></p></li>
+<li><p>TimerTask中抛出运行时异常会杀死一个线程，从而导致Timer死机（即计划任务将不在运行）；而<strong>ScheduleThreadExecutor</strong>不仅<strong>捕获运行时异常</strong>，还允许<strong>需要时处理（afterExecute方法）</strong>，<strong>抛出异常的任务会被取消</strong>而<strong>其他任务将继续运行</strong></p></li>
 </ul>
 <p>JDK1.5 之后，没有理由再使用Timer进行任务调度</p></li>
 <li><p>运行机制 <img
@@ -603,14 +608,14 @@ ScheduledThreadPoolExecutor的执行分为：</p>
 </ol>
 <p>为了执行周期性任务，对ThreadPoolExecutor做了如下修改：</p>
 <ul>
-<li>使用DelayQueue作为任务队列</li>
+<li>使用<strong>DelayQueue</strong>作为任务队列</li>
 <li>获取任务的方式不同</li>
 <li>获取周期任务<strong>后做了额外处理</strong></li>
 </ul>
 <p><img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221129104234412.png"
 alt="image-20221129104234412" />
-获取任务，执行任务，修改任务(time)，回放任务</p>
+<strong>获取任务</strong>，<strong>执行任务</strong>，<strong>修改任务(time)</strong>，<strong>回放(添加)任务</strong></p>
 <blockquote>
 <ol type="1">
 <li>线程 1 从 <code>DelayQueue</code> 中获取已到期的
@@ -834,12 +839,12 @@ ThreadPoolExecutor使用+原理分析</span></a><ol class="nav-child"><li class=
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">880k</span>
+    <span title="站点总字数">881k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">26:40</span>
+    <span title="站点阅读时长">26:42</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
