@@ -298,6 +298,7 @@ AQS
 <code>ReentrantReadWriteLock</code>，<code>SynchronousQueue</code>，<code>FutureTask</code>(jdk1.7)
 等等皆是基于 AQS 的。</p>
 <h1 id="aqs原理">AQS原理</h1>
+<h2 id="aqs核心思想">AQS核心思想</h2>
 <p><strong>面试不是背题，大家一定要加入自己的思想，即使加入不了自己的思想也要保证自己能够通俗的讲出来而不是背出来</strong></p>
 <p>AQS
 核心思想是，如果被请求的<strong>共享资源（AQS内部）</strong>空闲，则将<strong>当前请求资源的线程</strong>设置为<strong>有效</strong>的工作线程，并且将<strong>共享资源</strong>设置为<strong>锁定</strong>状态。如果被请求的共享资源<strong>被占用</strong>，那么就需要一套<strong>线程阻塞等待</strong>以及<strong>被唤醒时锁分配</strong>的机制，这个机制
@@ -325,7 +326,14 @@ alt="image-20221120193141243" /></p>
 <code>state</code> 变量由 <code>volatile</code>
 修饰，用于展示<strong>当前临界资源的获锁</strong>情况。</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">volatile</span> <span class="type">int</span> state;<span class="comment">//共享变量，使用volatile修饰保证线程可见性</span></span><br></pre></td></tr></table></figure>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">  </span><br><span class="line">状态信息的操作     </span><br><span class="line">  </span><br><span class="line">  &gt; 通过 `protected` 类型的`getState()`、`setState()`和`compareAndSetState()` 进行操作。并且，这几个方法都是 `final` 修饰的，在子类中无法被重写。</span><br><span class="line">  </span><br><span class="line">  ```java</span><br><span class="line">  //返回同步状态的当前值</span><br><span class="line">  protected final int getState() &#123;</span><br><span class="line">      return state;</span><br><span class="line">  &#125;</span><br><span class="line">  //设置同步状态的值</span><br><span class="line">  protected final void setState(int newState) &#123;</span><br><span class="line">      state = newState;</span><br><span class="line">  &#125;</span><br><span class="line">  //原子地（CAS操作）将同步状态值设置为给定值update如果当前同步状态的值等于expect（期望值）</span><br><span class="line">  protected final boolean compareAndSetState(int expect, int update) &#123;</span><br><span class="line">    return unsafe.compareAndSwapInt(this, stateOffset, expect, update);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>状态信息的操作</p>
+<blockquote>
+<p>通过 <code>protected</code>
+类型的<code>getState()</code>、<code>setState()</code>和<code>compareAndSetState()</code>
+进行操作。并且，这几个方法都是 <code>final</code>
+修饰的，在子类中无法被重写。</p>
+</blockquote>
+<p><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//返回同步状态的当前值</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">getState</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> state;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//设置同步状态的值</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title function_">setState</span><span class="params">(<span class="type">int</span> newState)</span> &#123;</span><br><span class="line">    state = newState;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//原子地（CAS操作）将同步状态值设置为给定值update如果当前同步状态的值等于expect（期望值）</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">final</span> <span class="type">boolean</span> <span class="title function_">compareAndSetState</span><span class="params">(<span class="type">int</span> expect, <span class="type">int</span> update)</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> unsafe.compareAndSwapInt(<span class="built_in">this</span>, stateOffset, expect, update);</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure></p>
 <p>以 <code>ReentrantLock</code>
 为例，<strong><code>state</code></strong> 初始值为
 <strong>0</strong>，表示<strong>未锁定</strong>状态。A 线程
@@ -349,7 +357,7 @@ state 是能回到零态的。</p>
 <code>await()</code> 函数</strong>返回，继续后余动作。</p></li>
 </ul>
 <p>​<br />
-- AQS对资源的共享方式</p>
+## AQS资源共享方式</p>
 <ul>
 <li><p>包括Exclusive（独占，<strong>只有一个线程</strong>能执行，如ReentrantLock）和Share（共享，<strong>多个线程</strong>可同时执行，如<code>Semaphore</code>/<code>CountDownLatch</code>）</p>
 <blockquote>
@@ -358,8 +366,9 @@ state 是能回到零态的。</p>
 AQS
 也支持自定义同步器<strong>同时实现独占</strong>和<strong>共享</strong>两种方式，如<strong><code>ReentrantReadWriteLock</code></strong>。</p>
 </blockquote></li>
-<li><p>自定义同步器
-同步器的设计是基于<strong>模板方法模式</strong>的，如果需要<strong>自定义同步器</strong>一般的方式是这样（模板方法模式很经典的一个应用）：</p>
+</ul>
+<h2 id="自定义同步器">自定义同步器</h2>
+<p>同步器的设计是基于<strong>模板方法模式</strong>的，如果需要<strong>自定义同步器</strong>一般的方式是这样（模板方法模式很经典的一个应用）：</p>
 <ol type="1">
 <li>使用者继承 <strong><code>AbstractQueuedSynchronizer</code></strong>
 并<strong>重写</strong>指定的方法。【<strong>使用者</strong>】</li>
@@ -367,7 +376,7 @@ AQS
 组合</strong>在<strong>自定义同步组件的实现</strong>中，并<strong>调用其模板方法</strong>，而这些模板方法会<strong>调用使用者重写</strong>的方法。【<strong>AQS内部</strong>】</li>
 </ol>
 <p>这和我们以往通过实现接口的方式有很大区别，这是模板方法模式很经典的一个运用。</p>
-<p><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//独占方式。尝试获取资源，成功则返回true，失败则返回false。</span></span><br><span class="line"><span class="keyword">protected</span> <span class="type">boolean</span> <span class="title function_">tryAcquire</span><span class="params">(<span class="type">int</span>)</span></span><br><span class="line"><span class="comment">//独占方式。尝试释放资源，成功则返回true，失败则返回false。</span></span><br><span class="line"><span class="keyword">protected</span> <span class="type">boolean</span> <span class="title function_">tryRelease</span><span class="params">(<span class="type">int</span>)</span></span><br><span class="line"><span class="comment">//共享方式。尝试获取资源。负数表示失败；0表示成功，但没有剩余可用资源；正数表示成功，且有剩余资源。</span></span><br><span class="line"><span class="keyword">protected</span> <span class="type">int</span> <span class="title function_">tryAcquireShared</span><span class="params">(<span class="type">int</span>)</span></span><br><span class="line"><span class="comment">//共享方式。尝试释放资源，成功则返回true，失败则返回false。</span></span><br><span class="line"><span class="keyword">protected</span> <span class="type">boolean</span> <span class="title function_">tryReleaseShared</span><span class="params">(<span class="type">int</span>)</span></span><br><span class="line"><span class="comment">//该线程是否正在独占资源。只有用到condition才需要去实现它。</span></span><br><span class="line"><span class="keyword">protected</span> <span class="type">boolean</span> <span class="title function_">isHeldExclusively</span><span class="params">()</span> </span><br></pre></td></tr></table></figure></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//独占方式。尝试获取资源，成功则返回true，失败则返回false。</span></span><br><span class="line"><span class="keyword">protected</span> <span class="type">boolean</span> <span class="title function_">tryAcquire</span><span class="params">(<span class="type">int</span>)</span></span><br><span class="line"><span class="comment">//独占方式。尝试释放资源，成功则返回true，失败则返回false。</span></span><br><span class="line"><span class="keyword">protected</span> <span class="type">boolean</span> <span class="title function_">tryRelease</span><span class="params">(<span class="type">int</span>)</span></span><br><span class="line"><span class="comment">//共享方式。尝试获取资源。负数表示失败；0表示成功，但没有剩余可用资源；正数表示成功，且有剩余资源。</span></span><br><span class="line"><span class="keyword">protected</span> <span class="type">int</span> <span class="title function_">tryAcquireShared</span><span class="params">(<span class="type">int</span>)</span></span><br><span class="line"><span class="comment">//共享方式。尝试释放资源，成功则返回true，失败则返回false。</span></span><br><span class="line"><span class="keyword">protected</span> <span class="type">boolean</span> <span class="title function_">tryReleaseShared</span><span class="params">(<span class="type">int</span>)</span></span><br><span class="line"><span class="comment">//该线程是否正在独占资源。只有用到condition才需要去实现它。</span></span><br><span class="line"><span class="keyword">protected</span> <span class="type">boolean</span> <span class="title function_">isHeldExclusively</span><span class="params">()</span> </span><br></pre></td></tr></table></figure>
 <p><strong>什么是钩子方法呢？</strong>
 钩子方法是一种<strong>被声明在抽象类中的方法</strong>，一般使用
 <code>protected</code>
@@ -379,8 +388,7 @@ target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/zpScSCktFpnSWHWI
 <p>除了上面提到的钩子方法之外，<strong>AQS 类中的其他方法都是
 <code>final</code></strong>
 ，所以<strong>无法被其他类重写</strong>。</p>
-</blockquote></li>
-</ul>
+</blockquote>
 <h1 id="常见同步类">常见同步类</h1>
 <h2 id="semaphore">Semaphore</h2>
 <p>Semaphore（信号量）可以指定多个线程同时访问某个资源</p>
@@ -709,7 +717,7 @@ id="reentrantlock和reentrantreadwritelock">ReentrantLock和ReentrantReadWriteLo
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#aqs%E7%AE%80%E5%8D%95%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.</span> <span class="nav-text">AQS简单介绍</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#aqs%E5%8E%9F%E7%90%86"><span class="nav-number">2.</span> <span class="nav-text">AQS原理</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%B8%B8%E8%A7%81%E5%90%8C%E6%AD%A5%E7%B1%BB"><span class="nav-number">3.</span> <span class="nav-text">常见同步类</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#semaphore"><span class="nav-number">3.1.</span> <span class="nav-text">Semaphore</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#countdownlatch%E5%80%92%E8%AE%A1%E6%97%B6"><span class="nav-number">3.2.</span> <span class="nav-text">CountDownLatch(倒计时)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#countdownlatch%E7%9A%84%E4%B8%A4%E7%A7%8D%E5%85%B8%E5%9E%8B%E7%94%A8%E6%B3%95"><span class="nav-number">3.2.1.</span> <span class="nav-text">CountDownLatch的两种典型用法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#countdownlatch-%E7%9A%84%E4%B8%8D%E8%B6%B3"><span class="nav-number">3.2.2.</span> <span class="nav-text">CountDownLatch 的不足</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#countdownlatch-%E7%9B%B8%E5%B8%B8%E8%A7%81%E9%9D%A2%E8%AF%95%E9%A2%98%E6%94%B9%E7%89%88%E5%90%8E%E6%B2%A1%E4%BA%86"><span class="nav-number">3.2.3.</span> <span class="nav-text">CountDownLatch
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#aqs%E7%AE%80%E5%8D%95%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.</span> <span class="nav-text">AQS简单介绍</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#aqs%E5%8E%9F%E7%90%86"><span class="nav-number">2.</span> <span class="nav-text">AQS原理</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#aqs%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="nav-number">2.1.</span> <span class="nav-text">AQS核心思想</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89%E5%90%8C%E6%AD%A5%E5%99%A8"><span class="nav-number">2.2.</span> <span class="nav-text">自定义同步器</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%B8%B8%E8%A7%81%E5%90%8C%E6%AD%A5%E7%B1%BB"><span class="nav-number">3.</span> <span class="nav-text">常见同步类</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#semaphore"><span class="nav-number">3.1.</span> <span class="nav-text">Semaphore</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#countdownlatch%E5%80%92%E8%AE%A1%E6%97%B6"><span class="nav-number">3.2.</span> <span class="nav-text">CountDownLatch(倒计时)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#countdownlatch%E7%9A%84%E4%B8%A4%E7%A7%8D%E5%85%B8%E5%9E%8B%E7%94%A8%E6%B3%95"><span class="nav-number">3.2.1.</span> <span class="nav-text">CountDownLatch的两种典型用法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#countdownlatch-%E7%9A%84%E4%B8%8D%E8%B6%B3"><span class="nav-number">3.2.2.</span> <span class="nav-text">CountDownLatch 的不足</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#countdownlatch-%E7%9B%B8%E5%B8%B8%E8%A7%81%E9%9D%A2%E8%AF%95%E9%A2%98%E6%94%B9%E7%89%88%E5%90%8E%E6%B2%A1%E4%BA%86"><span class="nav-number">3.2.3.</span> <span class="nav-text">CountDownLatch
 相常见面试题（改版后没了）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#cyclicbarrier"><span class="nav-number">3.3.</span> <span class="nav-text">CyclicBarrier</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8E%9F%E7%90%86"><span class="nav-number">3.3.1.</span> <span class="nav-text">原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#cyclicbarrier%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90"><span class="nav-number">3.3.2.</span> <span class="nav-text">CyclicBarrier源码分析</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#cyclicbarrier%E5%92%8Ccountdownlatch%E5%8C%BA%E5%88%AB"><span class="nav-number">3.4.</span> <span class="nav-text">CyclicBarrier和CountDownLatch区别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#reentrantlock%E5%92%8Creentrantreadwritelock"><span class="nav-number">3.5.</span> <span class="nav-text">ReentrantLock和ReentrantReadWriteLock</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
