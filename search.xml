@@ -1029,6 +1029,246 @@ MySQL 数据库的话，数据库的编码一定要指定为<code>utf8mb4</code>
       </tags>
   </entry>
   <entry>
+    <title>git</title>
+    <url>/2023/02/07/review/java_guide/dev_tools/git/</url>
+    <content><![CDATA[<blockquote>
+<p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!</p>
+</blockquote>
+<h2 id="版本控制">版本控制</h2>
+<h3 id="什么是版本控制">什么是版本控制</h3>
+<p>版本控制是一种记录一个或若干文件内容变化，以便将来查阅特定版本修订情况的系统。
+除了项目源代码，你可以对任何类型的文件进行版本控制。</p>
+<h3 id="为什么要版本控制">为什么要版本控制</h3>
+<p>有了它你就可以将某个文件回溯到之前的状态，甚至将整个项目都回退到过去某个时间点的状态，你可以比较文件的变化细节，查出最后是谁修改了哪个地方，从而找出导致怪异问题出现的原因，又是谁在何时报告了某个功能缺陷等等。</p>
+<h3 id="本地版本控制系统">本地版本控制系统</h3>
+<p>许多人习惯用复制整个项目目录的方式来保存不同的版本，或许还会改名加上备份时间以示区别。
+这么做唯一的好处就是简单，但是特别容易犯错。
+有时候会混淆所在的工作目录，一不小心会写错文件或者覆盖意想外的文件。</p>
+<p>为了解决这个问题，人们很久以前就开发了许多种本地版本控制系统，大多都是采用某种简单的数据库来记录文件的历次更新差异。</p>
+<p><a
+href="https://camo.githubusercontent.com/35deb42ae8ff5b306c2ba4e3d00d5cd168db7d886d559f1dae18658b51ae8c64/68747470733a2f2f6d792d626c6f672d746f2d7573652e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f323031392d332f2545362539432541432545352539432542302545372538392538382545362539432541432545362538452541372545352538382542362545372542332542422545372542422539462e706e67"><img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f6d792d626c6f672d746f2d7573652e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f323031392d332f2545362539432541432545352539432542302545372538392538382545362539432541432545362538452541372545352538382542362545372542332542422545372542422539462e706e67"
+alt="本地版本控制系统" /></a></p>
+<h3 id="集中化的版本控制系统">集中化的版本控制系统</h3>
+<p>接下来人们又遇到一个问题，如何让在不同系统上的开发者协同工作？
+于是，集中化的版本控制系统（Centralized Version Control Systems，简称
+CVCS）应运而生。</p>
+<p>集中化的版本控制系统都有一个单一的集中管理的服务器，保存所有文件的修订版本，而协同工作的人们都通过客户端连到这台服务器，取出最新的文件或者提交更新。</p>
+<p><a
+href="https://camo.githubusercontent.com/43fe7124f8d7a07928eba48e6d43a1db1e0900a64f5a1cebc0d0cba5166c614e/68747470733a2f2f6d792d626c6f672d746f2d7573652e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f323031392d332f2545392539422538362545342542382541442545352538432539362545372539412538342545372538392538382545362539432541432545362538452541372545352538382542362545372542332542422545372542422539462e706e67"><img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f6d792d626c6f672d746f2d7573652e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f323031392d332f2545392539422538362545342542382541442545352538432539362545372539412538342545372538392538382545362539432541432545362538452541372545352538382542362545372542332542422545372542422539462e706e67"
+alt="集中化的版本控制系统" /></a></p>
+<p>这么做虽然解决了本地版本控制系统无法让在不同系统上的开发者协同工作的诟病，但也还是存在下面的问题：</p>
+<ul>
+<li><strong>单点故障：</strong>
+中央服务器宕机，则其他人无法使用；如果中心数据库磁盘损坏又没有进行备份，你将丢失所有数据。本地版本控制系统也存在类似问题，只要整个项目的历史记录被保存在单一位置，就有丢失所有历史更新记录的风险。</li>
+<li><strong>必须联网才能工作：</strong> 受网络状况、带宽影响。</li>
+</ul>
+<h3 id="分布式版本控制系统">分布式版本控制系统</h3>
+<p>于是分布式版本控制系统（Distributed Version Control System，简称
+DVCS）面世了。 Git 就是一个典型的分布式版本控制系统。</p>
+<p>这类系统，客户端并不只提取最新版本的文件快照，而是把代码仓库完整地镜像下来。
+这么一来，任何一处协同工作用的服务器发生故障，事后都可以用任何一个镜像出来的本地仓库恢复。
+因为每一次的克隆操作，实际上都是一次对代码仓库的完整备份。</p>
+<p><a
+href="https://camo.githubusercontent.com/3b594612e29df0a4bbf4ec5f0e9e3a80b2af886e2dde03ad581c20eb51f9e370/68747470733a2f2f6d792d626c6f672d746f2d7573652e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f323031392d332f2545352538382538362545352542382538332545352542432538462545372538392538382545362539432541432545362538452541372545352538382542362545372542332542422545372542422539462e706e67"><img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f6d792d626c6f672d746f2d7573652e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f323031392d332f2545352538382538362545352542382538332545352542432538462545372538392538382545362539432541432545362538452541372545352538382542362545372542332542422545372542422539462e706e67"
+alt="分布式版本控制系统" /></a></p>
+<p>分布式版本控制系统可以不用联网就可以工作，因为每个人的电脑上都是完整的版本库，当你修改了某个文件后，你只需要将自己的修改推送给别人就可以了。但是，在实际使用分布式版本控制系统的时候，很少会直接进行推送修改，而是使用一台充当“中央服务器”的东西。这个服务器的作用仅仅是用来方便“交换”大家的修改，没有它大家也一样干活，只是交换修改不方便而已。</p>
+<p>分布式版本控制系统的优势不单是不必联网这么简单，后面我们还会看到 Git
+极其强大的分支管理等功能。</p>
+<h2 id="认识-git">认识 Git</h2>
+<h3 id="git-简史">Git 简史</h3>
+<p>Linux 内核项目组当时使用分布式版本控制系统 BitKeeper
+来管理和维护代码。但是，后来开发 BitKeeper 的商业公司同 Linux
+内核开源社区的合作关系结束，他们收回了 Linux 内核社区免费使用 BitKeeper
+的权力。 Linux 开源社区（特别是 Linux 的缔造者 Linus Torvalds）基于使用
+BitKeeper
+时的经验教训，开发出自己的版本系统，而且对新的版本控制系统做了很多改进。</p>
+<h3 id="git-与其他版本管理系统的主要区别">Git
+与其他版本管理系统的主要区别</h3>
+<p>Git
+在保存和对待各种信息的时候与其它版本控制系统有很大差异，尽管操作起来的命令形式非常相近，理解这些差异将有助于防止你使用中的困惑。</p>
+<p>下面我们主要说一个关于 Git
+与其他版本管理系统的主要差别：<strong>对待数据的方式</strong>。</p>
+<p><strong>Git采用的是直接记录快照的方式，而非差异比较。我后面会详细介绍这两种方式的差别。</strong></p>
+<p>大部分版本控制系统（CVS、Subversion、Perforce、Bazaar
+等等）都是以文件变更列表的方式存储信息，这类系统<strong>将它们保存的信息看作是一组基本文件和每个文件随时间逐步累积的差异。</strong></p>
+<p>具体原理如下图所示，理解起来其实很简单，每当我们提交更新一个文件之后，系统都会记录这个文件做了哪些更新，以增量符号Δ(Delta)表示。</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230207161740042.png"
+alt="image-20230207161740042" />
+<figcaption aria-hidden="true">image-20230207161740042</figcaption>
+</figure>
+<p><strong>我们怎样才能得到一个文件的最终版本呢？</strong></p>
+<p>很简单，高中数学的基本知识，我们只需要将这些原文件和这些增加进行相加就行了。</p>
+<p><strong>这种方式有什么问题呢？</strong></p>
+<p>比如我们的增量特别特别多的话，如果我们要得到最终的文件是不是会耗费时间和性能。</p>
+<p>Git 不按照以上方式对待或保存数据。 反之，Git
+更像是把数据看作是对小型文件系统的一组快照。 每次你提交更新，或在 Git
+中保存项目状态时，它主要对当时的全部文件制作一个快照并保存这个快照的索引。
+为了高效，如果文件没有修改，Git
+不再重新存储该文件，而是只保留一个链接指向之前存储的文件。 Git
+对待数据更像是一个 <strong>快照流</strong>。</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230207161800212.png"
+alt="image-20230207161800212" />
+<figcaption aria-hidden="true">image-20230207161800212</figcaption>
+</figure>
+<h3 id="git-的三种状态">Git 的三种状态</h3>
+<p>Git 有三种状态，你的文件可能处于其中之一：</p>
+<ol type="1">
+<li><strong>已提交（committed）</strong>：数据已经安全的保存在本地数据库中。</li>
+<li><strong>已修改（modified）</strong>：已修改表示修改了文件，但还没保存到数据库中。</li>
+<li><strong>已暂存（staged）</strong>：表示对一个已修改文件的当前版本做了标记，使之包含在下次提交的快照中。</li>
+</ol>
+<p>由此引入 Git 项目的三个工作区域的概念：<strong>Git 仓库(.git
+directory)</strong>、<strong>工作目录(Working Directory)</strong> 以及
+<strong>暂存区域(Staging Area)</strong> 。</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230207161821579.png"
+alt="image-20230207161821579" />
+<figcaption aria-hidden="true">image-20230207161821579</figcaption>
+</figure>
+<p><strong>基本的 Git 工作流程如下：</strong></p>
+<ol type="1">
+<li>在工作目录中修改文件。</li>
+<li>暂存文件，将文件的快照放入暂存区域。</li>
+<li>提交更新，找到暂存区域的文件，将快照永久性存储到 Git 仓库目录。</li>
+</ol>
+<h2 id="git-使用快速入门">Git 使用快速入门</h2>
+<h3 id="获取-git-仓库">获取 Git 仓库</h3>
+<p>有两种取得 Git 项目仓库的方法。</p>
+<ol type="1">
+<li>在现有目录中初始化仓库: 进入项目目录运行 <code>git init</code>
+命令,该命令将创建一个名为 <code>.git</code> 的子目录。</li>
+<li>从一个服务器克隆一个现有的 Git 仓库: <code>git clone [url]</code>
+自定义本地仓库的名字: <code>git clone [url] directoryname</code></li>
+</ol>
+<h3 id="记录每次更新到仓库">记录每次更新到仓库</h3>
+<ol type="1">
+<li><strong>检测当前文件状态</strong> : <code>git status</code></li>
+<li><strong>提出更改（把它们添加到暂存区</strong>）：<code>git add filename</code>
+(针对特定文件)、<code>git add *</code>(所有文件)、<code>git add *.txt</code>（支持通配符，所有
+.txt 文件）</li>
+<li><strong>忽略文件</strong>：<code>.gitignore</code> 文件</li>
+<li><strong>提交更新:</strong> <code>git commit -m "代码提交信息"</code>
+（每次准备提交前，先用 <code>git status</code>
+看下，是不是都已暂存起来了， 然后再运行提交命令
+<code>git commit</code>）</li>
+<li><strong>跳过使用暂存区域更新的方式</strong> :
+<code>git commit -a -m "代码提交信息"</code>。 <code>git commit</code>
+加上 <code>-a</code> 选项，Git
+就会自动把所有已经跟踪过的文件暂存起来一并提交，从而跳过
+<code>git add</code> 步骤。</li>
+<li><strong>移除文件</strong> ：<code>git rm filename</code>
+（从暂存区域移除，然后提交。）</li>
+<li><strong>对文件重命名</strong>
+：<code>git mv README.md README</code>(这个命令相当于<code>mv README.md README</code>、<code>git rm README.md</code>、<code>git add README</code>
+这三条命令的集合)</li>
+</ol>
+<h3 id="一个好的-git-提交消息">一个好的 Git 提交消息</h3>
+<p>一个好的 Git 提交消息如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">标题行：用这一行来描述和解释你的这次提交</span><br><span class="line"></span><br><span class="line">主体部分可以是很少的几行，来加入更多的细节来解释提交，最好是能给出一些相关的背景或者解释这个提交能修复和解决什么问题。</span><br><span class="line"></span><br><span class="line">主体部分当然也可以有几段，但是一定要注意换行和句子不要太长。因为这样在使用 &quot;git log&quot; 的时候会有缩进比较好看。</span><br></pre></td></tr></table></figure>
+<p>提交的标题行描述应该尽量的清晰和尽量的一句话概括。这样就方便相关的
+Git 日志查看工具显示和其他人的阅读。</p>
+<h3 id="推送改动到远程仓库">推送改动到远程仓库</h3>
+<ul>
+<li><p>如果你还没有克隆现有仓库，并欲将你的仓库连接到某个远程服务器，你可以使用如下命令添加：<code>git remote add origin &lt;server&gt;</code>
+,比如我们要让本地的一个仓库和 Github
+上创建的一个仓库关联可以这样<code>git remote add origin https://github.com/Snailclimb/test.git</code></p></li>
+<li><p>将这些改动提交到远端仓库：<code>git push origin master</code>
+(可以把 <em>master</em> 换成你想要推送的任何分支)</p>
+<p>如此你就能够将你的改动推送到所添加的服务器上去了。</p></li>
+</ul>
+<h3 id="远程仓库的移除与重命名">远程仓库的移除与重命名</h3>
+<ul>
+<li>将 test 重命名为
+test1：<code>git remote rename test test1</code></li>
+<li>移除远程仓库 test1:<code>git remote rm test1</code></li>
+</ul>
+<h3 id="查看提交历史">查看提交历史</h3>
+<p>在提交了若干更新，又或者克隆了某个项目之后，你也许想回顾下提交历史。
+完成这个任务最简单而又有效的工具是 <code>git log</code>
+命令。<code>git log</code>
+会按提交时间列出所有的更新，最近的更新排在最上面。</p>
+<p><strong>可以添加一些参数来查看自己希望看到的内容：</strong></p>
+<p>只看某个人的提交记录：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git log --author=bob</span><br></pre></td></tr></table></figure>
+<h3 id="撤销操作">撤销操作</h3>
+<p>有时候我们提交完了才发现漏掉了几个文件没有添加，或者提交信息写错了。
+此时，可以运行带有 <code>--amend</code> 选项的提交命令尝试重新提交：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git commit --amend</span><br></pre></td></tr></table></figure>
+<p>取消暂存的文件</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git reset filename</span><br></pre></td></tr></table></figure>
+<p>撤消对文件的修改:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git checkout -- filename</span><br></pre></td></tr></table></figure>
+<p>假如你想丢弃你在本地的所有改动与提交，可以到服务器上获取最新的版本历史，并将你本地主分支指向它：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git fetch origin</span><br><span class="line">git reset --hard origin/master</span><br></pre></td></tr></table></figure>
+<h3 id="分支">分支</h3>
+<p>分支是用来将特性开发绝缘开来的。在你创建仓库的时候，<em>master</em>
+是“默认”的分支。在其他分支上进行开发，完成后再将它们合并到主分支上。</p>
+<p>我们通常在开发新功能、修复一个紧急 bug
+等等时候会选择创建分支。单分支开发好还是多分支开发好，还是要看具体场景来说。</p>
+<p>创建一个名字叫做 test 的分支</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git branch test</span><br></pre></td></tr></table></figure>
+<p>切换当前分支到 test（当你切换分支的时候，Git
+会重置你的工作目录，使其看起来像回到了你在那个分支上最后一次提交的样子。
+Git
+会自动添加、删除、修改文件以确保此时你的工作目录和这个分支最后一次提交时的样子一模一样）</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git checkout test</span><br></pre></td></tr></table></figure>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230207161844459.png"
+alt="image-20230207161844459" />
+<figcaption aria-hidden="true">image-20230207161844459</figcaption>
+</figure>
+<p>你也可以直接这样创建分支并切换过去(上面两条命令的合写)</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git checkout -b feature_x</span><br></pre></td></tr></table></figure>
+<p>切换到主分支</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git checkout master</span><br></pre></td></tr></table></figure>
+<p>合并分支(可能会有冲突)</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git merge test</span><br></pre></td></tr></table></figure>
+<p>把新建的分支删掉</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git branch -d feature_x</span><br></pre></td></tr></table></figure>
+<p>将分支推送到远端仓库（推送成功后其他人可见）：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git push origin</span><br></pre></td></tr></table></figure>
+<h2 id="推荐">推荐</h2>
+<p><strong>在线演示学习工具：</strong></p>
+<p>「补充，来自<a
+href="https://github.com/Snailclimb/JavaGuide/issues/729">issue729</a>」Learn
+Git Branching https://oschina.gitee.io/learn-git-branching/
+。该网站可以方便的演示基本的git操作，讲解得明明白白。每一个基本命令的作用和结果。</p>
+<p><strong>推荐阅读：</strong></p>
+<ul>
+<li><a href="https://rogerdudler.github.io/git-guide/index.zh.html">Git
+- 简明指南</a></li>
+<li><a
+href="https://marklodato.github.io/visual-git-guide/index-zh-cn.html">图解Git</a></li>
+<li><a
+href="https://backlog.com/git-tutorial/cn/intro/intro1_1.html">猴子都能懂得Git入门</a></li>
+<li>https://git-scm.com/book/en/v2</li>
+<li><a
+href="https://help.github.com/en/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent">Generating
+a new SSH key and adding it to the ssh-agent</a></li>
+<li><a
+href="https://github.com/torvalds/subsurface-for-dirk/blob/a48494d2fbed58c751e9b7e8fbff88582f9b2d02/README#L88">一个好的
+Git 提交消息，出自 Linus 之手</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>学习</category>
+      </categories>
+      <tags>
+        <tag>复习</tag>
+        <tag>复习-javaGuide</tag>
+        <tag>复习-javaGuide-database</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>maven</title>
     <url>/2023/02/07/review/java_guide/dev_tools/maven/</url>
     <content><![CDATA[<blockquote>
@@ -1254,36 +1494,44 @@ Maven 用户</strong>使用。</li>
 </ol>
 <h2 id="maven-生命周期">Maven 生命周期</h2>
 <p>Maven
-的生命周期就是为了对所有的构建过程进行抽象和统一，包含了项目的清理、初始化、编译、测试、打包、集成测试、验证、部署和站点生成等几乎所有构建步骤。</p>
-<p>Maven 定义了 3
-个生命周期<code>META-INF/plexus/components.xml</code>：</p>
+的<strong>生命周期</strong>就是为了对<strong>所有的构建过程</strong>进行<strong>抽象</strong>和<strong>统一</strong>，包含了项目的<strong>清理</strong>、<strong>初始化</strong>、<strong>编译</strong>、<strong>测试</strong>、<strong>打包</strong>、<strong>集成测试</strong>、<strong>验证</strong>、<strong>部署</strong>和<strong>站点生成</strong>等几乎所有构建步骤。</p>
+<p>Maven 定义了 <strong>3
+个生命周期</strong><code>META-INF/plexus/components.xml</code>：</p>
 <ul>
 <li><code>default</code> 生命周期</li>
 <li><code>clean</code>生命周期</li>
 <li><code>site</code>生命周期</li>
 </ul>
-<p>这些生命周期是相互独立的，每个生命周期包含多个阶段(phase)。并且，这些阶段是有序的，也就是说，后面的阶段依赖于前面的阶段。当执行某个阶段的时候，会先执行它前面的阶段。</p>
+<p>这些生命周期是<strong>相互独立</strong>的，<strong>每个生命周期</strong>包含多个<strong>阶段(phase)</strong>。并且，这些阶段是<strong>有序</strong>的，也就是说，后面的阶段依赖于前面的阶段。当<strong>执行某个阶段</strong>的时候，会<strong>先执行它前面的阶段</strong>。</p>
 <p>执行 Maven 生命周期的命令格式如下：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mvn 阶段 [阶段2] ...[阶段n]</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">mvn 阶段 [阶段2] ...[阶段n]</span><br></pre></td></tr></table></figure>
 <h3 id="default-生命周期">default 生命周期</h3>
 <p><code>default</code>生命周期是在没有任何关联插件的情况下定义的，是
-Maven 的主要生命周期，用于构建应用程序，共包含 23 个阶段。</p>
+Maven
+的<strong>主要生命周期</strong>，用于<strong>构建应用程序</strong>，共包含
+23 个阶段。</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&lt;phases&gt;</span><br><span class="line">  &lt;!-- 验证项目是否正确，并且所有必要的信息可用于完成构建过程 --&gt;</span><br><span class="line">  &lt;phase&gt;validate&lt;/phase&gt;</span><br><span class="line">  &lt;!-- 建立初始化状态，例如设置属性 --&gt;</span><br><span class="line">  &lt;phase&gt;initialize&lt;/phase&gt;</span><br><span class="line">  &lt;!-- 生成要包含在编译阶段的源代码 --&gt;</span><br><span class="line">  &lt;phase&gt;generate-sources&lt;/phase&gt;</span><br><span class="line">  &lt;!-- 处理源代码 --&gt;</span><br><span class="line">  &lt;phase&gt;process-sources&lt;/phase&gt;</span><br><span class="line">  &lt;!-- 生成要包含在包中的资源 --&gt;</span><br><span class="line">  &lt;phase&gt;generate-resources&lt;/phase&gt;</span><br><span class="line">  &lt;!-- 将资源复制并处理到目标目录中，为打包阶段做好准备。 --&gt;</span><br><span class="line">  &lt;phase&gt;process-resources&lt;/phase&gt;</span><br><span class="line">  &lt;!-- 编译项目的源代码  --&gt;</span><br><span class="line">  &lt;phase&gt;compile&lt;/phase&gt;</span><br><span class="line">  &lt;!-- 对编译生成的文件进行后处理，例如对 Java 类进行字节码增强/优化 --&gt;</span><br><span class="line">  &lt;phase&gt;process-classes&lt;/phase&gt;</span><br><span class="line">  &lt;!-- 生成要包含在编译阶段的任何测试源代码 --&gt;</span><br><span class="line">  &lt;phase&gt;generate-test-sources&lt;/phase&gt;</span><br><span class="line">  &lt;!-- 处理测试源代码 --&gt;</span><br><span class="line">  &lt;phase&gt;process-test-sources&lt;/phase&gt;</span><br><span class="line">  &lt;!-- 生成要包含在编译阶段的测试源代码 --&gt;</span><br><span class="line">  &lt;phase&gt;generate-test-resources&lt;/phase&gt;</span><br><span class="line">  &lt;!-- 处理从测试代码文件编译生成的文件 --&gt;</span><br><span class="line">  &lt;phase&gt;process-test-resources&lt;/phase&gt;</span><br><span class="line">  &lt;!-- 编译测试源代码 --&gt;</span><br><span class="line">  &lt;phase&gt;test-compile&lt;/phase&gt;</span><br><span class="line">  &lt;!-- 处理从测试代码文件编译生成的文件 --&gt;</span><br><span class="line">  &lt;phase&gt;process-test-classes&lt;/phase&gt;</span><br><span class="line">  &lt;!-- 使用合适的单元测试框架（Junit 就是其中之一）运行测试 --&gt;</span><br><span class="line">  &lt;phase&gt;test&lt;/phase&gt;</span><br><span class="line">  &lt;!-- 在实际打包之前，执行任何的必要的操作为打包做准备 --&gt;</span><br><span class="line">  &lt;phase&gt;prepare-package&lt;/phase&gt;</span><br><span class="line">  &lt;!-- 获取已编译的代码并将其打包成可分发的格式，例如 JAR、WAR 或 EAR 文件 --&gt;</span><br><span class="line">  &lt;phase&gt;package&lt;/phase&gt;</span><br><span class="line">  &lt;!-- 在执行集成测试之前执行所需的操作。 例如，设置所需的环境 --&gt;</span><br><span class="line">  &lt;phase&gt;pre-integration-test&lt;/phase&gt;</span><br><span class="line">  &lt;!-- 处理并在必要时部署软件包到集成测试可以运行的环境 --&gt;</span><br><span class="line">  &lt;phase&gt;integration-test&lt;/phase&gt;</span><br><span class="line">  &lt;!-- 执行集成测试后执行所需的操作。 例如，清理环境  --&gt;</span><br><span class="line">  &lt;phase&gt;post-integration-test&lt;/phase&gt;</span><br><span class="line">  &lt;!-- 运行任何检查以验证打的包是否有效并符合质量标准。 --&gt;</span><br><span class="line">  &lt;phase&gt;verify&lt;/phase&gt;</span><br><span class="line">  &lt;!-- 	将包安装到本地仓库中，可以作为本地其他项目的依赖 --&gt;</span><br><span class="line">  &lt;phase&gt;install&lt;/phase&gt;</span><br><span class="line">  &lt;!-- 将最终的项目包复制到远程仓库中与其他开发者和项目共享 --&gt;</span><br><span class="line">  &lt;phase&gt;deploy&lt;/phase&gt;</span><br><span class="line">&lt;/phases&gt;</span><br></pre></td></tr></table></figure>
 <p>根据前面提到的阶段间依赖关系理论，当我们执行
-<code>mvn test</code>命令的时候，会执行从 validate 到 test
-的所有阶段，这也就解释了为什么执行测试的时候，项目的代码能够自动编译。</p>
+<code>mvn test</code>命令的时候，会执行从 <strong>validate 到
+test</strong>
+的所有阶段，这也就解释了为什么<strong>执行测试</strong>的时候，项目的<strong>代码能够自动编译</strong>。</p>
 <h3 id="clean-生命周期">clean 生命周期</h3>
-<p>clean 生命周期的目的是清理项目，共包含 3 个阶段：</p>
+<p>clean 生命周期的目的是<strong>清理项目</strong>，共包含 3
+个阶段：</p>
 <ol type="1">
 <li>pre-clean</li>
 <li>clean</li>
 <li>post-clean</li>
 </ol>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&lt;phases&gt;</span><br><span class="line">  &lt;!--  执行一些需要在clean之前完成的工作 --&gt;</span><br><span class="line">  &lt;phase&gt;pre-clean&lt;/phase&gt;</span><br><span class="line">  &lt;!--  移除所有上一次构建生成的文件 --&gt;</span><br><span class="line">  &lt;phase&gt;clean&lt;/phase&gt;</span><br><span class="line">  &lt;!--  执行一些需要在clean之后立刻完成的工作 --&gt;</span><br><span class="line">  &lt;phase&gt;post-clean&lt;/phase&gt;</span><br><span class="line">&lt;/phases&gt;</span><br><span class="line">&lt;default-phases&gt;</span><br><span class="line">  &lt;clean&gt;</span><br><span class="line">    org.apache.maven.plugins:maven-clean-plugin:2.5:clean</span><br><span class="line">  &lt;/clean&gt;</span><br><span class="line">&lt;/default-phases&gt;</span><br></pre></td></tr></table></figure>
-<p>根据前面提到的阶段间依赖关系理论，当我们执行 <code>mvn clean</code>
-的时候，会执行 clean 生命周期中的 pre-clean 和 clean 阶段。</p>
+<p>根据前面提到的<strong>阶段间依赖关系</strong>理论，当我们执行
+<strong><code>mvn clean</code></strong> 的时候，会执行 <strong>clean
+生命周期</strong>中的 <strong>pre-clean</strong> 和
+<strong>clean</strong> 阶段。</p>
 <h3 id="site-生命周期">site 生命周期</h3>
-<p>site 生命周期的目的是建立和发布项目站点，共包含 4 个阶段：</p>
+<p>site
+生命周期的目的是<strong>建立</strong>和<strong>发布项目站点</strong>，共包含
+4 个阶段：</p>
 <ol type="1">
 <li>pre-site</li>
 <li>site</li>
@@ -1292,46 +1540,50 @@ Maven 的主要生命周期，用于构建应用程序，共包含 23 个阶段�
 </ol>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&lt;phases&gt;</span><br><span class="line">  &lt;!--  执行一些需要在生成站点文档之前完成的工作 --&gt;</span><br><span class="line">  &lt;phase&gt;pre-site&lt;/phase&gt;</span><br><span class="line">  &lt;!--  生成项目的站点文档作 --&gt;</span><br><span class="line">  &lt;phase&gt;site&lt;/phase&gt;</span><br><span class="line">  &lt;!--  执行一些需要在生成站点文档之后完成的工作，并且为部署做准备 --&gt;</span><br><span class="line">  &lt;phase&gt;post-site&lt;/phase&gt;</span><br><span class="line">  &lt;!--  将生成的站点文档部署到特定的服务器上 --&gt;</span><br><span class="line">  &lt;phase&gt;site-deploy&lt;/phase&gt;</span><br><span class="line">&lt;/phases&gt;</span><br><span class="line">&lt;default-phases&gt;</span><br><span class="line">  &lt;site&gt;</span><br><span class="line">    org.apache.maven.plugins:maven-site-plugin:3.3:site</span><br><span class="line">  &lt;/site&gt;</span><br><span class="line">  &lt;site-deploy&gt;</span><br><span class="line">    org.apache.maven.plugins:maven-site-plugin:3.3:deploy</span><br><span class="line">  &lt;/site-deploy&gt;</span><br><span class="line">&lt;/default-phases&gt;</span><br></pre></td></tr></table></figure>
 <p>Maven 能够基于 <code>pom.xml</code>
-所包含的信息，自动生成一个友好的站点，方便团队交流和发布项目信息。</p>
+所包含的信息，<strong>自动生成一个友好的站点</strong>，方便<strong>团队交流</strong>和<strong>发布项目信息</strong>。</p>
 <h2 id="maven-插件">Maven 插件</h2>
 <p>Maven
 本质上是一个插件执行框架，所有的执行过程，都是由一个一个插件独立完成的。像咱们日常使用到的
-install、clean、deploy 等命令，其实底层都是一个一个的 Maven 插件。关于
-Maven
+install、clean、deploy 等命令，其实底层都是<strong>一个一个的 Maven
+插件</strong>。关于 Maven
 的核心插件可以参考官方的这篇文档：https://maven.apache.org/plugins/index.html
 。</p>
 <p><a
 href="https://camo.githubusercontent.com/ebee054289ad43a146df3479406d831a8cb49e65cf9c986f2b841f1d4b0b83e4/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f746f6f6c732f6d6176656e2f6d6176656e2d706c7567696e732e706e67"><img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f746f6f6c732f6d6176656e2f6d6176656e2d706c7567696e732e706e67"
 alt="img" /></a></p>
-<p>除了 Maven 自带的插件之外，还有一些三方提供的插件比如单测覆盖率插件
-jacoco-maven-plugin、帮助开发检测代码中不合规范的地方的插件
-maven-checkstyle-plugin、分析代码质量的
-sonar-maven-plugin。并且，我们还可以自定义插件来满足自己的需求。</p>
+<p>除了 Maven
+自带的插件之外，还有一些三方提供的插件比如<strong>单测覆盖率</strong>插件
+jacoco-maven-plugin、帮助开发<strong>检测代码中不合规范</strong>的地方的插件
+maven-checkstyle-plugin、<strong>分析代码质</strong>量的
+sonar-maven-plugin。并且，我们还可以<strong>自定义插件</strong>来满足自己的需求。</p>
 <p>jacoco-maven-plugin 使用示例：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&lt;build&gt;</span><br><span class="line">   &lt;plugins&gt;</span><br><span class="line">       &lt;plugin&gt;</span><br><span class="line">           &lt;groupId&gt;org.jacoco&lt;/groupId&gt;</span><br><span class="line">           &lt;artifactId&gt;jacoco-maven-plugin&lt;/artifactId&gt;</span><br><span class="line">           &lt;version&gt;0.8.8&lt;/version&gt;</span><br><span class="line">           &lt;executions&gt;</span><br><span class="line">               &lt;execution&gt;</span><br><span class="line">                   &lt;goals&gt;</span><br><span class="line">                       &lt;goal&gt;prepare-agent&lt;/goal&gt;</span><br><span class="line">                   &lt;/goals&gt;</span><br><span class="line">               &lt;/execution&gt;</span><br><span class="line">               &lt;execution&gt;</span><br><span class="line">                   &lt;id&gt;generate-code-coverage-report&lt;/id&gt;</span><br><span class="line">                   &lt;phase&gt;test&lt;/phase&gt;</span><br><span class="line">                   &lt;goals&gt;</span><br><span class="line">                       &lt;goal&gt;report&lt;/goal&gt;</span><br><span class="line">                   &lt;/goals&gt;</span><br><span class="line">               &lt;/execution&gt;</span><br><span class="line">           &lt;/executions&gt;</span><br><span class="line">       &lt;/plugin&gt;</span><br><span class="line">       &lt;/plugins&gt;</span><br><span class="line">   &lt;/build&gt;</span><br></pre></td></tr></table></figure>
 <p>你可以将 Maven
-插件理解为一组任务的集合，用户可以通过命令行直接运行指定插件的任务，也可以将插件任务挂载到构建生命周期，随着生命周期运行。</p>
+插件理解为<strong>一组任务的集合</strong>，用户可以<strong>通过命令行直接运行指定插件的任务</strong>，也可以将<strong>插件任务挂载到构建生命周期，随着生命周期</strong>运行。</p>
 <p>Maven 插件被分为下面两种类型：</p>
 <ul>
 <li><strong>Build plugins</strong> ：在构建时执行。</li>
 <li><strong>Reporting plugins</strong>：在网站生成过程中执行。</li>
 </ul>
 <h2 id="maven-多模块管理">Maven 多模块管理</h2>
-<p>多模块管理简单地来说就是将一个项目分为多个模块，每个模块只负责单一的功能实现。直观的表现就是一个
-Maven 项目中不止有一个 <code>pom.xml</code> 文件，会在不同的目录中有多个
-<code>pom.xml</code> 文件，进而实现多模块管理。</p>
+<p><strong>多模块管理</strong>简单地来说就是将<strong>一个项目</strong>分为<strong>多个模块</strong>，<strong>每个模块只负责单一的功能</strong>实现。直观的表现就是一个
+<strong>Maven</strong> 项目中<strong>不止有一个
+<code>pom.xml</code></strong> 文件，会在不同的目录中有<strong>多个
+<code>pom.xml</code></strong>
+文件，进而实现<strong>多模块管理</strong>。</p>
 <p>多模块管理除了可以更加便于项目开发和管理，还有如下好处：</p>
 <ol type="1">
-<li>降低代码之间的耦合性（从类级别的耦合提升到 jar 包级别的耦合）；</li>
-<li>减少重复，提升复用性；</li>
-<li>每个模块都可以是自解释的（通过模块名或者模块文档）；</li>
-<li>模块还规范了代码边界的划分，开发者很容易通过模块确定自己所负责的内容。</li>
+<li><strong>降低</strong>代码之间的<strong>耦合</strong>性（从<strong>类级别的耦合</strong>提升到
+<strong>jar 包级别的耦合</strong>）；</li>
+<li><strong>减少重复</strong>，<strong>提升复用</strong>性；</li>
+<li>每个模块都可以是<strong>自解释</strong>的（通过<strong>模块名</strong>或者<strong>模块文档</strong>）；</li>
+<li>模块还<strong>规范了代码边界</strong>的划分，开发者很容易<strong>通过模块确定自己所负责</strong>的内容。</li>
 </ol>
 <p>多模块管理下，会有一个父模块，其他的都是子模块。父模块通常只有一个
 <code>pom.xml</code>，没有其他内容。父模块的 <code>pom.xml</code>
-一般只定义了各个依赖的版本号、包含哪些子模块以及插件有哪些。不过，要注意的是，如果依赖只在某个子项目中使用，则可以在子项目的
-pom.xml 中直接引入，防止父 pom 的过于臃肿。</p>
+一般只定义了<strong>各个依赖的版本号</strong>、<strong>包含哪些子模块</strong>以及<strong>插件有哪些</strong>。不过，要注意的是，如果依赖<strong>只在某个子项目中</strong>使用，则可以<strong>在子项目的
+pom.xml 中直接引入</strong>，防止父 pom 的过于臃肿。</p>
 <p>如下图所示，Dubbo 项目就被分成了多个子模块比如
 dubbo-common（公共逻辑模块）、dubbo-remoting（远程通讯模块）、dubbo-rpc（远程调用模块）。</p>
 <p><a
@@ -8766,6 +9018,25 @@ id="sql大小写规范与sql_model的设置">SQL大小写规范与sql_model的�
       </tags>
   </entry>
   <entry>
+    <title>基础</title>
+    <url>/2022/10/27/study/springCloud/bl_zhouyang/base/</url>
+    <content><![CDATA[<ul>
+<li>springCloud涉及到的技术有哪些 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221027164807178.png"
+alt="image-20221027164807178" /></li>
+<li>约定 &gt; 配置 &gt; 编码</li>
+<li></li>
+</ul>
+]]></content>
+      <categories>
+        <category>学习</category>
+      </categories>
+      <tags>
+        <tag>复习</tag>
+        <tag>复习--SpringCloud</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>redis_尚硅谷_01-05</title>
     <url>/2021/12/27/study/redis/shangguigu_BV1Rv41177Af/01-05/</url>
     <content><![CDATA[<h2 id="课程简介">课程简介</h2>
@@ -9075,25 +9346,6 @@ src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img
       </categories>
       <tags>
         <tag>redis_尚硅谷</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>基础</title>
-    <url>/2022/10/27/study/springCloud/bl_zhouyang/base/</url>
-    <content><![CDATA[<ul>
-<li>springCloud涉及到的技术有哪些 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221027164807178.png"
-alt="image-20221027164807178" /></li>
-<li>约定 &gt; 配置 &gt; 编码</li>
-<li></li>
-</ul>
-]]></content>
-      <categories>
-        <category>学习</category>
-      </categories>
-      <tags>
-        <tag>复习</tag>
-        <tag>复习--SpringCloud</tag>
       </tags>
   </entry>
   <entry>

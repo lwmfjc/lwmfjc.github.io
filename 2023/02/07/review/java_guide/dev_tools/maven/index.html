@@ -482,36 +482,44 @@ Maven 用户</strong>使用。</li>
 </ol>
 <h2 id="maven-生命周期">Maven 生命周期</h2>
 <p>Maven
-的生命周期就是为了对所有的构建过程进行抽象和统一，包含了项目的清理、初始化、编译、测试、打包、集成测试、验证、部署和站点生成等几乎所有构建步骤。</p>
-<p>Maven 定义了 3
-个生命周期<code>META-INF/plexus/components.xml</code>：</p>
+的<strong>生命周期</strong>就是为了对<strong>所有的构建过程</strong>进行<strong>抽象</strong>和<strong>统一</strong>，包含了项目的<strong>清理</strong>、<strong>初始化</strong>、<strong>编译</strong>、<strong>测试</strong>、<strong>打包</strong>、<strong>集成测试</strong>、<strong>验证</strong>、<strong>部署</strong>和<strong>站点生成</strong>等几乎所有构建步骤。</p>
+<p>Maven 定义了 <strong>3
+个生命周期</strong><code>META-INF/plexus/components.xml</code>：</p>
 <ul>
 <li><code>default</code> 生命周期</li>
 <li><code>clean</code>生命周期</li>
 <li><code>site</code>生命周期</li>
 </ul>
-<p>这些生命周期是相互独立的，每个生命周期包含多个阶段(phase)。并且，这些阶段是有序的，也就是说，后面的阶段依赖于前面的阶段。当执行某个阶段的时候，会先执行它前面的阶段。</p>
+<p>这些生命周期是<strong>相互独立</strong>的，<strong>每个生命周期</strong>包含多个<strong>阶段(phase)</strong>。并且，这些阶段是<strong>有序</strong>的，也就是说，后面的阶段依赖于前面的阶段。当<strong>执行某个阶段</strong>的时候，会<strong>先执行它前面的阶段</strong>。</p>
 <p>执行 Maven 生命周期的命令格式如下：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mvn 阶段 [阶段2] ...[阶段n]</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">mvn 阶段 [阶段2] ...[阶段n]</span><br></pre></td></tr></table></figure>
 <h3 id="default-生命周期">default 生命周期</h3>
 <p><code>default</code>生命周期是在没有任何关联插件的情况下定义的，是
-Maven 的主要生命周期，用于构建应用程序，共包含 23 个阶段。</p>
+Maven
+的<strong>主要生命周期</strong>，用于<strong>构建应用程序</strong>，共包含
+23 个阶段。</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&lt;phases&gt;</span><br><span class="line">  &lt;!-- 验证项目是否正确，并且所有必要的信息可用于完成构建过程 --&gt;</span><br><span class="line">  &lt;phase&gt;validate&lt;/phase&gt;</span><br><span class="line">  &lt;!-- 建立初始化状态，例如设置属性 --&gt;</span><br><span class="line">  &lt;phase&gt;initialize&lt;/phase&gt;</span><br><span class="line">  &lt;!-- 生成要包含在编译阶段的源代码 --&gt;</span><br><span class="line">  &lt;phase&gt;generate-sources&lt;/phase&gt;</span><br><span class="line">  &lt;!-- 处理源代码 --&gt;</span><br><span class="line">  &lt;phase&gt;process-sources&lt;/phase&gt;</span><br><span class="line">  &lt;!-- 生成要包含在包中的资源 --&gt;</span><br><span class="line">  &lt;phase&gt;generate-resources&lt;/phase&gt;</span><br><span class="line">  &lt;!-- 将资源复制并处理到目标目录中，为打包阶段做好准备。 --&gt;</span><br><span class="line">  &lt;phase&gt;process-resources&lt;/phase&gt;</span><br><span class="line">  &lt;!-- 编译项目的源代码  --&gt;</span><br><span class="line">  &lt;phase&gt;compile&lt;/phase&gt;</span><br><span class="line">  &lt;!-- 对编译生成的文件进行后处理，例如对 Java 类进行字节码增强/优化 --&gt;</span><br><span class="line">  &lt;phase&gt;process-classes&lt;/phase&gt;</span><br><span class="line">  &lt;!-- 生成要包含在编译阶段的任何测试源代码 --&gt;</span><br><span class="line">  &lt;phase&gt;generate-test-sources&lt;/phase&gt;</span><br><span class="line">  &lt;!-- 处理测试源代码 --&gt;</span><br><span class="line">  &lt;phase&gt;process-test-sources&lt;/phase&gt;</span><br><span class="line">  &lt;!-- 生成要包含在编译阶段的测试源代码 --&gt;</span><br><span class="line">  &lt;phase&gt;generate-test-resources&lt;/phase&gt;</span><br><span class="line">  &lt;!-- 处理从测试代码文件编译生成的文件 --&gt;</span><br><span class="line">  &lt;phase&gt;process-test-resources&lt;/phase&gt;</span><br><span class="line">  &lt;!-- 编译测试源代码 --&gt;</span><br><span class="line">  &lt;phase&gt;test-compile&lt;/phase&gt;</span><br><span class="line">  &lt;!-- 处理从测试代码文件编译生成的文件 --&gt;</span><br><span class="line">  &lt;phase&gt;process-test-classes&lt;/phase&gt;</span><br><span class="line">  &lt;!-- 使用合适的单元测试框架（Junit 就是其中之一）运行测试 --&gt;</span><br><span class="line">  &lt;phase&gt;test&lt;/phase&gt;</span><br><span class="line">  &lt;!-- 在实际打包之前，执行任何的必要的操作为打包做准备 --&gt;</span><br><span class="line">  &lt;phase&gt;prepare-package&lt;/phase&gt;</span><br><span class="line">  &lt;!-- 获取已编译的代码并将其打包成可分发的格式，例如 JAR、WAR 或 EAR 文件 --&gt;</span><br><span class="line">  &lt;phase&gt;package&lt;/phase&gt;</span><br><span class="line">  &lt;!-- 在执行集成测试之前执行所需的操作。 例如，设置所需的环境 --&gt;</span><br><span class="line">  &lt;phase&gt;pre-integration-test&lt;/phase&gt;</span><br><span class="line">  &lt;!-- 处理并在必要时部署软件包到集成测试可以运行的环境 --&gt;</span><br><span class="line">  &lt;phase&gt;integration-test&lt;/phase&gt;</span><br><span class="line">  &lt;!-- 执行集成测试后执行所需的操作。 例如，清理环境  --&gt;</span><br><span class="line">  &lt;phase&gt;post-integration-test&lt;/phase&gt;</span><br><span class="line">  &lt;!-- 运行任何检查以验证打的包是否有效并符合质量标准。 --&gt;</span><br><span class="line">  &lt;phase&gt;verify&lt;/phase&gt;</span><br><span class="line">  &lt;!-- 	将包安装到本地仓库中，可以作为本地其他项目的依赖 --&gt;</span><br><span class="line">  &lt;phase&gt;install&lt;/phase&gt;</span><br><span class="line">  &lt;!-- 将最终的项目包复制到远程仓库中与其他开发者和项目共享 --&gt;</span><br><span class="line">  &lt;phase&gt;deploy&lt;/phase&gt;</span><br><span class="line">&lt;/phases&gt;</span><br></pre></td></tr></table></figure>
 <p>根据前面提到的阶段间依赖关系理论，当我们执行
-<code>mvn test</code>命令的时候，会执行从 validate 到 test
-的所有阶段，这也就解释了为什么执行测试的时候，项目的代码能够自动编译。</p>
+<code>mvn test</code>命令的时候，会执行从 <strong>validate 到
+test</strong>
+的所有阶段，这也就解释了为什么<strong>执行测试</strong>的时候，项目的<strong>代码能够自动编译</strong>。</p>
 <h3 id="clean-生命周期">clean 生命周期</h3>
-<p>clean 生命周期的目的是清理项目，共包含 3 个阶段：</p>
+<p>clean 生命周期的目的是<strong>清理项目</strong>，共包含 3
+个阶段：</p>
 <ol type="1">
 <li>pre-clean</li>
 <li>clean</li>
 <li>post-clean</li>
 </ol>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&lt;phases&gt;</span><br><span class="line">  &lt;!--  执行一些需要在clean之前完成的工作 --&gt;</span><br><span class="line">  &lt;phase&gt;pre-clean&lt;/phase&gt;</span><br><span class="line">  &lt;!--  移除所有上一次构建生成的文件 --&gt;</span><br><span class="line">  &lt;phase&gt;clean&lt;/phase&gt;</span><br><span class="line">  &lt;!--  执行一些需要在clean之后立刻完成的工作 --&gt;</span><br><span class="line">  &lt;phase&gt;post-clean&lt;/phase&gt;</span><br><span class="line">&lt;/phases&gt;</span><br><span class="line">&lt;default-phases&gt;</span><br><span class="line">  &lt;clean&gt;</span><br><span class="line">    org.apache.maven.plugins:maven-clean-plugin:2.5:clean</span><br><span class="line">  &lt;/clean&gt;</span><br><span class="line">&lt;/default-phases&gt;</span><br></pre></td></tr></table></figure>
-<p>根据前面提到的阶段间依赖关系理论，当我们执行 <code>mvn clean</code>
-的时候，会执行 clean 生命周期中的 pre-clean 和 clean 阶段。</p>
+<p>根据前面提到的<strong>阶段间依赖关系</strong>理论，当我们执行
+<strong><code>mvn clean</code></strong> 的时候，会执行 <strong>clean
+生命周期</strong>中的 <strong>pre-clean</strong> 和
+<strong>clean</strong> 阶段。</p>
 <h3 id="site-生命周期">site 生命周期</h3>
-<p>site 生命周期的目的是建立和发布项目站点，共包含 4 个阶段：</p>
+<p>site
+生命周期的目的是<strong>建立</strong>和<strong>发布项目站点</strong>，共包含
+4 个阶段：</p>
 <ol type="1">
 <li>pre-site</li>
 <li>site</li>
@@ -520,46 +528,50 @@ Maven 的主要生命周期，用于构建应用程序，共包含 23 个阶段�
 </ol>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&lt;phases&gt;</span><br><span class="line">  &lt;!--  执行一些需要在生成站点文档之前完成的工作 --&gt;</span><br><span class="line">  &lt;phase&gt;pre-site&lt;/phase&gt;</span><br><span class="line">  &lt;!--  生成项目的站点文档作 --&gt;</span><br><span class="line">  &lt;phase&gt;site&lt;/phase&gt;</span><br><span class="line">  &lt;!--  执行一些需要在生成站点文档之后完成的工作，并且为部署做准备 --&gt;</span><br><span class="line">  &lt;phase&gt;post-site&lt;/phase&gt;</span><br><span class="line">  &lt;!--  将生成的站点文档部署到特定的服务器上 --&gt;</span><br><span class="line">  &lt;phase&gt;site-deploy&lt;/phase&gt;</span><br><span class="line">&lt;/phases&gt;</span><br><span class="line">&lt;default-phases&gt;</span><br><span class="line">  &lt;site&gt;</span><br><span class="line">    org.apache.maven.plugins:maven-site-plugin:3.3:site</span><br><span class="line">  &lt;/site&gt;</span><br><span class="line">  &lt;site-deploy&gt;</span><br><span class="line">    org.apache.maven.plugins:maven-site-plugin:3.3:deploy</span><br><span class="line">  &lt;/site-deploy&gt;</span><br><span class="line">&lt;/default-phases&gt;</span><br></pre></td></tr></table></figure>
 <p>Maven 能够基于 <code>pom.xml</code>
-所包含的信息，自动生成一个友好的站点，方便团队交流和发布项目信息。</p>
+所包含的信息，<strong>自动生成一个友好的站点</strong>，方便<strong>团队交流</strong>和<strong>发布项目信息</strong>。</p>
 <h2 id="maven-插件">Maven 插件</h2>
 <p>Maven
 本质上是一个插件执行框架，所有的执行过程，都是由一个一个插件独立完成的。像咱们日常使用到的
-install、clean、deploy 等命令，其实底层都是一个一个的 Maven 插件。关于
-Maven
+install、clean、deploy 等命令，其实底层都是<strong>一个一个的 Maven
+插件</strong>。关于 Maven
 的核心插件可以参考官方的这篇文档：https://maven.apache.org/plugins/index.html
 。</p>
 <p><a
 target="_blank" rel="noopener" href="https://camo.githubusercontent.com/ebee054289ad43a146df3479406d831a8cb49e65cf9c986f2b841f1d4b0b83e4/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f746f6f6c732f6d6176656e2f6d6176656e2d706c7567696e732e706e67"><img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f746f6f6c732f6d6176656e2f6d6176656e2d706c7567696e732e706e67"
 alt="img" /></a></p>
-<p>除了 Maven 自带的插件之外，还有一些三方提供的插件比如单测覆盖率插件
-jacoco-maven-plugin、帮助开发检测代码中不合规范的地方的插件
-maven-checkstyle-plugin、分析代码质量的
-sonar-maven-plugin。并且，我们还可以自定义插件来满足自己的需求。</p>
+<p>除了 Maven
+自带的插件之外，还有一些三方提供的插件比如<strong>单测覆盖率</strong>插件
+jacoco-maven-plugin、帮助开发<strong>检测代码中不合规范</strong>的地方的插件
+maven-checkstyle-plugin、<strong>分析代码质</strong>量的
+sonar-maven-plugin。并且，我们还可以<strong>自定义插件</strong>来满足自己的需求。</p>
 <p>jacoco-maven-plugin 使用示例：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&lt;build&gt;</span><br><span class="line">   &lt;plugins&gt;</span><br><span class="line">       &lt;plugin&gt;</span><br><span class="line">           &lt;groupId&gt;org.jacoco&lt;/groupId&gt;</span><br><span class="line">           &lt;artifactId&gt;jacoco-maven-plugin&lt;/artifactId&gt;</span><br><span class="line">           &lt;version&gt;0.8.8&lt;/version&gt;</span><br><span class="line">           &lt;executions&gt;</span><br><span class="line">               &lt;execution&gt;</span><br><span class="line">                   &lt;goals&gt;</span><br><span class="line">                       &lt;goal&gt;prepare-agent&lt;/goal&gt;</span><br><span class="line">                   &lt;/goals&gt;</span><br><span class="line">               &lt;/execution&gt;</span><br><span class="line">               &lt;execution&gt;</span><br><span class="line">                   &lt;id&gt;generate-code-coverage-report&lt;/id&gt;</span><br><span class="line">                   &lt;phase&gt;test&lt;/phase&gt;</span><br><span class="line">                   &lt;goals&gt;</span><br><span class="line">                       &lt;goal&gt;report&lt;/goal&gt;</span><br><span class="line">                   &lt;/goals&gt;</span><br><span class="line">               &lt;/execution&gt;</span><br><span class="line">           &lt;/executions&gt;</span><br><span class="line">       &lt;/plugin&gt;</span><br><span class="line">       &lt;/plugins&gt;</span><br><span class="line">   &lt;/build&gt;</span><br></pre></td></tr></table></figure>
 <p>你可以将 Maven
-插件理解为一组任务的集合，用户可以通过命令行直接运行指定插件的任务，也可以将插件任务挂载到构建生命周期，随着生命周期运行。</p>
+插件理解为<strong>一组任务的集合</strong>，用户可以<strong>通过命令行直接运行指定插件的任务</strong>，也可以将<strong>插件任务挂载到构建生命周期，随着生命周期</strong>运行。</p>
 <p>Maven 插件被分为下面两种类型：</p>
 <ul>
 <li><strong>Build plugins</strong> ：在构建时执行。</li>
 <li><strong>Reporting plugins</strong>：在网站生成过程中执行。</li>
 </ul>
 <h2 id="maven-多模块管理">Maven 多模块管理</h2>
-<p>多模块管理简单地来说就是将一个项目分为多个模块，每个模块只负责单一的功能实现。直观的表现就是一个
-Maven 项目中不止有一个 <code>pom.xml</code> 文件，会在不同的目录中有多个
-<code>pom.xml</code> 文件，进而实现多模块管理。</p>
+<p><strong>多模块管理</strong>简单地来说就是将<strong>一个项目</strong>分为<strong>多个模块</strong>，<strong>每个模块只负责单一的功能</strong>实现。直观的表现就是一个
+<strong>Maven</strong> 项目中<strong>不止有一个
+<code>pom.xml</code></strong> 文件，会在不同的目录中有<strong>多个
+<code>pom.xml</code></strong>
+文件，进而实现<strong>多模块管理</strong>。</p>
 <p>多模块管理除了可以更加便于项目开发和管理，还有如下好处：</p>
 <ol type="1">
-<li>降低代码之间的耦合性（从类级别的耦合提升到 jar 包级别的耦合）；</li>
-<li>减少重复，提升复用性；</li>
-<li>每个模块都可以是自解释的（通过模块名或者模块文档）；</li>
-<li>模块还规范了代码边界的划分，开发者很容易通过模块确定自己所负责的内容。</li>
+<li><strong>降低</strong>代码之间的<strong>耦合</strong>性（从<strong>类级别的耦合</strong>提升到
+<strong>jar 包级别的耦合</strong>）；</li>
+<li><strong>减少重复</strong>，<strong>提升复用</strong>性；</li>
+<li>每个模块都可以是<strong>自解释</strong>的（通过<strong>模块名</strong>或者<strong>模块文档</strong>）；</li>
+<li>模块还<strong>规范了代码边界</strong>的划分，开发者很容易<strong>通过模块确定自己所负责</strong>的内容。</li>
 </ol>
 <p>多模块管理下，会有一个父模块，其他的都是子模块。父模块通常只有一个
 <code>pom.xml</code>，没有其他内容。父模块的 <code>pom.xml</code>
-一般只定义了各个依赖的版本号、包含哪些子模块以及插件有哪些。不过，要注意的是，如果依赖只在某个子项目中使用，则可以在子项目的
-pom.xml 中直接引入，防止父 pom 的过于臃肿。</p>
+一般只定义了<strong>各个依赖的版本号</strong>、<strong>包含哪些子模块</strong>以及<strong>插件有哪些</strong>。不过，要注意的是，如果依赖<strong>只在某个子项目中</strong>使用，则可以<strong>在子项目的
+pom.xml 中直接引入</strong>，防止父 pom 的过于臃肿。</p>
 <p>如下图所示，Dubbo 项目就被分成了多个子模块比如
 dubbo-common（公共逻辑模块）、dubbo-remoting（远程通讯模块）、dubbo-rpc（远程调用模块）。</p>
 <p><a
@@ -613,7 +625,10 @@ Maven：https://www.baeldung.com/maven-multi-module</li>
     <a href="/2023/02/03/review/java_guide/java/concurrent/AtomicPre/" rel="prev" title="ly030301lyAtomic预备知识">
       <i class="fa fa-chevron-left"></i> ly030301lyAtomic预备知识
     </a></div>
-      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2023/02/07/review/java_guide/dev_tools/git/" rel="next" title="git">
+      git <i class="fa fa-chevron-right"></i>
+    </a></div>
     </div>
       </footer>
     
@@ -695,7 +710,7 @@ Maven：https://www.baeldung.com/maven-multi-module</li>
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">132</span>
+          <span class="site-state-item-count">133</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -749,12 +764,12 @@ Maven：https://www.baeldung.com/maven-multi-module</li>
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">901k</span>
+    <span title="站点总字数">906k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">27:18</span>
+    <span title="站点阅读时长">27:27</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
