@@ -17885,7 +17885,7 @@ window</a>）来解决内存缓存不一致性问题。</li>
       </tags>
   </entry>
   <entry>
-    <title>锁升级</title>
+    <title>ly03122ly锁升级</title>
     <url>/2022/11/06/review/java_guide/java/concurrent/lock_escalation/</url>
     <content><![CDATA[<blockquote>
 <p>以下内容均转自
@@ -18386,16 +18386,13 @@ alt="image-20221104105511181" />
       </tags>
   </entry>
   <entry>
-    <title>对象内存布局和对象头</title>
+    <title>ly03121ly对象内存布局和对象头</title>
     <url>/2022/10/30/review/java_guide/java/concurrent/object-concurrent/</url>
-    <content><![CDATA[<blockquote>
-<p>转载自https://github.com/Snailclimb/JavaGuide
-（添加小部分笔记）感谢作者!</p>
-</blockquote>
-<h2 id="对象布局">对象布局</h2>
+    <content><![CDATA[<h2 id="对象布局">对象布局</h2>
 <ul>
-<li><p>heap （where）: new (eden ,s0 ,s1) ,old, metaspace</p></li>
-<li><p>对象的构成元素（that）
+<li><p><strong>heap</strong> （<strong>where</strong>）: <strong>new
+(eden ,s0 ,s1) ,old, metaspace</strong></p></li>
+<li><p>对象的构成元素（what）
 HotSpot虚拟机里，对象在<strong>堆内存中的存储布局</strong>分为三个部分
 <img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221030175640211.png"
@@ -18419,7 +18416,7 @@ Pointer，指向方法区的地址）</li>
 //hashCode存在对象哪个地方 &gt; 3. synchronized(o){ }
 //对象被锁了多少次（可重入锁） &gt; 4. System.gc();
 //躲过了几次gc（次数）</p>
-<p>上面这些，哈希码、gc标记、gc次数、同步锁标记、偏向锁持有者，都保存在<strong>对象标记</strong>里面
+<p>上面这些，<strong>哈希码</strong>、<strong>gc标记</strong>、<strong>gc次数</strong>、<strong>同步锁标记</strong>、<strong>偏向锁持有者</strong>，都保存在<strong>对象标记</strong>里面
 <img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221030175315204.png"
 alt="image-20221030175315204" /></p>
@@ -18440,7 +18437,7 @@ alt="image-20221030173518629" /></p></li>
 <li><p>实例数据</p></li>
 <li><p>用来存放类的属性（Filed）数据信息，包括父类的属性信息</p></li>
 <li><p>对齐填充</p></li>
-<li><p>填充到长度为8字节，因为虚拟机要求对象起始地址必须是8字节的整数倍（对齐填充不一定存在）</p></li>
+<li><p>填充到长度为8字节，因为虚拟机要求<strong>对象起始地址必须是8字节的整数倍</strong>（对齐填充不一定存在）</p></li>
 <li><p>示例</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Customer</span>&#123;</span><br><span class="line">    <span class="type">int</span> id;<span class="comment">//4字节</span></span><br><span class="line">    <span class="type">boolean</span> flag=<span class="literal">false</span>; <span class="comment">//1字节</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//Customer customer=new Customer();</span></span><br><span class="line"><span class="comment">//该对象大小：对象头（对象标记8+类型指针8）+实例数据（4+1）=21字节 ===&gt; 为了对齐填充，则为24字节</span></span><br></pre></td></tr></table></figure></li>
 </ul>
@@ -18495,9 +18492,9 @@ src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img
 alt="image-20221030184523659" /> 其中有一个,
 <strong>-XX:+UseCompressedClassPointers</strong>
 ，即开启了<strong>类型指针压缩</strong>，只需要<strong>4字节</strong></p></li>
-<li><p>当使用了类型指针压缩（默认）时，一个无任何属性对象是
-8字节(markWord) + 4字节（classPointer) + 4字节(对齐填充) =
-16字节</p></li>
+<li><p>当使用了<strong>类型指针压缩</strong>（默认）时，一个无任何属性对象是
+<strong>8字节(markWord)</strong> + <strong>4字节（classPointer)</strong>
++ <strong>4字节(对齐填充)</strong> = <strong>16字节</strong></p></li>
 <li><p>下面代码，使用了
 <code>-XX:-UseCompressedClassPointers</code>进行关闭压缩指针
 一个无任何属性对象是 8字节(markWord) + 8字节（classPointer) = 16字节</p>
@@ -19477,227 +19474,6 @@ alt="image-20221024233326047" />
         <tag>复习</tag>
         <tag>复习-javaGuide</tag>
         <tag>复习-javaGuide-io</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>类文件结构</title>
-    <url>/2022/12/18/review/java_guide/java/jvm/class-structure/</url>
-    <content><![CDATA[<blockquote>
-<p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!</p>
-</blockquote>
-<h1 id="概述">概述</h1>
-<ul>
-<li>Java中，JVM可以理解的代码就叫做<strong>字节码</strong>（即扩展名为.class的文件），它不面向任何特定的处理器，只<strong>面向虚拟机</strong></li>
-<li>Java语言通过<strong>字节码</strong>的方式，在一定程度上解决了<strong>传统解释型语言执行效率低</strong>的问题，同时又保留了<strong>解释型语言</strong>可移植的特点。所以Java程序运行时<strong>效率极高</strong>，且由于字节码并不针对一种特定的<strong>机器</strong>。因此，Java程序无需重新编译便可在<strong>多种不通操作系统的计算机</strong>运行</li>
-<li>Clojure（Lisp 语言的一种方言）、Groovy、Scala 等语言都是运行在 Java
-虚拟机之上。下图展示了<strong>不同的语言被不同的编译器</strong>编译<strong>成<code>.class</code></strong>文件<strong>最终运行在
-Java
-虚拟机</strong>之上。<strong><code>.class</code>文件的二进制格式</strong>可以使用
-<a href="https://www.x-ways.net/winhex/">WinHexopen in new window</a>
-查看。</li>
-</ul>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221218224536987.png"
-alt="image-20221218224536987" />
-<figcaption aria-hidden="true">image-20221218224536987</figcaption>
-</figure>
-<p>.class文件是不同语言在<strong>Java虚拟机</strong>之间的重要桥梁，同时也是<strong>支持Java跨平台</strong>很重要的一个原因</p>
-<h1 id="class文件结构总结">Class文件结构总结</h1>
-<p>根据Java虚拟机规范，Class文件通过<strong>ClassFile</strong>定义，有点类似C语言的<strong>结构体</strong></p>
-<p>ClassFile的结构如下：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">ClassFile &#123;</span><br><span class="line">    u4             magic; <span class="comment">//Class 文件的标志</span></span><br><span class="line">    u2             minor_version;<span class="comment">//Class 的小版本号</span></span><br><span class="line">    u2             major_version;<span class="comment">//Class 的大版本号</span></span><br><span class="line">    u2             constant_pool_count;<span class="comment">//常量池的数量</span></span><br><span class="line">    cp_info        constant_pool[constant_pool_count-<span class="number">1</span>];<span class="comment">//常量池</span></span><br><span class="line">    u2             access_flags;<span class="comment">//Class 的访问标记</span></span><br><span class="line">    u2             this_class;<span class="comment">//当前类</span></span><br><span class="line">    u2             super_class;<span class="comment">//父类</span></span><br><span class="line">    u2             interfaces_count;<span class="comment">//接口</span></span><br><span class="line">    u2             interfaces[interfaces_count];<span class="comment">//一个类可以实现多个接口</span></span><br><span class="line">    u2             fields_count;<span class="comment">//Class 文件的字段属性</span></span><br><span class="line">    field_info     fields[fields_count];<span class="comment">//一个类可以有多个字段</span></span><br><span class="line">    u2             methods_count;<span class="comment">//Class 文件的方法数量</span></span><br><span class="line">    method_info    methods[methods_count];<span class="comment">//一个类可以有个多个方法</span></span><br><span class="line">    u2             attributes_count;<span class="comment">//此类的属性表中的属性数</span></span><br><span class="line">    attribute_info attributes[attributes_count];<span class="comment">//属性表集合</span></span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221218230117020.png"
-alt="image-20221218230117020" />
-<figcaption aria-hidden="true">image-20221218230117020</figcaption>
-</figure>
-<p>通过IDEA插件jclasslib查看，可以直观看到<code>Class 文件结构</code></p>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20210401170711475.png"
-alt="img" />
-<figcaption aria-hidden="true">img</figcaption>
-</figure>
-<p>使用jclasslib不光能直观地查看某个类对应的字节码文件，还可以查看<strong>类的基本信息</strong>、<strong>常量池</strong>、<strong>接口</strong>、<strong>属性</strong>、<strong>函数</strong>等信息<br />
-下面介绍一下Class文件结构涉及到的一些组件</p>
-<h2 id="魔数magic-number">魔数（Magic Number）</h2>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">u4             magic; <span class="comment">//Class 文件的标志</span></span><br></pre></td></tr></table></figure>
-<p>每个Class文件的<strong>头4个字节</strong>称为<strong>魔数（Magic
-Number）</strong>，它的唯一作用是确定这个文件<strong>是否为一个能被虚拟机接收的Class文件</strong></p>
-<blockquote>
-<p>程序设计者很多时候都喜欢用一些<strong>特殊的数字</strong>表示<strong>固定的文件类型</strong>或者<strong>其它特殊的含义</strong>。</p>
-<p>这里前两个字节是<code>cafe 英[ˈkæfeɪ]</code>，后两个字节
-<code>babe 英[beɪb]</code></p>
-</blockquote>
-<p>JAVA为 CA FE BA
-BE，十六进制(一个英文代表4位，即2个英文字母为1字节）</p>
-<h2
-id="class文件版本号minormajor-version">Class文件版本号（Minor&amp;Major
-Version）</h2>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">u2             minor_version;<span class="comment">//Class 的小版本号</span></span><br><span class="line">u2             major_version;<span class="comment">//Class 的大版本号</span></span><br></pre></td></tr></table></figure>
-<p>前4个字节存储<strong>Class
-文件的版本号</strong>：<strong>第5位</strong>和<strong>第6位</strong>是<strong>次版本号</strong>，<strong>第7位</strong>和<strong>第8位</strong>是<strong>主版本号</strong>。
-比如Java1.8 为<code>00 00 00 34</code></p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">JDK1<span class="number">.8</span> = <span class="number">52</span></span><br><span class="line">JDK1<span class="number">.7</span> = <span class="number">51</span></span><br><span class="line">JDK1<span class="number">.6</span> = <span class="number">50</span></span><br><span class="line">JDK1<span class="number">.5</span> = <span class="number">49</span></span><br><span class="line">JDK1<span class="number">.4</span> = <span class="number">48</span></span><br></pre></td></tr></table></figure>
-<p>如图，下图是在java8中编译的，使用<code>javap -v</code>查看
-每当Java发布大版本（比如Java8 ，Java9 ）的时候，主版本号都会+1</p>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221219103843623.png"
-alt="image-20221219103843623" />
-<figcaption aria-hidden="true">image-20221219103843623</figcaption>
-</figure>
-<blockquote>
-<p>注：<strong>高版本</strong>的 Java
-虚拟机<strong>可以执行低版本编译器</strong>生成的 Class
-文件，但是<strong>低版本</strong>的 Java
-虚拟机<strong>不能执行高版本编译器</strong>生成的 Class
-文件。所以，我们在实际开发的时候要<strong>确保开发的的 JDK
-版本和生产环境的 JDK 版本保持一致</strong></p>
-</blockquote>
-<h2 id="常量池constant-pool">常量池（Constant Pool）</h2>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">u2             constant_pool_count;<span class="comment">//常量池的数量</span></span><br><span class="line">cp_info        constant_pool[constant_pool_count-<span class="number">1</span>];<span class="comment">//常量池 </span></span><br></pre></td></tr></table></figure>
-<p>主次版本号之后的是<strong>常量池</strong>，常量池数量为<code>constant_pool_count -1</code></p>
-<blockquote>
-<p>（<strong>常量池计数器是从 1 开始计数的，将第 0
-项常量空出来是有特殊考虑的，索引值为 0
-代表“不引用任何一个常量池项”</strong>）</p>
-</blockquote>
-<p>常量池主要包括<strong>两大常量</strong>：<strong>字面量</strong>和<strong>符号引用</strong>。</p>
-<ol type="1">
-<li><p>字面量比较接近于Java语言层面的<strong>常量概念</strong>，如<strong>文本字符串</strong>、<strong>声明为final的常量值</strong>等</p>
-<blockquote>
-<p>注意，<strong>非常量</strong>是不会在这里的， <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221219105146588.png"
-alt="image-20221219105146588" /></p>
-<p>没有找到3</p>
-</blockquote></li>
-<li><p>符号引用则属于<strong>编译原理</strong>方面的概念，包括下面三类<strong>常量</strong></p>
-<ol type="1">
-<li><strong>类和接口</strong>的全限定名</li>
-<li><strong>字段</strong>的名称和描述符</li>
-<li><strong>方法</strong>的名称和描述符</li>
-</ol></li>
-</ol>
-<p>常量池中的<strong>每一项常量都是一个表</strong>，这14种表有一个共同特点：<strong>开始第一位</strong>是一个<strong>u1类型的标志位
--tag
-</strong>来标识常量的类型，代表当前这个常量<strong>属于哪种常量类型</strong></p>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221219105523632.png"
-alt="image-20221219105523632" />
-<figcaption aria-hidden="true">image-20221219105523632</figcaption>
-</figure>
-<p><code>.class</code> 文件可以通过<code>javap -v class类名</code>
-指令来看一下其常量池中的信息(<code>javap -v class类名-&gt; temp.txt</code>
-：将结果输出到 temp.txt 文件)。</p>
-<h2 id="访问标志access-flag">访问标志（Access Flag）</h2>
-<p>常量池结束后，紧接着<strong>两个字节</strong>代表访问标志，这个标志用于识别一些<strong>类</strong>或者<strong>接口</strong>
-<strong>层次</strong>的访问信息，包括<br />
-这个Class是<strong>类</strong>还是<strong>接口</strong>，是否为<strong>public</strong>或者<strong>abstract</strong>类型，如果是类的话是否声明为<strong>final</strong>等等</p>
-<p><strong>类访问和属性</strong>修饰符</p>
-<p>【这里好像漏了一个0x0002 ，private 】<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221219111039047.png"
-alt="image-20221219111039047" /></p>
-<blockquote>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1090617-20190409135129522-1831389208.jpg"
-alt="img" />
-<figcaption aria-hidden="true">img</figcaption>
-</figure>
-<p>上图转自： https://www.cnblogs.com/qdhxhz/p/10676337.html</p>
-</blockquote>
-<p>其实是所有值相加，所以对于 <code>public interface A</code>，是0x601
-，即 <code>0x200 + 0x400 + 0x001</code></p>
-<p>对于
-<code>public final class MyEntity extends MyInterface</code>即<code>0x31</code>：<code>0x0001 + 0x0010 + 0x0020</code></p>
-<p>再举个例子：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> top.snailclimb.bean;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Employee</span> &#123;</span><br><span class="line">   ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>通过 <code>javap -v class类名</code>指令来看一下类的访问标志<br />
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/%25E6%259F%25A5%25E7%259C%258B%25E7%25B1%25BB%25E7%259A%2584%25E8%25AE%25BF%25E9%2597%25AE%25E6%25A0%2587%25E5%25BF%2597.png"
-alt="查看类的访问标志" /></p>
-<h2
-id="当前类this-class父类super-class接口interfaces索引集合">当前类（This
-Class）、父类（Super Class）、接口（Interfaces）索引集合</h2>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">u2             this_class;<span class="comment">//当前类</span></span><br><span class="line">u2             super_class;<span class="comment">//父类</span></span><br><span class="line">u2             interfaces_count;<span class="comment">//接口</span></span><br><span class="line">u2             interfaces[interfaces_count];<span class="comment">//一个类可以实现多个接口 </span></span><br></pre></td></tr></table></figure>
-<ul>
-<li><strong>类索引</strong>用于确定这个类的全限定名，<strong>父类索引</strong>用于确定这个类的父类的全限定名，由于
-Java 语言的单继承，所以<strong>父类索引只有一个</strong>，<strong>除了
-<code>java.lang.Object</code></strong> 之外，所有的 java
-类都有父类，因此<strong>除了 <code>java.lang.Object</code> 外，所有 Java
-类的父类索引都不为 0</strong>。</li>
-<li><strong>接口索引集合</strong>用来描述这个类实现了那些接口，这些<strong>被实现的接口将按
-<code>implements</code></strong>
-(如果这个类本身是接口的话则是<code>extends</code>)
-<strong>后的接口顺序从左到右</strong>排列在接口索引集合中。</li>
-</ul>
-<h2 id="字段表集合-fields">字段表集合 （Fields）</h2>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">u2             fields_count;<span class="comment">//Class 文件的字段的个数</span></span><br><span class="line">field_info     fields[fields_count];<span class="comment">//一个类可以有多个字段 </span></span><br></pre></td></tr></table></figure>
-<ul>
-<li><p>字段表（filed
-info）用于描述<strong>接口</strong>或<strong>类</strong>中声明的变量</p></li>
-<li><p>字段包括<strong>类级变量</strong>以及<strong>实例变量</strong>，但不包括在<strong>方法内部</strong>声明的局部变量
-filed info(字段表)的结构：<br />
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221219134423914.png"
-alt="image-20221219134423914" /></p>
-<ol type="1">
-<li>access_flag：字段的作用域（public、private、protected修饰符）、是<strong>实例变量</strong>还是<strong>类变量</strong>（static修饰符）、可否被<strong>序列化</strong>（transient修饰符）、<strong>可变</strong>性（final）、<strong>可见</strong>性（volatile修饰符，是否强制从主内存读写）</li>
-<li>name_index：对常量池的<strong>引用</strong>，表示的字段的名称</li>
-<li>descriptor_index：对常量池的<strong>引用</strong>，表示<strong>字段和方法</strong>的描述符</li>
-<li>attributes_count：一个字段还会拥有<strong>额外的属性</strong>，attributes_count
-存放属性的个数</li>
-<li>attributes[attriutes_count]: 存放具体属性具体内容</li>
-</ol>
-<p>上述这些信息中，各个<strong>修饰符都是布尔值</strong>，<strong>要么有</strong>某个修饰符，<strong>要么没有</strong>，很适合<strong>使用标志位</strong>来表示。而<strong>字段叫什么名字</strong>、<strong>字段被定义为什么数据类型</strong>这些都是无法固定的，只能<strong>引用常量池中常量</strong>来描述。</p>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20201031084342859.png"
-alt="字段的 access_flag 的取值" />
-<figcaption aria-hidden="true">字段的 access_flag 的取值</figcaption>
-</figure></li>
-</ul>
-<h2 id="方法表集合methods">方法表集合（Methods）</h2>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">u2             methods_count;<span class="comment">//Class 文件的方法的数量</span></span><br><span class="line">method_info    methods[methods_count];<span class="comment">//一个类可以有个多个方法</span></span><br></pre></td></tr></table></figure>
-<ul>
-<li><p><strong>methods_count</strong> 表示方法的数量，而
-<strong>method_info</strong> 表示方法表。-</p></li>
-<li><p>Class
-文件存储格式中<strong>对方法的描述与对字段的描述几乎采用了完全一致</strong>的方式。方法表的结构如同字段表一样，依次包括了<strong>访问标志</strong>、<strong>名称索引</strong>、<strong>描述符索引</strong>、<strong>属性表</strong>集合几项。</p></li>
-<li><p><strong>method_info（方法表的）结构</strong><br />
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/%25E6%2596%25B9%25E6%25B3%2595%25E8%25A1%25A8%25E7%259A%2584%25E7%25BB%2593%25E6%259E%2584.png"
-alt="方法表的结构" /> <strong>方法表的 access_flag 取值：</strong> <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20201031084248965.png"
-alt="方法表的 access_flag 取值" /></p>
-<blockquote>
-<p>注意：因为<code>volatile</code>修饰符和<code>transient</code>修饰符不可以修饰方法，所以方法表的访问标志中没有这两个对应的标志，但是增加了<code>synchronized</code>、<code>native</code>、<code>abstract</code>等关键字修饰方法，所以也就多了这些关键字对应的标志。</p>
-</blockquote></li>
-</ul>
-<h2 id="属性表集合attributes">属性表集合（Attributes）</h2>
-<p><strong>如上，字段和方法都拥有属性</strong> 属性大概就是这种 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221219152310600.png"
-alt="image-20221219152310600" /></p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">u2             attributes_count;<span class="comment">//此类的属性表中的属性数</span></span><br><span class="line">attribute_info attributes[attributes_count];<span class="comment">//属性表集合</span></span><br></pre></td></tr></table></figure>
-<ul>
-<li>在 Class
-文件，<strong>字段表</strong>，<strong>方法表</strong>中都可以携带自己的属性表集合，以用于描述某些场景专有的信息</li>
-<li>与 Class
-文件中其它的数据项目要求的顺序、长度和内容不同，属性表集合的限制稍微宽松一些，不再要求各个属性表具有严格的顺序，并且只要不与已有的属性名重复，任何人实现的编译器都可以向属性表中写
-入自己定义的属性信息，Java 虚拟机运行时会忽略掉它不认识的属性</li>
-</ul>
-]]></content>
-      <categories>
-        <category>学习</category>
-      </categories>
-      <tags>
-        <tag>复习</tag>
-        <tag>复习-javaGuide</tag>
-        <tag>复习-javaGuide-jvm</tag>
       </tags>
   </entry>
   <entry>
@@ -21538,6 +21314,227 @@ JVM具有<strong>四种类型</strong>的GC实现：</p>
 <p>为了严格<strong>监控应用程序</strong>的<strong>运行状况</strong>，应该始终<strong>检查JVM的垃圾回收性能</strong>。最简单的方法是<strong>以人类可读的格式记录GC活动</strong><br />
 通过以下参数</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">-XX:+UseGCLogFileRotation </span><br><span class="line">-XX:NumberOfGCLogFiles=&lt; number of log files &gt; </span><br><span class="line">-XX:GCLogFileSize=&lt; file size &gt;[ unit ]</span><br><span class="line">-Xloggc:/path/to/gc.log </span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>学习</category>
+      </categories>
+      <tags>
+        <tag>复习</tag>
+        <tag>复习-javaGuide</tag>
+        <tag>复习-javaGuide-jvm</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>类文件结构</title>
+    <url>/2022/12/18/review/java_guide/java/jvm/class-structure/</url>
+    <content><![CDATA[<blockquote>
+<p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!</p>
+</blockquote>
+<h1 id="概述">概述</h1>
+<ul>
+<li>Java中，JVM可以理解的代码就叫做<strong>字节码</strong>（即扩展名为.class的文件），它不面向任何特定的处理器，只<strong>面向虚拟机</strong></li>
+<li>Java语言通过<strong>字节码</strong>的方式，在一定程度上解决了<strong>传统解释型语言执行效率低</strong>的问题，同时又保留了<strong>解释型语言</strong>可移植的特点。所以Java程序运行时<strong>效率极高</strong>，且由于字节码并不针对一种特定的<strong>机器</strong>。因此，Java程序无需重新编译便可在<strong>多种不通操作系统的计算机</strong>运行</li>
+<li>Clojure（Lisp 语言的一种方言）、Groovy、Scala 等语言都是运行在 Java
+虚拟机之上。下图展示了<strong>不同的语言被不同的编译器</strong>编译<strong>成<code>.class</code></strong>文件<strong>最终运行在
+Java
+虚拟机</strong>之上。<strong><code>.class</code>文件的二进制格式</strong>可以使用
+<a href="https://www.x-ways.net/winhex/">WinHexopen in new window</a>
+查看。</li>
+</ul>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221218224536987.png"
+alt="image-20221218224536987" />
+<figcaption aria-hidden="true">image-20221218224536987</figcaption>
+</figure>
+<p>.class文件是不同语言在<strong>Java虚拟机</strong>之间的重要桥梁，同时也是<strong>支持Java跨平台</strong>很重要的一个原因</p>
+<h1 id="class文件结构总结">Class文件结构总结</h1>
+<p>根据Java虚拟机规范，Class文件通过<strong>ClassFile</strong>定义，有点类似C语言的<strong>结构体</strong></p>
+<p>ClassFile的结构如下：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">ClassFile &#123;</span><br><span class="line">    u4             magic; <span class="comment">//Class 文件的标志</span></span><br><span class="line">    u2             minor_version;<span class="comment">//Class 的小版本号</span></span><br><span class="line">    u2             major_version;<span class="comment">//Class 的大版本号</span></span><br><span class="line">    u2             constant_pool_count;<span class="comment">//常量池的数量</span></span><br><span class="line">    cp_info        constant_pool[constant_pool_count-<span class="number">1</span>];<span class="comment">//常量池</span></span><br><span class="line">    u2             access_flags;<span class="comment">//Class 的访问标记</span></span><br><span class="line">    u2             this_class;<span class="comment">//当前类</span></span><br><span class="line">    u2             super_class;<span class="comment">//父类</span></span><br><span class="line">    u2             interfaces_count;<span class="comment">//接口</span></span><br><span class="line">    u2             interfaces[interfaces_count];<span class="comment">//一个类可以实现多个接口</span></span><br><span class="line">    u2             fields_count;<span class="comment">//Class 文件的字段属性</span></span><br><span class="line">    field_info     fields[fields_count];<span class="comment">//一个类可以有多个字段</span></span><br><span class="line">    u2             methods_count;<span class="comment">//Class 文件的方法数量</span></span><br><span class="line">    method_info    methods[methods_count];<span class="comment">//一个类可以有个多个方法</span></span><br><span class="line">    u2             attributes_count;<span class="comment">//此类的属性表中的属性数</span></span><br><span class="line">    attribute_info attributes[attributes_count];<span class="comment">//属性表集合</span></span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221218230117020.png"
+alt="image-20221218230117020" />
+<figcaption aria-hidden="true">image-20221218230117020</figcaption>
+</figure>
+<p>通过IDEA插件jclasslib查看，可以直观看到<code>Class 文件结构</code></p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20210401170711475.png"
+alt="img" />
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<p>使用jclasslib不光能直观地查看某个类对应的字节码文件，还可以查看<strong>类的基本信息</strong>、<strong>常量池</strong>、<strong>接口</strong>、<strong>属性</strong>、<strong>函数</strong>等信息<br />
+下面介绍一下Class文件结构涉及到的一些组件</p>
+<h2 id="魔数magic-number">魔数（Magic Number）</h2>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">u4             magic; <span class="comment">//Class 文件的标志</span></span><br></pre></td></tr></table></figure>
+<p>每个Class文件的<strong>头4个字节</strong>称为<strong>魔数（Magic
+Number）</strong>，它的唯一作用是确定这个文件<strong>是否为一个能被虚拟机接收的Class文件</strong></p>
+<blockquote>
+<p>程序设计者很多时候都喜欢用一些<strong>特殊的数字</strong>表示<strong>固定的文件类型</strong>或者<strong>其它特殊的含义</strong>。</p>
+<p>这里前两个字节是<code>cafe 英[ˈkæfeɪ]</code>，后两个字节
+<code>babe 英[beɪb]</code></p>
+</blockquote>
+<p>JAVA为 CA FE BA
+BE，十六进制(一个英文代表4位，即2个英文字母为1字节）</p>
+<h2
+id="class文件版本号minormajor-version">Class文件版本号（Minor&amp;Major
+Version）</h2>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">u2             minor_version;<span class="comment">//Class 的小版本号</span></span><br><span class="line">u2             major_version;<span class="comment">//Class 的大版本号</span></span><br></pre></td></tr></table></figure>
+<p>前4个字节存储<strong>Class
+文件的版本号</strong>：<strong>第5位</strong>和<strong>第6位</strong>是<strong>次版本号</strong>，<strong>第7位</strong>和<strong>第8位</strong>是<strong>主版本号</strong>。
+比如Java1.8 为<code>00 00 00 34</code></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">JDK1<span class="number">.8</span> = <span class="number">52</span></span><br><span class="line">JDK1<span class="number">.7</span> = <span class="number">51</span></span><br><span class="line">JDK1<span class="number">.6</span> = <span class="number">50</span></span><br><span class="line">JDK1<span class="number">.5</span> = <span class="number">49</span></span><br><span class="line">JDK1<span class="number">.4</span> = <span class="number">48</span></span><br></pre></td></tr></table></figure>
+<p>如图，下图是在java8中编译的，使用<code>javap -v</code>查看
+每当Java发布大版本（比如Java8 ，Java9 ）的时候，主版本号都会+1</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221219103843623.png"
+alt="image-20221219103843623" />
+<figcaption aria-hidden="true">image-20221219103843623</figcaption>
+</figure>
+<blockquote>
+<p>注：<strong>高版本</strong>的 Java
+虚拟机<strong>可以执行低版本编译器</strong>生成的 Class
+文件，但是<strong>低版本</strong>的 Java
+虚拟机<strong>不能执行高版本编译器</strong>生成的 Class
+文件。所以，我们在实际开发的时候要<strong>确保开发的的 JDK
+版本和生产环境的 JDK 版本保持一致</strong></p>
+</blockquote>
+<h2 id="常量池constant-pool">常量池（Constant Pool）</h2>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">u2             constant_pool_count;<span class="comment">//常量池的数量</span></span><br><span class="line">cp_info        constant_pool[constant_pool_count-<span class="number">1</span>];<span class="comment">//常量池 </span></span><br></pre></td></tr></table></figure>
+<p>主次版本号之后的是<strong>常量池</strong>，常量池数量为<code>constant_pool_count -1</code></p>
+<blockquote>
+<p>（<strong>常量池计数器是从 1 开始计数的，将第 0
+项常量空出来是有特殊考虑的，索引值为 0
+代表“不引用任何一个常量池项”</strong>）</p>
+</blockquote>
+<p>常量池主要包括<strong>两大常量</strong>：<strong>字面量</strong>和<strong>符号引用</strong>。</p>
+<ol type="1">
+<li><p>字面量比较接近于Java语言层面的<strong>常量概念</strong>，如<strong>文本字符串</strong>、<strong>声明为final的常量值</strong>等</p>
+<blockquote>
+<p>注意，<strong>非常量</strong>是不会在这里的， <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221219105146588.png"
+alt="image-20221219105146588" /></p>
+<p>没有找到3</p>
+</blockquote></li>
+<li><p>符号引用则属于<strong>编译原理</strong>方面的概念，包括下面三类<strong>常量</strong></p>
+<ol type="1">
+<li><strong>类和接口</strong>的全限定名</li>
+<li><strong>字段</strong>的名称和描述符</li>
+<li><strong>方法</strong>的名称和描述符</li>
+</ol></li>
+</ol>
+<p>常量池中的<strong>每一项常量都是一个表</strong>，这14种表有一个共同特点：<strong>开始第一位</strong>是一个<strong>u1类型的标志位
+-tag
+</strong>来标识常量的类型，代表当前这个常量<strong>属于哪种常量类型</strong></p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221219105523632.png"
+alt="image-20221219105523632" />
+<figcaption aria-hidden="true">image-20221219105523632</figcaption>
+</figure>
+<p><code>.class</code> 文件可以通过<code>javap -v class类名</code>
+指令来看一下其常量池中的信息(<code>javap -v class类名-&gt; temp.txt</code>
+：将结果输出到 temp.txt 文件)。</p>
+<h2 id="访问标志access-flag">访问标志（Access Flag）</h2>
+<p>常量池结束后，紧接着<strong>两个字节</strong>代表访问标志，这个标志用于识别一些<strong>类</strong>或者<strong>接口</strong>
+<strong>层次</strong>的访问信息，包括<br />
+这个Class是<strong>类</strong>还是<strong>接口</strong>，是否为<strong>public</strong>或者<strong>abstract</strong>类型，如果是类的话是否声明为<strong>final</strong>等等</p>
+<p><strong>类访问和属性</strong>修饰符</p>
+<p>【这里好像漏了一个0x0002 ，private 】<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221219111039047.png"
+alt="image-20221219111039047" /></p>
+<blockquote>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1090617-20190409135129522-1831389208.jpg"
+alt="img" />
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<p>上图转自： https://www.cnblogs.com/qdhxhz/p/10676337.html</p>
+</blockquote>
+<p>其实是所有值相加，所以对于 <code>public interface A</code>，是0x601
+，即 <code>0x200 + 0x400 + 0x001</code></p>
+<p>对于
+<code>public final class MyEntity extends MyInterface</code>即<code>0x31</code>：<code>0x0001 + 0x0010 + 0x0020</code></p>
+<p>再举个例子：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> top.snailclimb.bean;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Employee</span> &#123;</span><br><span class="line">   ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>通过 <code>javap -v class类名</code>指令来看一下类的访问标志<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/%25E6%259F%25A5%25E7%259C%258B%25E7%25B1%25BB%25E7%259A%2584%25E8%25AE%25BF%25E9%2597%25AE%25E6%25A0%2587%25E5%25BF%2597.png"
+alt="查看类的访问标志" /></p>
+<h2
+id="当前类this-class父类super-class接口interfaces索引集合">当前类（This
+Class）、父类（Super Class）、接口（Interfaces）索引集合</h2>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">u2             this_class;<span class="comment">//当前类</span></span><br><span class="line">u2             super_class;<span class="comment">//父类</span></span><br><span class="line">u2             interfaces_count;<span class="comment">//接口</span></span><br><span class="line">u2             interfaces[interfaces_count];<span class="comment">//一个类可以实现多个接口 </span></span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>类索引</strong>用于确定这个类的全限定名，<strong>父类索引</strong>用于确定这个类的父类的全限定名，由于
+Java 语言的单继承，所以<strong>父类索引只有一个</strong>，<strong>除了
+<code>java.lang.Object</code></strong> 之外，所有的 java
+类都有父类，因此<strong>除了 <code>java.lang.Object</code> 外，所有 Java
+类的父类索引都不为 0</strong>。</li>
+<li><strong>接口索引集合</strong>用来描述这个类实现了那些接口，这些<strong>被实现的接口将按
+<code>implements</code></strong>
+(如果这个类本身是接口的话则是<code>extends</code>)
+<strong>后的接口顺序从左到右</strong>排列在接口索引集合中。</li>
+</ul>
+<h2 id="字段表集合-fields">字段表集合 （Fields）</h2>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">u2             fields_count;<span class="comment">//Class 文件的字段的个数</span></span><br><span class="line">field_info     fields[fields_count];<span class="comment">//一个类可以有多个字段 </span></span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>字段表（filed
+info）用于描述<strong>接口</strong>或<strong>类</strong>中声明的变量</p></li>
+<li><p>字段包括<strong>类级变量</strong>以及<strong>实例变量</strong>，但不包括在<strong>方法内部</strong>声明的局部变量
+filed info(字段表)的结构：<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221219134423914.png"
+alt="image-20221219134423914" /></p>
+<ol type="1">
+<li>access_flag：字段的作用域（public、private、protected修饰符）、是<strong>实例变量</strong>还是<strong>类变量</strong>（static修饰符）、可否被<strong>序列化</strong>（transient修饰符）、<strong>可变</strong>性（final）、<strong>可见</strong>性（volatile修饰符，是否强制从主内存读写）</li>
+<li>name_index：对常量池的<strong>引用</strong>，表示的字段的名称</li>
+<li>descriptor_index：对常量池的<strong>引用</strong>，表示<strong>字段和方法</strong>的描述符</li>
+<li>attributes_count：一个字段还会拥有<strong>额外的属性</strong>，attributes_count
+存放属性的个数</li>
+<li>attributes[attriutes_count]: 存放具体属性具体内容</li>
+</ol>
+<p>上述这些信息中，各个<strong>修饰符都是布尔值</strong>，<strong>要么有</strong>某个修饰符，<strong>要么没有</strong>，很适合<strong>使用标志位</strong>来表示。而<strong>字段叫什么名字</strong>、<strong>字段被定义为什么数据类型</strong>这些都是无法固定的，只能<strong>引用常量池中常量</strong>来描述。</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20201031084342859.png"
+alt="字段的 access_flag 的取值" />
+<figcaption aria-hidden="true">字段的 access_flag 的取值</figcaption>
+</figure></li>
+</ul>
+<h2 id="方法表集合methods">方法表集合（Methods）</h2>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">u2             methods_count;<span class="comment">//Class 文件的方法的数量</span></span><br><span class="line">method_info    methods[methods_count];<span class="comment">//一个类可以有个多个方法</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li><p><strong>methods_count</strong> 表示方法的数量，而
+<strong>method_info</strong> 表示方法表。-</p></li>
+<li><p>Class
+文件存储格式中<strong>对方法的描述与对字段的描述几乎采用了完全一致</strong>的方式。方法表的结构如同字段表一样，依次包括了<strong>访问标志</strong>、<strong>名称索引</strong>、<strong>描述符索引</strong>、<strong>属性表</strong>集合几项。</p></li>
+<li><p><strong>method_info（方法表的）结构</strong><br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/%25E6%2596%25B9%25E6%25B3%2595%25E8%25A1%25A8%25E7%259A%2584%25E7%25BB%2593%25E6%259E%2584.png"
+alt="方法表的结构" /> <strong>方法表的 access_flag 取值：</strong> <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20201031084248965.png"
+alt="方法表的 access_flag 取值" /></p>
+<blockquote>
+<p>注意：因为<code>volatile</code>修饰符和<code>transient</code>修饰符不可以修饰方法，所以方法表的访问标志中没有这两个对应的标志，但是增加了<code>synchronized</code>、<code>native</code>、<code>abstract</code>等关键字修饰方法，所以也就多了这些关键字对应的标志。</p>
+</blockquote></li>
+</ul>
+<h2 id="属性表集合attributes">属性表集合（Attributes）</h2>
+<p><strong>如上，字段和方法都拥有属性</strong> 属性大概就是这种 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221219152310600.png"
+alt="image-20221219152310600" /></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">u2             attributes_count;<span class="comment">//此类的属性表中的属性数</span></span><br><span class="line">attribute_info attributes[attributes_count];<span class="comment">//属性表集合</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>在 Class
+文件，<strong>字段表</strong>，<strong>方法表</strong>中都可以携带自己的属性表集合，以用于描述某些场景专有的信息</li>
+<li>与 Class
+文件中其它的数据项目要求的顺序、长度和内容不同，属性表集合的限制稍微宽松一些，不再要求各个属性表具有严格的顺序，并且只要不与已有的属性名重复，任何人实现的编译器都可以向属性表中写
+入自己定义的属性信息，Java 虚拟机运行时会忽略掉它不认识的属性</li>
+</ul>
 ]]></content>
       <categories>
         <category>学习</category>

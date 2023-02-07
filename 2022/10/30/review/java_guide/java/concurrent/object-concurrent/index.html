@@ -22,7 +22,7 @@
 
   <meta name="description" content="对象内存布局和对象头">
 <meta property="og:type" content="article">
-<meta property="og:title" content="对象内存布局和对象头">
+<meta property="og:title" content="ly03121ly对象内存布局和对象头">
 <meta property="og:url" content="http://example.com/2022/10/30/review/java_guide/java/concurrent/object-concurrent/index.html">
 <meta property="og:site_name" content="随记">
 <meta property="og:description" content="对象内存布局和对象头">
@@ -48,7 +48,7 @@
   };
 </script>
 
-  <title>对象内存布局和对象头 | 随记</title>
+  <title>ly03121ly对象内存布局和对象头 | 随记</title>
   
 
 
@@ -204,7 +204,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          对象内存布局和对象头
+          ly03121ly对象内存布局和对象头
         </h1>
 
         <div class="post-meta">
@@ -240,7 +240,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>3.8k</span>
+              <span>3.7k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -260,14 +260,11 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <blockquote>
-<p>转载自https://github.com/Snailclimb/JavaGuide
-（添加小部分笔记）感谢作者!</p>
-</blockquote>
-<h2 id="对象布局">对象布局</h2>
+        <h2 id="对象布局">对象布局</h2>
 <ul>
-<li><p>heap （where）: new (eden ,s0 ,s1) ,old, metaspace</p></li>
-<li><p>对象的构成元素（that）
+<li><p><strong>heap</strong> （<strong>where</strong>）: <strong>new
+(eden ,s0 ,s1) ,old, metaspace</strong></p></li>
+<li><p>对象的构成元素（what）
 HotSpot虚拟机里，对象在<strong>堆内存中的存储布局</strong>分为三个部分
 <img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221030175640211.png"
@@ -291,7 +288,7 @@ Pointer，指向方法区的地址）</li>
 //hashCode存在对象哪个地方 &gt; 3. synchronized(o){ }
 //对象被锁了多少次（可重入锁） &gt; 4. System.gc();
 //躲过了几次gc（次数）</p>
-<p>上面这些，哈希码、gc标记、gc次数、同步锁标记、偏向锁持有者，都保存在<strong>对象标记</strong>里面
+<p>上面这些，<strong>哈希码</strong>、<strong>gc标记</strong>、<strong>gc次数</strong>、<strong>同步锁标记</strong>、<strong>偏向锁持有者</strong>，都保存在<strong>对象标记</strong>里面
 <img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221030175315204.png"
 alt="image-20221030175315204" /></p>
@@ -312,7 +309,7 @@ alt="image-20221030173518629" /></p></li>
 <li><p>实例数据</p></li>
 <li><p>用来存放类的属性（Filed）数据信息，包括父类的属性信息</p></li>
 <li><p>对齐填充</p></li>
-<li><p>填充到长度为8字节，因为虚拟机要求对象起始地址必须是8字节的整数倍（对齐填充不一定存在）</p></li>
+<li><p>填充到长度为8字节，因为虚拟机要求<strong>对象起始地址必须是8字节的整数倍</strong>（对齐填充不一定存在）</p></li>
 <li><p>示例</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Customer</span>&#123;</span><br><span class="line">    <span class="type">int</span> id;<span class="comment">//4字节</span></span><br><span class="line">    <span class="type">boolean</span> flag=<span class="literal">false</span>; <span class="comment">//1字节</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//Customer customer=new Customer();</span></span><br><span class="line"><span class="comment">//该对象大小：对象头（对象标记8+类型指针8）+实例数据（4+1）=21字节 ===&gt; 为了对齐填充，则为24字节</span></span><br></pre></td></tr></table></figure></li>
 </ul>
@@ -367,9 +364,9 @@ src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img
 alt="image-20221030184523659" /> 其中有一个,
 <strong>-XX:+UseCompressedClassPointers</strong>
 ，即开启了<strong>类型指针压缩</strong>，只需要<strong>4字节</strong></p></li>
-<li><p>当使用了类型指针压缩（默认）时，一个无任何属性对象是
-8字节(markWord) + 4字节（classPointer) + 4字节(对齐填充) =
-16字节</p></li>
+<li><p>当使用了<strong>类型指针压缩</strong>（默认）时，一个无任何属性对象是
+<strong>8字节(markWord)</strong> + <strong>4字节（classPointer)</strong>
++ <strong>4字节(对齐填充)</strong> = <strong>16字节</strong></p></li>
 <li><p>下面代码，使用了
 <code>-XX:-UseCompressedClassPointers</code>进行关闭压缩指针
 一个无任何属性对象是 8字节(markWord) + 8字节（classPointer) = 16字节</p>
