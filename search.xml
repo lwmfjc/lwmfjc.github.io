@@ -2475,17 +2475,27 @@ cglib与java动态代理最大区别是<strong>代理目标对象不用实现接
 : 最高的隔离级别，完全服从 ACID
 的隔离级别。所有的事务依次逐个执行，这样事务之间就完全不可能产生干扰，也就是说，<strong>该级别可以防止脏读、不可重复读以及幻读</strong>。但是这将严重影响程序的性能。通常情况下也不会用到该级别。</li>
 </ul>
+<blockquote>
+<p>注意，这个注解的使用方法，下面写了两个方法分别模拟两个不同的线程操作（供不同的controller使用）</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Transactional(</span></span><br><span class="line"><span class="meta">        isolation = Isolation.READ_COMMITTED</span></span><br><span class="line"><span class="meta">)</span></span><br><span class="line"><span class="keyword">public</span> User <span class="title function_">isolation1</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">//读取userid=1的值</span></span><br><span class="line">    <span class="type">User</span> <span class="variable">byId</span> <span class="operator">=</span> <span class="built_in">this</span>.getById(<span class="number">1L</span>);</span><br><span class="line">    <span class="keyword">return</span> byId;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Transactional</span></span><br><span class="line"><span class="keyword">public</span> User <span class="title function_">isolation2</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//10s后修改</span></span><br><span class="line">    TimeUnit.SECONDS.sleep(<span class="number">10</span>);</span><br><span class="line">    User user=<span class="keyword">new</span> <span class="title class_">User</span>();</span><br><span class="line">    user.setId(<span class="number">1L</span>);</span><br><span class="line">    user.setName(<span class="string">&quot;1被修改了&quot;</span>);</span><br><span class="line">    <span class="built_in">this</span>.saveOrUpdate(user);</span><br><span class="line">    <span class="comment">//10s后提交</span></span><br><span class="line">    TimeUnit.SECONDS.sleep(<span class="number">10</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol type="1">
+<li>当isolation1为读已提交时，只要isolation2方法没有执行完毕（没有提交），那么isolation1只会读取到未修改的值；</li>
+<li>当isolation1为读为提交时，即使isolation2方法没有执行完毕（没有提交），那么isolation1也会立马读取到最新的值；</li>
+</ol>
+</blockquote>
 <h3 id="transactionalrollbackfor-exception.class注解了解吗"><span
 class="citation"
 data-cites="Transactional">@Transactional</span>(rollbackFor =
 Exception.class)注解了解吗？</h3>
-<p><code>Exception</code> 分为运行时异常 <code>RuntimeException</code>
-和非运行时异常。事务管理对于企业应用来说是至关重要的，即使出现异常情况，它也可以保证数据的一致性。</p>
+<p><code>Exception</code> 分为运行时异常
+<strong><code>RuntimeException</code></strong>
+和<strong>非运行时异常</strong>。事务管理对于企业应用来说是至关重要的，即使出现异常情况，它也可以保证数据的一致性。</p>
 <p>当 <code>@Transactional</code> 注解作用于类上时，该类的所有 public
-方法将都具有该类型的事务属性，同时，我们也可以在方法级别使用该标注来覆盖类级别的定义。如果类或者方法加了这个注解，那么这个类里面的方法抛出异常，就会回滚，数据库里面的数据也会回滚。</p>
+方法将都具有该类型的事务属性，同时，我们也可以在方法级别<strong>使用该标注来覆盖类级别的定义</strong>。如果类或者方法加了这个注解，那么这个类里面的方法<strong>抛出异常</strong>，<strong>就会回滚</strong>，数据库里面的数据也会回滚。</p>
 <p>在 <code>@Transactional</code>
-注解中如果不配置<code>rollbackFor</code>属性,那么事务只会在遇到<code>RuntimeException</code>的时候才会回滚，加上
-<code>rollbackFor=Exception.class</code>,可以让事务在遇到非运行时异常时也回滚。</p>
+注解中如果不配置<code>rollbackFor</code>属性,那么事务只会在遇到<strong><code>RuntimeException</code></strong>的时候才会回滚，加上
+<code>rollbackFor=Exception.class</code>,可以让事务在遇到<strong>非运行时异常时</strong>也回滚。</p>
 <h2 id="spring-data-jpa">Spring Data JPA</h2>
 <p>JPA 重要的是实战，这里仅对小部分知识点进行总结。</p>
 <h3 id="如何使用-jpa-在数据库中非持久化一个字段">如何使用 JPA
