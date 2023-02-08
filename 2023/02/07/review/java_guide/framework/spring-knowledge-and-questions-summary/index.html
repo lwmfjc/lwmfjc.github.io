@@ -638,34 +638,43 @@ Dao、Service），这种情况下， Bean 是<strong>线程安全</strong>的�
 ：https://www.cnblogs.com/zrtqsk/p/3735273.html 。</p>
 </blockquote>
 <ul>
-<li>Bean 容器找到配置文件中 Spring Bean 的定义。</li>
-<li>Bean 容器利用 Java Reflection API 创建一个 Bean 的实例。</li>
-<li>如果涉及到一些属性值 利用
-<code>set()</code>方法设置一些属性值。</li>
-<li>如果 Bean 实现了 <code>BeanNameAware</code> 接口，调用
-<code>setBeanName()</code>方法，传入 Bean 的名字。</li>
-<li>如果 Bean 实现了 <code>BeanClassLoaderAware</code> 接口，调用
-<code>setBeanClassLoader()</code>方法，传入
-<code>ClassLoader</code>对象的实例。</li>
-<li>如果 Bean 实现了 <code>BeanFactoryAware</code> 接口，调用
-<code>setBeanFactory()</code>方法，传入
-<code>BeanFactory</code>对象的实例。</li>
+<li>Bean 容器<strong>找到配置文件</strong>中 Spring Bean
+的<strong>定义</strong>。</li>
+<li>Bean 容器<strong>利用 Java Reflection API</strong> 创建一个 Bean
+的实例。【<strong>反射</strong>】</li>
+<li>如果涉及到一些属性值 <strong>利用
+<code>set()</code>方法设置</strong>一些属性值。</li>
+</ul>
+<blockquote>
+<p><code>aware 英[əˈweə(r)] adj. 意识到的,发觉,发现</code></p>
+</blockquote>
+<ul>
+<li>如果 Bean 实现了 <strong><code>BeanNameAware</code></strong>
+接口，调用 <code>setBeanName()</code>方法，传入 <strong>Bean
+的名字</strong>。</li>
+<li>如果 Bean 实现了 <strong><code>BeanClassLoaderAware</code></strong>
+接口，调用 <code>setBeanClassLoader()</code>方法，传入
+<strong><code>ClassLoader</code>对象的实例</strong>。</li>
+<li>如果 Bean 实现了 <strong><code>BeanFactoryAware</code></strong>
+接口，调用 <code>setBeanFactory()</code>方法，传入
+<strong><code>BeanFactory</code>对象的实例</strong>。</li>
 <li>与上面的类似，如果实现了其他
 <code>*.Aware</code>接口，就调用相应的方法。</li>
 <li>如果有和加载这个 Bean 的 Spring 容器相关的
-<code>BeanPostProcessor</code>
+<strong><code>BeanPostProcessor</code></strong>
 对象，执行<code>postProcessBeforeInitialization()</code> 方法</li>
 <li>如果 Bean
-实现了<code>InitializingBean</code>接口，执行<code>afterPropertiesSet()</code>方法。</li>
-<li>如果 Bean 在配置文件中的定义包含 init-method
+实现了<strong><code>InitializingBean</code></strong>接口，执行<strong><code>afterPropertiesSet()</code></strong>方法。</li>
+<li>如果 Bean 在配置文件中的定义包含 <strong>init-method</strong>
 属性，执行指定的方法。</li>
 <li>如果有和加载这个 Bean 的 Spring 容器相关的
-<code>BeanPostProcessor</code>
+<strong><code>BeanPostProcessor</code></strong>
 对象，执行<code>postProcessAfterInitialization()</code> 方法</li>
-<li>当要销毁 Bean 的时候，如果 Bean 实现了 <code>DisposableBean</code>
-接口，执行 <code>destroy()</code> 方法。</li>
+<li>当要销毁 Bean 的时候，如果 Bean 实现了
+<strong><code>DisposableBean</code></strong> 接口，执行
+<strong><code>destroy()</code></strong> 方法。</li>
 <li>当要销毁 Bean 的时候，如果 Bean 在配置文件中的定义包含
-destroy-method 属性，执行指定的方法。</li>
+<strong>destroy-method</strong> 属性，执行指定的方法。</li>
 </ul>
 <p>图示：</p>
 <p><a
@@ -679,15 +688,27 @@ src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img
 alt="Spring Bean 生命周期" /></a></p>
 <h2 id="spring-aop">Spring AoP</h2>
 <h3 id="谈谈自己对于-aop-的了解">谈谈自己对于 AOP 的了解</h3>
-<p>AOP(Aspect-Oriented
-Programming:面向切面编程)能够将那些与业务无关，却为业务模块所共同调用的逻辑或责任（例如事务处理、日志管理、权限控制等）封装起来，便于减少系统的重复代码，降低模块间的耦合度，并有利于未来的可拓展性和可维护性。</p>
-<p>Spring AOP 就是基于动态代理的，如果要代理的对象，实现了某个接口，那么
+<blockquote>
+<p><code>aspect  英[ˈæspekt] 方位 n.</code></p>
+<p><code>oriented  英[ˈɔːrientɪd] 朝向 v.</code></p>
+</blockquote>
+<p>AOP(<strong>Aspect-Oriented
+Programming:面向切面编程</strong>)能够将那些与业务无关，却为业务模块所<strong>共同调用</strong>的逻辑或责任（例如<strong>事务处理</strong>、<strong>日志管理</strong>、<strong>权限控制</strong>等）封装起来，便于<strong>减少系统的重复代码</strong>，降低模块间的耦合度，并有利于未来的可拓展性和可维护性。</p>
+<p>Spring AOP
+就是<strong>基于动态代理</strong>的，如果要代理的对象，实现了某个接口，那么
 Spring AOP 会使用 <strong>JDK
-Proxy</strong>，去创建代理对象，而对于没有实现接口的对象，就无法使用 JDK
-Proxy 去进行代理了，这时候 Spring AOP 会使用 <strong>Cglib</strong>
-生成一个被代理对象的子类来作为代理，如下图所示：</p>
+Proxy</strong>，去<strong>创建代理对象</strong>，而对于没有实现接口的对象，就无法使用
+JDK Proxy 去进行代理了，这时候 Spring AOP 会使用 <strong>Cglib</strong>
+生成一个<strong>被代理对象的子类</strong>来作为代理，如下图所示：</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230208093647267.png"
+alt="image-20230208093647267" />
+<figcaption aria-hidden="true">image-20230208093647267</figcaption>
+</figure>
 <p>当然你也可以使用 <strong>AspectJ</strong> ！Spring AOP 已经集成了
-AspectJ ，AspectJ 应该算的上是 Java 生态系统中最完整的 AOP 框架了。</p>
+AspectJ ，<strong>AspectJ</strong> 应该算的上是 <strong>Java
+生态系统中最完整的 AOP 框架</strong>了。</p>
 <p>AOP 切面编程设计到的一些专业术语：</p>
 <table>
 <colgroup>
@@ -702,46 +723,47 @@ AspectJ ，AspectJ 应该算的上是 Java 生态系统中最完整的 AOP 框�
 </thead>
 <tbody>
 <tr class="odd">
-<td>目标(Target)</td>
-<td>被通知的对象</td>
+<td>目标(<strong>Target</strong>)</td>
+<td><strong>被通知的对象</strong></td>
 </tr>
 <tr class="even">
-<td>代理(Proxy)</td>
-<td>向目标对象应用通知之后创建的代理对象</td>
+<td>代理(<strong>Proxy</strong>)</td>
+<td>向目标对象应用通知之后创建的<strong>代理对象</strong></td>
 </tr>
 <tr class="odd">
 <td>连接点(JoinPoint)</td>
-<td>目标对象的所属类中，定义的所有方法均为连接点</td>
+<td><strong>目标对象的所属类</strong>中，定义的<strong>所有方法</strong>均为连接点</td>
 </tr>
 <tr class="even">
 <td>切入点(Pointcut)</td>
 <td>被切面拦截 /
-增强的连接点（切入点一定是连接点，连接点不一定是切入点）</td>
+增强的连接点（<strong>切入点一定是连接点，连接点不一定是切入点</strong>）</td>
 </tr>
 <tr class="odd">
 <td>通知(Advice)</td>
-<td>增强的逻辑 / 代码，也即拦截到目标对象的连接点之后要做的事情</td>
+<td>增强的<strong>逻辑</strong> /
+<strong>代码</strong>，也即拦截到目标对象的连接点之后要做的事情</td>
 </tr>
 <tr class="even">
 <td>切面(Aspect)</td>
-<td>切入点(Pointcut)+通知(Advice)</td>
+<td><strong>切入点(Pointcut)+通知(Advice)</strong></td>
 </tr>
 <tr class="odd">
 <td>Weaving(织入)</td>
-<td>将通知应用到目标对象，进而生成代理对象的过程动作</td>
+<td>将<strong>通知应用</strong>到目标对象，进而生成代理对象的<strong>过程动作</strong></td>
 </tr>
 </tbody>
 </table>
 <h3 id="spring-aop-和-aspectj-aop-有什么区别">Spring AOP 和 AspectJ AOP
 有什么区别？</h3>
 <p><strong>Spring AOP 属于运行时增强，而 AspectJ 是编译时增强。</strong>
-Spring AOP 基于代理(Proxying)，而 AspectJ 基于字节码操作(Bytecode
-Manipulation)。</p>
+Spring AOP 基于<strong>代理</strong>(Proxying)，而 AspectJ
+基于<strong>字节码</strong>操作(Bytecode Manipulation)。</p>
 <p>Spring AOP 已经集成了 AspectJ ，AspectJ 应该算的上是 Java
 生态系统中最完整的 AOP 框架了。AspectJ 相比于 Spring AOP
 功能更加强大，但是 Spring AOP 相对来说更简单，</p>
-<p>如果我们的切面比较少，那么两者性能差异不大。但是，当切面太多的话，最好选择
-AspectJ ，它比 Spring AOP 快很多。</p>
+<p>如果我们的切面比较少，那么两者性能差异不大。但是，当<strong>切面太多</strong>的话，最好选择
+<strong>AspectJ</strong> ，它比 Spring AOP 快很多。</p>
 <h3 id="aspectj-定义的通知类型有哪些">AspectJ
 定义的通知类型有哪些？</h3>
 <ul>
@@ -756,7 +778,8 @@ AfterThrowing
 （环绕通知）：编程式控制目标对象的方法调用。环绕通知是所有通知类型中可操作范围最大的一种，因为它可以直接拿到目标对象，以及要执行的方法，所以环绕通知可以任意的在目标对象的方法调用前后搞事，甚至不调用目标对象的方法</li>
 </ul>
 <h3 id="多个切面的执行顺序如何控制">多个切面的执行顺序如何控制？</h3>
-<p>1、通常使用<code>@Order</code> 注解直接定义切面顺序</p>
+<p>1、通常使用<strong><code>@Order</code>
+注解</strong>直接定义切面顺序</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">// 值越小优先级越高</span><br><span class="line">@Order(3)</span><br><span class="line">@Component</span><br><span class="line">@Aspect</span><br><span class="line">public class LoggingAspect implements Ordered &#123;</span><br></pre></td></tr></table></figure>
 <p><strong>2、实现<code>Ordered</code> 接口重写 <code>getOrder</code>
 方法。</strong></p>
@@ -764,15 +787,15 @@ AfterThrowing
 <h2 id="spring-mvc">Spring MVC</h2>
 <h3 id="说说自己对于-spring-mvc-了解">说说自己对于 Spring MVC 了解?</h3>
 <p>MVC
-是模型(Model)、视图(View)、控制器(Controller)的简写，其核心思想是通过将业务逻辑、数据、显示分离来组织代码。</p>
+是<strong>模型(Model)</strong>、<strong>视图(View)</strong>、<strong>控制器(Controller)</strong>的简写，其核心思想是通过将<strong>业务逻辑</strong>、<strong>数据</strong>、<strong>显示</strong>分离来组织代码。</p>
 <figure>
 <img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6a6176612d67756964652d626c6f672f696d6167652d32303231303830393138313435323432312e706e67"
 alt="img" />
 <figcaption aria-hidden="true">img</figcaption>
 </figure>
-<p>网上有很多人说 MVC 不是设计模式，只是软件设计规范，我个人更倾向于 MVC
-同样是众多设计模式中的一种。<strong><a
+<p>网上有很多人说 MVC 不是设计模式，只是软件设计规范，我个人更倾向于
+<strong>MVC 同样是众多设计模式中的一种</strong>。<strong><a
 target="_blank" rel="noopener" href="https://github.com/iluwatar/java-design-patterns">java-design-patterns</a></strong>
 项目中就有关于 MVC 的相关介绍。</p>
 <figure>
@@ -785,38 +808,43 @@ alt="img" />
 Spring MVC 的时代。</p>
 <p><strong>Model 1 时代</strong></p>
 <p>很多学 Java 后端比较晚的朋友可能并没有接触过 Model 1 时代下的 JavaWeb
-应用开发。在 Model1 模式下，整个 Web 应用几乎全部用 JSP
-页面组成，只用少量的 JavaBean 来处理数据库连接、访问等操作。</p>
-<p>这个模式下 JSP
-即是控制层（Controller）又是表现层（View）。显而易见，这种模式存在很多问题。比如控制逻辑和表现逻辑混杂在一起，导致代码重用率极低；再比如前端和后端相互依赖，难以进行测试维护并且开发效率极低。</p>
+应用开发。在 Model1 模式下，整个 Web 应用几<strong>乎全部用 JSP
+页面</strong>组成，<strong>只用少量的 JavaBean</strong>
+来<strong>处理数据库连接</strong>、<strong>访问</strong>等操作。</p>
+<p>这个模式下 <strong>JSP</strong>
+即是<strong>控制层（Controller）</strong>又是<strong>表现层（View）</strong>。显而易见，这种模式存在很多问题。比如<strong>控制逻辑</strong>和<strong>表现逻辑</strong>混杂在一起，导致代码重用率极低；再比如前端和后端相互依赖，难以进行测试维护并且开发效率极低。</p>
 <p><strong>Model 2 时代</strong></p>
-<p>学过 Servlet 并做过相关 Demo 的朋友应该了解“Java Bean(Model)+
-JSP（View）+Servlet（Controller） ”这种开发模式，这就是早期的 JavaWeb
-MVC 开发模式。</p>
+<p>学过 Servlet 并做过相关 Demo 的朋友应该了解“<strong>Java
+Bean(Model)</strong>+
+<strong>JSP（View）</strong>+<strong>Servlet（Controller）</strong>
+”这种开发模式，这就是早期的 JavaWeb MVC 开发模式。</p>
 <ul>
-<li>Model:系统涉及的数据，也就是 dao 和 bean。</li>
-<li>View：展示模型中的数据，只是用来展示。</li>
-<li>Controller：处理用户请求都发送给 ，返回数据给 JSP
-并展示给用户。</li>
+<li>Model:系统涉及的数据，也就是 <strong>dao</strong> 和
+<strong>bean</strong>。</li>
+<li>View：<strong>展示模型中的数据</strong>，只是用来展示。</li>
+<li>Controller：<strong>处理用户请求</strong>都发送给
+<strong>Servlet</strong>，返回数据给 JSP 并展示给用户。</li>
 </ul>
 <p><a
 target="_blank" rel="noopener" href="https://camo.githubusercontent.com/b36a90d56dae552146126cf76f8de218f5d545d9df9d65a7eb84283157f46475/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6a6176612d67756964652d626c6f672f6d76632d6d6f64656c322e706e67"><img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6a6176612d67756964652d626c6f672f6d76632d6d6f64656c322e706e67"
 alt="img" /></a></p>
-<p>Model2 模式下还存在很多问题，Model2 的抽象和封装程度还远远不够，使用
-Model2
-进行开发时不可避免地会重复造轮子，这就大大降低了程序的可维护性和复用性。</p>
-<p>于是，很多 JavaWeb 开发相关的 MVC 框架应运而生比如 Struts2，但是
-Struts2 比较笨重。</p>
+<p>Model2 模式下还存在很多问题，<strong>Model2
+的抽象</strong>和<strong>封装程度</strong>还远远不够，使用 Model2
+进行开发时不可避免地会<strong>重复造轮子</strong>，这就大大降低了程序的<strong>可维护性</strong>和<strong>复用性</strong>。</p>
+<p>于是，很多 JavaWeb 开发相关的 MVC 框架应运而生比如
+<strong>Struts2</strong>，但是 Struts2 比较笨重。</p>
 <p><strong>Spring MVC 时代</strong></p>
 <p>随着 Spring 轻量级开发框架的流行，Spring 生态圈出现了 Spring MVC
 框架， Spring MVC 是当前最优秀的 MVC 框架。相比于 Struts2 ， Spring MVC
 使用更加简单和方便，开发效率更高，并且 Spring MVC 运行速度更快。</p>
 <p>MVC 是一种设计模式，Spring MVC 是一款很优秀的 MVC 框架。Spring MVC
 可以帮助我们进行更简洁的 Web 层的开发，并且它天生与 Spring
-框架集成。Spring MVC 下我们一般把后端项目分为 Service
-层（处理业务）、Dao 层（数据库操作）、Entity 层（实体类）、Controller
-层(控制层，返回数据给前台页面)。</p>
+框架集成。Spring MVC 下我们一般把后端项目分为 <strong>Service
+层（处理业务）</strong>、<strong>Dao
+层（数据库操作）</strong>、<strong>Entity
+层（实体类）</strong>、<strong>Controller
+层(控制层</strong>，返回数据给前台页面)。</p>
 <h3 id="spring-mvc-的核心组件有哪些">Spring MVC 的核心组件有哪些？</h3>
 <p>记住了下面这些组件，也就记住了 SpringMVC 的工作原理。</p>
 <ul>
@@ -851,38 +879,42 @@ alt="img" />
 <p><strong>流程说明（重要）：</strong></p>
 <ol type="1">
 <li>客户端（浏览器）发送请求，
-<code>DispatcherServlet</code>拦截请求。</li>
+<strong><code>DispatcherServlet</code>拦截</strong>请求。</li>
 <li><code>DispatcherServlet</code> 根据请求信息调用
-<code>HandlerMapping</code> 。<code>HandlerMapping</code> 根据 uri
-去匹配查找能处理的 <code>Handler</code>（也就是我们平常说的
+<strong><code>HandlerMapping</code></strong>
+。<strong><code>HandlerMapping</code> 根据 uri
+去匹配</strong>查找能处理的 <code>Handler</code>（也就是我们平常说的
 <code>Controller</code> 控制器） ，并会将请求涉及到的拦截器和
 <code>Handler</code> 一起封装。</li>
 <li><code>DispatcherServlet</code> 调用
-<code>HandlerAdapter</code>适配执行 <code>Handler</code> 。</li>
-<li><code>Handler</code> 完成对用户请求的处理后，会返回一个
-<code>ModelAndView</code>
+<strong><code>HandlerAdapter</code></strong>适配执行
+<code>Handler</code> 。</li>
+<li><code>Handler</code> 完成对用户请求的处理后，会<strong>返回一个
+<code>ModelAndView</code></strong>
 对象给<code>DispatcherServlet</code>，<code>ModelAndView</code>
-顾名思义，包含了数据模型以及相应的视图的信息。<code>Model</code>
+顾名思义，包含了<strong>数据模型</strong>以及<strong>相应的视图的信息</strong>。<code>Model</code>
 是返回的数据对象，<code>View</code> 是个逻辑上的
 <code>View</code>。</li>
-<li><code>ViewResolver</code> 会根据逻辑 <code>View</code> 查找实际的
-<code>View</code>。</li>
-<li><code>DispaterServlet</code> 把返回的 <code>Model</code> 传给
-<code>View</code>（视图渲染）。</li>
-<li>把 <code>View</code> 返回给请求者（浏览器）</li>
+<li><code>ViewResolver</code> 会<strong>根据逻辑 <code>View</code>
+查找实际的 <code>View</code></strong>。</li>
+<li><code>DispaterServlet</code> 把<strong>返回的 <code>Model</code>
+传给 <code>View</code>（视图渲染</strong>）。</li>
+<li>把 <strong><code>View</code> 返回</strong>给请求者（浏览器）</li>
 </ol>
 <h3 id="统一异常处理怎么做">统一异常处理怎么做？</h3>
 <p>推荐使用注解的方式统一异常处理，具体会使用到
 <code>@ControllerAdvice</code> + <code>@ExceptionHandler</code>
 这两个注解 。</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">@ControllerAdvice</span><br><span class="line">@ResponseBody</span><br><span class="line">public class GlobalExceptionHandler &#123;</span><br><span class="line"></span><br><span class="line">    @ExceptionHandler(BaseException.class)</span><br><span class="line">    public ResponseEntity&lt;?&gt; handleAppException(BaseException ex, HttpServletRequest request) &#123;</span><br><span class="line">      //......</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @ExceptionHandler(value = ResourceNotFoundException.class)</span><br><span class="line">    public ResponseEntity&lt;ErrorReponse&gt; handleResourceNotFoundException(ResourceNotFoundException ex, HttpServletRequest request) &#123;</span><br><span class="line">      //......</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>这种异常处理方式下，会给所有或者指定的 <code>Controller</code>
-织入异常处理的逻辑（AOP），当 <code>Controller</code>
+<p>这种异常处理方式下，会给<strong>所有</strong>或者<strong>指定</strong>的
+<code>Controller</code> <strong>织入异常处理的逻辑</strong>（AOP），当
+<code>Controller</code>
 中的方法抛出异常的时候，由被<code>@ExceptionHandler</code>
 注解修饰的方法进行处理。</p>
 <p><code>ExceptionHandlerMethodResolver</code> 中
-<code>getMappedMethod</code> 方法决定了异常具体被哪个被
-<code>@ExceptionHandler</code> 注解修饰的方法处理异常。</p>
+<code>getMappedMethod</code> 方法<strong>决定了异常具体被哪个</strong>被
+<code>@ExceptionHandler</code>
+注解修饰的方法处理异常。【<strong>这个是框架里的源码，不是自己写的</strong>】</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">@Nullable</span><br><span class="line">	private Method getMappedMethod(Class&lt;? extends Throwable&gt; exceptionType) &#123;</span><br><span class="line">		List&lt;Class&lt;? extends Throwable&gt;&gt; matches = new ArrayList&lt;&gt;();</span><br><span class="line">    //找到可以处理的所有异常信息。mappedMethods 中存放了异常和处理异常的方法的对应关系</span><br><span class="line">		for (Class&lt;? extends Throwable&gt; mappedException : this.mappedMethods.keySet()) &#123;</span><br><span class="line">			if (mappedException.isAssignableFrom(exceptionType)) &#123;</span><br><span class="line">				matches.add(mappedException);</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">    // 不为空说明有方法处理异常</span><br><span class="line">		if (!matches.isEmpty()) &#123;</span><br><span class="line">      // 按照匹配程度从小到大排序</span><br><span class="line">			matches.sort(new ExceptionDepthComparator(exceptionType));</span><br><span class="line">      // 返回处理异常的方法</span><br><span class="line">			return this.mappedMethods.get(matches.get(0));</span><br><span class="line">		&#125;</span><br><span class="line">		else &#123;</span><br><span class="line">			return null;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
 <p>从源代码看出：
 <strong><code>getMappedMethod()</code>会首先找到可以匹配处理异常的所有方法信息，然后对其进行从小到大的排序，最后取最小的那一个匹配的方法(即匹配度最高的那个)。</strong></p>
@@ -895,21 +927,22 @@ target="_blank" rel="noopener" href="https://javaguide.cn/system-design/framewor
 </blockquote>
 <ul>
 <li><strong>工厂设计模式</strong> : Spring 使用工厂模式通过
-<code>BeanFactory</code>、<code>ApplicationContext</code> 创建 bean
-对象。</li>
-<li><strong>代理设计模式</strong> : Spring AOP 功能的实现。</li>
-<li><strong>单例设计模式</strong> : Spring 中的 Bean
-默认都是单例的。</li>
+<strong><code>BeanFactory</code></strong>、<strong><code>ApplicationContext</code></strong>
+创建 bean 对象。</li>
+<li><strong>代理设计模式</strong> : Spring <strong>AOP</strong>
+功能的实现。</li>
+<li><strong>单例设计模式</strong> : Spring 中的 <strong>Bean
+默认都是单例</strong>的。</li>
 <li><strong>模板方法模式</strong> : Spring 中
-<code>jdbcTemplate</code>、<code>hibernateTemplate</code> 等以 Template
-结尾的对数据库操作的类，它们就使用到了模板模式。</li>
+<strong><code>jdbcTemplate</code></strong>、<strong><code>hibernateTemplate</code></strong>
+等以 Template 结尾的对数据库操作的类，它们就使用到了模板模式。</li>
 <li><strong>包装器设计模式</strong> :
-我们的项目需要连接多个数据库，而且不同的客户在每次访问中根据需要会去访问不同的数据库。这种模式让我们可以根据客户的需求能够动态切换不同的数据源。</li>
+我们的项目需要连接多个数据库，而且不同的客户在每次访问中根据需要会去访问不同的数据库。这种模式让我们可以根据客户的需求能够<strong>动态切换不同的数据源</strong>。</li>
 <li><strong>观察者模式:</strong> Spring
-事件驱动模型就是观察者模式很经典的一个应用。</li>
+<strong>事件驱动</strong>模型就是<strong>观察者模式</strong>很经典的一个应用。</li>
 <li><strong>适配器模式</strong> : Spring AOP
-的增强或通知(Advice)使用到了适配器模式、spring MVC
-中也是用到了适配器模式适配<code>Controller</code>。</li>
+的<strong>增强或通知(Advice)</strong>使用到了适配器模式、spring MVC
+中也是用到了适配器模式<strong>适配<code>Controller</code></strong>。</li>
 <li>......</li>
 </ul>
 <h2 id="spring-事务">Spring 事务</h2>
@@ -919,12 +952,14 @@ target="_blank" rel="noopener" href="https://javaguide.cn/system-design/framewor
 <h3 id="spring-管理事务的方式有几种">Spring 管理事务的方式有几种？</h3>
 <ul>
 <li><strong>编程式事务</strong> ： 在代码中硬编码(不推荐使用) : 通过
-<code>TransactionTemplate</code>或者 <code>TransactionManager</code>
-手动管理事务，实际应用中很少使用，但是对于你理解 Spring
+<strong><code>TransactionTemplate</code></strong>或者
+<strong><code>TransactionManager</code></strong>
+<strong>手动管理</strong>事务，实际应用中很少使用，但是对于你理解 Spring
 事务管理原理有帮助。</li>
-<li><strong>声明式事务</strong> ： 在 XML
-配置文件中配置或者直接基于注解（推荐使用） : 实际是通过 AOP
-实现（基于<code>@Transactional</code> 的全注解方式使用最多）</li>
+<li><strong>声明式事务</strong> ： 在 <strong>XML
+配置文件中配置</strong>或者<strong>直接基于注解</strong>（推荐使用） :
+实际是通过 AOP 实现（基于<code>@**Transactional</code>**
+的全注解方式使用最多）</li>
 </ul>
 <h3 id="spring-事务中哪几种事务传播行为">Spring
 事务中哪几种事务传播行为?</h3>
@@ -1262,7 +1297,7 @@ Exception.class)注解了解吗？</span></a></li></ol></li><li class="nav-item 
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">28:02</span>
+    <span title="站点阅读时长">28:03</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
