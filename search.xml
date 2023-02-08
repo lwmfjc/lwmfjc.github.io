@@ -2334,13 +2334,85 @@ href="https://javaguide.cn/system-design/framework/spring/spring-transaction.htm
 实际是通过 AOP 实现（基于<code>@**Transactional</code>**
 的全注解方式使用最多）</li>
 </ul>
+<h3
+id="spring事务失效的几种情况非javaguide">Spring事务失效的几种情况（非javaguide）</h3>
+<h4 id="spring事务实现方式及原理">1.spring事务实现方式及原理</h4>
+<p>Spring
+事务的本质其实就是数据库对事务的支持，没有数据库的事务支持，spring
+是无法提供事务功能的。真正的数据库层的事务提交和回滚是在binlog提交之后进行提交的
+通过 redo log 来重做， undo log来回滚。</p>
+<p>一般我们在程序里面使用的都是在方法上面加<code>@Transactional</code>
+注解，这种属于<strong>声明式事务</strong>。</p>
+<p><strong>声明式事务本质是通过 AOP
+功能</strong>，<strong>对方法前后进行拦截</strong>，将事务处理的功能<strong>编织</strong>到拦截的<strong>方法中</strong>，也就是<strong>在目标方法开始之前加入一个事务</strong>，在<strong>执行完目标方法之后根据执行情况提交</strong>或者<strong>回滚</strong>事务。</p>
+<h4 id="数据库本身不支持事务">2.数据库本身不支持事务</h4>
+<p>这里以 MySQL 为例，其 MyISAM 引擎是不支持事务操作的，InnoDB
+才是支持事务的引擎，一般要支持事务都会使用 InnoDB</p>
+<h4 id="当前类的调用">3.当前类的调用</h4>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UserServiceImpl</span> <span class="keyword">implements</span> <span class="title class_">UserService</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">update</span><span class="params">(User user)</span> &#123;</span><br><span class="line">        updateUser(user);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Transactional(rollbackFor = Exception.class)</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">updateUser</span><span class="params">(User user)</span> &#123;</span><br><span class="line">        <span class="comment">// update user</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+<p>上面的这种情况下是不会有事务管理操作的。</p>
+<p>通过看声明式事务的原理可知，spring使用的是AOP切面的方式，本质上使用的是动态代理来达到事务管理的目的，当前类调用的方法上面加<code>@Transactional</code>
+这个是没有任何作用的，因为调用这个方法的是<code>this</code>.</p>
+<p>OK， 我们在看下面的一种例子。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UserServiceImpl</span> <span class="keyword">implements</span> <span class="title class_">UserService</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Transactional(rollbackFor = Exception.class)</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">update</span><span class="params">(User user)</span> &#123;</span><br><span class="line">        updateUser(user);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Transactional(propagation = Propagation.REQUIRES_NEW)</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">updateUser</span><span class="params">(User user)</span> &#123;</span><br><span class="line">        <span class="comment">// update user</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+<p>这次在 update 方法上加了 <code>@Transactional</code>，updateUser 加了
+<code>REQUIRES_NEW</code> 新开启一个事务，那么新开的事务管用么？</p>
+<p>答案是：不管用！</p>
+<p>因为它们<strong>发生了自身调用</strong>，就<strong>调该类自己的方法</strong>，而<strong>没有经过
+Spring
+的代理类</strong>，默认<strong>只有在外部调用事务才会生效</strong>，这也是老生常谈的经典问题了。</p>
+<h4 id="方法不是public的">4.方法不是public的</h4>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UserServiceImpl</span> <span class="keyword">implements</span> <span class="title class_">UserService</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Transactional(rollbackFor = Exception.class)</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">updateUser</span><span class="params">(User user)</span> &#123;</span><br><span class="line">        <span class="comment">// update user</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+<p><strong><code>private</code>
+方法是不会被spring代理</strong>的，因此是不会有事务产生的，这种做法是无效的。</p>
+<h4 id="没有被spring管理">5.没有被spring管理</h4>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//@Service</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UserServiceImpl</span> <span class="keyword">implements</span> <span class="title class_">UserService</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Transactional(rollbackFor = Exception.class)</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">updateUser</span><span class="params">(User user)</span> &#123;</span><br><span class="line">        <span class="comment">// update user</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+<p>没有被spring管理的bean， spring连代理对象都无法生成，当然无效咯。</p>
+<h4 id="配置的事务传播性有问题">6.配置的事务传播性有问题</h4>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UserServiceImpl</span> <span class="keyword">implements</span> <span class="title class_">UserService</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Transactional(propagation = Propagation.NOT_SUPPORTED)</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">update</span><span class="params">(User user)</span> &#123;</span><br><span class="line">        <span class="comment">// update user</span></span><br><span class="line">    &#125;    </span><br><span class="line">&#125;</span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+<p>回顾一下spring的事务传播行为</p>
+<p>Spring 事务的传播行为说的是，当多个事务同时存在的时候， Spring
+如何处理这些事务的行为。</p>
+<ol type="1">
+<li>PROPAGATION_REQUIRED：如果当前没有事务，就创建一个新事务，如果当前存在事务，就加入该事务，该设置是最常用的设置。</li>
+<li>PROPAGATION_SUPPORTS：支持当前事务，如果当前存在事务，就加入该事务，如果当前不存在事务，就以非事务执行</li>
+<li>PROPAGATION_MANDATORY：支持当前事务，如果当前存在事务，就加入该事务，如果当前不存在事务，就抛出异常。</li>
+<li>PROPAGATION_REQUIRES_NEW：创建新事务，无论当前存不存在事务，都创建新事务。</li>
+<li>PROPAGATION_NOT_SUPPORTED：以非事务方式执行操作，如果当前存在事务，就把当前事务挂起。</li>
+<li>PROPAGATION_NEVER：
+以非事务方式执行，如果当前存在事务，则抛出异常。</li>
+<li>PROPAGATION_NESTED：如果当前存在事务，则在嵌套事务内执行。如果当前没有事务，则按
+REQUIRED 属性执行</li>
+</ol>
+<p>当传播行为设置了PROPAGATION_NOT_SUPPORTED，PROPAGATION_NEVER，PROPAGATION_SUPPORTS这三种时，就有可能存在事务不生效</p>
+<h4 id="异常被你-抓住了">7.异常被你 "抓住"了</h4>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UserServiceImpl</span> <span class="keyword">implements</span> <span class="title class_">UserService</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Transactional(rollbackFor = Exception.class)</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">update</span><span class="params">(User user)</span> &#123;</span><br><span class="line">        </span><br><span class="line">      <span class="keyword">try</span>&#123;</span><br><span class="line">        <span class="comment">// update user</span></span><br><span class="line">      &#125;<span class="keyword">catch</span>(Execption e)&#123;</span><br><span class="line">         log.error(<span class="string">&quot;异常&quot;</span>,e)</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;    </span><br><span class="line">&#125;</span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+<p>异常被抓了，这样子代理类就没办法知道你到底有没有错误，需不需要回滚，所以这种情况也是没办法回滚的哦。</p>
+<h4
+id="接口层声明式事务使用cglib代理">8.接口层声明式事务使用cglib代理</h4>
+<blockquote>
+<p>注意，这是个前后关系，说的是：如果在接口层使用了<strong>声明式事务</strong>，结果用的是cglib代理，那么事务就不会生效</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">UserService</span>   &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Transactional(rollbackFor = Exception.class)</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">update</span><span class="params">(User user)</span>  </span><br><span class="line">&#125;</span><br><span class="line">复制代码</span><br><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UserServiceImpl</span> <span class="keyword">implements</span> <span class="title class_">UserService</span> &#123;</span><br><span class="line"></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">update</span><span class="params">(User user)</span> &#123;</span><br><span class="line">        <span class="comment">// update user</span></span><br><span class="line">    &#125;    </span><br><span class="line">&#125;</span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+<p>通过元素的 "proxy-target-class"
+属性值来控制是基于接口的还是基于类的代理被创建。如果
+"proxy-target-class" 属值被设置为
+"true"，那么<strong>基于类的代理</strong>将起作用（这时需要CGLIB库cglib.jar在CLASSPATH中）。如果
+"proxy-target-class" 属值被设置为 "false"
+或者这个属性被省略，那么<strong>标准的JDK基于接口</strong>的代理将起作用</p>
+<p>注解@Transactional
+cglib与java动态代理最大区别是<strong>代理目标对象不用实现接口</strong>,那么注解要是写到接口方法上，要是使用cglib代理，这时注解事务就失效了，为了保持兼容注解最好<strong>都写到实现类方法</strong>上。</p>
+<h4 id="rollbackfor异常指定错误">9.rollbackFor异常指定错误</h4>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UserServiceImpl</span> <span class="keyword">implements</span> <span class="title class_">UserService</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Transactional</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">update</span><span class="params">(User user)</span> &#123;</span><br><span class="line">        <span class="comment">// update user</span></span><br><span class="line">    &#125;    </span><br><span class="line">&#125;</span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+<p>上面这种没有指定回滚异常，这个时候默认的回滚异常是<code>RuntimeException</code>
+，如果出现其他异常那么就不会回滚事务</p>
 <h3 id="spring-事务中哪几种事务传播行为">Spring
 事务中哪几种事务传播行为?</h3>
 <p><strong>事务传播行为是为了解决业务层方法之间互相调用的事务问题</strong>。</p>
 <p>当事务方法被另一个事务方法调用时，必须指定事务应该如何传播。例如：方法可能继续在现有事务中运行，也可能开启一个新事务，并在自己的事务中运行。</p>
 <p>正确的事务传播行为可能的值如下:</p>
 <p><strong>1.<code>TransactionDefinition.PROPAGATION_REQUIRED</code></strong></p>
-<p>使用的最多的一个事务传播行为，我们平时经常使用的<code>@Transactional</code>注解默认使用就是这个事务传播行为。如果当前存在事务，则加入该事务；如果当前没有事务，则创建一个新的事务。</p>
+<p>使用的最多的一个事务传播行为，我们平时经常使用的<code>@Transactional</code>注解<strong>默认</strong>使用就是这个事务传播行为。如果当前存在事务，则加入该事务；如果当前没有事务，则创建一个新的事务。</p>
 <p><strong><code>2.TransactionDefinition.PROPAGATION_REQUIRES_NEW</code></strong></p>
 <p>创建一个新的事务，如果当前存在事务，则把当前事务挂起。也就是说不管外部方法是否开启事务，<code>Propagation.REQUIRES_NEW</code>修饰的内部方法会新开启自己的事务，且开启的事务相互独立，互不干扰。</p>
 <p><strong>3.<code>TransactionDefinition.PROPAGATION_NESTED</code></strong></p>
@@ -14494,6 +14566,261 @@ alt="image-20220929093558353" />
       </tags>
   </entry>
   <entry>
+    <title>ly0002ly-javaGuide基础2</title>
+    <url>/2022/09/29/review/java_guide/java/basic/java_guide_basic_2/</url>
+    <content><![CDATA[<blockquote>
+<p>转载自https://github.com/Snailclimb/JavaGuide
+（添加小部分笔记）感谢作者!</p>
+</blockquote>
+<h2 id="面向对象基础">面向对象基础</h2>
+<ul>
+<li><p>区别</p>
+<ul>
+<li>面向<strong>过程</strong>把解决问题的<strong>过程拆成一个个方法</strong>，通过一个个方法的执行解决问题。</li>
+<li>面向对象会<strong>先抽象出对象</strong>，然后<strong>用对象执行方法</strong>的方式解决问题。</li>
+<li>面向对象编程
+<strong>易维护</strong>、<strong>易复用</strong>、<strong>易扩展</strong></li>
+</ul></li>
+<li><p>对象实体与对象引用的不同<br />
+new 运算符，new
+创建对象实例（<strong>对象实例在堆</strong>内存中），对象引用指向对象实例（<strong>对象引用存放在栈</strong>内存中）。</p>
+<p>一个对象引用可以指向 0 个或 1
+个对象（一根绳子可以不系气球，也可以系一个气球）;一个对象可以有 n
+个引用指向它（可以用 n 条绳子系住一个气球）。</p></li>
+<li><p>对象的相等一般比较的是<strong>内存中存放的内容</strong>是否相等；引用相等一般比较的是他们指向的<strong>内存地址是否相等</strong></p></li>
+<li><p>如果一个类没有声明构造方法，该程序能正确执行吗?
+如果我们自己添加了类的构造方法（无论是否有参），Java
+就不会再添加默认的无参数的构造方法了</p>
+<ul>
+<li>构造方法特点：名字与类名相同；没有返回值但不能用void生命构造函数；生成类的对象时自动执行</li>
+<li>构造方法<strong>不能重写override</strong>，但<strong>能重载</strong>
+overload</li>
+</ul></li>
+<li><p>面向对象三大特征</p>
+<ul>
+<li><p>封装<br />
+把一个对象的状态信息(属性)<strong>隐藏在对象内部</strong>，<strong>不允许直接访问</strong>，但提供可以被外界访问的方法来操作属性</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Student</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> id;<span class="comment">//id属性私有化</span></span><br><span class="line">    <span class="keyword">private</span> String name;<span class="comment">//name属性私有化</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//获取id的方法</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">getId</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> id;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//设置id的方法</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setId</span><span class="params">(<span class="type">int</span> id)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.id = id;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//获取name的方法</span></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">getName</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> name;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//设置name的方法</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setName</span><span class="params">(String name)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.name = name;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>继承<br />
+不通类型的对象，相互之间有一定数量的共同点，同时每个对象定义了额外的特性使得他们与众不同。继承是<strong>使用已存在的类的定义作为基础</strong>建立新类的技术</p>
+<ul>
+<li><strong>父类中的私有属性</strong>和方法<strong>子类无法访问</strong>，只是拥有</li>
+<li>子类可以拥有自己的属性、方法，即对父类进行<strong>拓展</strong></li>
+<li>子类可以用<strong>自己的方式实现父类的方法（重写）</strong></li>
+</ul></li>
+<li><p>多态</p>
+<ul>
+<li><strong>对象类型</strong>和<strong>引用类型</strong>之间具有继承(类)/实现(接口)的关系</li>
+<li><strong>引用类型变量</strong>发出的<strong>方法具体调用哪个类的方法</strong>，只有<strong>程序运行期间才能确定</strong></li>
+<li>多态不能调用“<strong>只在子类存在而父类不存在</strong>”的方法</li>
+<li>如果子类重写了父类的方法，<strong>真正执行的是子类覆盖的方法</strong>，如果子类没有覆盖父类的方法，执行的是父类的方法</li>
+</ul></li>
+</ul></li>
+<li><p>接口和抽象类有什么共同点和区别</p>
+<ul>
+<li>共同：都不能被实例化；<strong>都可以包含抽象方法</strong>；都<strong>可以有默认实现</strong>的方法。</li>
+<li>区别
+<ul>
+<li>接口主要用于对<strong>类的行为</strong>进行约束；抽象类主要用于<strong>代码复用</strong>（强调所属）</li>
+<li>类只能继承<strong>一个类</strong>，但能实现<strong>多个接口</strong></li>
+<li>接口中的成员只能是<code>public static final</code><strong>不能被修改且具有初始值</strong>；而抽象类的成员变量<strong>默认default</strong>
+，<strong>可在子类重新定义或重新赋值</strong></li>
+</ul></li>
+</ul></li>
+<li><p>深拷贝和浅拷贝的区别？什么是引用拷贝</p>
+<ul>
+<li><p>浅拷贝：浅拷贝会在堆上创建新对象，但是如果原对象内部的属性是引用类型的话，<strong>浅拷贝会复制内部对象的引用地址</strong>，即<strong>拷贝对象和原对象共用</strong>一个内部对象</p></li>
+<li><p>深拷贝，会完全复制整个对象，包括对象内包含的内部对象</p></li>
+<li><p>例子</p>
+<ul>
+<li><p>浅拷贝</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Address</span> <span class="keyword">implements</span> <span class="title class_">Cloneable</span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">    <span class="comment">// 省略构造函数、Getter&amp;Setter方法</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Address <span class="title function_">clone</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> (Address) <span class="built_in">super</span>.clone();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (CloneNotSupportedException e) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">AssertionError</span>();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Person</span> <span class="keyword">implements</span> <span class="title class_">Cloneable</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> Address address;</span><br><span class="line">    <span class="comment">// 省略构造函数、Getter&amp;Setter方法</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Person <span class="title function_">clone</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="type">Person</span> <span class="variable">person</span> <span class="operator">=</span> (Person) <span class="built_in">super</span>.clone();</span><br><span class="line">            <span class="keyword">return</span> person;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (CloneNotSupportedException e) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">AssertionError</span>();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//------------------测试--------------------</span></span><br><span class="line"><span class="type">Person</span> <span class="variable">person1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Person</span>(<span class="keyword">new</span> <span class="title class_">Address</span>(<span class="string">&quot;武汉&quot;</span>));</span><br><span class="line"><span class="type">Person</span> <span class="variable">person1Copy</span> <span class="operator">=</span> person1.clone();</span><br><span class="line"><span class="comment">// true</span></span><br><span class="line">System.out.println(person1.getAddress() == person1Copy.getAddress());</span><br></pre></td></tr></table></figure></li>
+<li><p>深拷贝</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//修改了Person类的clone()方法进行修改</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> Person <span class="title function_">clone</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="type">Person</span> <span class="variable">person</span> <span class="operator">=</span> (Person) <span class="built_in">super</span>.clone();</span><br><span class="line">        person.setAddress(person.getAddress().clone());</span><br><span class="line">        <span class="keyword">return</span> person;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (CloneNotSupportedException e) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">AssertionError</span>();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//--------------测试-------</span></span><br><span class="line"><span class="type">Person</span> <span class="variable">person1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Person</span>(<span class="keyword">new</span> <span class="title class_">Address</span>(<span class="string">&quot;武汉&quot;</span>));</span><br><span class="line"><span class="type">Person</span> <span class="variable">person1Copy</span> <span class="operator">=</span> person1.clone();</span><br><span class="line"><span class="comment">// false</span></span><br><span class="line">System.out.println(person1.getAddress() == person1Copy.getAddress());</span><br></pre></td></tr></table></figure></li>
+</ul></li>
+<li><p>引用拷贝，即两个不同的引用指向同一个对象</p></li>
+<li><p>如图<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221006140951954.png"
+alt="image-20221006140951954" /></p></li>
+</ul></li>
+</ul>
+<h2 id="java常见类">Java常见类</h2>
+<h3 id="object">Object</h3>
+<ul>
+<li><p>常见方法</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * native 方法，用于返回当前运行时对象的 Class 对象，使用了 final 关键字修饰，故不允许子类重写。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">native</span> Class&lt;?&gt; getClass()</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * native 方法，用于返回对象的哈希码，主要使用在哈希表中，比如 JDK 中的HashMap。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">native</span> <span class="type">int</span> <span class="title function_">hashCode</span><span class="params">()</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 用于比较 2 个对象的内存地址是否相等，String 类对该方法进行了重写以用于比较字符串的值是否相等。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">equals</span><span class="params">(Object obj)</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * naitive 方法，用于创建并返回当前对象的一份拷贝。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">native</span> Object <span class="title function_">clone</span><span class="params">()</span> <span class="keyword">throws</span> CloneNotSupportedException</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 返回类的名字实例的哈希码的 16 进制的字符串。建议 Object 所有的子类都重写这个方法。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> String <span class="title function_">toString</span><span class="params">()</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * native 方法，并且不能重写。唤醒一个在此对象监视器上等待的线程(监视器相当于就是锁的概念)。如果有多个线程在等待只会任意唤醒一个。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title function_">notify</span><span class="params">()</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * native 方法，并且不能重写。跟 notify 一样，唯一的区别就是会唤醒在此对象监视器上等待的所有线程，而不是一个线程。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title function_">notifyAll</span><span class="params">()</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * native方法，并且不能重写。暂停线程的执行。注意：sleep 方法没有释放锁，而 wait 方法释放了锁 ，timeout 是等待时间。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title function_">wait</span><span class="params">(<span class="type">long</span> timeout)</span> <span class="keyword">throws</span> InterruptedException</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 多了 nanos 参数，这个参数表示额外时间（以毫微秒为单位，范围是 0-999999）。 所以超时的时间还需要加上 nanos 毫秒。。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title function_">wait</span><span class="params">(<span class="type">long</span> timeout, <span class="type">int</span> nanos)</span> <span class="keyword">throws</span> InterruptedException</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 跟之前的2个wait方法一样，只不过该方法一直等待，没有超时时间这个概念</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title function_">wait</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 实例被垃圾回收器回收的时候触发的操作</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">finalize</span><span class="params">()</span> <span class="keyword">throws</span> Throwable &#123; &#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>== 和 equals() 区别</p>
+<ul>
+<li>对于基本类型来说，== 比较的是值</li>
+<li>对于引用类型，== 比较的是对象的内存地址</li>
+<li><strong>Java是值传递</strong>，所以本质上比较的都是值，只是<strong>引用类型变量存的值是对象地址</strong></li>
+</ul></li>
+<li><p>equals不能用于判断基本数据类型的变量，且只存在于Object类中，而Object类是所有类的直接或间接父类<br />
+<strong>equals默认实现</strong>：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">equals</span><span class="params">(Object obj)</span> &#123;</span><br><span class="line">     <span class="keyword">return</span> (<span class="built_in">this</span> == obj);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>如果类没有重写该方法，则如上</p></li>
+<li><p>如果重写了，则<strong>一般</strong>都是重写equals方法来比较对象中的属性是否相等</p>
+<blockquote>
+<p>关于String 和 new String 的区别： String a = "xxx"
+始终返回的是<strong>常量池中的引用</strong>；而new String
+始终返回的是<strong>堆中的引用</strong></p>
+<ul>
+<li><p>对于String a = "xxx"
+，先到常量池中查找是否存在值为"xxx"的字符串，如果存在，直接将常量池中该值对应的引用返回，如果不存在，则在常量池中创建该对象，并返回引用。</p></li>
+<li><p>对于new
+String("xxx")，先到常量池中查找是否存在值为"xxx"的字符串，如果存在，则直接在堆中创建对象，并返回堆中的索引；如果不存在，则先在常量池中创建对象(值为xxx)，然后再在堆中创建对象，并返回堆中该对象的引用地址</p></li>
+</ul>
+<blockquote>
+<p>来自
+https://blog.csdn.net/weixin_44844089/article/details/103648448</p>
+</blockquote>
+</blockquote>
+<p>例子：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">a</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">String</span>(<span class="string">&quot;ab&quot;</span>); <span class="comment">// a 为一个引用</span></span><br><span class="line"><span class="type">String</span> <span class="variable">b</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">String</span>(<span class="string">&quot;ab&quot;</span>); <span class="comment">// b为另一个引用,对象的内容一样</span></span><br><span class="line"><span class="type">String</span> <span class="variable">aa</span> <span class="operator">=</span> <span class="string">&quot;ab&quot;</span>; <span class="comment">// 放在常量池中</span></span><br><span class="line"><span class="type">String</span> <span class="variable">bb</span> <span class="operator">=</span> <span class="string">&quot;ab&quot;</span>; <span class="comment">// 从常量池中查找</span></span><br><span class="line">System.out.println(aa == bb);<span class="comment">// true</span></span><br><span class="line">System.out.println(a == b);<span class="comment">// false</span></span><br><span class="line">System.out.println(a.equals(b));<span class="comment">// true</span></span><br><span class="line">System.out.println(<span class="number">42</span> == <span class="number">42.0</span>);<span class="comment">// true</span></span><br></pre></td></tr></table></figure></li>
+</ul></li>
+<li><p>String 类重写了equals()方法</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">equals</span><span class="params">(Object anObject)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">this</span> == anObject) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (anObject <span class="keyword">instanceof</span> String) &#123;</span><br><span class="line">        <span class="type">String</span> <span class="variable">anotherString</span> <span class="operator">=</span> (String)anObject;</span><br><span class="line">        <span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span> value.length;</span><br><span class="line">        <span class="keyword">if</span> (n == anotherString.value.length) &#123;</span><br><span class="line">            <span class="type">char</span> v1[] = value;</span><br><span class="line">            <span class="type">char</span> v2[] = anotherString.value;</span><br><span class="line">            <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">while</span> (n-- != <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="keyword">if</span> (v1[i] != v2[i])</span><br><span class="line">                    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">                i++;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>hashCode()有什么用<br />
+hashCode()的作用是<strong>获取哈希码(int整数)</strong>，也称为<strong>散列码</strong>，作用是确定<strong>该对象在哈希表中的索引位置</strong>。函数定义在Object类中，且为本地方法，通常用来<strong>将对象的内存地址转换为整数之后返回</strong>；散列表存储的是键值对(key-value)，<strong>根据“键”快速检索出“值”</strong>，其中利用了散列码</p></li>
+<li><p>为什么需要hashCode</p>
+<blockquote>
+<p>当你把对象加入 <code>HashSet</code> 时，<code>HashSet</code>
+会先计算对象的 <strong><code>hashCode</code>
+值来判断对象加入的位置</strong>，同时也会<strong>与其他已经加入的对象的
+<code>hashCode</code> 值作比较</strong>，如果没有相符的
+<code>hashCode</code>，<code>HashSet</code>
+会假设对象没有重复出现。但是如果发现有相同 <code>hashCode</code>
+值的对象，这时会调用 <code>equals()</code> 方法来检查
+<code>hashCode</code>
+相等的对象是否真的相同。如果两者相同，<code>HashSet</code>
+就不会让其加入操作成功。如果不同的话，就会重新散列到其他位置【注意，我觉得这里应该是使用拉链法，说成散列到其他位置貌似有点不对】。这样我们就大大<strong>减少了
+<code>equals</code> 的次数</strong>，相应就大大提高了执行速度。</p>
+</blockquote></li>
+<li><p>hashCode()和equals()都用于比较两个对象是否相等，为什么要同时提供两个方法（因为在一些容器中，如<strong>HashMap、HashSet</strong>中，判断元素是否在容器中<strong>效率更高</strong>)</p>
+<ul>
+<li>两个对象的hashCode值相等并不代表两个对象就相等</li>
+<li>因为hashCode所使用的哈希算法也许会让多个对象传回相同哈希值，取决于哈希算法</li>
+</ul></li>
+<li><p>总结</p>
+<ul>
+<li>如果两个对象的<code>hashCode</code>
+值相等，那这两个对象不一定相等（哈希碰撞）。</li>
+<li>如果两个对象的<code>hashCode</code>
+值相等并且<code>equals()</code>方法也返回
+<code>true</code>，我们才认为这两个对象相等。</li>
+<li>如果两个对象的<strong><code>hashCode</code>
+值不相等</strong>，我们就可以<strong>直接认为这两个对象不相等</strong>。</li>
+</ul></li>
+</ul>
+<h3 id="string">String</h3>
+<ul>
+<li><p>String、StringBuffer，StringBuilder区别
+String是不可变的，StringBuffer和StringBuilder都继承自AbstractStringBuilder类，是可变的（提供了<strong>修改字符串</strong>的方法）</p></li>
+<li><p>String中的变量<strong>不可变，所以是线程安全</strong>的，而StringBuffer对方法加了<strong>同步锁</strong>，所以是线程安全的；而S<strong>tringBuilder是线程不安全</strong>的</p></li>
+<li><p>三者使用建议</p>
+<ul>
+<li>操作少量的数据: 适用 <code>String</code></li>
+<li>单线程操作字符串缓冲区下操作大量数据: 适用
+<code>StringBuilder</code></li>
+<li>多线程操作字符串缓冲区下操作大量数据: 适用
+<code>StringBuffer</code></li>
+</ul></li>
+<li><p>String 为什么是不可变的</p>
+<ul>
+<li><p>代码</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">String</span> <span class="keyword">implements</span> <span class="title class_">java</span>.io.Serializable, Comparable&lt;String&gt;, CharSequence &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">char</span> value[];</span><br><span class="line">	<span class="comment">//...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>如上，保存字符串的数组被<strong>final</strong>修饰且为<strong>私有</strong>，并且String类<strong>没有提供暴露修改该字符串</strong>的方法</li>
+<li>String类被修饰为final修饰导致不能被继承，避免子类破坏</li>
+</ul></li>
+<li><p>Java9</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">String</span> <span class="keyword">implements</span> <span class="title class_">java</span>.io.Serializable,Comparable&lt;String&gt;, CharSequence &#123;</span><br><span class="line">    <span class="comment">// @Stable 注解表示变量最多被修改一次，称为“稳定的”。</span></span><br><span class="line">    <span class="meta">@Stable</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">byte</span>[] value;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">AbstractStringBuilder</span> <span class="keyword">implements</span> <span class="title class_">Appendable</span>, CharSequence &#123;</span><br><span class="line">    <span class="type">byte</span>[] value;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><blockquote>
+<p>Java9为何String底层实现由<strong>char[] 改成了 byte[]</strong> 新版的
+String 其实支持两个编码方案： <strong>Latin-1</strong> 和
+<strong>UTF-16</strong>。如果字符串中包含的<strong>汉字没有超过
+Latin-1</strong> 可表示范围内的字符，那就会使用 <strong>Latin-1</strong>
+作为编码方案。Latin-1 编码方案下，<code>byte</code> 占一个字节(8
+位)，<code>char</code> 占用 2 个字节（16），<strong><code>byte</code>
+相较 <code>char</code> 节省一半的内存空间</strong>。</p>
+<p>JDK 官方就说了绝大部分字符串对象只包含 Latin-1 可表示的字符。<br />
+<code>[ˈlætɪn]</code></p>
+</blockquote></li>
+</ul></li>
+</ul></li>
+<li><p>字符串使用“+” 还是 Stringbuilder Java本身不支持运算符重载，但 “ +
+” 和 “+=” 是专门为String重载过的运算符，Java中仅有的两个</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">str1</span> <span class="operator">=</span> <span class="string">&quot;he&quot;</span>;</span><br><span class="line"><span class="type">String</span> <span class="variable">str2</span> <span class="operator">=</span> <span class="string">&quot;llo&quot;</span>;</span><br><span class="line"><span class="type">String</span> <span class="variable">str3</span> <span class="operator">=</span> <span class="string">&quot;world&quot;</span>;</span><br><span class="line"><span class="type">String</span> <span class="variable">str4</span> <span class="operator">=</span> str1 + str2 + str3;</span><br></pre></td></tr></table></figure>
+<p>对应的字节码：<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221008114449075.png"
+alt="image-20221008114449075" /></p>
+<p>字符串对象通过“+”的字符串拼接方式，实际上是通过
+<code>StringBuilder</code> 调用 <code>append()</code>
+方法实现的，拼接完成之后调用 <code>toString()</code> 得到一个
+<code>String</code>
+对象。因此这里就会产生问题，如下代码，会<strong>产生过多的StringBuilder对象</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">String[] arr = &#123;<span class="string">&quot;he&quot;</span>, <span class="string">&quot;llo&quot;</span>, <span class="string">&quot;world&quot;</span>&#125;;</span><br><span class="line"><span class="type">String</span> <span class="variable">s</span> <span class="operator">=</span> <span class="string">&quot;&quot;</span>;</span><br><span class="line"><span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; arr.length; i++) &#123;</span><br><span class="line">    s += arr[i];</span><br><span class="line">&#125;</span><br><span class="line">System.out.println(s);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>会<strong>循环创建StringBuilder</strong>对象，建议自己创建一个新的StringBuilder并使用：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">String[] arr = &#123;<span class="string">&quot;he&quot;</span>, <span class="string">&quot;llo&quot;</span>, <span class="string">&quot;world&quot;</span>&#125;;</span><br><span class="line"><span class="type">StringBuilder</span> <span class="variable">s</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">StringBuilder</span>();</span><br><span class="line"><span class="keyword">for</span> (String value : arr) &#123;</span><br><span class="line">    s.append(value);</span><br><span class="line">&#125;</span><br><span class="line">System.out.println(s);</span><br></pre></td></tr></table></figure></li>
+<li><p>String#equals()和Object#equals()有何区别
+String的equals被重写过，比较的是<strong>字符串的值是否相等</strong>，而<strong>Object的equals</strong>比较的是<strong>对象的内存地址</strong></p></li>
+<li><p>字符串常量池<br />
+是JVM为了提升性能和减少内存消耗针对字符串（String类）专门开辟的一块区域，主要目的是为了<strong>避免字符串的重复创建</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 在堆中创建字符串对象”ab“ (这里也可以说是在常量池中创建对象)</span></span><br><span class="line"><span class="comment">// 将字符串对象”ab“的引用(常量池中的饮用)保存在字符串常量池中</span></span><br><span class="line"><span class="type">String</span> <span class="variable">aa</span> <span class="operator">=</span> <span class="string">&quot;ab&quot;</span>;</span><br><span class="line"><span class="comment">// 直接返回字符串常量池中字符串对象”ab“的引用</span></span><br><span class="line"><span class="type">String</span> <span class="variable">bb</span> <span class="operator">=</span> <span class="string">&quot;ab&quot;</span>;</span><br><span class="line">System.out.println(aa==bb);<span class="comment">// true</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li><h4 id="string-s1-new-stringabc这句话创建了几个字符串对象">String s1
+= new String("abc");这句话创建了几个字符串对象？</h4>
+<p>会创建 1 或 2 个字符串对象。
+如果常量池中存在值为"abc"的对象，则直接在堆中创建一个对象，并且返回该对象的引用；如果不存在，则先在常量池中创建该对象，然后再在堆中创建该对象，并且返回该对象（堆中）的引用</p>
+<p>下面这个解释，说明<strong>常量池存储的是引用</strong>（堆中某一块区域的）<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221008144055351.png"
+alt="image-20221008144055351" /></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 字符串常量池中已存在字符串对象“abc”的引用</span></span><br><span class="line"><span class="type">String</span> <span class="variable">s1</span> <span class="operator">=</span> <span class="string">&quot;abc&quot;</span>;</span><br><span class="line"><span class="comment">// 下面这段代码只会在堆中创建 1 个字符串对象“abc”</span></span><br><span class="line"><span class="type">String</span> <span class="variable">s2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">String</span>(<span class="string">&quot;abc&quot;</span>);</span><br></pre></td></tr></table></figure></li>
+<li><p>intern方法的作用，是一个native方法，作用是将指定的<strong>字符串对象的引用</strong>保存在<strong>字符串常量池</strong>中</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 在堆中创建字符串对象”Java“</span></span><br><span class="line"><span class="comment">// 将字符串对象”Java“的引用保存在字符串常量池中</span></span><br><span class="line"><span class="type">String</span> <span class="variable">s1</span> <span class="operator">=</span> <span class="string">&quot;Java&quot;</span>;</span><br><span class="line"><span class="comment">// 直接返回字符串常量池中字符串对象”Java“对应的引用</span></span><br><span class="line"><span class="type">String</span> <span class="variable">s2</span> <span class="operator">=</span> s1.intern();</span><br><span class="line"><span class="comment">// 会在堆中在单独创建一个字符串对象</span></span><br><span class="line"><span class="type">String</span> <span class="variable">s3</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">String</span>(<span class="string">&quot;Java&quot;</span>);</span><br><span class="line"><span class="comment">// 直接返回字符串常量池中字符串对象”Java“对应的引用</span></span><br><span class="line"><span class="type">String</span> <span class="variable">s4</span> <span class="operator">=</span> s3.intern();</span><br><span class="line"><span class="comment">// s1 和 s2 指向的是堆中的同一个对象</span></span><br><span class="line">System.out.println(s1 == s2); <span class="comment">// true</span></span><br><span class="line"><span class="comment">// s3 和 s4 指向的是堆中不同的对象</span></span><br><span class="line">System.out.println(s3 == s4); <span class="comment">// false</span></span><br><span class="line"><span class="comment">// s1 和 s4 指向的是堆中的同一个对象</span></span><br><span class="line">System.out.println(s1 == s4); <span class="comment">//true</span></span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+</ul></li>
+<li><p>问题：String 类型的变量和常量做“+”运算时发生了什么</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">str1</span> <span class="operator">=</span> <span class="string">&quot;str&quot;</span>;</span><br><span class="line"><span class="type">String</span> <span class="variable">str2</span> <span class="operator">=</span> <span class="string">&quot;ing&quot;</span>;</span><br><span class="line"><span class="type">String</span> <span class="variable">str3</span> <span class="operator">=</span> <span class="string">&quot;str&quot;</span> + <span class="string">&quot;ing&quot;</span>;</span><br><span class="line"><span class="type">String</span> <span class="variable">str4</span> <span class="operator">=</span> str1 + str2;</span><br><span class="line"><span class="type">String</span> <span class="variable">str5</span> <span class="operator">=</span> <span class="string">&quot;string&quot;</span>;</span><br><span class="line">System.out.println(str3 == str4);<span class="comment">//false</span></span><br><span class="line">System.out.println(str3 == str5);<span class="comment">//true</span></span><br><span class="line">System.out.println(str4 == str5);<span class="comment">//false</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>常量折叠<br />
+对于 <code>String str3 = "str" + "ing";</code> 编译器会给你优化成
+<code>String str3 = "string";</code> 。</p>
+<p>并不是所有的常量都会进行折叠，只有<strong>编译器在程序编译期就可以确定值</strong>的常量才可以：</p>
+<ul>
+<li>基本数据类型(
+<code>byte</code>、<code>boolean</code>、<code>short</code>、<code>char</code>、<code>int</code>、<code>float</code>、<code>long</code>、<code>double</code>)以及字符串常量。</li>
+<li><code>final</code> 修饰的基本数据类型和字符串变量</li>
+<li>字符串通过
+“+”拼接得到的字符串、基本数据类型之间算数运算（加减乘除）、基本数据类型的位运算（&lt;&lt;、&gt;&gt;、&gt;&gt;&gt;
+）</li>
+</ul></li>
+</ul></li>
+<li><p>引用的值在程序编译期间是无法确认的，无法对其优化</p></li>
+<li><p>对象引用和“+”的字符串拼接方式，实际上是通过
+<code>StringBuilder</code> 调用 <code>append()</code>
+方法实现的，拼接完成之后调用 <code>toString()</code> 得到一个
+<code>String</code> 对象 。
+如上面代码<code>String str4 = str1 + str2;</code>
+但是如果使用了final关键字声明之后，就可以让编译器当作常量来处理</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">final</span> <span class="type">String</span> <span class="variable">str1</span> <span class="operator">=</span> <span class="string">&quot;str&quot;</span>;</span><br><span class="line"><span class="keyword">final</span> <span class="type">String</span> <span class="variable">str2</span> <span class="operator">=</span> <span class="string">&quot;ing&quot;</span>;</span><br><span class="line"><span class="comment">// 下面两个表达式其实是等价的</span></span><br><span class="line"><span class="type">String</span> <span class="variable">c</span> <span class="operator">=</span> <span class="string">&quot;str&quot;</span> + <span class="string">&quot;ing&quot;</span>;<span class="comment">// 常量池中的对象</span></span><br><span class="line"><span class="type">String</span> <span class="variable">d</span> <span class="operator">=</span> str1 + str2; <span class="comment">// 常量池中的对象</span></span><br><span class="line">System.out.println(c == d);<span class="comment">// true</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>但是如果编译器在<strong>运行时才能知道</strong>其确切值的话，就无法对其优化</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">final</span> <span class="type">String</span> <span class="variable">str1</span> <span class="operator">=</span> <span class="string">&quot;str&quot;</span>;</span><br><span class="line"><span class="keyword">final</span> <span class="type">String</span> <span class="variable">str2</span> <span class="operator">=</span> getStr();  <span class="comment">//str2只有在运行时才能确定其值</span></span><br><span class="line"><span class="type">String</span> <span class="variable">c</span> <span class="operator">=</span> <span class="string">&quot;str&quot;</span> + <span class="string">&quot;ing&quot;</span>;<span class="comment">// 常量池中的对象</span></span><br><span class="line"><span class="type">String</span> <span class="variable">d</span> <span class="operator">=</span> str1 + str2; <span class="comment">// 在堆上创建的新的对象</span></span><br><span class="line">System.out.println(c == d);<span class="comment">// false</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> String <span class="title function_">getStr</span><span class="params">()</span> &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="string">&quot;ing&quot;</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+</ul>
+]]></content>
+      <categories>
+        <category>学习</category>
+      </categories>
+      <tags>
+        <tag>复习</tag>
+        <tag>复习-javaGuide</tag>
+        <tag>复习-javaGuide-基础</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>ly0003ly-javaGuide基础3</title>
     <url>/2022/10/08/review/java_guide/java/basic/java_guide_basic_3/</url>
     <content><![CDATA[<blockquote>
@@ -23222,261 +23549,6 @@ reference
         <tag>复习</tag>
         <tag>复习-javaGuide</tag>
         <tag>复习-javaGuide-并发</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>ly0002ly-javaGuide基础2</title>
-    <url>/2022/09/29/review/java_guide/java/basic/java_guide_basic_2/</url>
-    <content><![CDATA[<blockquote>
-<p>转载自https://github.com/Snailclimb/JavaGuide
-（添加小部分笔记）感谢作者!</p>
-</blockquote>
-<h2 id="面向对象基础">面向对象基础</h2>
-<ul>
-<li><p>区别</p>
-<ul>
-<li>面向<strong>过程</strong>把解决问题的<strong>过程拆成一个个方法</strong>，通过一个个方法的执行解决问题。</li>
-<li>面向对象会<strong>先抽象出对象</strong>，然后<strong>用对象执行方法</strong>的方式解决问题。</li>
-<li>面向对象编程
-<strong>易维护</strong>、<strong>易复用</strong>、<strong>易扩展</strong></li>
-</ul></li>
-<li><p>对象实体与对象引用的不同<br />
-new 运算符，new
-创建对象实例（<strong>对象实例在堆</strong>内存中），对象引用指向对象实例（<strong>对象引用存放在栈</strong>内存中）。</p>
-<p>一个对象引用可以指向 0 个或 1
-个对象（一根绳子可以不系气球，也可以系一个气球）;一个对象可以有 n
-个引用指向它（可以用 n 条绳子系住一个气球）。</p></li>
-<li><p>对象的相等一般比较的是<strong>内存中存放的内容</strong>是否相等；引用相等一般比较的是他们指向的<strong>内存地址是否相等</strong></p></li>
-<li><p>如果一个类没有声明构造方法，该程序能正确执行吗?
-如果我们自己添加了类的构造方法（无论是否有参），Java
-就不会再添加默认的无参数的构造方法了</p>
-<ul>
-<li>构造方法特点：名字与类名相同；没有返回值但不能用void生命构造函数；生成类的对象时自动执行</li>
-<li>构造方法<strong>不能重写override</strong>，但<strong>能重载</strong>
-overload</li>
-</ul></li>
-<li><p>面向对象三大特征</p>
-<ul>
-<li><p>封装<br />
-把一个对象的状态信息(属性)<strong>隐藏在对象内部</strong>，<strong>不允许直接访问</strong>，但提供可以被外界访问的方法来操作属性</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Student</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> id;<span class="comment">//id属性私有化</span></span><br><span class="line">    <span class="keyword">private</span> String name;<span class="comment">//name属性私有化</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//获取id的方法</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">getId</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> id;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//设置id的方法</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setId</span><span class="params">(<span class="type">int</span> id)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.id = id;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//获取name的方法</span></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">getName</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> name;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//设置name的方法</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setName</span><span class="params">(String name)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.name = name;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-<li><p>继承<br />
-不通类型的对象，相互之间有一定数量的共同点，同时每个对象定义了额外的特性使得他们与众不同。继承是<strong>使用已存在的类的定义作为基础</strong>建立新类的技术</p>
-<ul>
-<li><strong>父类中的私有属性</strong>和方法<strong>子类无法访问</strong>，只是拥有</li>
-<li>子类可以拥有自己的属性、方法，即对父类进行<strong>拓展</strong></li>
-<li>子类可以用<strong>自己的方式实现父类的方法（重写）</strong></li>
-</ul></li>
-<li><p>多态</p>
-<ul>
-<li><strong>对象类型</strong>和<strong>引用类型</strong>之间具有继承(类)/实现(接口)的关系</li>
-<li><strong>引用类型变量</strong>发出的<strong>方法具体调用哪个类的方法</strong>，只有<strong>程序运行期间才能确定</strong></li>
-<li>多态不能调用“<strong>只在子类存在而父类不存在</strong>”的方法</li>
-<li>如果子类重写了父类的方法，<strong>真正执行的是子类覆盖的方法</strong>，如果子类没有覆盖父类的方法，执行的是父类的方法</li>
-</ul></li>
-</ul></li>
-<li><p>接口和抽象类有什么共同点和区别</p>
-<ul>
-<li>共同：都不能被实例化；<strong>都可以包含抽象方法</strong>；都<strong>可以有默认实现</strong>的方法。</li>
-<li>区别
-<ul>
-<li>接口主要用于对<strong>类的行为</strong>进行约束；抽象类主要用于<strong>代码复用</strong>（强调所属）</li>
-<li>类只能继承<strong>一个类</strong>，但能实现<strong>多个接口</strong></li>
-<li>接口中的成员只能是<code>public static final</code><strong>不能被修改且具有初始值</strong>；而抽象类的成员变量<strong>默认default</strong>
-，<strong>可在子类重新定义或重新赋值</strong></li>
-</ul></li>
-</ul></li>
-<li><p>深拷贝和浅拷贝的区别？什么是引用拷贝</p>
-<ul>
-<li><p>浅拷贝：浅拷贝会在堆上创建新对象，但是如果原对象内部的属性是引用类型的话，<strong>浅拷贝会复制内部对象的引用地址</strong>，即<strong>拷贝对象和原对象共用</strong>一个内部对象</p></li>
-<li><p>深拷贝，会完全复制整个对象，包括对象内包含的内部对象</p></li>
-<li><p>例子</p>
-<ul>
-<li><p>浅拷贝</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Address</span> <span class="keyword">implements</span> <span class="title class_">Cloneable</span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">    <span class="comment">// 省略构造函数、Getter&amp;Setter方法</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Address <span class="title function_">clone</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> (Address) <span class="built_in">super</span>.clone();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (CloneNotSupportedException e) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">AssertionError</span>();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Person</span> <span class="keyword">implements</span> <span class="title class_">Cloneable</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> Address address;</span><br><span class="line">    <span class="comment">// 省略构造函数、Getter&amp;Setter方法</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Person <span class="title function_">clone</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="type">Person</span> <span class="variable">person</span> <span class="operator">=</span> (Person) <span class="built_in">super</span>.clone();</span><br><span class="line">            <span class="keyword">return</span> person;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (CloneNotSupportedException e) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">AssertionError</span>();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//------------------测试--------------------</span></span><br><span class="line"><span class="type">Person</span> <span class="variable">person1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Person</span>(<span class="keyword">new</span> <span class="title class_">Address</span>(<span class="string">&quot;武汉&quot;</span>));</span><br><span class="line"><span class="type">Person</span> <span class="variable">person1Copy</span> <span class="operator">=</span> person1.clone();</span><br><span class="line"><span class="comment">// true</span></span><br><span class="line">System.out.println(person1.getAddress() == person1Copy.getAddress());</span><br></pre></td></tr></table></figure></li>
-<li><p>深拷贝</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//修改了Person类的clone()方法进行修改</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> Person <span class="title function_">clone</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="type">Person</span> <span class="variable">person</span> <span class="operator">=</span> (Person) <span class="built_in">super</span>.clone();</span><br><span class="line">        person.setAddress(person.getAddress().clone());</span><br><span class="line">        <span class="keyword">return</span> person;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (CloneNotSupportedException e) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">AssertionError</span>();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//--------------测试-------</span></span><br><span class="line"><span class="type">Person</span> <span class="variable">person1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Person</span>(<span class="keyword">new</span> <span class="title class_">Address</span>(<span class="string">&quot;武汉&quot;</span>));</span><br><span class="line"><span class="type">Person</span> <span class="variable">person1Copy</span> <span class="operator">=</span> person1.clone();</span><br><span class="line"><span class="comment">// false</span></span><br><span class="line">System.out.println(person1.getAddress() == person1Copy.getAddress());</span><br></pre></td></tr></table></figure></li>
-</ul></li>
-<li><p>引用拷贝，即两个不同的引用指向同一个对象</p></li>
-<li><p>如图<br />
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221006140951954.png"
-alt="image-20221006140951954" /></p></li>
-</ul></li>
-</ul>
-<h2 id="java常见类">Java常见类</h2>
-<h3 id="object">Object</h3>
-<ul>
-<li><p>常见方法</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * native 方法，用于返回当前运行时对象的 Class 对象，使用了 final 关键字修饰，故不允许子类重写。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">native</span> Class&lt;?&gt; getClass()</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * native 方法，用于返回对象的哈希码，主要使用在哈希表中，比如 JDK 中的HashMap。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">native</span> <span class="type">int</span> <span class="title function_">hashCode</span><span class="params">()</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 用于比较 2 个对象的内存地址是否相等，String 类对该方法进行了重写以用于比较字符串的值是否相等。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">equals</span><span class="params">(Object obj)</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * naitive 方法，用于创建并返回当前对象的一份拷贝。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">native</span> Object <span class="title function_">clone</span><span class="params">()</span> <span class="keyword">throws</span> CloneNotSupportedException</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 返回类的名字实例的哈希码的 16 进制的字符串。建议 Object 所有的子类都重写这个方法。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> String <span class="title function_">toString</span><span class="params">()</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * native 方法，并且不能重写。唤醒一个在此对象监视器上等待的线程(监视器相当于就是锁的概念)。如果有多个线程在等待只会任意唤醒一个。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title function_">notify</span><span class="params">()</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * native 方法，并且不能重写。跟 notify 一样，唯一的区别就是会唤醒在此对象监视器上等待的所有线程，而不是一个线程。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title function_">notifyAll</span><span class="params">()</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * native方法，并且不能重写。暂停线程的执行。注意：sleep 方法没有释放锁，而 wait 方法释放了锁 ，timeout 是等待时间。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title function_">wait</span><span class="params">(<span class="type">long</span> timeout)</span> <span class="keyword">throws</span> InterruptedException</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 多了 nanos 参数，这个参数表示额外时间（以毫微秒为单位，范围是 0-999999）。 所以超时的时间还需要加上 nanos 毫秒。。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title function_">wait</span><span class="params">(<span class="type">long</span> timeout, <span class="type">int</span> nanos)</span> <span class="keyword">throws</span> InterruptedException</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 跟之前的2个wait方法一样，只不过该方法一直等待，没有超时时间这个概念</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title function_">wait</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 实例被垃圾回收器回收的时候触发的操作</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">finalize</span><span class="params">()</span> <span class="keyword">throws</span> Throwable &#123; &#125;</span><br></pre></td></tr></table></figure></li>
-<li><p>== 和 equals() 区别</p>
-<ul>
-<li>对于基本类型来说，== 比较的是值</li>
-<li>对于引用类型，== 比较的是对象的内存地址</li>
-<li><strong>Java是值传递</strong>，所以本质上比较的都是值，只是<strong>引用类型变量存的值是对象地址</strong></li>
-</ul></li>
-<li><p>equals不能用于判断基本数据类型的变量，且只存在于Object类中，而Object类是所有类的直接或间接父类<br />
-<strong>equals默认实现</strong>：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">equals</span><span class="params">(Object obj)</span> &#123;</span><br><span class="line">     <span class="keyword">return</span> (<span class="built_in">this</span> == obj);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li><p>如果类没有重写该方法，则如上</p></li>
-<li><p>如果重写了，则<strong>一般</strong>都是重写equals方法来比较对象中的属性是否相等</p>
-<blockquote>
-<p>关于String 和 new String 的区别： String a = "xxx"
-始终返回的是<strong>常量池中的引用</strong>；而new String
-始终返回的是<strong>堆中的引用</strong></p>
-<ul>
-<li><p>对于String a = "xxx"
-，先到常量池中查找是否存在值为"xxx"的字符串，如果存在，直接将常量池中该值对应的引用返回，如果不存在，则在常量池中创建该对象，并返回引用。</p></li>
-<li><p>对于new
-String("xxx")，先到常量池中查找是否存在值为"xxx"的字符串，如果存在，则直接在堆中创建对象，并返回堆中的索引；如果不存在，则先在常量池中创建对象(值为xxx)，然后再在堆中创建对象，并返回堆中该对象的引用地址</p></li>
-</ul>
-<blockquote>
-<p>来自
-https://blog.csdn.net/weixin_44844089/article/details/103648448</p>
-</blockquote>
-</blockquote>
-<p>例子：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">a</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">String</span>(<span class="string">&quot;ab&quot;</span>); <span class="comment">// a 为一个引用</span></span><br><span class="line"><span class="type">String</span> <span class="variable">b</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">String</span>(<span class="string">&quot;ab&quot;</span>); <span class="comment">// b为另一个引用,对象的内容一样</span></span><br><span class="line"><span class="type">String</span> <span class="variable">aa</span> <span class="operator">=</span> <span class="string">&quot;ab&quot;</span>; <span class="comment">// 放在常量池中</span></span><br><span class="line"><span class="type">String</span> <span class="variable">bb</span> <span class="operator">=</span> <span class="string">&quot;ab&quot;</span>; <span class="comment">// 从常量池中查找</span></span><br><span class="line">System.out.println(aa == bb);<span class="comment">// true</span></span><br><span class="line">System.out.println(a == b);<span class="comment">// false</span></span><br><span class="line">System.out.println(a.equals(b));<span class="comment">// true</span></span><br><span class="line">System.out.println(<span class="number">42</span> == <span class="number">42.0</span>);<span class="comment">// true</span></span><br></pre></td></tr></table></figure></li>
-</ul></li>
-<li><p>String 类重写了equals()方法</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">equals</span><span class="params">(Object anObject)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">this</span> == anObject) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (anObject <span class="keyword">instanceof</span> String) &#123;</span><br><span class="line">        <span class="type">String</span> <span class="variable">anotherString</span> <span class="operator">=</span> (String)anObject;</span><br><span class="line">        <span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span> value.length;</span><br><span class="line">        <span class="keyword">if</span> (n == anotherString.value.length) &#123;</span><br><span class="line">            <span class="type">char</span> v1[] = value;</span><br><span class="line">            <span class="type">char</span> v2[] = anotherString.value;</span><br><span class="line">            <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">while</span> (n-- != <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="keyword">if</span> (v1[i] != v2[i])</span><br><span class="line">                    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">                i++;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-<li><p>hashCode()有什么用<br />
-hashCode()的作用是<strong>获取哈希码(int整数)</strong>，也称为<strong>散列码</strong>，作用是确定<strong>该对象在哈希表中的索引位置</strong>。函数定义在Object类中，且为本地方法，通常用来<strong>将对象的内存地址转换为整数之后返回</strong>；散列表存储的是键值对(key-value)，<strong>根据“键”快速检索出“值”</strong>，其中利用了散列码</p></li>
-<li><p>为什么需要hashCode</p>
-<blockquote>
-<p>当你把对象加入 <code>HashSet</code> 时，<code>HashSet</code>
-会先计算对象的 <strong><code>hashCode</code>
-值来判断对象加入的位置</strong>，同时也会<strong>与其他已经加入的对象的
-<code>hashCode</code> 值作比较</strong>，如果没有相符的
-<code>hashCode</code>，<code>HashSet</code>
-会假设对象没有重复出现。但是如果发现有相同 <code>hashCode</code>
-值的对象，这时会调用 <code>equals()</code> 方法来检查
-<code>hashCode</code>
-相等的对象是否真的相同。如果两者相同，<code>HashSet</code>
-就不会让其加入操作成功。如果不同的话，就会重新散列到其他位置【注意，我觉得这里应该是使用拉链法，说成散列到其他位置貌似有点不对】。这样我们就大大<strong>减少了
-<code>equals</code> 的次数</strong>，相应就大大提高了执行速度。</p>
-</blockquote></li>
-<li><p>hashCode()和equals()都用于比较两个对象是否相等，为什么要同时提供两个方法（因为在一些容器中，如<strong>HashMap、HashSet</strong>中，判断元素是否在容器中<strong>效率更高</strong>)</p>
-<ul>
-<li>两个对象的hashCode值相等并不代表两个对象就相等</li>
-<li>因为hashCode所使用的哈希算法也许会让多个对象传回相同哈希值，取决于哈希算法</li>
-</ul></li>
-<li><p>总结</p>
-<ul>
-<li>如果两个对象的<code>hashCode</code>
-值相等，那这两个对象不一定相等（哈希碰撞）。</li>
-<li>如果两个对象的<code>hashCode</code>
-值相等并且<code>equals()</code>方法也返回
-<code>true</code>，我们才认为这两个对象相等。</li>
-<li>如果两个对象的<strong><code>hashCode</code>
-值不相等</strong>，我们就可以<strong>直接认为这两个对象不相等</strong>。</li>
-</ul></li>
-</ul>
-<h3 id="string">String</h3>
-<ul>
-<li><p>String、StringBuffer，StringBuilder区别
-String是不可变的，StringBuffer和StringBuilder都继承自AbstractStringBuilder类，是可变的（提供了<strong>修改字符串</strong>的方法）</p></li>
-<li><p>String中的变量<strong>不可变，所以是线程安全</strong>的，而StringBuffer对方法加了<strong>同步锁</strong>，所以是线程安全的；而S<strong>tringBuilder是线程不安全</strong>的</p></li>
-<li><p>三者使用建议</p>
-<ul>
-<li>操作少量的数据: 适用 <code>String</code></li>
-<li>单线程操作字符串缓冲区下操作大量数据: 适用
-<code>StringBuilder</code></li>
-<li>多线程操作字符串缓冲区下操作大量数据: 适用
-<code>StringBuffer</code></li>
-</ul></li>
-<li><p>String 为什么是不可变的</p>
-<ul>
-<li><p>代码</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">String</span> <span class="keyword">implements</span> <span class="title class_">java</span>.io.Serializable, Comparable&lt;String&gt;, CharSequence &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">char</span> value[];</span><br><span class="line">	<span class="comment">//...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>如上，保存字符串的数组被<strong>final</strong>修饰且为<strong>私有</strong>，并且String类<strong>没有提供暴露修改该字符串</strong>的方法</li>
-<li>String类被修饰为final修饰导致不能被继承，避免子类破坏</li>
-</ul></li>
-<li><p>Java9</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">String</span> <span class="keyword">implements</span> <span class="title class_">java</span>.io.Serializable,Comparable&lt;String&gt;, CharSequence &#123;</span><br><span class="line">    <span class="comment">// @Stable 注解表示变量最多被修改一次，称为“稳定的”。</span></span><br><span class="line">    <span class="meta">@Stable</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">byte</span>[] value;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">AbstractStringBuilder</span> <span class="keyword">implements</span> <span class="title class_">Appendable</span>, CharSequence &#123;</span><br><span class="line">    <span class="type">byte</span>[] value;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li><blockquote>
-<p>Java9为何String底层实现由<strong>char[] 改成了 byte[]</strong> 新版的
-String 其实支持两个编码方案： <strong>Latin-1</strong> 和
-<strong>UTF-16</strong>。如果字符串中包含的<strong>汉字没有超过
-Latin-1</strong> 可表示范围内的字符，那就会使用 <strong>Latin-1</strong>
-作为编码方案。Latin-1 编码方案下，<code>byte</code> 占一个字节(8
-位)，<code>char</code> 占用 2 个字节（16），<strong><code>byte</code>
-相较 <code>char</code> 节省一半的内存空间</strong>。</p>
-<p>JDK 官方就说了绝大部分字符串对象只包含 Latin-1 可表示的字符。<br />
-<code>[ˈlætɪn]</code></p>
-</blockquote></li>
-</ul></li>
-</ul></li>
-<li><p>字符串使用“+” 还是 Stringbuilder Java本身不支持运算符重载，但 “ +
-” 和 “+=” 是专门为String重载过的运算符，Java中仅有的两个</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">str1</span> <span class="operator">=</span> <span class="string">&quot;he&quot;</span>;</span><br><span class="line"><span class="type">String</span> <span class="variable">str2</span> <span class="operator">=</span> <span class="string">&quot;llo&quot;</span>;</span><br><span class="line"><span class="type">String</span> <span class="variable">str3</span> <span class="operator">=</span> <span class="string">&quot;world&quot;</span>;</span><br><span class="line"><span class="type">String</span> <span class="variable">str4</span> <span class="operator">=</span> str1 + str2 + str3;</span><br></pre></td></tr></table></figure>
-<p>对应的字节码：<br />
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221008114449075.png"
-alt="image-20221008114449075" /></p>
-<p>字符串对象通过“+”的字符串拼接方式，实际上是通过
-<code>StringBuilder</code> 调用 <code>append()</code>
-方法实现的，拼接完成之后调用 <code>toString()</code> 得到一个
-<code>String</code>
-对象。因此这里就会产生问题，如下代码，会<strong>产生过多的StringBuilder对象</strong></p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">String[] arr = &#123;<span class="string">&quot;he&quot;</span>, <span class="string">&quot;llo&quot;</span>, <span class="string">&quot;world&quot;</span>&#125;;</span><br><span class="line"><span class="type">String</span> <span class="variable">s</span> <span class="operator">=</span> <span class="string">&quot;&quot;</span>;</span><br><span class="line"><span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; arr.length; i++) &#123;</span><br><span class="line">    s += arr[i];</span><br><span class="line">&#125;</span><br><span class="line">System.out.println(s);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>会<strong>循环创建StringBuilder</strong>对象，建议自己创建一个新的StringBuilder并使用：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">String[] arr = &#123;<span class="string">&quot;he&quot;</span>, <span class="string">&quot;llo&quot;</span>, <span class="string">&quot;world&quot;</span>&#125;;</span><br><span class="line"><span class="type">StringBuilder</span> <span class="variable">s</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">StringBuilder</span>();</span><br><span class="line"><span class="keyword">for</span> (String value : arr) &#123;</span><br><span class="line">    s.append(value);</span><br><span class="line">&#125;</span><br><span class="line">System.out.println(s);</span><br></pre></td></tr></table></figure></li>
-<li><p>String#equals()和Object#equals()有何区别
-String的equals被重写过，比较的是<strong>字符串的值是否相等</strong>，而<strong>Object的equals</strong>比较的是<strong>对象的内存地址</strong></p></li>
-<li><p>字符串常量池<br />
-是JVM为了提升性能和减少内存消耗针对字符串（String类）专门开辟的一块区域，主要目的是为了<strong>避免字符串的重复创建</strong></p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 在堆中创建字符串对象”ab“ (这里也可以说是在常量池中创建对象)</span></span><br><span class="line"><span class="comment">// 将字符串对象”ab“的引用(常量池中的饮用)保存在字符串常量池中</span></span><br><span class="line"><span class="type">String</span> <span class="variable">aa</span> <span class="operator">=</span> <span class="string">&quot;ab&quot;</span>;</span><br><span class="line"><span class="comment">// 直接返回字符串常量池中字符串对象”ab“的引用</span></span><br><span class="line"><span class="type">String</span> <span class="variable">bb</span> <span class="operator">=</span> <span class="string">&quot;ab&quot;</span>;</span><br><span class="line">System.out.println(aa==bb);<span class="comment">// true</span></span><br></pre></td></tr></table></figure>
-<ul>
-<li><h4 id="string-s1-new-stringabc这句话创建了几个字符串对象">String s1
-= new String("abc");这句话创建了几个字符串对象？</h4>
-<p>会创建 1 或 2 个字符串对象。
-如果常量池中存在值为"abc"的对象，则直接在堆中创建一个对象，并且返回该对象的引用；如果不存在，则先在常量池中创建该对象，然后再在堆中创建该对象，并且返回该对象（堆中）的引用</p>
-<p>下面这个解释，说明<strong>常量池存储的是引用</strong>（堆中某一块区域的）<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221008144055351.png"
-alt="image-20221008144055351" /></p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 字符串常量池中已存在字符串对象“abc”的引用</span></span><br><span class="line"><span class="type">String</span> <span class="variable">s1</span> <span class="operator">=</span> <span class="string">&quot;abc&quot;</span>;</span><br><span class="line"><span class="comment">// 下面这段代码只会在堆中创建 1 个字符串对象“abc”</span></span><br><span class="line"><span class="type">String</span> <span class="variable">s2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">String</span>(<span class="string">&quot;abc&quot;</span>);</span><br></pre></td></tr></table></figure></li>
-<li><p>intern方法的作用，是一个native方法，作用是将指定的<strong>字符串对象的引用</strong>保存在<strong>字符串常量池</strong>中</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 在堆中创建字符串对象”Java“</span></span><br><span class="line"><span class="comment">// 将字符串对象”Java“的引用保存在字符串常量池中</span></span><br><span class="line"><span class="type">String</span> <span class="variable">s1</span> <span class="operator">=</span> <span class="string">&quot;Java&quot;</span>;</span><br><span class="line"><span class="comment">// 直接返回字符串常量池中字符串对象”Java“对应的引用</span></span><br><span class="line"><span class="type">String</span> <span class="variable">s2</span> <span class="operator">=</span> s1.intern();</span><br><span class="line"><span class="comment">// 会在堆中在单独创建一个字符串对象</span></span><br><span class="line"><span class="type">String</span> <span class="variable">s3</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">String</span>(<span class="string">&quot;Java&quot;</span>);</span><br><span class="line"><span class="comment">// 直接返回字符串常量池中字符串对象”Java“对应的引用</span></span><br><span class="line"><span class="type">String</span> <span class="variable">s4</span> <span class="operator">=</span> s3.intern();</span><br><span class="line"><span class="comment">// s1 和 s2 指向的是堆中的同一个对象</span></span><br><span class="line">System.out.println(s1 == s2); <span class="comment">// true</span></span><br><span class="line"><span class="comment">// s3 和 s4 指向的是堆中不同的对象</span></span><br><span class="line">System.out.println(s3 == s4); <span class="comment">// false</span></span><br><span class="line"><span class="comment">// s1 和 s4 指向的是堆中的同一个对象</span></span><br><span class="line">System.out.println(s1 == s4); <span class="comment">//true</span></span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
-</ul></li>
-<li><p>问题：String 类型的变量和常量做“+”运算时发生了什么</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">str1</span> <span class="operator">=</span> <span class="string">&quot;str&quot;</span>;</span><br><span class="line"><span class="type">String</span> <span class="variable">str2</span> <span class="operator">=</span> <span class="string">&quot;ing&quot;</span>;</span><br><span class="line"><span class="type">String</span> <span class="variable">str3</span> <span class="operator">=</span> <span class="string">&quot;str&quot;</span> + <span class="string">&quot;ing&quot;</span>;</span><br><span class="line"><span class="type">String</span> <span class="variable">str4</span> <span class="operator">=</span> str1 + str2;</span><br><span class="line"><span class="type">String</span> <span class="variable">str5</span> <span class="operator">=</span> <span class="string">&quot;string&quot;</span>;</span><br><span class="line">System.out.println(str3 == str4);<span class="comment">//false</span></span><br><span class="line">System.out.println(str3 == str5);<span class="comment">//true</span></span><br><span class="line">System.out.println(str4 == str5);<span class="comment">//false</span></span><br></pre></td></tr></table></figure>
-<ul>
-<li><p>常量折叠<br />
-对于 <code>String str3 = "str" + "ing";</code> 编译器会给你优化成
-<code>String str3 = "string";</code> 。</p>
-<p>并不是所有的常量都会进行折叠，只有<strong>编译器在程序编译期就可以确定值</strong>的常量才可以：</p>
-<ul>
-<li>基本数据类型(
-<code>byte</code>、<code>boolean</code>、<code>short</code>、<code>char</code>、<code>int</code>、<code>float</code>、<code>long</code>、<code>double</code>)以及字符串常量。</li>
-<li><code>final</code> 修饰的基本数据类型和字符串变量</li>
-<li>字符串通过
-“+”拼接得到的字符串、基本数据类型之间算数运算（加减乘除）、基本数据类型的位运算（&lt;&lt;、&gt;&gt;、&gt;&gt;&gt;
-）</li>
-</ul></li>
-</ul></li>
-<li><p>引用的值在程序编译期间是无法确认的，无法对其优化</p></li>
-<li><p>对象引用和“+”的字符串拼接方式，实际上是通过
-<code>StringBuilder</code> 调用 <code>append()</code>
-方法实现的，拼接完成之后调用 <code>toString()</code> 得到一个
-<code>String</code> 对象 。
-如上面代码<code>String str4 = str1 + str2;</code>
-但是如果使用了final关键字声明之后，就可以让编译器当作常量来处理</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">final</span> <span class="type">String</span> <span class="variable">str1</span> <span class="operator">=</span> <span class="string">&quot;str&quot;</span>;</span><br><span class="line"><span class="keyword">final</span> <span class="type">String</span> <span class="variable">str2</span> <span class="operator">=</span> <span class="string">&quot;ing&quot;</span>;</span><br><span class="line"><span class="comment">// 下面两个表达式其实是等价的</span></span><br><span class="line"><span class="type">String</span> <span class="variable">c</span> <span class="operator">=</span> <span class="string">&quot;str&quot;</span> + <span class="string">&quot;ing&quot;</span>;<span class="comment">// 常量池中的对象</span></span><br><span class="line"><span class="type">String</span> <span class="variable">d</span> <span class="operator">=</span> str1 + str2; <span class="comment">// 常量池中的对象</span></span><br><span class="line">System.out.println(c == d);<span class="comment">// true</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>但是如果编译器在<strong>运行时才能知道</strong>其确切值的话，就无法对其优化</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">final</span> <span class="type">String</span> <span class="variable">str1</span> <span class="operator">=</span> <span class="string">&quot;str&quot;</span>;</span><br><span class="line"><span class="keyword">final</span> <span class="type">String</span> <span class="variable">str2</span> <span class="operator">=</span> getStr();  <span class="comment">//str2只有在运行时才能确定其值</span></span><br><span class="line"><span class="type">String</span> <span class="variable">c</span> <span class="operator">=</span> <span class="string">&quot;str&quot;</span> + <span class="string">&quot;ing&quot;</span>;<span class="comment">// 常量池中的对象</span></span><br><span class="line"><span class="type">String</span> <span class="variable">d</span> <span class="operator">=</span> str1 + str2; <span class="comment">// 在堆上创建的新的对象</span></span><br><span class="line">System.out.println(c == d);<span class="comment">// false</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> String <span class="title function_">getStr</span><span class="params">()</span> &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="string">&quot;ing&quot;</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
-</ul>
-]]></content>
-      <categories>
-        <category>学习</category>
-      </categories>
-      <tags>
-        <tag>复习</tag>
-        <tag>复习-javaGuide</tag>
-        <tag>复习-javaGuide-基础</tag>
       </tags>
   </entry>
 </search>
