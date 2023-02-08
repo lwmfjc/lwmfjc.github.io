@@ -509,37 +509,38 @@ target="_blank" rel="noopener" href="https://javaguide.cn/database/mysql/transac
 的值来表示超时时间，其单位是秒，<strong>默认值为-1</strong>，这表示事务的超时时间<strong>取决于底层事务系统</strong>或者<strong>没有超时时间</strong>。</p>
 <h4 id="事务只读属性">事务只读属性</h4>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">package org.springframework.transaction;</span><br><span class="line"></span><br><span class="line">import org.springframework.lang.Nullable;</span><br><span class="line"></span><br><span class="line">public interface TransactionDefinition &#123;</span><br><span class="line">    ......</span><br><span class="line">    // 返回是否为只读事务，默认值为 false</span><br><span class="line">    boolean isReadOnly();</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>对于只有读取数据查询的事务，可以指定事务类型为
-readonly，即只读事务。只读事务不涉及数据的修改，数据库会提供一些优化手段，适合用在有多条数据库查询操作的方法中。</p>
-<p>很多人就会疑问了，为什么我一个数据查询操作还要启用事务支持呢？</p>
+<p>对于<strong>只有读取数据查询</strong>的事务，可以指定事务类型为
+<strong>readonly</strong>，即<strong>只读事务</strong>。只读事务不涉及数据的修改，数据库会<strong>提供一些优化手段</strong>，适合用在<strong>有多条数据库查询操作</strong>的方法中。</p>
+<p>很多人就会疑问了，<strong>为什么我一个数据查询操作还要启用事务支持</strong>呢？</p>
 <p>拿 MySQL 的 innodb 举例子，根据官网
 https://dev.mysql.com/doc/refman/5.7/en/innodb-autocommit-commit-rollback.html
 描述：</p>
 <blockquote>
 <p>MySQL
-默认对每一个新建立的连接都启用了<code>autocommit</code>模式。在该模式下，每一个发送到
+默认对<strong>每一个新建立的连接都启用了<code>autocommit</code></strong>模式。在该模式下，每一个发送到
 MySQL
-服务器的<code>sql</code>语句都会在一个单独的事务中进行处理，执行结束后会自动提交事务，并开启一个新的事务。</p>
+服务器的<code>sql</code>语句都会在一个<strong>单独的事务</strong>中进行处理，执行结束后<strong>会自动提交事务</strong>，并开启一个新的事务（才会开启一个新的事务）。</p>
 </blockquote>
-<p>但是，如果你给方法加上了<code>Transactional</code>注解的话，这个方法执行的所有<code>sql</code>会被放在一个事务中。如果声明了只读事务的话，数据库就会去优化它的执行，并不会带来其他的什么收益。</p>
+<p>但是，如果你给方法加上了<code>Transactional</code>注解的话，这个方法<strong>执行的所有<code>sql</code>会被放在一个事务</strong>中。如果声明了只读事务的话，数据库就会去<strong>优化它的执行</strong>，并不会带来其他的什么收益。</p>
 <p>如果不加<code>Transactional</code>，每条<code>sql</code>会开启一个单独的事务，中间被其它事务改了数据，都会实时读取到最新值。</p>
 <p>分享一下关于事务只读属性，其他人的解答：</p>
 <ul>
-<li>如果你一次执行单条查询语句，则没有必要启用事务支持，数据库默认支持
-SQL 执行期间的读一致性；</li>
+<li>如果你一次执行<strong>单条</strong>查询语句，则没有必要启用事务支持，数据库<strong>默认支持
+SQL 执行期间的读一致性</strong>；</li>
 <li>如果你一次执行多条查询语句，例如统计查询，报表查询，在这种场景下，多条查询
 SQL 必须保证整体的读一致性，否则，在前条 SQL 查询之后，后条 SQL
-查询之前，数据被其他用户改变，则该次整体的统计查询将会出现读数据不一致的状态，此时，应该启用事务支持</li>
+查询之前，数据被其他用户改变，则<strong>该次整体的统计查询将会出现读数据不一致</strong>的状态，此时，应该<strong>启用事务支持</strong>（<strong>避免多次查询结果不一致</strong>）</li>
 </ul>
 <h4 id="事务回滚规则">事务回滚规则</h4>
-<p>这些规则定义了哪些异常会导致事务回滚而哪些不会。默认情况下，事务只有遇到运行期异常（<code>RuntimeException</code>
-的子类）时才会回滚，<code>Error</code>
-也会导致事务回滚，但是，在遇到检查型（Checked）异常时不会回滚。</p>
+<p>这些规则定义了<strong>哪些异常会导致事务回滚</strong>而<strong>哪些不会</strong>。默认情况下，事务只有遇到<strong>运行期异常（<code>RuntimeException</code>
+的子类）</strong>时才会回滚，<strong><code>Error</code></strong>
+也会导致事务回滚，但是，在遇到<strong>检查型（Checked）异常时不会回滚</strong>。[
+<strong>这里说的是默认情况下 </strong>]</p>
 <p><a
 target="_blank" rel="noopener" href="https://github.com/Snailclimb/JavaGuide/blob/main/docs/system-design/framework/spring/images/spring-transaction/roollbackFor.png"><img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/roollbackFor.png"
 alt="img" /></a></p>
-<p>如果你想要回滚你定义的特定的异常类型的话，可以这样：</p>
+<p>如果你想要回滚你定义的<strong>特定的异常</strong>类型的话，可以这样：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">@Transactional(rollbackFor= MyException.class)</span><br></pre></td></tr></table></figure>
 <h3 id="transactional-注解使用详解"><span class="citation"
 data-cites="Transactional">@Transactional</span> 注解使用详解</h3>
