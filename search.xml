@@ -2410,16 +2410,39 @@ cglib与java动态代理最大区别是<strong>代理目标对象不用实现接
 事务中哪几种事务传播行为?</h3>
 <p><strong>事务传播行为是为了解决业务层方法之间互相调用的事务问题</strong>。</p>
 <p>当事务方法被另一个事务方法调用时，必须指定事务应该如何传播。例如：方法可能继续在现有事务中运行，也可能开启一个新事务，并在自己的事务中运行。</p>
+<blockquote>
+<p>注意几点，下面这个值都是<strong>内方法</strong>上的注解的值，且两个方法必须属于不同类</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyClassServiceImpl</span> <span class="keyword">extends</span> <span class="title class_">ServiceImpl</span>&lt;MyClassMapper, MyClass&gt; <span class="keyword">implements</span> <span class="title class_">MyClassService</span> &#123;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> UserService userService;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//外方法 </span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">methodOuter</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="comment">//新增一条记录</span></span><br><span class="line">        MyClass myClass=<span class="keyword">new</span> <span class="title class_">MyClass</span>();</span><br><span class="line">        myClass.setName(<span class="string">&quot;class_name&quot;</span>);</span><br><span class="line">        <span class="built_in">this</span>.saveOrUpdate(myClass);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//调用内方法</span></span><br><span class="line">        userService.methodInner();</span><br><span class="line">        <span class="comment">//抛出异常</span></span><br><span class="line">        <span class="comment">//throw new Exception(&quot;hello&quot;);</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UserServiceImpl</span> <span class="keyword">extends</span> <span class="title class_">ServiceImpl</span>&lt;UserMapper, User&gt; <span class="keyword">implements</span> <span class="title class_">UserService</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//内方法</span></span><br><span class="line">    <span class="meta">@Transactional(</span></span><br><span class="line"><span class="meta">            rollbackFor = Exception.class</span></span><br><span class="line"><span class="meta">            ,propagation = Propagation.REQUIRED</span></span><br><span class="line"><span class="meta">    )</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">methodInner</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="comment">//新增一条记录</span></span><br><span class="line">        <span class="type">User</span> <span class="variable">user</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">User</span>();</span><br><span class="line">        user.setName(<span class="string">&quot;outer_name&quot;</span>);</span><br><span class="line">        <span class="built_in">this</span>.saveOrUpdate(user);</span><br><span class="line">        <span class="comment">//抛出异常</span></span><br><span class="line">        <span class="comment">//throw new Exception(&quot;hello&quot;);</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</blockquote>
 <p>正确的事务传播行为可能的值如下:</p>
+<blockquote>
+<p>注：<strong>如果外方法不存在事务，则内外方法完全独立，自己(方法内)抛异常不影响另一方法</strong></p>
+</blockquote>
 <p><strong>1.<code>TransactionDefinition.PROPAGATION_REQUIRED</code></strong></p>
 <p>使用的最多的一个事务传播行为，我们平时经常使用的<code>@Transactional</code>注解<strong>默认</strong>使用就是这个事务传播行为。如果当前存在事务，则加入该事务；如果当前没有事务，则创建一个新的事务。</p>
+<blockquote>
+<p>如果外方法存在事务，则不论
+外方法或内方法抛出异常，都会导致外内所在事务（同一个）回滚</p>
+</blockquote>
 <p><strong><code>2.TransactionDefinition.PROPAGATION_REQUIRES_NEW</code></strong></p>
 <p>创建一个新的事务，如果当前存在事务，则把当前事务挂起。也就是说不管外部方法是否开启事务，<code>Propagation.REQUIRES_NEW</code>修饰的内部方法会新开启自己的事务，且开启的事务相互独立，互不干扰。</p>
+<blockquote>
+<p>如果外方法存在事务，如果仅内方法抛异常，会导致外方法回滚；如果仅外方法抛异常，则不会回滚内方法</p>
+</blockquote>
 <p><strong>3.<code>TransactionDefinition.PROPAGATION_NESTED</code></strong></p>
 <p>如果当前存在事务，则创建一个事务作为当前事务的嵌套事务来运行；如果当前没有事务，则该取值等价于<code>TransactionDefinition.PROPAGATION_REQUIRED</code>。</p>
+<blockquote>
+<p>如果外方法存在事务，<strong>（效果和1一样）</strong>， 不论
+外方法或内方法抛出异常，都会导致外内所在事务（<strong>和1唯一不同的是，他们是不同事务</strong>）回滚</p>
+</blockquote>
 <p><strong>4.<code>TransactionDefinition.PROPAGATION_MANDATORY</code></strong></p>
 <p>如果当前存在事务，则加入该事务；如果当前没有事务，则抛出异常。（mandatory：强制性）</p>
 <p>这个使用的很少。</p>
+<blockquote>
+<p>如果外方法存在事务，<strong>（效果和1一样）</strong>， 不论
+外方法或内方法抛出异常，都会导致外内所在事务（<strong>和1唯一不同的是，如果外方法不存在事务，调用该方法前就直接抛异常</strong>）回滚</p>
+</blockquote>
 <p>若是错误的配置以下 3 种事务传播行为，事务将不会发生回滚：</p>
 <ul>
 <li><strong><code>TransactionDefinition.PROPAGATION_SUPPORTS</code></strong>:
