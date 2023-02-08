@@ -270,9 +270,9 @@
 Spring 中的设计模式。</p>
 <h2 id="控制反转ioc和依赖注入di">控制反转(IoC)和依赖注入(DI)</h2>
 <p><strong>IoC(Inversion of Control,控制反转)</strong> 是 Spring
-中一个非常非常重要的概念，它不是什么技术，而是一种解耦的设计思想。IoC
+中一个非常非常重要的概念，它不是什么技术，而是一种<strong>解耦的设计思想</strong>。IoC
 的主要目的是借助于“第三方”(Spring 中的 IoC 容器)
-实现具有依赖关系的对象之间的解耦(IOC
+实现<strong>具有依赖关系的对象之间的解耦</strong>(IOC
 容器管理对象，你只管使用即可)，从而降低代码之间的耦合度。</p>
 <p><strong>IoC 是一个原则，而不是一个模式，以下模式（但不限于）实现了
 IoC 原则。</strong></p>
@@ -290,45 +290,49 @@ IoC
 类如果有几百甚至上千个类作为它的底层，我们需要实例化这个
 Service，你可能要每次都要搞清这个 Service
 所有底层类的构造函数，这可能会把人逼疯。如果利用 IOC
-的话，你只需要配置好，然后在需要的地方引用就行了，这大大增加了项目的可维护性且降低了开发难度。</p>
+的话，你<strong>只需要配置好，然后在需要的地方引用</strong>就行了，这大大增加了项目的可维护性且降低了开发难度。</p>
 <blockquote>
 <p>关于 Spring IOC
 的理解，推荐看这一下知乎的一个回答：https://www.zhihu.com/question/23277575/answer/169698662
 ，非常不错。</p>
 </blockquote>
-<p><strong>控制反转怎么理解呢?</strong> 举个例子："对象 a 依赖了对象
-b，当对象 a 需要使用 对象 b 的时候必须自己去创建。但是当系统引入了 IOC
-容器后， 对象 a 和对象 b 之前就失去了直接的联系。这个时候，当对象 a
-需要使用 对象 b 的时候， 我们可以指定 IOC 容器去创建一个对象 b
-注入到对象 a 中"。 对象 a 获得依赖对象 b
-的过程,由主动行为变为了被动行为，控制权反转，这就是控制反转名字的由来。</p>
+<p><strong>控制反转怎么理解呢?</strong> 举个例子："<strong>对象 a
+依赖了对象 b，当对象 a 需要使用 对象 b
+的时候必须自己去创建。但是当系统引入了 IOC 容器后， 对象 a 和对象 b
+之前就失去了直接的联系。这个时候，当对象 a 需要使用 对象 b 的时候，
+我们可以指定 IOC 容器去创建一个对象 b 注入到对象 a 中</strong>"。 对象 a
+获得依赖对象 b
+的过程,由<strong>主动</strong>行为变为了<strong>被动</strong>行为，控制权反转，这就是控制反转名字的由来。</p>
 <p><strong>DI(Dependecy
 Inject,依赖注入)是实现控制反转的一种设计模式，依赖注入就是将实例变量传入到一个对象中去。</strong></p>
 <h2 id="工厂设计模式">工厂设计模式</h2>
-<p>Spring 使用工厂模式可以通过 <code>BeanFactory</code> 或
-<code>ApplicationContext</code> 创建 bean 对象。</p>
+<p>Spring 使用工厂模式可以通过 <strong><code>BeanFactory</code></strong>
+或 <strong><code>ApplicationContext</code></strong> 创建 bean 对象。</p>
+<blockquote>
+<p><strong>ApplicationContext继承了ListableBeanFactory，ListableBeanFactory继承了BeanFactory</strong></p>
+</blockquote>
 <p><strong>两者对比：</strong></p>
 <ul>
-<li><code>BeanFactory</code> ：延迟注入(使用到某个 bean
+<li><code>BeanFactory</code> ：<strong>延迟注入</strong>(使用到某个 bean
 的时候才会注入),相比于<code>ApplicationContext</code>
 来说会占用更少的内存，程序启动速度更快。</li>
 <li><code>ApplicationContext</code>
-：容器启动的时候，不管你用没用到，一次性创建所有 bean
+：容器启动的时候，不管你用没用到，<strong>一次性创建所有 bean</strong>
 。<code>BeanFactory</code>
-仅提供了最基本的依赖注入支持，<code>ApplicationContext</code> 扩展了
-<code>BeanFactory</code>
+仅提供了<strong>最基本</strong>的依赖注入支持，<code>ApplicationContext</code>
+扩展了 <strong><code>BeanFactory</code></strong>
 ,除了有<code>BeanFactory</code>的功能还有额外更多功能，所以一般开发人员使用<code>ApplicationContext</code>会更多。</li>
 </ul>
 <p><code>ApplicationContext</code> 的三个实现类：</p>
 <ol type="1">
-<li><code>ClassPathXmlApplication</code>：把上下文文件当成类路径资源。</li>
-<li><code>FileSystemXmlApplication</code>：从文件系统中的 XML
-文件载入上下文定义信息。</li>
-<li><code>XmlWebApplicationContext</code>：从 Web 系统中的 XML
-文件载入上下文定义信息。</li>
+<li><strong><code>ClassPathXmlApplication</code></strong>：把<strong>上下文</strong>文件当成类路径资源。</li>
+<li><strong><code>FileSystemXmlApplication</code></strong>：从<strong>文件系统</strong>中的
+XML 文件载入上下文定义信息。</li>
+<li><strong><code>XmlWebApplicationContext</code></strong>：从
+<strong>Web 系统</strong>中的 XML 文件载入上下文定义信息。</li>
 </ol>
 <p>Example:</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">import org.springframework.context.ApplicationContext;</span><br><span class="line">import org.springframework.context.support.FileSystemXmlApplicationContext;</span><br><span class="line"></span><br><span class="line">public class App &#123;</span><br><span class="line">	public static void main(String[] args) &#123;</span><br><span class="line">		ApplicationContext context = new FileSystemXmlApplicationContext(</span><br><span class="line">				&quot;C:/work/IOC Containers/springframework.applicationcontext/src/main/resources/bean-factory-config.xml&quot;);</span><br><span class="line"></span><br><span class="line">		HelloApplicationContext obj = (HelloApplicationContext) context.getBean(&quot;helloApplicationContext&quot;);</span><br><span class="line">		obj.getMsg();</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> org.springframework.context.ApplicationContext;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.support.FileSystemXmlApplicationContext;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">App</span> &#123;</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">		<span class="type">ApplicationContext</span> <span class="variable">context</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileSystemXmlApplicationContext</span>(</span><br><span class="line">				<span class="string">&quot;C:/work/IOC Containers/springframework.applicationcontext/src/main/resources/bean-factory-config.xml&quot;</span>);</span><br><span class="line"></span><br><span class="line">		<span class="type">HelloApplicationContext</span> <span class="variable">obj</span> <span class="operator">=</span> (HelloApplicationContext) context.getBean(<span class="string">&quot;helloApplicationContext&quot;</span>);</span><br><span class="line">		obj.getMsg();</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <h2 id="单例设计模式">单例设计模式</h2>
 <p>在我们的系统中，有一些对象其实我们只需要一个，比如说：线程池、缓存、对话框、注册表、日志对象、充当打印机、显卡等设备驱动程序的对象。事实上，这一类对象只能有一个实例，如果制造出多个实例就可能会导致一些问题的产生，比如：程序的行为异常、资源使用过量、或者不一致性的结果。</p>
 <p><strong>使用单例模式的好处</strong> :</p>
