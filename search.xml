@@ -2094,6 +2094,7 @@ Service，你可能要每次都要搞清这个 Service
 <p><strong>DI(Dependecy
 Inject,依赖注入)是实现控制反转的一种设计模式，依赖注入就是将实例变量传入到一个对象中去。</strong></p>
 <h2 id="工厂设计模式">工厂设计模式</h2>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//方式一 spring3.1后,XmlBeanFactory被弃用</span></span><br><span class="line"><span class="type">XmlBeanFactory</span> <span class="variable">factory</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">XmlBeanFactory</span> (<span class="keyword">new</span> <span class="title class_">ClassPathResource</span>(<span class="string">&quot;beans.xml&quot;</span>));</span><br><span class="line"><span class="type">User</span> <span class="variable">bean</span> <span class="operator">=</span> factory.getBean(User.class);</span><br><span class="line">System.out.println(bean);</span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">//方式二</span></span><br><span class="line"><span class="comment">ApplicationContext context=new ClassPathXmlApplicationContext(&quot;beans.xml&quot;);</span></span><br><span class="line"><span class="comment">User bean = context.getBean(User.class);</span></span><br><span class="line"><span class="comment">System.out.println(bean);*/</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
 <p>Spring 使用工厂模式可以通过 <strong><code>BeanFactory</code></strong>
 或 <strong><code>ApplicationContext</code></strong> 创建 bean 对象。</p>
 <blockquote>
@@ -2122,44 +2123,45 @@ XML 文件载入上下文定义信息。</li>
 <p>Example:</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> org.springframework.context.ApplicationContext;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.support.FileSystemXmlApplicationContext;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">App</span> &#123;</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">		<span class="type">ApplicationContext</span> <span class="variable">context</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileSystemXmlApplicationContext</span>(</span><br><span class="line">				<span class="string">&quot;C:/work/IOC Containers/springframework.applicationcontext/src/main/resources/bean-factory-config.xml&quot;</span>);</span><br><span class="line"></span><br><span class="line">		<span class="type">HelloApplicationContext</span> <span class="variable">obj</span> <span class="operator">=</span> (HelloApplicationContext) context.getBean(<span class="string">&quot;helloApplicationContext&quot;</span>);</span><br><span class="line">		obj.getMsg();</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <h2 id="单例设计模式">单例设计模式</h2>
-<p>在我们的系统中，有一些对象其实我们只需要一个，比如说：线程池、缓存、对话框、注册表、日志对象、充当打印机、显卡等设备驱动程序的对象。事实上，这一类对象只能有一个实例，如果制造出多个实例就可能会导致一些问题的产生，比如：程序的行为异常、资源使用过量、或者不一致性的结果。</p>
+<p>在我们的系统中，<strong>有一些对象</strong>其实我们<strong>只需要一个</strong>，比如说：<strong>线程池</strong>、<strong>缓存</strong>、<strong>对话框</strong>、<strong>注册表</strong>、<strong>日志对象</strong>、充当<strong>打印机、显卡等设备驱动程序</strong>的对象。事实上，这一类对象只能有一个实例，如果制造出多个实例就可能会导致一些问题的产生，比如：程序的<strong>行为异常</strong>、<strong>资源使用过量</strong>、或者<strong>不一致性</strong>的结果。</p>
 <p><strong>使用单例模式的好处</strong> :</p>
 <ul>
-<li>对于频繁使用的对象，可以省略创建对象所花费的时间，这对于那些重量级对象而言，是非常可观的一笔系统开销；</li>
-<li>由于 new 操作的次数减少，因而对系统内存的使用频率也会降低，这将减轻
-GC 压力，缩短 GC 停顿时间。</li>
+<li>对于<strong>频繁使用</strong>的对象，可以<strong>省略创建对象所花费的时间</strong>，这对于那些<strong>重量级对象</strong>而言，是非常可观的一笔系统开销；</li>
+<li>由于 <strong>new
+操作的次数减少</strong>，因而对系统<strong>内存的使用频率也会降低</strong>，这将<strong>减轻
+GC 压力</strong>，<strong>缩短 GC 停顿</strong>时间。</li>
 </ul>
 <p><strong>Spring 中 bean 的默认作用域就是 singleton(单例)的。</strong>
 除了 singleton 作用域，Spring 中 bean 还有下面几种作用域：</p>
 <ul>
-<li><strong>prototype</strong> : 每次获取都会创建一个新的 bean
-实例。也就是说，连续 <code>getBean()</code> 两次，得到的是不同的 Bean
-实例。</li>
-<li><strong>request</strong> （仅 Web 应用可用）: 每一次 HTTP
-请求都会产生一个新的 bean（请求 bean），该 bean 仅在当前 HTTP request
-内有效。</li>
-<li><strong>session</strong> （仅 Web 应用可用） : 每一次来自新 session
-的 HTTP 请求都会产生一个新的 bean（会话 bean），该 bean 仅在当前 HTTP
-session 内有效。</li>
+<li><strong>prototype</strong> :
+<strong>每次获取都会创建</strong>一个新的 bean 实例。也就是说，连续
+<code>getBean()</code> 两次，得到的是不同的 Bean 实例。</li>
+<li><strong>request</strong> （仅 Web 应用可用）: <strong>每一次 HTTP
+请求</strong>都会产生一个新的 bean（请求 bean），该 bean 仅在当前 HTTP
+request 内有效。</li>
+<li><strong>session</strong> （仅 Web 应用可用） : <strong>每一次来自新
+session 的 HTTP 请求</strong>都会产生一个新的 bean（会话 bean），该 bean
+仅在当前 HTTP session 内有效。</li>
 <li><strong>application/global-session</strong> （仅 Web 应用可用）：
-每个 Web 应用在启动时创建一个 Bean（应用 Bean），，该 bean
-仅在当前应用启动时间内有效。</li>
-<li><strong>websocket</strong> （仅 Web 应用可用）：每一次 WebSocket
-会话产生一个新的 bean。</li>
+<strong>每个 Web 应用在启动时创建一个 Bean</strong>（应用 Bean），，该
+bean 仅在当前应用启动时间内有效。</li>
+<li><strong>websocket</strong> （仅 Web 应用可用）：<strong>每一次
+WebSocket 会话产生一个新的</strong> bean。</li>
 </ul>
-<p>Spring 通过 <code>ConcurrentHashMap</code>
-实现单例注册表的特殊方式实现单例模式。</p>
+<p>Spring 通过 <strong><code>ConcurrentHashMap</code>
+实现单例注册表</strong>的特殊方式实现单例模式。</p>
 <p>Spring 实现单例的核心代码如下：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">// 通过 ConcurrentHashMap（线程安全） 实现单例注册表</span><br><span class="line">private final Map&lt;String, Object&gt; singletonObjects = new ConcurrentHashMap&lt;String, Object&gt;(64);</span><br><span class="line"></span><br><span class="line">public Object getSingleton(String beanName, ObjectFactory&lt;?&gt; singletonFactory) &#123;</span><br><span class="line">        Assert.notNull(beanName, &quot;&#x27;beanName&#x27; must not be null&quot;);</span><br><span class="line">        synchronized (this.singletonObjects) &#123;</span><br><span class="line">            // 检查缓存中是否存在实例</span><br><span class="line">            Object singletonObject = this.singletonObjects.get(beanName);</span><br><span class="line">            if (singletonObject == null) &#123;</span><br><span class="line">                //...省略了很多代码</span><br><span class="line">                try &#123;</span><br><span class="line">                    singletonObject = singletonFactory.getObject();</span><br><span class="line">                &#125;</span><br><span class="line">                //...省略了很多代码</span><br><span class="line">                // 如果实例对象在不存在，我们注册到单例注册表中。</span><br><span class="line">                addSingleton(beanName, singletonObject);</span><br><span class="line">            &#125;</span><br><span class="line">            return (singletonObject != NULL_OBJECT ? singletonObject : null);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    //将对象添加到单例注册表</span><br><span class="line">    protected void addSingleton(String beanName, Object singletonObject) &#123;</span><br><span class="line">            synchronized (this.singletonObjects) &#123;</span><br><span class="line">                this.singletonObjects.put(beanName, (singletonObject != null ? singletonObject : NULL_OBJECT));</span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 通过 ConcurrentHashMap（线程安全） 实现单例注册表</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> Map&lt;String, Object&gt; singletonObjects = <span class="keyword">new</span> <span class="title class_">ConcurrentHashMap</span>&lt;String, Object&gt;(<span class="number">64</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> Object <span class="title function_">getSingleton</span><span class="params">(String beanName, ObjectFactory&lt;?&gt; singletonFactory)</span> &#123;</span><br><span class="line">        Assert.notNull(beanName, <span class="string">&quot;&#x27;beanName&#x27; must not be null&quot;</span>);</span><br><span class="line">        <span class="keyword">synchronized</span> (<span class="built_in">this</span>.singletonObjects) &#123;</span><br><span class="line">            <span class="comment">// 检查缓存中是否存在实例</span></span><br><span class="line">            <span class="type">Object</span> <span class="variable">singletonObject</span> <span class="operator">=</span> <span class="built_in">this</span>.singletonObjects.get(beanName);</span><br><span class="line">            <span class="keyword">if</span> (singletonObject == <span class="literal">null</span>) &#123;</span><br><span class="line">                <span class="comment">//...省略了很多代码</span></span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    singletonObject = singletonFactory.getObject();</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="comment">//...省略了很多代码</span></span><br><span class="line">                <span class="comment">// 如果实例对象在不存在，我们注册到单例注册表中。</span></span><br><span class="line">                addSingleton(beanName, singletonObject);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> (singletonObject != NULL_OBJECT ? singletonObject : <span class="literal">null</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//将对象添加到单例注册表</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">addSingleton</span><span class="params">(String beanName, Object singletonObject)</span> &#123;</span><br><span class="line">            <span class="keyword">synchronized</span> (<span class="built_in">this</span>.singletonObjects) &#123;</span><br><span class="line">                <span class="built_in">this</span>.singletonObjects.put(beanName, (singletonObject != <span class="literal">null</span> ? singletonObject : NULL_OBJECT));</span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p><strong>单例 Bean 存在线程安全问题吗？</strong></p>
-<p>大部分时候我们并没有在项目中使用多线程，所以很少有人会关注这个问题。单例
+<p>大部分时候我们并没有在项目中使用多线程，所以很少有人会关注这个问题。<strong>单例
 Bean
-存在线程问题，主要是因为当多个线程操作同一个对象的时候是存在资源竞争的。</p>
+存在线程问题</strong>，主要是因为当<strong>多个线程操作同一个对象</strong>的时候是存在资源竞争的。</p>
 <p>常见的有两种解决办法：</p>
 <ol type="1">
-<li>在 Bean 中尽量避免定义可变的成员变量。</li>
-<li>在类中定义一个 <code>ThreadLocal</code>
-成员变量，将需要的可变成员变量保存在 <code>ThreadLocal</code>
+<li>在 Bean 中尽量<strong>避免定义可变的成员变量</strong>。</li>
+<li>在类中<strong>定义一个 <code>ThreadLocal</code>
+成员变量</strong>，将需要的可变成员变量保存在 <code>ThreadLocal</code>
 中（推荐的一种方式）。</li>
 </ol>
 <p>不过，大部分 Bean 实际都是无状态（没有实例变量）的（比如
