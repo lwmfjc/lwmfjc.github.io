@@ -434,6 +434,11 @@ Spring 并没有使用这种方式，而是使用 <strong>Callback
 事件驱动模型非常有用，在很多场景都可以解耦我们的代码。比如我们<strong>每次添加商品</strong>的时候都需要<strong>重新更新商品索引</strong>，这个时候就可以利用观察者模式来解决这个问题。</p>
 <h3 id="spring-事件驱动模型中的三种角色">Spring
 事件驱动模型中的三种角色</h3>
+<blockquote>
+<p>事件角色：是一种属性（物品）<br />
+事件监听者：（注册到事件发布者上）<br />
+事件发布者：当发布的时候，通知指定的监听者（观察者）</p>
+</blockquote>
 <h4 id="事件角色">事件角色</h4>
 <p><code>ApplicationEvent</code>
 (<code>org.springframework.context</code>包下)充当<strong>事件的角色</strong>,这是一个抽象类，它继承了<code>java.util.EventObject</code>并实现了
@@ -477,11 +482,12 @@ alt="image-20230208202054082" />
 接口的<code>publishEvent（）</code>这个方法<strong>在<code>AbstractApplicationContext</code>类中被实现(这个类继承了ApplicationEventPublisher)</strong>，阅读这个方法的实现，你会发现实际上事件真正是通过<code>ApplicationEventMulticaster</code>来广播出去的。具体内容过多，就不在这里分析了，后面可能会单独写一篇文章提到。</p>
 <h3 id="spring-的事件流程总结">Spring 的事件流程总结</h3>
 <ol type="1">
-<li>定义一个事件: 实现一个<strong>继承自
+<li><strong>定义一个事件</strong>: 实现一个<strong>继承自
 <code>ApplicationEvent</code></strong>，并且写相应的构造函数；</li>
-<li>定义一个事件监听者：<strong>实现 <code>ApplicationListener</code>
-接口</strong>，重写 <code>onApplicationEvent()</code> 方法；</li>
-<li>使用事件发布者发布消息: 可以<strong>通过
+<li><strong>定义一个事件监听者</strong>：<strong>实现
+<code>ApplicationListener</code> 接口</strong>，重写
+<code>onApplicationEvent()</code> 方法；</li>
+<li><strong>使用事件发布者发布消息</strong>: 可以<strong>通过
 <code>ApplicationEventPublisher</code> 的 <code>publishEvent()</code>
 方法发布</strong>消息。</li>
 </ol>
@@ -492,44 +498,45 @@ alt="image-20230208202054082" />
 ，控制台就会打印出:<code>接收到的信息是：你好</code> 。</p>
 <h2 id="适配器模式">适配器模式</h2>
 <p>适配器模式(Adapter Pattern)
-将一个接口转换成客户希望的另一个接口，适配器模式使接口不兼容的那些类可以一起工作。</p>
+将<strong>一个接口转换成客户希望的另一个接口</strong>，适配器模式使接口不兼容的那些类可以一起工作。</p>
 <h3 id="spring-aop-中的适配器模式">Spring AOP 中的适配器模式</h3>
-<p>我们知道 Spring AOP 的实现是基于代理模式，但是 Spring AOP
-的增强或通知(Advice)使用到了适配器模式，与之相关的接口是<code>AdvisorAdapter</code>
+<p>我们知道 Spring AOP 的实现是基于代理模式，但是 <strong>Spring AOP
+的增强</strong>或<strong>通知(Advice)</strong>使用到了适配器模式，与之相关的接口是<strong><code>AdvisorAdapter</code></strong>
 。</p>
 <p>Advice
 常用的类型有：<code>BeforeAdvice</code>（目标方法调用前,前置通知）、<code>AfterAdvice</code>（目标方法调用后,后置通知）、<code>AfterReturningAdvice</code>(目标方法执行结束后，return
 之前)等等。每个类型
 Advice（通知）都有对应的拦截器:<code>MethodBeforeAdviceInterceptor</code>、<code>AfterReturningAdviceInterceptor</code>、<code>ThrowsAdviceInterceptor</code>
 等等。</p>
-<p>Spring 预定义的通知要通过对应的适配器，适配成
+<p>Spring 预定义的通知要通过对应的适配器，<strong>适配成
 <code>MethodInterceptor</code>
-接口(方法拦截器)类型的对象（如：<code>MethodBeforeAdviceAdapter</code>
+接口(方法拦截器)类型的对象</strong>（如：<code>MethodBeforeAdviceAdapter</code>
 通过调用 <code>getInterceptor</code> 方法，将
 <code>MethodBeforeAdvice</code> 适配成
 <code>MethodBeforeAdviceInterceptor</code> ）。</p>
 <h3 id="spring-mvc-中的适配器模式">Spring MVC 中的适配器模式</h3>
 <p>在 Spring MVC 中，<code>DispatcherServlet</code> 根据请求信息调用
 <code>HandlerMapping</code>，解析请求对应的
-<code>Handler</code>。解析到对应的
-<code>Handler</code>（也就是我们平常说的 <code>Controller</code>
-控制器）后，开始由<code>HandlerAdapter</code>
-适配器处理。<code>HandlerAdapter</code>
-作为期望接口，具体的适配器实现类用于对目标类进行适配，<code>Controller</code>
+<code>Handler</code>。<strong>解析到对应的
+<code>Handler</code></strong>（也就是我们平常说的
+<code>Controller</code>
+控制器）后，开始<strong>由<code>HandlerAdapter</code>
+适配器处理</strong>。<code>HandlerAdapter</code>
+作为期望接口，<strong>具体的适配器实现类用于对目标类进行适配</strong>，<code>Controller</code>
 作为需要适配的类。</p>
 <p><strong>为什么要在 Spring MVC 中使用适配器模式？</strong></p>
 <p>Spring MVC 中的 <code>Controller</code> 种类众多，不同类型的
 <code>Controller</code>
-通过不同的方法来对请求进行处理。如果不利用适配器模式的话，<code>DispatcherServlet</code>
+通过不同的方法来对请求进行处理。<strong>如果不利用适配器模式的话，<code>DispatcherServlet</code>
 直接获取对应类型的
-<code>Controller</code>，需要的自行来判断，像下面这段代码一样：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">if(mappedHandler.getHandler() instanceof MultiActionController)&#123;</span><br><span class="line">   ((MultiActionController)mappedHandler.getHandler()).xxx</span><br><span class="line">&#125;else if(mappedHandler.getHandler() instanceof XXX)&#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;else if(...)&#123;</span><br><span class="line">   ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<code>Controller</code>，需要的自行来判断</strong>，像下面这段代码一样：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span>(mappedHandler.getHandler() <span class="keyword">instanceof</span> MultiActionController)&#123;</span><br><span class="line">   ((MultiActionController)mappedHandler.getHandler()).xxx</span><br><span class="line">&#125;<span class="keyword">else</span> <span class="keyword">if</span>(mappedHandler.getHandler() <span class="keyword">instanceof</span> XXX)&#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;<span class="keyword">else</span> <span class="keyword">if</span>(...)&#123;</span><br><span class="line">   ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>假如我们再增加一个
 <code>Controller</code>类型就要在上面代码中再加入一行
 判断语句，这种形式就使得程序难以维护，也违反了设计模式中的开闭原则 –
 对扩展开放，对修改关闭。</p>
 <h2 id="装饰者模式">装饰者模式</h2>
-<p>装饰者模式可以动态地给对象添加一些额外的属性或行为。相比于使用继承，装饰者模式更加灵活。简单点儿说就是当我们需要修改原有的功能，但我们又不愿直接去修改原有的代码时，设计一个
+<p>装饰者模式可以<strong>动态地给对象添加一些额外的属性</strong>或<strong>行为</strong>。相比于使用继承，装饰者模式更加灵活。简单点儿说就是当我们<strong>需要修改原有</strong>的功能，但我们又<strong>不愿直接去修改原有的代</strong>码时，设计一个
 Decorator 套在原有代码外面。其实在 JDK
 中就有很多地方用到了装饰者模式，比如
 <code>InputStream</code>家族，<code>InputStream</code> 类下有
@@ -545,8 +552,8 @@ alt="image-20230208202144491" />
 </figure>
 <p>Spring 中配置 DataSource 的时候，DataSource
 可能是不同的数据库和数据源。我们能否根据客户的需求在少修改原有类的代码下动态切换不同的数据源？这个时候就要用到装饰者模式(这一点我自己还没太理解具体原理)。Spring
-中用到的包装器模式在类名上含有 <code>Wrapper</code>或者
-<code>Decorator</code>。这些类基本上都是动态地给一个对象添加一些额外的职责</p>
+中用到的包装器模式在类名上含有 <strong><code>Wrapper</code></strong>或者
+<strong><code>Decorator</code></strong>。这些类基本上都是<strong>动态地给一个对象添加一些额外的职责</strong></p>
 <h2 id="总结">总结</h2>
 <p>Spring 框架中用到了哪些设计模式？</p>
 <ul>
@@ -562,7 +569,7 @@ alt="image-20230208202144491" />
 <li><strong>包装器设计模式</strong> :
 我们的项目需要连接多个数据库，而且不同的客户在每次访问中根据需要会去访问不同的数据库。这种模式让我们可以根据客户的需求能够动态切换不同的数据源。</li>
 <li><strong>观察者模式:</strong> Spring
-事件驱动模型就是观察者模式很经典的一个应用。</li>
+<strong>事件驱动模型</strong>就是观察者模式很经典的一个应用。</li>
 <li><strong>适配器模式</strong> :Spring AOP
 的增强或通知(Advice)使用到了适配器模式、spring MVC
 中也是用到了适配器模式适配<code>Controller</code>。</li>
@@ -601,7 +608,10 @@ alt="image-20230208202144491" />
     <a href="/2023/02/08/review/java_guide/framework/spring-transaction/" rel="prev" title="Spring事务详情">
       <i class="fa fa-chevron-left"></i> Spring事务详情
     </a></div>
-      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2023/02/09/review/java_guide/framework/springboot-auto-assembly/" rel="next" title="SpringBoot自动装配原理">
+      SpringBoot自动装配原理 <i class="fa fa-chevron-right"></i>
+    </a></div>
     </div>
       </footer>
     
@@ -685,7 +695,7 @@ alt="image-20230208202144491" />
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">137</span>
+          <span class="site-state-item-count">139</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -698,7 +708,7 @@ alt="image-20230208202144491" />
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">33</span>
+        <span class="site-state-item-count">34</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -739,12 +749,12 @@ alt="image-20230208202144491" />
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">978k</span>
+    <span title="站点总字数">994k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">29:38</span>
+    <span title="站点阅读时长">30:07</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
