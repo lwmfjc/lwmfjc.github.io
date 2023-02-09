@@ -239,7 +239,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>8.4k</span>
+              <span>8.5k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -328,10 +328,12 @@ Spring Boot 的帮助下实现某块功能。</strong></p>
 (<code>@Service</code>,<code>@Controller</code>)注解的
 bean，注解默认会扫描启动类所在的包下所有的类 ，可以自定义不扫描某些
 bean。如下图所示，容器中将排除<code>TypeExcludeFilter</code>和<code>AutoConfigurationExcludeFilter</code>。</p>
-<p><a
-target="_blank" rel="noopener" href="https://camo.githubusercontent.com/23f1a605a81101195c01a889b17f209703fd0dd40798a5a3af4e5605204ff04e/68747470733a2f2f70332d6a75656a696e2e62797465696d672e636f6d2f746f732d636e2d692d6b3375316662706663702f62636337333439306166626534633662613632616364653661393466666466647e74706c762d6b3375316662706663702d77617465726d61726b2e696d616765"><img
+<figure>
+<img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f70332d6a75656a696e2e62797465696d672e636f6d2f746f732d636e2d692d6b3375316662706663702f62636337333439306166626534633662613632616364653661393466666466647e74706c762d6b3375316662706663702d77617465726d61726b2e696d616765"
-alt="img" /></a></p></li>
+alt="img" />
+<figcaption aria-hidden="true">img</figcaption>
+</figure></li>
 </ul>
 <p><strong><code>@EnableAutoConfiguration</code>
 是实现自动装配的重要注解</strong>，我们以这个注解入手。</p>
@@ -355,20 +357,24 @@ IoC 容器中</strong>。</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String[] NO_IMPORTS = <span class="keyword">new</span> <span class="title class_">String</span>[<span class="number">0</span>];</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> String[] selectImports(AnnotationMetadata annotationMetadata) &#123;</span><br><span class="line">        <span class="comment">// &lt;1&gt;.判断自动装配开关是否打开</span></span><br><span class="line">        <span class="keyword">if</span> (!<span class="built_in">this</span>.isEnabled(annotationMetadata)) &#123;</span><br><span class="line">            <span class="keyword">return</span> NO_IMPORTS;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">          <span class="comment">//&lt;2&gt;.获取所有需要装配的bean</span></span><br><span class="line">            <span class="type">AutoConfigurationMetadata</span> <span class="variable">autoConfigurationMetadata</span> <span class="operator">=</span> AutoConfigurationMetadataLoader.loadMetadata(<span class="built_in">this</span>.beanClassLoader);</span><br><span class="line">            AutoConfigurationImportSelector.<span class="type">AutoConfigurationEntry</span> <span class="variable">autoConfigurationEntry</span> <span class="operator">=</span> <span class="built_in">this</span>.getAutoConfigurationEntry(autoConfigurationMetadata, annotationMetadata);</span><br><span class="line">            <span class="keyword">return</span> StringUtils.toStringArray(autoConfigurationEntry.getConfigurations());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
 <p>这里我们需要重点关注一下<code>getAutoConfigurationEntry()</code>方法，这个方法主要负责加载自动配置类的。</p>
 <p>该方法调用链如下：</p>
-<p><a
-target="_blank" rel="noopener" href="https://camo.githubusercontent.com/d36410222766dceb3e231a026f5256934bc720860c1f0a2c1e5e44653209b038/68747470733a2f2f70362d6a75656a696e2e62797465696d672e636f6d2f746f732d636e2d692d6b3375316662706663702f33633132303037313236353534343363613462333835303064363135626237307e74706c762d6b3375316662706663702d77617465726d61726b2e696d616765"><img
+<figure>
+<img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f70362d6a75656a696e2e62797465696d672e636f6d2f746f732d636e2d692d6b3375316662706663702f33633132303037313236353534343363613462333835303064363135626237307e74706c762d6b3375316662706663702d77617465726d61726b2e696d616765"
-alt="img" /></a></p>
+alt="img" />
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
 <p>现在我们结合<code>getAutoConfigurationEntry()</code>的源码来详细分析一下：</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">AutoConfigurationEntry</span> <span class="variable">EMPTY_ENTRY</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">AutoConfigurationEntry</span>();</span><br><span class="line"></span><br><span class="line">AutoConfigurationEntry <span class="title function_">getAutoConfigurationEntry</span><span class="params">(AutoConfigurationMetadata autoConfigurationMetadata, AnnotationMetadata annotationMetadata)</span> &#123;</span><br><span class="line">        <span class="comment">//&lt;1&gt;.</span></span><br><span class="line">        <span class="keyword">if</span> (!<span class="built_in">this</span>.isEnabled(annotationMetadata)) &#123;</span><br><span class="line">            <span class="keyword">return</span> EMPTY_ENTRY;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">//&lt;2&gt;.</span></span><br><span class="line">            <span class="type">AnnotationAttributes</span> <span class="variable">attributes</span> <span class="operator">=</span> <span class="built_in">this</span>.getAttributes(annotationMetadata);</span><br><span class="line">            <span class="comment">//&lt;3&gt;.</span></span><br><span class="line">            List&lt;String&gt; configurations = <span class="built_in">this</span>.getCandidateConfigurations(annotationMetadata, attributes);</span><br><span class="line">            <span class="comment">//&lt;4&gt;.</span></span><br><span class="line">            configurations = <span class="built_in">this</span>.removeDuplicates(configurations);</span><br><span class="line">            Set&lt;String&gt; exclusions = <span class="built_in">this</span>.getExclusions(annotationMetadata, attributes);</span><br><span class="line">            <span class="built_in">this</span>.checkExcludedClasses(configurations, exclusions);</span><br><span class="line">            configurations.removeAll(exclusions);</span><br><span class="line">            configurations = <span class="built_in">this</span>.filter(configurations, autoConfigurationMetadata);</span><br><span class="line">            <span class="built_in">this</span>.fireAutoConfigurationImportEvents(configurations, exclusions);</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">AutoConfigurationImportSelector</span>.AutoConfigurationEntry(configurations, exclusions);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
 <p><strong>第 1 步</strong>:</p>
 <p>判断自动装配开关是否打开。默认<code>spring.boot.enableautoconfiguration=true</code>，可在
 <code>application.properties</code> 或 <code>application.yml</code>
 中设置</p>
-<p><a
-target="_blank" rel="noopener" href="https://camo.githubusercontent.com/2a991fbb640304ac2b667dbab920beca5b80e25afba2a4ea03f993023705c1c8/68747470733a2f2f70332d6a75656a696e2e62797465696d672e636f6d2f746f732d636e2d692d6b3375316662706663702f37376161366133373237656134333932383730663563636364303938343461627e74706c762d6b3375316662706663702d77617465726d61726b2e696d616765"><img
+<figure>
+<img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f70332d6a75656a696e2e62797465696d672e636f6d2f746f732d636e2d692d6b3375316662706663702f37376161366133373237656134333932383730663563636364303938343461627e74706c762d6b3375316662706663702d77617465726d61726b2e696d616765"
-alt="img" /></a></p>
+alt="img" />
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
 <p><strong>第 2 步</strong> ：</p>
 <p>用于获取<code>EnableAutoConfiguration</code>注解中的
 <code>exclude</code> 和 <code>excludeName</code>。</p>
@@ -381,15 +387,16 @@ alt="img" />
 <p><strong>第 3 步</strong></p>
 <p>获取需要自动装配的所有配置类，读取<code>META-INF/spring.factories</code></p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">spring-boot/spring-boot-project/spring-boot-autoconfigure/src/main/resources/META-INF/spring.factories</span><br></pre></td></tr></table></figure>
-<p><a
-target="_blank" rel="noopener" href="https://camo.githubusercontent.com/20485c8a497c73e8d8efcd96d2724814f3339ed657f53353dabc7ef04cf985e2/68747470733a2f2f70362d6a75656a696e2e62797465696d672e636f6d2f746f732d636e2d692d6b3375316662706663702f35386335313932306566656134373537616131656332396336643566396533367e74706c762d6b3375316662706663702d77617465726d61726b2e696d616765"><img
-src="https://camo.githubusercontent.com/20485c8a497c73e8d8efcd96d2724814f3339ed657f53353dabc7ef04cf985e2/68747470733a2f2f70362d6a75656a696e2e62797465696d672e636f6d2f746f732d636e2d692d6b3375316662706663702f35386335313932306566656134373537616131656332396336643566396533367e74706c762d6b3375316662706663702d77617465726d61726b2e696d616765"
-alt="img" /></a></p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230209162900245.png"
+alt="image-20230209162900245" />
+<figcaption aria-hidden="true">image-20230209162900245</figcaption>
+</figure>
 <p>从下图可以看到<strong>这个文件的配置内容都被我们读取到了</strong>。<code>XXXAutoConfiguration</code>的作用就是按需加载组件。</p>
-<p><a
-target="_blank" rel="noopener" href="https://camo.githubusercontent.com/3b8e85928a9d9637ae67899e468a0a62870e518928aee29df4525f67c3b2cebd/68747470733a2f2f70332d6a75656a696e2e62797465696d672e636f6d2f746f732d636e2d692d6b3375316662706663702f39346436653161303630616334316462393730343365313735383738393032367e74706c762d6b3375316662706663702d77617465726d61726b2e696d616765"><img
+<p>[<img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f70332d6a75656a696e2e62797465696d672e636f6d2f746f732d636e2d692d6b3375316662706663702f39346436653161303630616334316462393730343365313735383738393032367e74706c762d6b3375316662706663702d77617465726d61726b2e696d616765"
-alt="img" /></a></p>
+alt="img" /></p>
 <p>不光是这个依赖下的<code>META-INF/spring.factories</code>被读取到，<strong>所有
 Spring Boot Starter
 下的<code>META-INF/spring.factories</code>都会被读取到</strong>。</p>
@@ -397,10 +404,12 @@ Spring Boot Starter
 Boot Starter 就创建了<code>META-INF/spring.factories</code>文件。</p>
 <p>如果，我们自己要创建一个 Spring Boot
 Starter，这一步是必不可少的。</p>
-<p><a
-target="_blank" rel="noopener" href="https://camo.githubusercontent.com/5e5352bf86a4933fdf83abacf3b7da59473a1d8337d7a7c8991e365f5fcdde7d/68747470733a2f2f70312d6a75656a696e2e62797465696d672e636f6d2f746f732d636e2d692d6b3375316662706663702f36386661363661656565343734623033383566393464323362636665313734357e74706c762d6b3375316662706663702d77617465726d61726b2e696d616765"><img
-src="https://camo.githubusercontent.com/5e5352bf86a4933fdf83abacf3b7da59473a1d8337d7a7c8991e365f5fcdde7d/68747470733a2f2f70312d6a75656a696e2e62797465696d672e636f6d2f746f732d636e2d692d6b3375316662706663702f36386661363661656565343734623033383566393464323362636665313734357e74706c762d6b3375316662706663702d77617465726d61726b2e696d616765"
-alt="img" /></a></p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230209162936025.png"
+alt="image-20230209162936025" />
+<figcaption aria-hidden="true">image-20230209162936025</figcaption>
+</figure>
 <p><strong>第 4 步</strong> ：</p>
 <p>到这里可能面试官会问你:“<code>spring.factories</code>中这么多配置，每次启动都要全部加载么？”。</p>
 <p>很明显，这是不现实的。我们 debug
@@ -439,41 +448,47 @@ alt="img" /></a></p>
 <h2 id="如何实现一个-starter">如何实现一个 Starter</h2>
 <p>光说不练假把式，现在就来撸一个 starter，实现自定义线程池</p>
 <p>第一步，创建<code>threadpool-spring-boot-starter</code>工程</p>
-<p><a
-target="_blank" rel="noopener" href="https://camo.githubusercontent.com/458c75fe2acdc708435e73f135ae7b9fccdfcc0ae3c35af79e2eee9c5de84b5d/68747470733a2f2f70392d6a75656a696e2e62797465696d672e636f6d2f746f732d636e2d692d6b3375316662706663702f31666630656265373834346634303238396562363032313361663732633561367e74706c762d6b3375316662706663702d77617465726d61726b2e696d616765"><img
+<figure>
+<img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f70392d6a75656a696e2e62797465696d672e636f6d2f746f732d636e2d692d6b3375316662706663702f31666630656265373834346634303238396562363032313361663732633561367e74706c762d6b3375316662706663702d77617465726d61726b2e696d616765"
-alt="img" /></a></p>
+alt="img" />
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
 <p>第二步，引入 Spring Boot 相关依赖</p>
-<p><a
-target="_blank" rel="noopener" href="https://camo.githubusercontent.com/602424b9b60966f001c6985d559a6bc28984e0b516725927e69a2f81c91cc883/68747470733a2f2f70392d6a75656a696e2e62797465696d672e636f6d2f746f732d636e2d692d6b3375316662706663702f35653134323534323736363034663837623236316535613830613335346363307e74706c762d6b3375316662706663702d77617465726d61726b2e696d616765"><img
+<p>[<img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f70392d6a75656a696e2e62797465696d672e636f6d2f746f732d636e2d692d6b3375316662706663702f35653134323534323736363034663837623236316535613830613335346363307e74706c762d6b3375316662706663702d77617465726d61726b2e696d616765"
-alt="img" /></a></p>
+alt="img" /></p>
 <p>第三步，创建<code>ThreadPoolAutoConfiguration</code></p>
-<p><a
-target="_blank" rel="noopener" href="https://camo.githubusercontent.com/84c0a687a1f371b9b0b84147ab2d4fd5fb825e1e7e2318b821975ab23aef200c/68747470733a2f2f70392d6a75656a696e2e62797465696d672e636f6d2f746f732d636e2d692d6b3375316662706663702f31383433663164313263353634396662613835666437623465346135396533397e74706c762d6b3375316662706663702d77617465726d61726b2e696d616765"><img
+<figure>
+<img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f70392d6a75656a696e2e62797465696d672e636f6d2f746f732d636e2d692d6b3375316662706663702f31383433663164313263353634396662613835666437623465346135396533397e74706c762d6b3375316662706663702d77617465726d61726b2e696d616765"
-alt="img" /></a></p>
+alt="img" />
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
 <p>第四步，在<code>threadpool-spring-boot-starter</code>工程的 resources
 包下创建<code>META-INF/spring.factories</code>文件</p>
-<p><a
-target="_blank" rel="noopener" href="https://camo.githubusercontent.com/9e25537415e2951a3bbc9ce8d2ea5e3d1e90499edd2efdbea394867a1a278bd1/68747470733a2f2f70392d6a75656a696e2e62797465696d672e636f6d2f746f732d636e2d692d6b3375316662706663702f39376237333833323166313534326561383134303438346436616166303732387e74706c762d6b3375316662706663702d77617465726d61726b2e696d616765"><img
-src="https://camo.githubusercontent.com/9e25537415e2951a3bbc9ce8d2ea5e3d1e90499edd2efdbea394867a1a278bd1/68747470733a2f2f70392d6a75656a696e2e62797465696d672e636f6d2f746f732d636e2d692d6b3375316662706663702f39376237333833323166313534326561383134303438346436616166303732387e74706c762d6b3375316662706663702d77617465726d61726b2e696d616765"
-alt="img" /></a></p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230209163059528.png"
+alt="image-20230209163059528" />
+<figcaption aria-hidden="true">image-20230209163059528</figcaption>
+</figure>
 <p>最后新建工程引入<code>threadpool-spring-boot-starter</code></p>
-<p><a
-target="_blank" rel="noopener" href="https://camo.githubusercontent.com/f9b3382607f9a4651292569693460a74790e6fbdf4f033ddec691015a3589cde/68747470733a2f2f70332d6a75656a696e2e62797465696d672e636f6d2f746f732d636e2d692d6b3375316662706663702f65646364643835393561303234616261383562366262323064306533666564347e74706c762d6b3375316662706663702d77617465726d61726b2e696d616765"><img
-src="https://camo.githubusercontent.com/f9b3382607f9a4651292569693460a74790e6fbdf4f033ddec691015a3589cde/68747470733a2f2f70332d6a75656a696e2e62797465696d672e636f6d2f746f732d636e2d692d6b3375316662706663702f65646364643835393561303234616261383562366262323064306533666564347e74706c762d6b3375316662706663702d77617465726d61726b2e696d616765"
-alt="img" /></a></p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230209163123793.png"
+alt="image-20230209163123793" />
+<figcaption aria-hidden="true">image-20230209163123793</figcaption>
+</figure>
 <p>测试通过！！！</p>
-<p><a
-target="_blank" rel="noopener" href="https://camo.githubusercontent.com/407b231cde2f50935b1ca27674ee9a469978fcd02890886d0c6ac66a2705f177/68747470733a2f2f70312d6a75656a696e2e62797465696d672e636f6d2f746f732d636e2d692d6b3375316662706663702f39613236356565613464653734326136626264626261613735663433373330377e74706c762d6b3375316662706663702d77617465726d61726b2e696d616765"><img
+<p>[<img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f70312d6a75656a696e2e62797465696d672e636f6d2f746f732d636e2d692d6b3375316662706663702f39613236356565613464653734326136626264626261613735663433373330377e74706c762d6b3375316662706663702d77617465726d61726b2e696d616765"
-alt="img" /></a></p>
+alt="img" /></p>
 <h2 id="总结">总结</h2>
 <p>Spring Boot
-通过<code>@EnableAutoConfiguration</code>开启自动装配，通过
-SpringFactoriesLoader
-最终加载<code>META-INF/spring.factories</code>中的自动配置类实现自动装配，自动配置类其实就是通过<code>@Conditional</code>按需加载的配置类，想要其生效必须引入<code>spring-boot-starter-xxx</code>包实现起步依赖</p>
+通过<strong><code>@EnableAutoConfiguration</code></strong>开启自动装配，通过
+<strong>SpringFactoriesLoader</strong>
+最终加载<strong><code>META-INF/spring.factories</code></strong>中的<strong>自动配置类</strong>实现<strong>自动装配</strong>，自动配置类其实就是<strong>通过<code>@Conditional</code>按需加载的配置类</strong>，想要其生效必须引入<strong><code>spring-boot-starter-xxx</code>包实现起步依赖</strong></p>
 
     </div>
 
