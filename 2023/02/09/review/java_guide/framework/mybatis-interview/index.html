@@ -239,14 +239,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>10k</span>
+              <span>11k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>19 分钟</span>
+              <span>21 分钟</span>
             </span>
             <div class="post-description">Mybatis面试</div>
 
@@ -420,9 +420,16 @@ sql 正常执行。</li>
 是如何进行分页的？分页插件的原理是什么？</h3>
 <p>注：我出的。</p>
 <p>答：<strong>(1)</strong> MyBatis 使用 RowBounds
-对象进行分页，它是针对 ResultSet
-结果集执行的<strong>内存分页</strong>，而非物理分页；<strong>(2)</strong>
-<strong>可以在 sql
+对象进行分页，它是<strong>针对 ResultSet
+结果集</strong>执行的<strong>内存分页</strong>，而非物理分页；</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//使用 </span></span><br><span class="line"><span class="comment">//Mapper中  </span></span><br><span class="line">List&lt;User&gt; <span class="title function_">getUserListLimit</span><span class="params">(RowBounds rowBounds)</span>;</span><br><span class="line"><span class="comment">//Mapper.xml定义 （不变）  </span></span><br><span class="line">&lt;select id=<span class="string">&quot;getUserListLimit&quot;</span> resultType=<span class="string">&quot;user&quot;</span>&gt;</span><br><span class="line">    select * from test.user</span><br><span class="line">&lt;/select&gt;</span><br><span class="line"><span class="comment">//使用, 将会从index为0的记录开始，取两条记录</span></span><br><span class="line"></span><br><span class="line">List&lt;User&gt; userListLimit = userMapper.getUserListLimit(<span class="keyword">new</span> <span class="title class_">RowBounds</span>(<span class="number">0</span>, <span class="number">2</span>));</span><br><span class="line"><span class="keyword">for</span> (User user : userListLimit) &#123;</span><br><span class="line">    System.out.println(user);</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>想要使用mybatis日志，只要加上日志模块的依赖即可</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.slf4j<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>slf4j-api<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.7.30<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">      <span class="comment">&lt;!-- https://mvnrepository.com/artifact/ch.qos.logback/logback-classic --&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>ch.qos.logback<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>logback-classic<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.2.3<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>查看上面的日志可以发现，实际查找的是全部的数据(没有使用物理分页)</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">14:28:14.938 [main] DEBUG org.mybatis.example.BlogMapper.selectBlog - ==&gt;  Preparing: select * from Blog</span><br><span class="line">14:28:14.996 [main] DEBUG org.mybatis.example.BlogMapper.selectBlog - ==&gt; Parameters: </span><br><span class="line">[Blog&#123;id=2, name=&#x27;n2&#x27;, age=20&#125;, Blog&#123;id=3, name=&#x27;n3&#x27;, age=30&#125;]</span><br></pre></td></tr></table></figure>
+</blockquote>
+<p><strong>(2)</strong> <strong>可以在 sql
 内直接书写带有物理分页的参数来完成物理分页功能</strong>，<strong>(3)</strong>
 也可以<strong>使用分页插件</strong>来完成物理分页。</p>
 <p>分页插件的基本原理是使用 MyBatis
@@ -843,7 +850,7 @@ MyBatis 是半自动 ORM 映射工具？它与全自动的区别在哪里？</sp
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">31:54</span>
+    <span title="站点阅读时长">31:56</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
