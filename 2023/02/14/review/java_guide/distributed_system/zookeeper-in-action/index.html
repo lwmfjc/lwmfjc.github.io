@@ -239,7 +239,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>5.3k</span>
+              <span>5.4k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -270,9 +270,9 @@ Java客户端 Curator
 <h2 id="zookeeper-安装和使用">2. ZooKeeper 安装和使用</h2>
 <h3 id="使用docker-安装-zookeeper">2.1. 使用Docker 安装 zookeeper</h3>
 <p><strong>a.使用 Docker 下载 ZooKeeper</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">docker pull zookeeper:3.5.8</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker pull zookeeper:3.5.8</span><br></pre></td></tr></table></figure>
 <p><strong>b.运行 ZooKeeper</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">docker run -d --name zookeeper -p 2181:2181 zookeeper:3.5.8</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">docker run -d --name zookeeper -p 2181:2181 zookeeper:3.5.8</span><br></pre></td></tr></table></figure>
 <h3 id="连接-zookeeper-服务">2.2. 连接 ZooKeeper 服务</h3>
 <p><strong>a.进入ZooKeeper容器中</strong></p>
 <p>先使用 <code>docker ps</code> 查看 ZooKeeper 的 ContainerID，然后使用
@@ -280,13 +280,15 @@ Java客户端 Curator
 <p><strong>b.先进入 bin 目录,然后通过
 <code>./zkCli.sh -server 127.0.0.1:2181</code>命令连接ZooKeeper
 服务</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">root@eaf70fc620cb:/apache-zookeeper-3.5.8-bin# cd bin</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">root@eaf70fc620cb:/apache-zookeeper-3.5.8-bin# cd bin</span><br></pre></td></tr></table></figure>
 <p>如果你看到控制台成功打印出如下信息的话，说明你已经成功连接 ZooKeeper
 服务。</p>
-<p><a
-target="_blank" rel="noopener" href="https://github.com/Snailclimb/JavaGuide/blob/main/docs/distributed-system/distributed-process-coordination/zookeeper/images/连接ZooKeeper服务.png"><img
-src="https://github.com/Snailclimb/JavaGuide/raw/main/docs/distributed-system/distributed-process-coordination/zookeeper/images/连接ZooKeeper服务.png"
-alt="img" /></a></p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/%25E8%25BF%259E%25E6%258E%25A5ZooKeeper%25E6%259C%258D%25E5%258A%25A1.png"
+alt="连接ZooKeeper服务.png" />
+<figcaption aria-hidden="true">连接ZooKeeper服务.png</figcaption>
+</figure>
 <h3 id="常用命令演示">2.3. 常用命令演示</h3>
 <h4 id="查看常用命令help-命令">2.3.1. 查看常用命令(help 命令)</h4>
 <p>通过 <code>help</code> 命令查看 ZooKeeper 常用命令</p>
@@ -296,6 +298,9 @@ alt="img" /></a></p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[zk: 127.0.0.1:2181(CONNECTED) 34] create /node1 “node1”</span><br></pre></td></tr></table></figure>
 <p>通过 <code>create</code> 命令在根目录创建了 node1
 节点，与它关联的内容是数字 123</p>
+<blockquote>
+<p>这个是不是写错了，应该是在node1目录下 ，创建了 node1.1节点</p>
+</blockquote>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[zk: 127.0.0.1:2181(CONNECTED) 1] create /node1/node1.1 123</span><br><span class="line">Created /node1/node1.1</span><br></pre></td></tr></table></figure>
 <h4 id="更新节点数据内容set-命令">2.3.3. 更新节点数据内容(set 命令)</h4>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[zk: 127.0.0.1:2181(CONNECTED) 11] set /node1 &quot;set node1&quot;</span><br></pre></td></tr></table></figure>
@@ -311,10 +316,10 @@ alt="img" /></a></p>
 <p>通过 <code>ls</code> 命令查看 node1 目录下的节点</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[zk: 127.0.0.1:2181(CONNECTED) 5] ls /node1</span><br><span class="line">[node1.1]</span><br></pre></td></tr></table></figure>
 <p>ZooKeeper 中的 ls 命令和 linux 命令中的 ls 类似，
-这个命令将列出绝对路径 path 下的所有子节点信息（列出 1
-级，并不递归）</p>
+这个命令将列出绝对路径 path 下的所有子节点信息（<strong>列出 1
+级，并不递归</strong>）</p>
 <h4 id="查看节点状态stat-命令">2.3.6. 查看节点状态(stat 命令)</h4>
-<p>通过 <code>stat</code> 命令查看节点状态</p>
+<p>通过 <code>stat</code> <strong>命令查看节点状态</strong></p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[zk: 127.0.0.1:2181(CONNECTED) 10] stat /node1</span><br><span class="line">cZxid = 0x47</span><br><span class="line">ctime = Sun Jan 20 10:22:59 CST 2019</span><br><span class="line">mZxid = 0x47</span><br><span class="line">mtime = Sun Jan 20 10:22:59 CST 2019</span><br><span class="line">pZxid = 0x4a</span><br><span class="line">cversion = 1</span><br><span class="line">dataVersion = 0</span><br><span class="line">aclVersion = 0</span><br><span class="line">ephemeralOwner = 0x0</span><br><span class="line">dataLength = 11</span><br><span class="line">numChildren = 1</span><br></pre></td></tr></table></figure>
 <p>上面显示的一些信息比如 cversion、aclVersion、numChildren
 等等，我在上面 “<a
@@ -325,8 +330,8 @@ target="_blank" rel="noopener" href="https://javaguide.cn/distributed-system/dis
 <p><code>ls2</code> 命令更像是 <code>ls</code> 命令和 <code>stat</code>
 命令的结合。 <code>ls2</code> 命令返回的信息包括 2 部分：</p>
 <ol type="1">
-<li>子节点列表</li>
-<li>当前节点的 stat 信息。</li>
+<li><strong>子节点列表</strong></li>
+<li><strong>当前节点的 stat 信息</strong>。</li>
 </ol>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[zk: 127.0.0.1:2181(CONNECTED) 7] ls2 /node1</span><br><span class="line">[node1.1]</span><br><span class="line">cZxid = 0x47</span><br><span class="line">ctime = Sun Jan 20 10:22:59 CST 2019</span><br><span class="line">mZxid = 0x47</span><br><span class="line">mtime = Sun Jan 20 10:22:59 CST 2019</span><br><span class="line">pZxid = 0x4a</span><br><span class="line">cversion = 1</span><br><span class="line">dataVersion = 0</span><br><span class="line">aclVersion = 0</span><br><span class="line">ephemeralOwner = 0x0</span><br><span class="line">dataLength = 11</span><br><span class="line">numChildren = 1</span><br></pre></td></tr></table></figure>
 <h4 id="删除节点delete-命令">2.3.8. 删除节点(delete 命令)</h4>
@@ -346,7 +351,7 @@ alt="img" /></a></p>
 <p>下面我们就来简单地演示一下 Curator 的使用吧！</p>
 <p>Curator4.0+版本对ZooKeeper
 3.5.x支持比较好。开始之前，请先将下面的依赖添加进你的项目。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;org.apache.curator&lt;/groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;curator-framework&lt;/artifactId&gt;</span><br><span class="line">    &lt;version&gt;4.2.0&lt;/version&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br><span class="line">&lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;org.apache.curator&lt;/groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;curator-recipes&lt;/artifactId&gt;</span><br><span class="line">    &lt;version&gt;4.2.0&lt;/version&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;org.apache.curator&lt;/groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;curator-framework&lt;/artifactId&gt;</span><br><span class="line">    &lt;version&gt;<span class="number">4.2</span><span class="number">.0</span>&lt;/version&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br><span class="line">&lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;org.apache.curator&lt;/groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;curator-recipes&lt;/artifactId&gt;</span><br><span class="line">    &lt;version&gt;<span class="number">4.2</span><span class="number">.0</span>&lt;/version&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br></pre></td></tr></table></figure>
 <h3 id="连接-zookeeper-客户端">3.1. 连接 ZooKeeper 客户端</h3>
 <p>通过 <code>CuratorFrameworkFactory</code> 创建
 <code>CuratorFramework</code> 对象，然后再调用
