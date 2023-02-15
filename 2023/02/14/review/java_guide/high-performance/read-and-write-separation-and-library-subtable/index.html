@@ -239,7 +239,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>4.9k</span>
+              <span>5k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -375,7 +375,7 @@ MySQL 一张表的数据量过大怎么办?</strong></p>
 就是将数据库中的数据分散到不同的数据库上，可以垂直分库，也可以水平分库。</p>
 <p><strong>垂直分库</strong>
 就是把<strong>单一数据库按照业务进行划分</strong>，<strong>不同的业务使用不同的数据库</strong>，进而将一个数据库的压力分担到多个数据库。</p>
-<p>举个例子：说你将数据库中的<strong>用户表</strong>、<strong>订单表</strong>和<strong>商品表</strong>分别单独拆分为用户数据库、订单数据库和商品数据库。</p>
+<p>举个例子：说你将数据库中的<strong>用户表</strong>、<strong>订单表</strong>和<strong>商品表</strong>分别单独拆分为<strong>用户数据库</strong>、<strong>订单数据库</strong>和<strong>商品数据库</strong>。</p>
 <figure>
 <img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230214173242617.png"
@@ -399,63 +399,69 @@ alt="image-20230214173307171" />
 是对数据表列的拆分，把一张列比较多的表拆分为多张表。</p>
 <p>举个例子：我们可以将用户信息表中的一些列单独抽出来作为一个表。</p>
 <p><strong>水平分表</strong>
-是对数据表行的拆分，把一张行比较多的表拆分为多张表，可以解决单一表数据量过大的问题。</p>
+是对数据表行的拆分，把<strong>一张行比较多的表拆分为多张表</strong>，可以解决单一表数据量过大的问题。</p>
 <p>举个例子：我们可以将用户信息表拆分成多个用户信息表，这样就可以避免单一表数据量过大对性能造成影响。</p>
-<p>水平拆分只能解决单表数据量大的问题，为了提升性能，我们通常会选择将拆分后的多张表放在不同的数据库中。也就是说，水平分表通常和水平分库同时出现。</p>
-<p><a
-target="_blank" rel="noopener" href="https://github.com/Snailclimb/JavaGuide/blob/main/docs/high-performance/images/read-and-write-separation-and-library-subtable/two-forms-of-sub-table.png"><img
-src="https://github.com/Snailclimb/JavaGuide/raw/main/docs/high-performance/images/read-and-write-separation-and-library-subtable/two-forms-of-sub-table.png"
-alt="分表" /></a></p>
+<p>水平拆分只能解决单表数据量大的问题，为了<strong>提升性能</strong>，我们通常会选择<strong>将拆分后的多张表放在不同的数据库</strong>中。也就是说，<strong>水平分表通常和水平分库同时出现</strong>。</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230215091943081.png"
+alt="image-20230215091943081" />
+<figcaption aria-hidden="true">image-20230215091943081</figcaption>
+</figure>
 <h3 id="什么情况下需要分库分表">什么情况下需要分库分表？</h3>
 <p>遇到下面几种场景可以考虑分库分表：</p>
 <ul>
-<li>单表的数据达到千万级别以上，数据库读写速度比较缓慢。</li>
-<li>数据库中的数据占用的空间越来越大，备份时间越来越长。</li>
-<li>应用的并发量太大。</li>
+<li><strong>单表的数据</strong>达到<strong>千万</strong>级别以上，数据库<strong>读写速度比较缓慢</strong>。</li>
+<li>数据<strong>库中的数据</strong>占用的<strong>空间</strong>越来越大，<strong>备份时间</strong>越来越长。</li>
+<li>应用的<strong>并发量太大</strong>。</li>
 </ul>
 <h3 id="常见的分片算法有哪些">常见的分片算法有哪些？</h3>
 <p>分片算法主要解决了数据被水平分片之后，数据究竟该存放在哪个表的问题。</p>
 <ul>
 <li><strong>哈希分片</strong> ：求指定 key（比如 id）
-的哈希，然后根据哈希值确定数据应被放置在哪个表中。哈希分片比较适合随机读写的场景，不太适合经常需要范围查询的场景。</li>
+的哈希，然后根据哈希值确定数据应被放置在哪个表中。哈希分片比较适合<strong>随机读写</strong>的场景，<strong>不太适合经常需要范围查询</strong>的场景。</li>
 <li><strong>范围分片</strong>
-：按照特性的范围区间（比如时间区间、ID区间）来分配数据，比如 将
-<code>id</code> 为 <code>1~299999</code> 的记录分到第一个库，
+：按照<strong>特性</strong>的<strong>范围区间</strong>（比如<strong>时间</strong>区间、<strong>ID</strong>区间）来分配数据，比如
+将 <code>id</code> 为 <code>1~299999</code> 的记录分到第一个库，
 <code>300000~599999</code>
-的分到第二个库。范围分片适合需要经常进行范围查找的场景，不太适合随机读写的场景（数据未被分散，容易出现热点数据的问题）。</li>
+的分到第二个库。范围分片适合需要<strong>经常进行范围查找</strong>的场景，<strong>不太适合随机读写</strong>的场景（数据未被分散，<strong>容易出现热点数据</strong>的问题）。</li>
 <li><strong>地理位置分片</strong> ：很多 NewSQL
-数据库都支持地理位置分片算法，也就是根据地理位置（如城市、地域）来分配数据。</li>
+数据库都支持<strong>地理位置分片</strong>算法，也就是根据地理位置（如城市、地域）来分配数据。</li>
 <li><strong>融合算法</strong>
-：灵活组合多种分片算法，比如将哈希分片和范围分片组合。</li>
+：灵活组合多种分片算法，比如将<strong>哈希分片</strong>和<strong>范围分片</strong>组合。</li>
 <li>......</li>
 </ul>
 <h3 id="分库分表会带来什么问题呢">分库分表会带来什么问题呢？</h3>
-<p>记住，你在公司做的任何技术决策，不光是要考虑这个技术能不能满足我们的要求，是否适合当前业务场景，还要重点考虑其带来的成本。</p>
+<p>记住，你在公司做的任何技术决策，不光是要考虑这个技术能不能满足我们的要求，<strong>是否适合当前业务</strong>场景，还要重点考虑其带来的成本。</p>
 <p>引入分库分表之后，会给系统带来什么挑战呢？</p>
 <ul>
 <li><strong>join 操作</strong> ：
-同一个数据库中的表分布在了不同的数据库中，导致无法使用 join
-操作。这样就导致我们需要手动进行数据的封装，比如你在一个数据库中查询到一个数据之后，再根据这个数据去另外一个数据库中找对应的数据。</li>
+同一个数据库中的表分布在了不同的数据库中，导致<strong>无法使用
+join</strong>
+操作。这样就导致我们需要<strong>手动进行数据的封装</strong>，比如你在一个数据库中<strong>查询到一个数据</strong>之后，再根据这个数据<strong>去另外一个数据库</strong>中找对应的数据。</li>
 <li><strong>事务问题</strong>
-：同一个数据库中的表分布在了不同的数据库中，如果单个操作涉及到多个数据库，那么数据库自带的事务就无法满足我们的要求了。</li>
+：<strong>同一个数据库中的表分布在了不同的数据库</strong>中，如果<strong>单个操作涉及到多个数据库</strong>，那么数据库<strong>自带的事务</strong>就无法满足我们的要求了。</li>
 <li><strong>分布式 id</strong> ：分库之后，
-数据遍布在不同服务器上的数据库，数据库的自增主键已经没办法满足生成的主键唯一了。我们如何为不同的数据节点生成全局唯一主键呢？这个时候，我们就需要为我们的系统引入分布式
+数据遍布在不同服务器上的数据库，数据库的<strong>自增主键已经没办法满足生成的主键唯一</strong>了。我们如何为不同的数据节点生成全局唯一主键呢？这个时候，我们就需要为我们的系统引入分布式
 id 了。</li>
 <li>......</li>
 </ul>
-<p>另外，引入分库分表之后，一般需要 DBA
+<p>另外，引入分库分表之后，一般需要 <strong>DBA</strong>
 的参与，同时还需要更多的数据库服务器，这些都属于成本。</p>
 <h3
 id="分库分表有没有什么比较推荐的方案">分库分表有没有什么比较推荐的方案？</h3>
 <p>ShardingSphere 项目（包括 Sharding-JDBC、Sharding-Proxy 和
 Sharding-Sidecar）是当当捐入 Apache
 的，目前主要由京东数科的一些巨佬维护。</p>
-<p><a
-target="_blank" rel="noopener" href="https://camo.githubusercontent.com/4b5eb6a78cfc6f6e0596f1970fa1bb15b984d29f9a1321eb1082769003689c02/68747470733a2f2f696d672d626c6f672e6373646e696d672e636e2f696d675f636f6e766572742f36303634393939366266633639616362313935333036336464646630633265362e706e67"><img
-src="https://camo.githubusercontent.com/4b5eb6a78cfc6f6e0596f1970fa1bb15b984d29f9a1321eb1082769003689c02/68747470733a2f2f696d672d626c6f672e6373646e696d672e636e2f696d675f636f6e766572742f36303634393939366266633639616362313935333036336464646630633265362e706e67"
-alt="img" /></a></p>
-<p>ShardingSphere 绝对可以说是当前分库分表的首选！ShardingSphere
-的功能完善，除了支持读写分离和分库分表，还提供分布式事务、数据库治理等功能。</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230215092543932.png"
+alt="image-20230215092543932" />
+<figcaption aria-hidden="true">image-20230215092543932</figcaption>
+</figure>
+<p><strong>ShardingSphere</strong>
+绝对可以说是当前<strong>分库分表的首选</strong>！ShardingSphere
+的功能完善，除了支持读写分离和分库分表，还提供<strong>分布式事务</strong>、<strong>数据库治理</strong>等功能。</p>
 <p>另外，ShardingSphere
 的生态体系完善，社区活跃，文档完善，更新和发布比较频繁。</p>
 <p>艿艿之前写了一篇分库分表的实战文章，各位朋友可以看看：<a
@@ -463,29 +469,32 @@ target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/A2MYOFT7SP-7kGOo
 Boot 分库分表入门》</a> 。</p>
 <h3 id="分库分表后数据怎么迁移呢">分库分表后，数据怎么迁移呢？</h3>
 <p>分库分表之后，我们如何将老库（单库单表）的数据迁移到新库（分库分表后的数据库系统）呢？</p>
-<p>比较简单同时也是非常常用的方案就是<strong>停机迁移</strong>，写个脚本老库的数据写到新库中。比如你在凌晨
+<p>比较简单同时也是非常常用的方案就是<strong>停机迁移</strong>，<strong>写个脚本老库的数据写到新库中</strong>。比如你在凌晨
 2 点，系统使用的人数非常少的时候，挂一个公告说系统要维护升级预计 1
 小时。然后，你写一个脚本将老库的数据都同步到新库中。</p>
-<p>如果你不想停机迁移数据的话，也可以考虑<strong>双写方案</strong>。双写方案是针对那种不能停机迁移的场景，实现起来要稍微麻烦一些。具体原理是这样的：</p>
+<p>如果你不想停机迁移数据的话，也可以考虑<strong>双写方案</strong>。双写方案是针对那种<strong>不能停机</strong>迁移的场景，实现起来要稍微麻烦一些。具体原理是这样的：</p>
 <ul>
-<li>我们对老库的更新操作（增删改），同时也要写入新库（双写）。如果操作的数据不存在于新库的话，需要插入到新库中。
+<li>我们对<strong>老库的更新</strong>操作（增删改），同时也要<strong>写入新库</strong>（双写）。如果操作的数据<strong>不存在于新库的话，需要插入</strong>到新库中。
 这样就能保证，咱们新库里的数据是最新的。</li>
-<li>在迁移过程，双写只会让被更新操作过的老库中的数据同步到新库，我们还需要自己写脚本将老库中的数据和新库的数据做比对。如果新库中没有，那咱们就把数据插入到新库。如果新库有，旧库没有，就把新库对应的数据删除（冗余数据清理）。</li>
+<li>在迁移过程，双写只会让被更新操作过的老库中的数据同步到新库，我们还需要自己写脚本将<strong>老库中的数据(这里说的就是原来老库中的数据但是没有设计更新操作)</strong>和新库的数据做比对。如果<strong>新库中没有，那咱们就把数据插入</strong>到新库。如果<strong>新库有，旧库没有，就把新库对应的数据删除</strong>（冗余数据清理）。</li>
 <li>重复上一步的操作，直到老库和新库的数据一致为止。</li>
 </ul>
 <p>想要在项目中实施双写还是比较麻烦的，很容易会出现问题。我们可以借助上面提到的数据库同步工具
-Canal 做增量数据迁移（还是依赖 binlog，开发和维护成本较低）。</p>
+<strong>Canal 做增量数据迁移</strong>（还是依赖
+binlog，开发和维护成本较低）。</p>
 <h2 id="总结">总结</h2>
 <ul>
-<li>读写分离主要是为了将对数据库的读写操作分散到不同的数据库节点上。
+<li>读写分离主要是为了将<strong>对数据库的读写</strong>操作<strong>分散到不同的数据库节点</strong>上。
 这样的话，就能够小幅提升写性能，大幅提升读性能。</li>
-<li>读写分离基于主从复制，MySQL 主从复制是依赖于 binlog 。</li>
+<li>读写分离<strong>基于主从复制</strong>，MySQL
+主从复制是<strong>依赖于 binlog</strong> 。</li>
 <li><strong>分库</strong>
 就是将数据库中的数据分散到不同的数据库上。<strong>分表</strong>
 就是对单表的数据进行拆分，可以是垂直拆分，也可以是水平拆分。</li>
-<li>引入分库分表之后，需要系统解决事务、分布式 id、无法 join
-操作问题。</li>
-<li>ShardingSphere 绝对可以说是当前分库分表的首选！ShardingSphere
+<li>引入分库分表之后，需要系统解决<strong>事务</strong>、<strong>分布式
+id</strong>、<strong>无法 join 操作</strong>问题。</li>
+<li><strong>ShardingSphere</strong>
+绝对可以说是当前分库分表的首选！ShardingSphere
 的功能完善，除了支持读写分离和分库分表，还提供分布式事务、数据库治理等功能。另外，ShardingSphere
 的生态体系完善，社区活跃，文档完善，更新和发布比较频繁。</li>
 </ul>
