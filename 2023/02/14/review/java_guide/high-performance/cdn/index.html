@@ -239,7 +239,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>2.8k</span>
+              <span>3k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -330,25 +330,26 @@ CDN 厂商（比如网宿、蓝汛）提供的开箱即用的 CDN 服务。</p>
 <p>如果资源有更新的话，你也可以对其 <strong>刷新</strong> ，删除 CDN
 节点上缓存的资源，当用户访问对应的资源时直接回源获取最新的资源，并重新缓存。</p>
 <h3 id="如何找到最合适的-cdn-节点">如何找到最合适的 CDN 节点？</h3>
-<p>GSLB （Global Server Load Balance，全局负载均衡）是 CDN
-的大脑，负责多个CDN节点之间相互协作，最常用的是基于 DNS 的 GSLB。</p>
+<p><strong>GSLB （Global Server Load Balance，全局负载均衡）</strong>是
+CDN 的大脑，负责多个CDN节点之间相互协作，最常用的是基于 DNS 的
+GSLB。</p>
 <p>CDN 会通过 GSLB 找到最合适的 CDN 节点，更具体点来说是下面这样的：</p>
 <ol type="1">
-<li>浏览器向 DNS 服务器发送域名请求；</li>
-<li>DNS 服务器向根据 CNAME( Canonical Name ) 别名记录向 GSLB
-发送请求；</li>
-<li>GSLB 返回性能最好（通常距离请求地址最近）的 CDN
-节点（边缘服务器，真正缓存内容的地方）的地址给浏览器；</li>
-<li>浏览器直接访问指定的 CDN 节点。</li>
+<li>浏览器<strong>向 DNS 服务器发送域名请求</strong>；</li>
+<li>DNS 服务器向<strong>根据 CNAME( Canonical Name ) 别名记录向 GSLB
+发送请求</strong>；</li>
+<li><strong>GSLB 返回性能最好（通常距离请求地址最近）的 CDN
+节点</strong>（边缘服务器，真正缓存内容的地方）的地址给浏览器；</li>
+<li>浏览器直接<strong>访问指定的 CDN 节点</strong>。</li>
 </ol>
 <p><a
 target="_blank" rel="noopener" href="https://camo.githubusercontent.com/a4a53932842293cc9fd7301a404bc0f8225b02625f8495c2c0bd415dac60d277/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f686967682d706572666f726d616e63652f63646e2f63646e2d6f766572766965772e706e67"><img
 src="https://camo.githubusercontent.com/a4a53932842293cc9fd7301a404bc0f8225b02625f8495c2c0bd415dac60d277/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f686967682d706572666f726d616e63652f63646e2f63646e2d6f766572766965772e706e67"
 alt="CDN 原理示意图" /></a></p>
-<p>为了方便理解，上图其实做了一点简化。GSLB 内部可以看作是 CDN 专用 DNS
-服务器和负载均衡系统组合。CDN 专用 DNS 服务器会返回负载均衡系统 IP
-地址给浏览器，浏览器使用 IP 地址请求负载均衡系统进而找到对应的 CDN
-节点。</p>
+<p>为了方便理解，上图其实做了一点简化。<strong>GSLB 内部可以看作是 CDN
+专用 DNS 服务器和负载均衡系统组合</strong>。CDN 专用 DNS
+服务器会返回负载均衡系统 IP 地址给浏览器，浏览器使用 IP
+地址请求负载均衡系统进而找到对应的 CDN 节点。</p>
 <p><strong>GSLB 是如何选择出最合适的 CDN 节点呢？</strong> GSLB
 会根据请求的 IP 地址、CDN
 节点状态（比如负载情况、性能、响应时间、带宽）等指标来综合判断具体返回哪一个
@@ -358,21 +359,33 @@ CDN 节点的地址。</p>
 <p>解决这个问题最常用最简单的办法设置 <strong>Referer
 防盗链</strong>，具体来说就是根据 HTTP 请求的头信息里面的 Referer
 字段对请求进行限制。我们可以通过 Referer
-字段获取到当前请求页面的来源页面的网站地址，这样我们就能确定请求是否来自合法的网站。</p>
+字段<strong>获取到当前请求页面的来源页面</strong>的网站地址，这样我们就能确定请求是否来自合法的网站。</p>
 <p>CDN 服务提供商几乎都提供了这种比较基础的防盗链机制。</p>
-<p><a
-target="_blank" rel="noopener" href="https://camo.githubusercontent.com/b59038e4a9d5a53f72e1349c1871bc30f5727074acd9732ffaba45ae0d8daa90/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f686967682d706572666f726d616e63652f63646e2f636e642d74656e63656e742d636c6f75642d616e74692d74686566742e706e67"><img
-src="https://camo.githubusercontent.com/b59038e4a9d5a53f72e1349c1871bc30f5727074acd9732ffaba45ae0d8daa90/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f686967682d706572666f726d616e63652f63646e2f636e642d74656e63656e742d636c6f75642d616e74692d74686566742e706e67"
-alt="腾讯云 CDN Referer 防盗链配置" /></a></p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f686967682d706572666f726d616e63652f63646e2f636e642d74656e63656e742d636c6f75642d616e74692d74686566742e706e67"
+alt="img" />
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
 <p>不过，如果站点的防盗链配置允许 Referer 为空的话，通过隐藏
 Referer，可以直接绕开防盗链。</p>
 <p>通常情况下，我们会配合其他机制来确保静态资源被盗用，一种常用的机制是
 <strong>时间戳防盗链</strong> 。相比之下，<strong>时间戳防盗链</strong>
-的安全性更强一些。时间戳防盗链加密的 URL
-具有时效性，过期之后就无法再被允许访问。</p>
+的安全性更强一些。<strong>时间戳防盗链加密的 URL
+具有时效性，过期之后就无法再被允许访问</strong>。</p>
 <p>时间戳防盗链的 URL
-通常会有两个参数一个是签名字符串，一个是过期时间。签名字符串一般是通过对用户设定的加密字符串、请求路径、过期时间通过
-MD5 哈希算法取哈希的方式获得。</p>
+通常会有两个参数一个是<strong>签名字符串</strong>，一个是<strong>过期时间</strong>。签名字符串一般是通过<strong>对用户设定的加密字符串</strong>、<strong>请求路径</strong>、<strong>过期时间</strong>通过
+<strong>MD5 哈希算法取哈希</strong>的方式获得。</p>
+<blockquote>
+<p>注意，这个用户设定的加密字符串，是在后台配置的，而签名是后台给前端的<br />
+（1）用户管理员在七牛 <a target="_blank" rel="noopener" href="https://portal.qiniu.com/cdn/domain">CDN
+控制台</a> 配置 key ，并将 key配置进业务服务器。
+（2）当客户端请求资源时，将原始 url 发送至业务服务器。
+（3）业务服务器根据<a
+target="_blank" rel="noopener" href="https://developer.qiniu.com/fusion/3841/timestamp-hotlinking-prevention-fusion#3">计算逻辑</a>，将带有时间戳签名的
+url 返回至客户端。 （4）客户端使用带有时间戳签名的 url 请求资源。
+（5）CDN 检查 url 签名的合法性。</p>
+</blockquote>
 <p>时间戳防盗链 URL示例：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">http://cdn.wangsu.com/4/123.mp3? wsSecret=79aead3bd7b5db4adeffb93a010298b5&amp;wsTime=1601026312</span><br></pre></td></tr></table></figure>
 <ul>
@@ -385,10 +398,12 @@ src="https://camo.githubusercontent.com/84449c907ccfdeca1668766dfd86024e47508e8e
 alt="img" /></a></p>
 <p>时间戳防盗链的实现也比较简单，并且可靠性较高，推荐使用。并且，绝大部分
 CDN 服务提供商都提供了开箱即用的时间戳防盗链机制。</p>
-<p><a
-target="_blank" rel="noopener" href="https://camo.githubusercontent.com/93ad94fc1b324887b477dffc4e2a9de711f906340a7975be5745203fe77d950f/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f686967682d706572666f726d616e63652f63646e2f71696e697579756e2d74696d657374616d702d616e74692d74686566742e706e67"><img
+<figure>
+<img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f686967682d706572666f726d616e63652f63646e2f71696e697579756e2d74696d657374616d702d616e74692d74686566742e706e67"
-alt="七牛云时间戳防盗链配置" /></a></p>
+alt="七牛云时间戳防盗链配置" />
+<figcaption aria-hidden="true">七牛云时间戳防盗链配置</figcaption>
+</figure>
 <p>除了 Referer 防盗链和时间戳防盗链之外，你还可以 IP 黑白名单配置、IP
 访问限频配置等机制来防盗刷。</p>
 <h2 id="总结">总结</h2>
@@ -434,7 +449,10 @@ CDN：加速我们的网络服务：http://gk.link/a/11yOG</li>
     <a href="/2023/02/14/review/java_guide/high-performance/read-and-write-separation-and-library-subtable/" rel="prev" title="数据库读写分离&分库分表详解">
       <i class="fa fa-chevron-left"></i> 数据库读写分离&分库分表详解
     </a></div>
-      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2023/02/15/review/java_guide/high-performance/message-mq/base/" rel="next" title="message-queue">
+      message-queue <i class="fa fa-chevron-right"></i>
+    </a></div>
     </div>
       </footer>
     
@@ -517,7 +535,7 @@ CDN：加速我们的网络服务：http://gk.link/a/11yOG</li>
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">156</span>
+          <span class="site-state-item-count">159</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -576,7 +594,7 @@ CDN：加速我们的网络服务：http://gk.link/a/11yOG</li>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">34:10</span>
+    <span title="站点阅读时长">34:43</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
