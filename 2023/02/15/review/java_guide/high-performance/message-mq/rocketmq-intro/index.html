@@ -268,7 +268,7 @@
 <strong>消息队列为什么会出现？消息队列能用来干什么？用它来干这些事会带来什么好处？消息队列会带来副作用吗？</strong></p>
 <h3 id="消息队列为什么会出现"><a href="#消息队列为什么会出现">#</a>
 消息队列为什么会出现？</h3>
-<p>消息队列算是作为后端程序员的一个必备技能吧，因为<strong>分布式应用必定涉及到各个系统之间的通信问题</strong>，这个时候消息队列也应运而生了。可以说分布式的产生是消息队列的基础，而分布式怕是一个很古老的概念了吧，所以消息队列也是一个很古老的中间件了。</p>
+<p>消息队列算是作为后端程序员的一个必备技能吧，因为<strong>分布式应用必定涉及到各个系统之间的通信问题</strong>，这个时候消息队列也应运而生了。可以说<strong>分布式</strong>的产生是消息队列的基础，而分布式怕是一个很古老的概念了吧，所以消息队列也是一个很古老的<strong>中间件</strong>了。</p>
 <h3 id="消息队列能用来干什么"><a href="#消息队列能用来干什么">#</a>
 消息队列能用来干什么？</h3>
 <h4 id="异步"><a href="#异步">#</a> 异步</h4>
@@ -345,15 +345,15 @@ alt="img" />
 <p>如果你觉得还行，那么我这个时候不要发邮件这个服务了呢，我是不是又得改代码，又得重启应用？</p>
 <figure>
 <img
-src="https://my-blog-to-use.oss-cn-beijing.aliyuncs.com/2019-11/16ef381f273a66bd.jpg"
-alt="img" />
-<figcaption aria-hidden="true">img</figcaption>
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230215145241731.png"
+alt="image-20230215145241731" />
+<figcaption aria-hidden="true">image-20230215145241731</figcaption>
 </figure>
 <p>这样改来改去是不是很麻烦，那么
 <strong>此时我们就用一个消息队列在中间进行解耦</strong>
 。你需要注意的是，我们后面的发送短信、发送邮件、添加积分等一些操作都依赖于上面的
 <code>result</code>
-，这东西抽象出来就是购票的处理结果呀，比如订单号，用户账号等等，也就是说我们后面的一系列服务都是需要同样的消息来进行处理。既然这样，我们是不是可以通过
+，这东西抽象出来就是购票的处理结果呀，比如订单号，用户账号等等，也就是说我们<strong>后面的一系列服务都是需要同样的消息</strong>来进行处理。既然这样，我们是不是可以通过
 <strong>“广播消息”</strong> 来实现。</p>
 <p>我上面所讲的“广播”并不是真正的广播，而是接下来的系统作为消费者去
 <strong>订阅</strong> 特定的主题。比如我们这里的主题就可以叫做
@@ -368,46 +368,46 @@ alt="img" />
 <figcaption aria-hidden="true">img</figcaption>
 </figure>
 <blockquote>
-<p>如果没有消息队列，每当一个新的业务接入，我们都要在主系统调用新接口、或者当我们取消某些业务，我们也得在主系统删除某些接口调用。有了消息队列，我们只需要关心消息是否送达了队列，至于谁希望订阅，接下来收到消息如何处理，是下游的事情，无疑极大地减少了开发和联调的工作量。</p>
+<p>如果没有消息队列，每当一个新的业务接入，我们都要在主系统调用新接口、或者当我们取消某些业务，我们也得在主系统删除某些接口调用。有了消息队列，我们<strong>只需要关心消息是否送达了队列</strong>，至于谁希望订阅，接下来收到消息如何处理，是下游的事情，无疑极大地<strong>减少了开发和联调</strong>的工作量。</p>
 </blockquote>
 <h4 id="削峰"><a href="#削峰">#</a> 削峰</h4>
 <p>我们再次回到一开始我们使用同步调用系统的情况，并且思考一下，如果此时有大量用户请求购票整个系统会变成什么样？</p>
 <figure>
 <img
-src="https://my-blog-to-use.oss-cn-beijing.aliyuncs.com/2019-11/16ef382a9756bb1c.jpg"
-alt="img" />
-<figcaption aria-hidden="true">img</figcaption>
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230215145419605.png"
+alt="image-20230215145419605" />
+<figcaption aria-hidden="true">image-20230215145419605</figcaption>
 </figure>
 <p>如果，此时有一万的请求进入购票系统，我们知道运行我们主业务的服务器配置一般会比较好，所以这里我们假设购票系统能承受这一万的用户请求，那么也就意味着我们同时也会出现一万调用发短信服务的请求。而对于短信系统来说并不是我们的主要业务，所以我们配备的硬件资源并不会太高，那么你觉得现在这个短信系统能承受这一万的峰值么，且不说能不能承受，系统会不会
 <strong>直接崩溃</strong> 了？</p>
 <p>短信业务又不是我们的主业务，我们能不能 <strong>折中处理</strong>
-呢？如果我们把购买完成的信息发送到消息队列中，而短信系统
+呢？如果我们把<strong>购买完成的信息发送到消息队列</strong>中，而短信系统
 <strong>尽自己所能地去消息队列中取消息和消费消息</strong>
-，即使处理速度慢一点也无所谓，只要我们的系统没有崩溃就行了。</p>
+，<strong>即使处理速度慢一点</strong>也无所谓，只要我们的系统没有崩溃就行了。</p>
 <p>留得江山在，还怕没柴烧？你敢说每次发送验证码的时候是一发你就收到了的么？</p>
 <h4 id="消息队列能带来什么好处"><a href="#消息队列能带来什么好处">#</a>
 消息队列能带来什么好处？</h4>
 <p>其实上面我已经说了。<strong>异步、解耦、削峰。</strong>
-哪怕你上面的都没看懂也千万要记住这六个字，因为他不仅是消息队列的精华，更是编程和架构的精华。</p>
+哪怕你上面的都没看懂也千万要记住这六个字，因为他不仅是消息队列的精华，更是<strong>编程</strong>和<strong>架构</strong>的精华。</p>
 <h4 id="消息队列会带来副作用吗"><a href="#消息队列会带来副作用吗">#</a>
 消息队列会带来副作用吗？</h4>
 <p>没有哪一门技术是“银弹”，消息队列也有它的副作用。</p>
 <p>比如，本来好好的两个系统之间的调用，我中间加了个消息队列，如果消息队列挂了怎么办呢？是不是
 <strong>降低了系统的可用性</strong> ？</p>
-<p>那这样是不是要保证HA(高可用)？是不是要搞集群？那么我
+<p>那这样是不是要保证<strong>HA(高可用)</strong>？是不是要搞<strong>集群</strong>？那么我
 <strong>整个系统的复杂度是不是上升了</strong> ？</p>
-<p>抛开上面的问题不讲，万一我发送方发送失败了，然后执行重试，这样就可能产生重复的消息。</p>
-<p>或者我消费端处理失败了，请求重发，这样也会产生重复的消息。</p>
+<p>抛开上面的问题不讲，万一我发送方发送失败了，然后执行<strong>重试</strong>，这样就可能产生重复的消息。</p>
+<p>或者我消费端处理失败了，请求<strong>重发</strong>，这样也会产生重复的消息。</p>
 <p>对于一些微服务来说，消费重复消息会带来更大的麻烦，比如增加积分，这个时候我加了多次是不是对其他用户不公平？</p>
 <p>那么，又 <strong>如何解决重复消费消息的问题</strong> 呢？</p>
-<p>如果我们此时的消息需要保证严格的顺序性怎么办呢？比如生产者生产了一系列的有序消息(对一个id为1的记录进行删除增加修改)，但是我们知道在发布订阅模型中，对于主题是无顺序的，那么这个时候就会导致对于消费者消费消息的时候没有按照生产者的发送顺序消费，比如这个时候我们消费的顺序为修改删除增加，如果该记录涉及到金额的话是不是会出大事情？</p>
+<p>如果我们此时的消息需要<strong>保证严格的顺序性</strong>怎么办呢？比如生产者生产了一系列的有序消息(对一个id为1的记录进行删除增加修改)，但是我们知道在发布订阅模型中，对于主题是无顺序的，那么这个时候就会导致对于消费者消费消息的时候<strong>没有按照生产者的发送顺序消费</strong>，比如这个时候我们消费的顺序为<strong>修改删除增加</strong>，如果该记录涉及到金额的话是不是会出大事情？</p>
 <p>那么，又 <strong>如何解决消息的顺序消费问题</strong> 呢？</p>
 <p>就拿我们上面所讲的分布式系统来说，用户购票完成之后是不是需要增加账户积分？在同一个系统中我们一般会使用事务来进行解决，如果用
 <code>Spring</code> 的话我们在上面伪代码中加入
 <code>@Transactional</code>
-注解就好了。但是在不同系统中如何保证事务呢？总不能这个系统我扣钱成功了你那积分系统积分没加吧？或者说我这扣钱明明失败了，你那积分系统给我加了积分。</p>
+注解就好了。但是在<strong>不同系统中如何保证事务</strong>呢？总不能这个系统我扣钱成功了你那积分系统积分没加吧？或者说我这扣钱明明失败了，你那积分系统给我加了积分。</p>
 <p>那么，又如何 <strong>解决分布式事务问题</strong> 呢？</p>
-<p>我们刚刚说了，消息队列可以进行削峰操作，那如果我的消费者如果消费很慢或者生产者生产消息很快，这样是不是会将消息堆积在消息队列中？</p>
+<p>我们刚刚说了，消息队列可以进行削峰操作，那如果我的消费者如果消<strong>费很慢</strong>或者<strong>生产者生产消息很快</strong>，这样是不是会<strong>将消息堆积在消息队列中</strong>？</p>
 <p>那么，又如何 <strong>解决消息堆积的问题</strong> 呢？</p>
 <p>可用性降低，复杂度上升，又带来一系列的重复消费，顺序消费，分布式事务，消息堆积的问题，这消息队列还怎么用啊😵？</p>
 <figure>
@@ -454,7 +454,7 @@ alt="img" />
 这些优秀的消息中间件不仅仅是通过一个 <strong>队列</strong>
 来实现消息存储的。</p>
 <h3 id="队列模型"><a href="#队列模型">#</a> 队列模型</h3>
-<p>就像我们理解队列一样，消息中间件的队列模型就真的只是一个队列。。。我画一张图给大家理解。</p>
+<p>就像我们理解队列一样，<strong>消息中间件的队列模型</strong>就真的只是一个队列。。。我画一张图给大家理解。</p>
 <figure>
 <img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/16ef3834ae653469.jpg"
@@ -462,7 +462,7 @@ alt="img" />
 <figcaption aria-hidden="true">img</figcaption>
 </figure>
 <p>在一开始我跟你提到了一个 <strong>“广播”</strong>
-的概念，也就是说如果我们此时我们需要将一个消息发送给多个消费者(比如此时我需要将信息发送给短信系统和邮件系统)，这个时候单个队列即不能满足需求了。</p>
+的概念，也就是说如果我们此时我们需要将一个消息发送给多个消费者(比如此时我需要将信息发送给<strong>短信系统</strong>和<strong>邮件系统</strong>)，这个时候单个队列即不能满足需求了。</p>
 <p>当然你可以让 <code>Producer</code>
 生产消息放入多个队列中，然后每个队列去对应每一个消费者。问题是可以解决，创建多个队列并且复制多份消息是会很影响资源和性能的。而且，这样子就会导致生产者需要知道具体消费者个数然后去复制对应数量的消息队列，这就违背我们消息中间件的
 <strong>解耦</strong> 这一原则。</p>
@@ -475,7 +475,7 @@ alt="img" />
 </blockquote>
 <p>在主题模型中，消息的生产者称为 <strong>发布者(Publisher)</strong>
 ，消息的消费者称为 <strong>订阅者(Subscriber)</strong>
-，存放消息的容器称为 <strong>主题(Topic)</strong> 。</p>
+，存放消息的<strong>容器称为 主题(Topic)</strong> 。</p>
 <p>其中，发布者将消息发送到指定主题中，订阅者需要
 <strong>提前订阅主题</strong> 才能接受特定主题的消息。</p>
 <figure>
@@ -499,9 +499,9 @@ RocketMQ中的消息模型</h3>
 到底是如何实现的呢？首先我画一张图，大家尝试着去理解一下。</p>
 <figure>
 <img
-src="https://my-blog-to-use.oss-cn-beijing.aliyuncs.com/2019-11/16ef383d3e8c9788.jpg"
-alt="img" />
-<figcaption aria-hidden="true">img</figcaption>
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230216145037077.png"
+alt="image-20230216145037077" />
+<figcaption aria-hidden="true">image-20230216145037077</figcaption>
 </figure>
 <p>我们可以看到在整个图中有 <code>Producer Group</code>
 、<code>Topic</code> 、<code>Consumer Group</code>
@@ -514,10 +514,10 @@ alt="img" />
 代表某一类的消费者，比如我们有多个短信系统作为消费者，这多个合在一起就是一个
 <code>Consumer Group</code> 消费者组，它们一般消费相同的消息。</li>
 <li><code>Topic</code> 主题：
-代表一类消息，比如订单消息，物流消息等等。</li>
+代表一类消息，比如<strong>订单消息</strong>，<strong>物流消息</strong>等等。</li>
 </ul>
 <p>你可以看到图中生产者组中的生产者会向主题发送消息，而
-<strong>主题中存在多个队列</strong>，生产者每次生产消息之后是指定主题中的某个队列发送消息的。</p>
+<strong>主题中存在多个队列</strong>，生产者每次生产消息之后是<strong>指定</strong>主题中的<strong>某个队列</strong>发送消息的。</p>
 <p>每个主题中都有多个队列(分布在不同的
 <code>Broker</code>中，如果是集群的话，<code>Broker</code>又分布在不同的服务器中)，集群消费模式下，一个消费者集群多台机器共同消费一个
 <code>topic</code>
@@ -534,9 +534,10 @@ alt="img" />
 </figure>
 <p><strong>每个消费组在每个队列上维护一个消费位置</strong>
 ，为什么呢？</p>
-<p>因为我们刚刚画的仅仅是一个消费者组，我们知道在发布订阅模式中一般会涉及到多个消费者组，而每个消费者组在每个队列中的消费位置都是不同的。如果此时有多个消费者组，那么消息被一个消费者组消费完之后是不会删除的(因为其它消费者组也需要呀)，它仅仅是为每个消费者组维护一个
+<p>因为我们刚刚画的仅仅是一个消费者组，我们知道在发布订阅模式中一般会涉及到多个消费者组，而每个消费者组在每个队列中的消费位置都是不同的。如果此时有多个消费者组，那么<strong>消息被一个消费者组消费完之后是不会删除的</strong>(因为其它消费者组也需要呀
+【<strong>注意重点，是消费完之后</strong>】)，它仅仅是为每个消费者组维护一个
 <strong>消费位移(offset)</strong>
-，每次消费者组消费完会返回一个成功的响应，然后队列再把维护的消费位移加一，这样就不会出现刚刚消费过的消息再一次被消费了。</p>
+，每次消费者组消费完会返回一个成功的响应，然后队列再把维护的消费位移加一，<strong>这样就不会出现刚刚消费过的消息再一次被消费了</strong>。</p>
 <figure>
 <img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/16ef3857fefaa079.jpg"
@@ -554,9 +555,9 @@ src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img
 alt="img" />
 <figcaption aria-hidden="true">img</figcaption>
 </figure>
-<p>但是，这样我生产者是不是只能向一个队列发送消息？又因为需要维护消费位置所以一个队列只能对应一个消费者组中的消费者，这样是不是其他的
+<p>但是，这样我生产者是不是只能向一个队列发送消息？又因为需要维护消费位置所以<strong>一个队列只能对应一个消费者组中的消费者，这样是不是其他的
 <code>Consumer</code>
-就没有用武之地了？从这两个角度来讲，并发度一下子就小了很多。</p>
+就没有用武之地了</strong>？从这两个角度来讲，并发度一下子就小了很多。</p>
 <p>所以总结来说，<code>RocketMQ</code> 通过<strong>使用在一个
 <code>Topic</code>
 中配置多个队列并且每个队列维护每个消费者组的消费位置</strong> 实现了
@@ -602,14 +603,15 @@ alt="img" />
 <strong>路由信息管理</strong> 。说白了就是 <code>Broker</code>
 会将自己的信息注册到 <code>NameServer</code> 中，此时
 <code>NameServer</code> 就存放了很多 <code>Broker</code>
-的信息(Broker的路由表)，消费者和生产者就从 <code>NameServer</code>
-中获取路由表然后照着路由表的信息和对应的 <code>Broker</code>
+的信息(Broker的路由表)，消费者和生产者就<strong>从
+<code>NameServer</code>
+中获取路由表</strong>然后照着路由表的信息和对应的 <code>Broker</code>
 进行通信(生产者和消费者定期会向 <code>NameServer</code> 去查询相关的
 <code>Broker</code> 的信息)。</p></li>
 <li><p><code>Producer</code>：
-消息发布的角色，支持分布式集群方式部署。说白了就是生产者。</p></li>
+消息发布的角色，支持分布式集群方式部署。说白了就是<strong>生产者</strong>。</p></li>
 <li><p><code>Consumer</code>：
-消息消费的角色，支持分布式集群方式部署。支持以push推，pull拉两种模式对消息进行消费。同时也支持集群方式和广播方式的消费，它提供实时消息订阅机制。说白了就是消费者。</p></li>
+消息消费的角色，支持分布式集群方式部署。支持以push推，pull拉两种模式对消息进行消费。同时也支持<strong>集群方式</strong>和<strong>广播方式</strong>的消费，它提供实时消息订阅机制。说白了就是消费者。</p></li>
 </ul>
 <p>听完了上面的解释你可能会觉得，这玩意好简单。不就是这样的么？</p>
 <figure>
@@ -718,11 +720,12 @@ alt="img" />
 <figcaption aria-hidden="true">img</figcaption>
 </figure>
 <p>那么，怎么解决呢？</p>
-<p>其实很简单，我们需要处理的仅仅是将同一语义下的消息放入同一个队列(比如这里是同一个订单)，那我们就可以使用
-<strong>Hash取模法</strong> 来保证同一个订单在同一个队列中就行了。</p>
+<p>其实很简单，我们需要处理的仅仅是<strong>将同一语义下的消息放入同一个队列(比如这里是同一个订单)</strong>，那我们就可以使用
+<strong>Hash取模法</strong>
+来保<strong>证同一个订单在同一个队列</strong>中就行了。</p>
 <h3 id="重复消费"><a href="#重复消费">#</a> 重复消费</h3>
 <p>emmm，就两个字—— <strong>幂等</strong> 。在编程中一个<em>幂等</em>
-操作的特点是其任意多次执行所产生的影响均与一次执行的影响相同。比如说，这个时候我们有一个订单的处理积分的系统，每当来一个消息的时候它就负责为创建这个订单的用户的积分加上相应的数值。可是有一次，消息队列发送给订单系统
+操作的特点是其任意<strong>多次执行所产生的影响均与一次执行的影响相同</strong>。比如说，这个时候我们有一个订单的处理积分的系统，每当来一个消息的时候它就负责为创建这个订单的用户的积分加上相应的数值。可是有一次，消息队列发送给订单系统
 FrancisQ 的订单信息，其要求是给 FrancisQ 的积分加上
 500。但是积分系统在收到 FrancisQ
 的订单信息处理完成之后返回给消息队列处理成功的信息的时候出现了网络波动(当然还有很多种情况，比如Broker意外重启等等)，这条回应没有发送成功。</p>
@@ -734,7 +737,7 @@ FrancisQ 的账户加上 500 积分怎么办呢？</p>
 <strong>写入 <code>Redis</code></strong> 来保证，因为 <code>Redis</code>
 的 <code>key</code> 和 <code>value</code>
 就是天然支持幂等的。当然还有使用 <strong>数据库插入法</strong>
-，基于数据库的唯一键来保证重复数据不会被插入多条。</p>
+，<strong>基于数据库的唯一键</strong>来保证重复数据不会被插入多条。</p>
 <p>不过最主要的还是需要 <strong>根据特定场景使用特定的解决方案</strong>
 ，你要知道你的消息消费是否是完全不可重复消费还是可以忍受重复消费的，然后再选择强校验和弱校验的方式。毕竟在
 CS 领域还是很少有技术银弹的说法。</p>
@@ -775,14 +778,14 @@ alt="img" />
 <h2 id="消息堆积问题"><a href="#消息堆积问题">#</a> 消息堆积问题</h2>
 <p>在上面我们提到了消息队列一个很重要的功能——<strong>削峰</strong>
 。那么如果这个峰值太大了导致消息堆积在队列中怎么办呢？</p>
-<p>其实这个问题可以将它广义化，因为产生消息堆积的根源其实就只有两个——生产者生产太快或者消费者消费太慢。</p>
+<p>其实这个问题可以将它广义化，因为产生消息堆积的根源其实就只有两个——<strong>生产者生产太快</strong>或者<strong>消费者消费太慢</strong>。</p>
 <p>我们可以从多个角度去思考解决这个问题，当流量到峰值的时候是因为生产者生产太快，我们可以使用一些
 <strong>限流降级</strong>
 的方法，当然你也可以增加多个消费者实例去水平扩展增加消费能力来匹配生产的激增。如果消费者消费过慢的话，我们可以先检查
 <strong>是否是消费者出现了大量的消费错误</strong>
 ，或者打印一下日志查看是否是哪一个线程卡死，出现了锁资源不释放等等的问题。</p>
 <blockquote>
-<p>当然，最快速解决消息堆积问题的方法还是增加消费者实例，不过
+<p>当然，最快速解决消息堆积问题的方法还是<strong>增加消费者实例</strong>，不过
 <strong>同时你还需要增加每个主题的队列数量</strong> 。</p>
 <p>别忘了在 <code>RocketMQ</code>
 中，<strong>一个队列只会被一个消费者消费</strong>
@@ -801,7 +804,7 @@ alt="img" />
 投递成功消息后，<strong>消息仍然需要保留</strong>
 。并且重新消费一般是按照时间维度，例如由于 <code>Consumer</code>
 系统故障，恢复后需要重新消费1小时前的数据，那么 <code>Broker</code>
-要提供一种机制，可以按照时间维度来回退消费进度。<code>RocketMQ</code>
+要提供一种机制，可以<strong>按照时间维度来回退消费进度</strong>。<code>RocketMQ</code>
 支持按照时间回溯消费，时间维度精确到毫秒。</p>
 <p>这是官方文档的解释，我直接照搬过来就当科普了😁😁😁。</p>
 <h2 id="rocketmq-的刷盘机制"><a href="#rocketmq-的刷盘机制">#</a>
@@ -1108,7 +1111,7 @@ RocketMQ 的刷盘机制</span></a><ol class="nav-child"><li class="nav-item nav
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">159</span>
+          <span class="site-state-item-count">163</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1167,7 +1170,7 @@ RocketMQ 的刷盘机制</span></a><ol class="nav-child"><li class="nav-item nav
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">35:01</span>
+    <span title="站点阅读时长">35:16</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
