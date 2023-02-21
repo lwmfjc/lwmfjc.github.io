@@ -266,6 +266,9 @@
 <p>作者：转转技术团队</p>
 <p>原文：https://mp.weixin.qq.com/s/ONMuELjdHYa0yQceTj01Iw</p>
 </blockquote>
+<blockquote>
+<p>ly：比较繁琐，大概看了前面的部分</p>
+</blockquote>
 <h2 id="老权限系统的问题与现状">老权限系统的问题与现状</h2>
 <p>转转公司在过去并没有一个统一的权限管理系统，权限管理由各业务自行研发或是使用其他业务的权限系统，权限管理的不统一带来了不少问题：</p>
 <ol type="1">
@@ -339,7 +342,7 @@ API</li>
 </ul>
 <p>在 <code>ABAC模型</code>
 的决策语句的执行过程中，决策引擎会<strong>根据定义好的决策语句</strong>，结合对象、资源、操作、环境等因素<strong>动态计算出决策结果</strong>。每当发生访问请求时，<code>ABAC模型</code>
-决策系统都会<strong>分析属性值是否与已建立的策略匹配</strong>。如果有匹配的策略，访问请求就会被通过。</p>
+决策系统都会<strong>分析属性值是否与已建立的策略匹配</strong>。如果有匹配的策略，访问<strong>请求就会被通过</strong>。</p>
 <h2 id="新权限系统的设计思想">新权限系统的设计思想</h2>
 <p>结合转转的业务现状，<code>RBAC模型</code>
 满足了转转绝大部分业务场景，并且<strong>开发成本远低于
@@ -351,37 +354,39 @@ API</li>
 <strong><code>用户 -&gt; 角色 -&gt; 权限</code></strong>
 这个链路的，也就是用户的权限完全由他所拥有的角色来控制，但是这样会有一个缺点，就是给用户加权限必须新增一个角色，导致实际操作起来效率比较低。所以我们在
 <code>RBAC模型</code>
-的基础上，新增了给用户直接增加权限的能力，也就是说既可以给用户添加角色，也可以给用户直接添加权限。最终用户的权限是由拥有的角色和权限点组合而成。</p>
+的基础上，新增了<strong>给用户直接增加权限</strong>的能力，也就是说既可以给用户添加角色，也可以给用户直接添加权限。最终用户的权限是由<strong>拥有的角色和权限点组合</strong>而成。</p>
 <p><strong>新权限系统的权限模型</strong>：用户最终权限 =
 用户拥有的角色带来的权限 + 用户独立配置的权限，两者取并集。</p>
 <p>新权限系统方案如下图 ：</p>
-<p><a
-target="_blank" rel="noopener" href="https://camo.githubusercontent.com/b196fc2c004919c707d01a8b33a9256820db4615327cae0e4ad8fbd4d60f4985/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f73797374656d2d64657369676e2f73656375726974792f64657369676e2d6f662d617574686f726974792d73797374656d2f6e65772d617574686f726974792d73797374656d2d64657369676e2e706e67"><img
+<figure>
+<img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f73797374656d2d64657369676e2f73656375726974792f64657369676e2d6f662d617574686f726974792d73797374656d2f6e65772d617574686f726974792d73797374656d2d64657369676e2e706e67"
-alt="新权限系统方案" /></a></p>
+alt="新权限系统方案" />
+<figcaption aria-hidden="true">新权限系统方案</figcaption>
+</figure>
 <ul>
 <li>首先，将集团所有的用户（包括外部用户），通过
 <strong>统一登录与注册</strong>
 功能实现了统一管理，同时与公司的组织架构信息模块打通，实现了同一个人员在所有系统中信息的一致，这也为后续基于组织架构进行权限管理提供了可行性。</li>
-<li>其次，因为新权限系统需要服务集团所有业务，所以需要支持多系统权限管理。用户进行权限管理前，需要先选择相应的系统，然后配置该系统的
+<li>其次，因为新权限系统需要服务集团所有业务，所以需要支持<strong>多系统权限管理</strong>。用户进行权限管理前，需要<strong>先选择相应的系统</strong>，然后配置该系统的
 <strong>菜单权限</strong> 和 <strong>数据权限</strong>
 信息，建立好系统的各个权限点。<em>PS：菜单权限和数据权限的具体说明，下文会详细介绍。</em></li>
-<li>最后，创建该系统下的不同角色，给不同角色配置好权限点。比如店长角色，拥有店员操作权限、本店数据查看权限等，配置好这个角色后，后续只需要给店长增加这个角色，就可以让他拥有对应的权限。</li>
+<li>最后，创建该系统下的不同角色，给<strong>不同角色配置好权限点</strong>。比如店长角色，拥有店员操作权限、本店数据查看权限等，配置好这个角色后，后续只需要给店长增加这个角色，就可以让他拥有对应的权限。</li>
 </ul>
-<p>完成上述配置后，就可以进行用户的权限管理了。有两种方式可以给用户加权限：</p>
+<p>完成上述配置后，就可以进行<strong>用户的权限管理</strong>了。有两种方式可以给用户加权限：</p>
 <ol type="1">
-<li>先选用户，然后添加权限。该方式可以给用户添加任意角色或是菜单/数据权限点。</li>
+<li>先选用户，然后添加权限。该方式可以给用户<strong>添加任意角色</strong>或是<strong>菜单/数据权限</strong>点。</li>
 <li>先选择角色，然后关联用户。该方式只可给用户添加角色，不能单独添加菜单/数据权限点。</li>
 </ol>
 <p>这两种方式的具体设计方案，后文会详细说明。</p>
 <h3 id="权限系统自身的权限管理">权限系统自身的权限管理</h3>
 <p>对于权限系统来说，首先需要设计好系统自身的权限管理，也就是需要管理好
-”谁可以进入权限系统，谁可以管理其他系统的权限“，对于权限系统自身的用户，会分为三类：</p>
+”<strong>谁可以进入权限系统，谁可以管理其他系统的权限</strong>“，对于权限系统自身的用户，会分为三类：</p>
 <ol type="1">
-<li><strong>超级管理员</strong>：拥有权限系统的全部操作权限，可以进行系统自身的任何操作，也可以管理接入权限的应用系统的管理操作。</li>
-<li><strong>权限操作用户</strong>：拥有至少一个已接入的应用系统的超级管理员角色的用户。该用户能进行的操作限定在所拥有的应用系统权限范围内。权限操作用户是一种身份，无需分配，而是根据规则自动获得的。</li>
+<li><strong>超级管理员</strong>：拥有权限系统的<strong>全部操作权限</strong>，可以进行系统自身的<strong>任何</strong>操作，也可以管理接入权限的应用系统的管理操作。</li>
+<li><strong>权限操作用户</strong>：拥有至少一个<strong>已接入的应用系统</strong>的超级管理员角色的用户。该用户能进行的操作限定在<strong>所拥有的应用系统权限范围内</strong>。<strong>权限操作用户是一种身份，无需分配</strong>，而是根据规则自动获得的。</li>
 <li><strong>普通用户</strong>：普通用户也可以认为是一种身份，除去上述 2
-类人，其余的都为普通用户。他们只能申请接入系统以及访问权限申请页面。</li>
+类人，其余的都为普通用户。他们只能申请<strong>接入系统</strong>以及<strong>访问权限申请页面</strong>。</li>
 </ol>
 <h3 id="权限类型的定义">权限类型的定义</h3>
 <p>新权限系统中，我们把权限分为两大类，分别是 ：</p>
@@ -392,11 +397,11 @@ API 操作的权限</li>
 “组织”、”站点“等，在新权限系统中，统一称作 ”组织“ 来管理数据权限</li>
 </ul>
 <h3 id="默认角色的分类">默认角色的分类</h3>
-<p>每个系统中设计了三个默认角色，用来满足基本的权限管理需求，分别如下：</p>
+<p><strong>每个系统</strong>中设计了三个默认角色，用来满足基本的权限管理需求，分别如下：</p>
 <ul>
-<li><strong>超级管理员</strong>：该角色拥有该系统的全部权限，可以修改系统的角色权限等配置，可以给其他用户授权。</li>
-<li><strong>系统管理员</strong>：该角色拥有给其他用户授权以及修改系统的角色权限等配置能力，但角色本身不具有任何权限。</li>
-<li><strong>授权管理员</strong>：该角色拥有给其他用户授权的能力。但是授权的范围不超出自己所拥有的权限。</li>
+<li><strong>超级管理员</strong>：该角色拥有该系统的<strong>全部权限</strong>，可以<strong>修改系统的角色权限</strong>等配置，可以<strong>给其他用户授权</strong>。</li>
+<li><strong>系统管理员</strong>：该角色拥有<strong>给其他用户授权</strong>以及<strong>修改系统的角色权限</strong>等配置能力，但<strong>角色本身不具有任何权限</strong>。</li>
+<li><strong>授权管理员</strong>：该角色拥有<strong>给其他用户授权</strong>的能力。但是授权的范围不超出自己所拥有的权限。</li>
 </ul>
 <blockquote>
 <p>举个栗子：授权管理员 A 可以给 B 用户添加权限，但添加的范围 小于等于 A
@@ -476,12 +481,13 @@ alt="权限申请界面" /></a></p>
 <h3 id="操作日志">操作日志</h3>
 <p>系统操作日志会分为两大类：</p>
 <ol type="1">
-<li><strong>操作流水日志</strong> ：用户可看、可查的关键操作日志</li>
-<li><strong>服务 Log 日志</strong> ：系统服务运行过程中产生的 Log
-日志,其中，服务 Log
+<li><strong>操作流水日志</strong>
+：用户<strong>可看</strong>、<strong>可查</strong>的关键操作日志</li>
+<li><strong>服务 Log 日志</strong> ：系统服务<strong>运行过程中产生的
+Log 日志</strong>,其中，服务 Log
 日志信息量大于操作流水日志，但是不方便搜索查看。所以权限系统需要提供操作流水日志功能。</li>
 </ol>
-<p>在新权限系统中，用户所有的操作可以分为三类，分别为新增、更新、删除。所有的模块也可枚举，例如用户管理、角色管理、菜单管理等。明确这些信息后，那么一条日志就可以抽象为：什么人(Who)在什么时间(When)对哪些人(Target)的哪些模块做了哪些操作。
+<p>在新权限系统中，用户所有的操作可以分为三类，分别为<strong>新增、更新、删除</strong>。所有的模块也可枚举，例如<strong>用户管理</strong>、<strong>角色管理</strong>、<strong>菜单管理</strong>等。明确这些信息后，那么一条日志就可以抽象为：<strong>什么人(Who)在什么时间(When)对哪些人(Target)的哪些模块做了哪些操作</strong>。
 这样把所有的记录都入库，就可以方便的进行日志的查看和筛选了。</p>
 <h2 id="总结与展望">总结与展望</h2>
 <p>至此，新权限系统的核心设计思路与模块都已介绍完成，新系统在转转内部有大量的业务接入使用，权限管理相比以前方便了许多。权限系统作为每家公司的一个基础系统，灵活且完备的设计可以助力日后业务的发展更加高效。</p>
@@ -519,7 +525,10 @@ target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/a_P4JAwxgunhfmJv
     <a href="/2023/02/20/review/java_guide/system-design/security/sso-intro/" rel="prev" title="sso单点登录">
       <i class="fa fa-chevron-left"></i> sso单点登录
     </a></div>
-      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2023/02/21/review/java_guide/system-design/security/sentive-words-filter/" rel="next" title="敏感词过滤方案总结">
+      敏感词过滤方案总结 <i class="fa fa-chevron-right"></i>
+    </a></div>
     </div>
       </footer>
     
@@ -601,7 +610,7 @@ target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/a_P4JAwxgunhfmJv
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">175</span>
+          <span class="site-state-item-count">178</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -660,7 +669,7 @@ target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/a_P4JAwxgunhfmJv
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">36:39</span>
+    <span title="站点阅读时长">37:19</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
