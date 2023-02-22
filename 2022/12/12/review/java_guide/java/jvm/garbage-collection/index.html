@@ -20,12 +20,12 @@
     var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="java垃圾回收器">
+  <meta name="description" content="java垃圾回收">
 <meta property="og:type" content="article">
-<meta property="og:title" content="java垃圾回收器">
+<meta property="og:title" content="ly0402lyjava垃圾回收">
 <meta property="og:url" content="http://example.com/2022/12/12/review/java_guide/java/jvm/garbage-collection/index.html">
 <meta property="og:site_name" content="随记">
-<meta property="og:description" content="java垃圾回收器">
+<meta property="og:description" content="java垃圾回收">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2022-12-12T15:58:48.000Z">
 <meta property="article:modified_time" content="2022-12-16T09:53:48.000Z">
@@ -48,7 +48,7 @@
   };
 </script>
 
-  <title>java垃圾回收器 | 随记</title>
+  <title>ly0402lyjava垃圾回收 | 随记</title>
   
 
 
@@ -204,7 +204,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          java垃圾回收器
+          ly0402lyjava垃圾回收
         </h1>
 
         <div class="post-meta">
@@ -253,9 +253,9 @@
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>22 分钟</span>
+              <span>23 分钟</span>
             </span>
-            <div class="post-description">java垃圾回收器</div>
+            <div class="post-description">java垃圾回收</div>
 
         </div>
       </header>
@@ -325,7 +325,7 @@ GC(整堆GC) ）</strong>　　</p>
 <blockquote>
 <ul>
 <li><p>假设大对象最后会晋升老年代，而新生代是基于复制算法来回收垃圾的，由两个Survivor区域配合完成复制算法，如果新生代中出现大对象且能屡次躲过GC，那这个对象就会在两个Survivor区域中来回复制，直至最后升入老年代，而大对象在内存里来回复制移动，就会消耗更多的时间。</p></li>
-<li><p>假设大对象最后不会晋升老年代，新生代空间是有限的，在新生代里的对象大部分都是朝生夕死的，如果让一个大对象占据了新生代空间，那么相比起正常的对象被分配在新生代，大对象无疑会让新生代GC提早发生，因为内存空间会更快不够用，如果这个大对象因为业务原因，并不会马上被GC回收，那么这个对象就会进入到Survivor区域，默认情况下，Survivor区域本来就不会被分配的很大，那此时被大对象占据了大部分空间，很可能会导致之后的新生代GC后，存活下来的对象，Survivor区域空间不够放不下，导致大部分对象进入老年代，这就加快了老年代GC发生的时间，而老年代GC对系统性能的负面影响则远远大于新生代GC了。</p></li>
+<li><p>假设大对象最后不会晋升老年代，新生代空间是有限的，在新生代里的对象大部分都是朝生夕死的，如果让一个大对象占据了新生代空间，那么相比起正常的对象被分配在新生代，大对象无疑会让新生代GC提早发生，因为内存空间会更快不够用，如果这个大对象因为业务原因，并不会马上被GC回收，那么这个对象就会进入到Survivor区域，默认情况下，Survivor区域本来就不会被分配的很大，那此时被大对象占据了大部分空间，很可能会导致之后的新生代GC后，存活下来的对象，Survivor区域空间不够放不下，导致大部分对象进入老年代，这就加快了老年代GC发生的时间，而<strong>老年代GC对系统性能的负面影响则远远大于新生代GC</strong>了。</p></li>
 </ul>
 </blockquote>
 <h2 id="长期存活的对象进入老年代">长期存活的对象进入老年代</h2>
@@ -420,6 +420,10 @@ GC</strong></p>
 0，于是引用计数算法无法通知 GC 回收器回收他们</p>
 </blockquote>
 <p>★其实我觉得只跟相互有关，跟是不是<strong>循环</strong>关系不会太大</p>
+<blockquote>
+<p>ly
+改：相互在<strong>语言逻辑</strong>上也可以理解成<strong>“循环”</strong></p>
+</blockquote>
 <p><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ReferenceCountingGc</span> &#123;</span><br><span class="line">    <span class="type">Object</span> <span class="variable">instance</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">ReferenceCountingGc</span> <span class="variable">objA</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ReferenceCountingGc</span>();</span><br><span class="line">        <span class="type">ReferenceCountingGc</span> <span class="variable">objB</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ReferenceCountingGc</span>();</span><br><span class="line">        objA.instance = objB;</span><br><span class="line">        objB.instance = objA;</span><br><span class="line">        objA = <span class="literal">null</span>;</span><br><span class="line">        objB = <span class="literal">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure></p>
 <h2 id="可达性分析算法">可达性分析算法</h2>
 <ul>
@@ -435,9 +439,11 @@ alt="可达性分析算法" /></p></li>
 <ol type="1">
 <li>虚拟机栈（栈帧中的<strong>本地变量表</strong>）中引用的对象</li>
 <li>本地方法栈（<strong>Native方法</strong>）中引用的对象</li>
-<li>方法区中<strong>类静态属性</strong>引用的对象</li>
-<li>方法区中<strong>常量</strong>引用的变量</li>
-<li>所有被<strong>同步锁持有的对象</strong></li>
+<li>方法区中<strong>类静态属性</strong>引用的对象 （Class
+的static变量）</li>
+<li>方法区中<strong>常量</strong>引用的变量（Class 的constant变量）</li>
+<li>所有被<strong>同步锁持有的对象</strong>
+（synchronized(<strong>obj</strong>))</li>
 </ol></li>
 <li><p>对象可以被回收，就代码一定会被回收吗
 即使在可达性分析法中不可达的对象，也并非是“非死不可”的，这时候它们<strong>暂时处于“缓刑阶段”</strong>，要真正宣告一个对象死亡，至少要经历两次标记过程：</p>
@@ -445,7 +451,8 @@ alt="可达性分析算法" /></p></li>
 <li><p>可达性分析中<strong>不可达的对象被第一次标记</strong>并且进行<strong>一次筛选</strong>：筛选的条件是此对象是否有必要执行finalize方法（有必要则放入）<br />
 当对象<strong>没有覆盖finalize</strong>方法，或<strong>finalize方法已经被虚拟机调用</strong>过，则虚拟机将两种情况视为<strong>没有必要</strong>执行，该对象会被<strong>直接回收</strong></p></li>
 <li><p>如果这个对象被判定为<strong>有必要执行finalize()</strong>方法，那么这个对象将会被<strong>放置在一个叫做F-Queue的队列</strong>中，然后由Finalizer线程去执行。GC将会<strong>对F-Queue中的对象进行第二次标记</strong>，如果对象<strong>在finalize()方法中重新与引用链上的任何一个对象建立关联</strong>，那么在<strong>第二次标记时将会被移除“即将回收”的集合</strong>，否则该对象将会被回收。</p>
-<p>（比如：把自己（this关键字）赋值给某个类变量(static修饰)或者对象的成员变量）</p></li>
+<p>（比如：<strong>把自己（this关键字）赋值给某个类变量(static修饰)或者对象的成员变量</strong>(在finalize方法中)
+）</p></li>
 </ol>
 <blockquote>
 <p><code>Object</code> 类中的 <code>finalize</code>
@@ -474,7 +481,7 @@ alt="可达性分析算法" /></p></li>
 <ul>
 <li>如果对象<strong>只</strong>具有软引用，那就类似<strong>可有可无</strong>的生活用品。</li>
 <li>内存够则不会回收；内存不足则回收这些对象。只要垃圾回收器没有回收，那么对象就可以<strong>被程序使用</strong>。</li>
-<li>软引用可用来实现<strong>内存敏感</strong>的高速缓存</li>
+<li>软引用可用来实现<strong>内存敏感</strong>的<strong>高速缓存</strong></li>
 <li>软引用可以和一个<strong>引用队列（ReferenceQueue）</strong>联合使用，如果软引用所引用的对象被垃圾回收，Java虚拟机就会把这个软引用加入到<strong>与之关联</strong>的引用队列中</li>
 </ul>
 </blockquote></li>
@@ -500,7 +507,10 @@ alt="可达性分析算法" /></p></li>
 </ul></li>
 <li><p>在程序设计中一般很少使用弱引用与虚引用，使用软引用的情况较多，这是因为<strong>软引用可以加速
 JVM
-对垃圾内存的回收速度，可以维护系统的运行安全，防止内存溢出（OutOfMemory）等问题的产生</strong></p></li>
+对垃圾内存的回收速度，可以维护系统的运行安全，防止内存溢出（OutOfMemory）等问题的产生</strong></p>
+<blockquote>
+<p>ThreadLocal中的key用到了弱引用</p>
+</blockquote></li>
 </ol></li>
 </ul>
 <h2 id="如何判断一个常量是废弃常量">如何判断一个常量是废弃常量</h2>
@@ -509,7 +519,7 @@ JVM
 <ol type="1">
 <li>JDK1.7
 之前，<strong>运行时常量池逻辑</strong>，包括字符串常量池，存放在<strong>方法区</strong>，此时hotspot虚拟机对<strong>方法区</strong>的实现为<strong>永久代</strong></li>
-<li>JDK1.7字符串常量池被<strong>从方法区</strong>拿到了<strong>堆</strong>中，这里没有提到运行时常量池，也就是说<strong>字符串常量池</strong>被单独拿到堆，运行时常量池剩下的东西，<strong>还在方法区</strong>。即hotspot中的<strong>永久代</strong></li>
+<li>JDK1.7字符串常量池（以及静态变量）被<strong>从方法区</strong>拿到了<strong>堆</strong>中，这里没有提到运行时常量池，也就是说<strong>字符串常量池</strong>被单独拿到堆，运行时常量池剩下的东西，<strong>还在方法区</strong>。即hotspot中的<strong>永久代</strong></li>
 <li>JDK1.8
 hotspot移除了永久代，用<strong>元空间Metaspace</strong>取代之，这时候<strong>字符串常量池</strong>还在堆，<strong>运行时常量池</strong>还在方法区，只不过<strong>方法区的实现</strong>从永久代变成了<strong>元空间Metaspace</strong></li>
 </ol>
@@ -588,7 +598,7 @@ alt="img" />
 <li>老年代的垃圾回收器：SerialOld（串行--标记整理），ParallelOld（并行--标记整理），CMS（并发--标记清除）</li>
 <li>只有CMS和G1是并发，且CMS只作用于老年代，而G1都有</li>
 <li>JDK8为止，默认垃圾回收器是Parallel Scavenge和Parallel
-Old【并行--复制和并行--标记整理】</li>
+Old【<strong>并行--复制</strong>和<strong>并行--标记整理</strong>】</li>
 <li>JDK9开始，G1收集器成为默认的垃圾收集器，目前来看，G1回收期停顿时间最短且没有明显缺点，偏适合Web应用</li>
 </ul>
 <blockquote>
@@ -779,12 +789,12 @@ https://tech.meituan.com/2020/08/06/new-zgc-practice-in-meituan.html</p>
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2022/12/09/review/java_guide/java/jvm/jvm-intro/" rel="prev" title="jvm-intro">
-      <i class="fa fa-chevron-left"></i> jvm-intro
+    <a href="/2022/12/09/review/java_guide/java/jvm/jvm-intro/" rel="prev" title="ly0407lyjvm-intro">
+      <i class="fa fa-chevron-left"></i> ly0407lyjvm-intro
     </a></div>
       <div class="post-nav-item">
-    <a href="/2022/12/16/review/java_guide/java/jvm/classloader-process/" rel="next" title="类加载过程">
-      类加载过程 <i class="fa fa-chevron-right"></i>
+    <a href="/2022/12/16/review/java_guide/java/jvm/classloader-process/" rel="next" title="ly0404ly类加载过程">
+      ly0404ly类加载过程 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -867,7 +877,7 @@ https://tech.meituan.com/2020/08/06/new-zgc-practice-in-meituan.html</p>
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">178</span>
+          <span class="site-state-item-count">179</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -926,7 +936,7 @@ https://tech.meituan.com/2020/08/06/new-zgc-practice-in-meituan.html</p>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">37:19</span>
+    <span title="站点阅读时长">37:45</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
