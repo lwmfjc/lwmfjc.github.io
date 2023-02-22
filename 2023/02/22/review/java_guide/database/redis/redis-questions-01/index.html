@@ -638,31 +638,35 @@ UV 怎么做？</h3>
 </blockquote>
 <p>1、将访问指定页面的每个用户 ID 添加到 <code>HyperLogLog</code>
 中。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">PFADD PAGE_1:UV USER1 USER2 ...... USERn</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">PFADD PAGE_1:UV USER1 USER2 ...... USERn</span><br></pre></td></tr></table></figure>
 <p>2、统计指定页面的 UV。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">PFCOUNT PAGE_1:UV</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">PFCOUNT PAGE_1:UV</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">会自动扣除重复的</span></span><br></pre></td></tr></table></figure>
 <h2 id="redis-线程模型">Redis 线程模型</h2>
 <p>对于读写命令来说，Redis 一直是单线程模型。不过，在 Redis 4.0
-版本之后引入了多线程来执行一些大键值对的异步删除操作， Redis 6.0
-版本之后引入了多线程来处理网络请求（提高网络 IO 读写性能）。</p>
+版本之后引入了多线程来执行一些<strong>大键值对的异步删除</strong>操作，
+Redis 6.0
+版本之后引入了<strong>多线程来处理网络请求</strong>（提高<strong>网络 IO
+读写性能</strong>）。</p>
 <h3 id="redis-单线程模型了解吗">Redis 单线程模型了解吗？</h3>
 <p><strong>Redis 基于 Reactor
 模式设计开发了一套高效的事件处理模型</strong> （Netty 的线程模型也基于
 Reactor 模式，Reactor 模式不愧是高性能 IO
-的基石），这套事件处理模型对应的是 Redis 中的文件事件处理器（file event
-handler）。由于文件事件处理器（file event
-handler）是单线程方式运行的，所以我们一般都说 Redis 是单线程模型。</p>
+的基石），这套事件处理模型对应的是 Redis
+中的<strong>文件事件处理器</strong>（file event
+handler）。由于<strong>文件事件处理器（file event
+handler）</strong>是单线程方式运行的，所以我们一般都说 Redis
+是单线程模型。</p>
 <p>《Redis
 设计与实现》有一段话是如是介绍文件事件处理器的，我觉得写得挺不错。</p>
 <blockquote>
 <p>Redis 基于 Reactor
-模式开发了自己的网络事件处理器：这个处理器被称为文件事件处理器（file
-event handler）。</p>
+模式开发了自己的<strong>网络事件处理器</strong>：这个处理器被称为<strong>文件事件处理器（file
+event handler）</strong>。</p>
 <ul>
-<li>文件事件处理器使用 I/O
-多路复用（multiplexing）程序来同时监听多个套接字，并根据套接字目前执行的任务来为套接字关联不同的事件处理器。</li>
-<li>当被监听的套接字准备好执行连接应答（accept）、读取（read）、写入（write）、关
-闭（close）等操作时，与操作相对应的文件事件就会产生，这时文件事件处理器就会调用套接字之前关联好的事件处理器来处理这些事件。</li>
+<li>文件事件处理器使用 <strong>I/O
+多路复用（multiplexing）</strong>程序来同时监听多个套接字，并根据<strong>套接字</strong>目前执行的<strong>任务</strong>来<strong>为套接字关联不同的事件处理器</strong>。</li>
+<li>当被监听的套接字<strong>准备好执行连接应答</strong>（accept）、<strong>读取</strong>（read）、<strong>写入</strong>（write）、<strong>关
+闭</strong>（close）等操作时，与操作相对应的<strong>文件事件</strong>就会产生，这时文件事件处理器就会<strong>调用套接字之前关联好的事件处理器</strong>来处理这些事件。</li>
 </ul>
 <p><strong>虽然文件事件处理器以单线程方式运行，但通过使用 I/O
 多路复用程序来监听多个套接字</strong>，文件事件处理器既实现了高性能的网络通信模型，又可以很好地与
@@ -671,22 +675,24 @@ Redis 服务器中其他同样以单线程方式运行的模块进行对接，�
 </blockquote>
 <p><strong>既然是单线程，那怎么监听大量的客户端连接呢？</strong></p>
 <p>Redis 通过 <strong>IO 多路复用程序</strong>
-来监听来自客户端的大量连接（或者说是监听多个
-socket），它会将感兴趣的事件及类型（读、写）注册到内核中并监听每个事件是否发生。</p>
+来监听来自客户端的大量连接（或者说是监听<strong>多个
+socket</strong>），它会<strong>将感兴趣的事件</strong>及<strong>类型（读、写）</strong>注册到内核中并<strong>监听每个事件是否发生</strong>。</p>
 <p>这样的好处非常明显： <strong>I/O 多路复用技术的使用让 Redis
 不需要额外创建多余的线程来监听客户端的大量连接，降低了资源的消耗</strong>（和
 NIO 中的 <code>Selector</code> 组件很像）。</p>
 <p>文件事件处理器（file event handler）主要是包含 4 个部分：</p>
 <ul>
-<li>多个 socket（客户端连接）</li>
-<li>IO 多路复用程序（支持多个客户端连接的关键）</li>
-<li>文件事件分派器（将 socket 关联到相应的事件处理器）</li>
-<li>事件处理器（连接应答处理器、命令请求处理器、命令回复处理器）</li>
+<li><p>多个 socket（客户端连接）</p></li>
+<li><p>IO 多路复用程序（支持多个客户端连接的关键）</p></li>
+<li><p>文件事件分派器（将 socket 关联到相应的事件处理器）</p></li>
+<li><p>事件处理器（连接应答处理器、命令请求处理器、命令回复处理器）</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230222231224666.png"
+alt="image-20230222231224666" />
+<figcaption aria-hidden="true">image-20230222231224666</figcaption>
+</figure></li>
 </ul>
-<p><a
-target="_blank" rel="noopener" href="https://camo.githubusercontent.com/587a243dd43310d8ed1d84e2535b026d25e7d10bf4c71fa6bc39677bb8334feb/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f64617461626173652f72656469732f72656469732d6576656e742d68616e646c65722e706e67"><img
-src="https://camo.githubusercontent.com/587a243dd43310d8ed1d84e2535b026d25e7d10bf4c71fa6bc39677bb8334feb/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f64617461626173652f72656469732f72656469732d6576656e742d68616e646c65722e706e67"
-alt="文件事件处理器" /></a></p>
 <p>相关阅读：<a target="_blank" rel="noopener" href="http://remcarpediem.net/article/1aa2da89/">Redis
 事件机制详解</a> 。</p>
 <h3 id="redis6.0-之前为什么不使用多线程">Redis6.0
@@ -694,24 +700,28 @@ alt="文件事件处理器" /></a></p>
 <p>虽然说 Redis 是单线程模型，但是，实际上，<strong>Redis 在 4.0
 之后的版本中就已经加入了对多线程的支持。</strong></p>
 <p>不过，Redis 4.0
-增加的多线程主要是针对一些大键值对的删除操作的命令，使用这些命令就会使用主线程之外的其他线程来“异步处理”。</p>
-<p>为此，Redis 4.0 之后新增了<code>UNLINK</code>（可以看作是
+增加的多线程主要是<strong>针对一些大键值对的删除</strong>操作的命令，使用这些命令就会使用主线程之外的其他线程来“异步处理”。</p>
+<p>为此，Redis 4.0
+之后新增了<strong><code>UNLINK</code></strong>（可以看作是
 <code>DEL</code>
-的异步版本）、<code>FLUSHALL ASYNC</code>（清空所有数据库的所有
+的异步版本）、<strong><code>FLUSHALL ASYNC</code></strong>（清空所有数据库的所有
 key，不仅仅是当前 <code>SELECT</code>
-的数据库）、<code>FLUSHDB ASYNC</code>（清空当前 <code>SELECT</code>
-数据库中的所有 key）等异步命令。</p>
-<p><a
-target="_blank" rel="noopener" href="https://camo.githubusercontent.com/3e0b49e1671c2efd55ef0c96aafffd8e0346b7f7372d469f74198051ec7092a3/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f64617461626173652f72656469732f7265646973342e302d6d6f72652d7468726561642e706e67"><img
-src="https://camo.githubusercontent.com/3e0b49e1671c2efd55ef0c96aafffd8e0346b7f7372d469f74198051ec7092a3/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f64617461626173652f72656469732f7265646973342e302d6d6f72652d7468726561642e706e67"
-alt="redis4.0 more thread" /></a></p>
+的数据库）、<strong><code>FLUSHDB ASYNC</code></strong>（清空当前
+<code>SELECT</code> 数据库中的所有 key）等异步命令。</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230222231413647.png"
+alt="image-20230222231413647" />
+<figcaption aria-hidden="true">image-20230222231413647</figcaption>
+</figure>
 <p>大体上来说，Redis 6.0 之前主要还是单线程处理。</p>
 <p><strong>那 Redis6.0 之前为什么不使用多线程？</strong>
 我觉得主要原因有 3 点：</p>
 <ul>
 <li>单线程编程容易并且更容易维护；</li>
-<li>Redis 的性能瓶颈不在 CPU ，主要在内存和网络；</li>
-<li>多线程就会存在死锁、线程上下文切换等问题，甚至会影响性能。</li>
+<li>Redis 的<strong>性能瓶颈不在 CPU</strong>
+，主要在<strong>内存</strong>和<strong>网络</strong>；</li>
+<li>多线程就会存在<strong>死锁</strong>、线程<strong>上下文切换</strong>等问题，甚至会影响<strong>性能</strong>。</li>
 </ul>
 <p>相关阅读：<a
 target="_blank" rel="noopener" href="https://draveness.me/whys-the-design-redis-single-thread/">为什么
@@ -722,16 +732,16 @@ Redis 选择单线程模型</a> 。</p>
 读写性能</strong>，因为这个算是 Redis 中的一个性能瓶颈（Redis
 的瓶颈主要受限于内存和网络）。</p>
 <p>虽然，Redis6.0 引入了多线程，但是 Redis
-的多线程只是在网络数据的读写这类耗时操作上使用了，执行命令仍然是单线程顺序执行。因此，你也不需要担心线程安全问题。</p>
+的多线程只是在<strong>网络数据的读写这类耗时操作</strong>上使用了，<strong>执行命令仍然是单线程顺序</strong>执行。因此，你也不需要担心线程安全问题。</p>
 <p>Redis6.0 的多线程默认是禁用的，只使用主线程。如需开启需要设置IO线程数
 &gt; 1，需要修改 redis 配置文件 <code>redis.conf</code> ：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">io-threads 4 #设置1的话只会开启主线程，官网建议4核的机器建议设置为2或3个线程，8核的建议设置为6个线程</span><br></pre></td></tr></table></figure>
 <p>另外：</p>
 <ul>
-<li>io-threads的个数一旦设置，不能通过config动态设置</li>
+<li>io-threads的个数<strong>一旦</strong>设置，<strong>不能通过config动态设置</strong></li>
 <li>当设置ssl后，io-threads将不工作</li>
 </ul>
-<p>开启多线程后，默认只会使用多线程进行IO写入writes，即发送数据给客户端，如果需要开启多线程IO读取reads，同样需要修改
+<p>开启多线程后，默认只会使用多线程进行IO<strong>写入</strong>writes，即发送数据给客户端，如果需要开启多线程IO<strong>读取</strong>reads，同样需要修改
 redis 配置文件 <code>redis.conf</code> :</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">io-threads-do-reads yes</span><br></pre></td></tr></table></figure>
 <p>但是官网描述开启多线程读并不能有太大提升，因此一般情况下并不建议开启</p>
@@ -745,7 +755,7 @@ redis 配置文件 <code>redis.conf</code> :</p>
 <h2 id="redis-内存管理">Redis 内存管理</h2>
 <h3 id="redis-给缓存数据设置过期时间有啥用">Redis
 给缓存数据设置过期时间有啥用？</h3>
-<p>一般情况下，我们设置保存的缓存数据的时候都会设置一个过期时间。为什么呢？</p>
+<p><strong>一般</strong>情况下，我们设置保存的缓存数据的时候都会设置一个<strong>过期时间</strong>。为什么呢？</p>
 <p>因为内存是有限的，如果缓存中的所有数据都是一直保存的话，分分钟直接
 Out of memory。</p>
 <p>Redis 自带了给缓存数据设置过期时间的功能，比如：</p>
@@ -757,17 +767,21 @@ Out of memory。</p>
 <p><strong>过期时间除了有助于缓解内存的消耗，还有什么其他用么？</strong></p>
 <p>很多时候，我们的业务场景就是需要某个数据只在某一时间段内存在，比如我们的短信验证码可能只在
 1 分钟内有效，用户登录的 token 可能只在 1 天内有效。</p>
-<p>如果使用传统的数据库来处理的话，一般都是自己判断过期，这样更麻烦并且性能要差很多。</p>
+<p>如果使用传统的数据库来处理的话，<strong>一般都是自己判断过期</strong>，这样<strong>更麻烦</strong>并且<strong>性能要差很多</strong>。</p>
 <h3 id="redis-是如何判断数据是否过期的呢">Redis
 是如何判断数据是否过期的呢？</h3>
-<p>Redis 通过一个叫做过期字典（可以看作是 hash
-表）来保存数据过期的时间。过期字典的键指向 Redis 数据库中的某个
-key(键)，过期字典的值是一个 long long 类型的整数，这个整数保存了 key
-所指向的数据库键的过期时间（毫秒精度的 UNIX 时间戳）。</p>
-<p><a
-target="_blank" rel="noopener" href="https://camo.githubusercontent.com/041be176e85a45dd8a115fdac7e2161f8f278726e01ca8c56ce2984ec3301d36/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f64617461626173652f72656469732f72656469732d657870697265642d64696374696f6e6172792e706e67"><img
+<p>Redis 通过一个叫做<strong>过期字典</strong>（可以看作是 <strong>hash
+表</strong>）来保存数据过期的时间。过期字典的键指向 Redis
+数据库中的<strong>某个 key</strong>(键)，过期字典的值是一个 <strong>long
+long</strong> 类型的整数，这个整数保存了 key
+所指向的数据库键的<strong>过期时间</strong>（毫秒精度的 UNIX
+时间戳）。</p>
+<figure>
+<img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f64617461626173652f72656469732f72656469732d657870697265642d64696374696f6e6172792e706e67"
-alt="redis过期字典" /></a></p>
+alt="redis过期字典" />
+<figcaption aria-hidden="true">redis过期字典</figcaption>
+</figure>
 <p>过期字典是存储在 redisDb 这个结构里的：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">typedef struct redisDb &#123;</span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line">    dict *dict;     //数据库键空间,保存着数据库中所有键值对</span><br><span class="line">    dict *expires   // 过期字典,保存着键的过期时间</span><br><span class="line">    ...</span><br><span class="line">&#125; redisDb;</span><br></pre></td></tr></table></figure>
 <h3 id="过期的数据的删除策略了解么">过期的数据的删除策略了解么？</h3>
@@ -775,16 +789,18 @@ alt="redis过期字典" /></a></p>
 是怎么对这批 key 进行删除的呢？</p>
 <p>常用的过期数据的删除策略就两个（重要！自己造缓存轮子的时候需要格外考虑的东西）：</p>
 <ol type="1">
-<li><strong>惰性删除</strong> ：只会在取出 key
-的时候才对数据进行过期检查。这样对 CPU 最友好，但是可能会造成太多过期
-key 没有被删除。</li>
-<li><strong>定期删除</strong> ： 每隔一段时间抽取一批 key 执行删除过期
-key 操作。并且，Redis
-底层会通过限制删除操作执行的时长和频率来减少删除操作对 CPU
-时间的影响。</li>
+<li><strong>惰性删除</strong> ：<strong>只会在取出 key</strong>
+的时候才对数据进行<strong>过期检查</strong>。这样<strong>对 CPU
+最友好</strong>，但是可能会造成<strong>太多过期 key
+没有被删除</strong>。</li>
+<li><strong>定期删除</strong> ： <strong>每隔一段时间抽取一批
+key</strong> 执行删除过期 key 操作。并且，Redis
+底层会通过<strong>限制删除操作执行的时长</strong>和<strong>频率</strong>来减少删除操作对
+CPU 时间的影响。</li>
 </ol>
-<p>定期删除对内存更加友好，惰性删除对 CPU 更加友好。两者各有千秋，所以
-Redis 采用的是 <strong>定期删除+惰性/懒汉式删除</strong> 。</p>
+<p><strong>定期</strong>删除对<strong>内存</strong>更加友好，<strong>惰性</strong>删除对
+<strong>CPU</strong> 更加友好。两者各有千秋，所以 Redis 采用的是
+<strong>定期删除+惰性/懒汉式删除</strong> 。</p>
 <p>但是，仅仅通过给 key
 设置过期时间还是有问题的。因为还是可能存在定期删除和惰性删除漏掉了很多过期
 key 的情况。这样就导致大量过期 key 堆积在内存里，然后就 Out of memory
@@ -1139,7 +1155,7 @@ UV 怎么做？</span></a></li></ol></li><li class="nav-item nav-level-2"><a cla
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">37:45</span>
+    <span title="站点阅读时长">37:46</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
