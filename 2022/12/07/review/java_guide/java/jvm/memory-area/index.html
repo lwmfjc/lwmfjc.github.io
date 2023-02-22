@@ -412,8 +412,9 @@ alt="hotspot-heap-structure" />
 <li><p>JDK8之后<strong>PermGen（永久）</strong>已被<strong>Metaspace（元空间）</strong>取代，且<strong>元空间</strong>使用直接内存</p></li>
 <li><p>大部分情况，对象都会首先在 Eden
 区域分配，在一次新生代垃圾回收后，如果对象还存活，则会进入 S0 或者
-S1，并且对象的年龄还会加 1(Eden 区-&gt;Survivor 区后对象的初始年龄变为
-1)，当它的年龄增加到一定程度（默认为 15 岁），就会被晋升到老年代中。</p>
+S1，并且对象的年龄还会加 1(<strong>Eden 区-&gt;Survivor
+区后对象的初始年龄变为 1</strong>)，当它的年龄增加到一定程度（默认为 15
+岁），就会被晋升到老年代中。</p>
 <blockquote>
 <p>对象晋升到老年代的年龄阈值，可以通过参数
 <code>-XX:MaxTenuringThreshold</code> 来设置。</p>
@@ -547,9 +548,10 @@ alt="method-area-jdk1.7" />
 GC）的时候才会被执行GC。Java程序中通常有<strong>大量的被创建的字符串等待回收</strong>，将字符串常量池放到堆中，能够高效及时地回收字符串内存。</p></li>
 <li><p>JVM常量池中存储的是对象还是引用</p>
 <blockquote>
-<p>如果您说的确实是runtime constant pool（而不是interned string pool /
-StringTable之类的其他东西）的话，其中的引用类型常量（例如CONSTANT_String、CONSTANT_Class、CONSTANT_MethodHandle、CONSTANT_MethodType之类）都存的是引用，实际的对象还是存在Java
-heap上的。</p>
+<p>如果您说的确实是runtime constant pool（而<strong>不是interned string
+pool /
+StringTable</strong>之类的其他东西）的话，其中的引用类型常量（例如CONSTANT_String、CONSTANT_Class、CONSTANT_MethodHandle、CONSTANT_MethodType之类）都存的是引用，实际的对象还是存在Java
+heap上的。【<strong>运行时常量池</strong>】</p>
 </blockquote></li>
 <li><blockquote>
 <p><strong>运行时常量池、方法区、字符串常量池这些都是不随虚拟机实现而改变的逻辑概念，是公共且抽象的，Metaspace、Heap
@@ -566,9 +568,9 @@ alt="image-20221209084421539" />
 <hr />
 <figure>
 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221209084450069.png"
-alt="image-20221209084450069" />
-<figcaption aria-hidden="true">image-20221209084450069</figcaption>
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230222092729039.png"
+alt="image-20230222092729039" />
+<figcaption aria-hidden="true">image-20230222092729039</figcaption>
 </figure>
 <hr />
 <figure>
@@ -579,7 +581,7 @@ alt="image-20221209084515658" />
 </figure>
 <h2 id="直接内存">直接内存</h2>
 <ul>
-<li>直接内存并<strong>不是虚拟机运行时数据区</strong>的一部分，也<strong>不是虚拟机规范中定义的内存</strong>区域，但是这部分内存也被频繁使用，也可能导致OutOfMemoryError错误出现</li>
+<li>直接内存并<strong>不是虚拟机运行时数据区</strong>的一部分，也<strong>不是虚拟机规范中定义的内存</strong>区域，但是这部分内存也被频繁使用，也可能导致<strong>OutOfMemoryError</strong>错误出现</li>
 <li>JDK1.4中新加入的NIO(New
 Input/Output)类，引入一种基于<strong>通道（Channel）</strong>与<strong>缓冲区（Buffer）</strong>的I/O方式，它可以直接使用<strong>Native函数库直接分配堆外内存</strong>，然后通过一个<strong>存储在Java堆中的DirectByteBuffer对象作为这块内存的引用</strong>进行操作。这样就能在一些场景中<strong>显著提高性能</strong>，因为避免了在<strong>Java堆和Native堆</strong>之间来回复制数据</li>
 <li>本机直接内存的分配不会受到Java堆的限制，但是，既然是内存就会<strong>受到本机总内存大小</strong>以及<strong>处理器寻址空间</strong>的限制</li>
@@ -590,7 +592,7 @@ Input/Output)类，引入一种基于<strong>通道（Channel）</strong>与<str
 <p>默认：</p>
 <ol type="1">
 <li><p>类加载检查
-虚拟机遇到一条<strong>new指令</strong>时，首先将去检查这个指令的<strong>参数</strong>是否能在<strong>常量池中</strong>定位到这个<strong>类的符号引用</strong>，并且检查这个符号引用代表的类<strong>是否已被加载过</strong>、<strong>解析和初始化</strong>过。<strong>如果没有</strong>，那必须先执行相应的<strong>类加载</strong>过程</p></li>
+虚拟机遇到一条<strong>new指令</strong>时，首先将去检查这个指令的<strong>参数（也就是后面说的符号引用）</strong>，看是否能在<strong>常量池中</strong>定位到这个<strong>类的符号引用</strong>，并且检查这个符号引用代表的类<strong>是否已被加载过</strong>、<strong>解析和初始化</strong>过。<strong>如果没有</strong>，那必须先执行相应的<strong>类加载</strong>过程</p></li>
 <li><p>分配内存
 <strong>类加载检查</strong>通过后，接下来虚拟机将为新生对象<strong>分配内容</strong>。<strong>对象所需内存大小</strong>在类加载后便可确定，为对象分配空间的任务，等同于<strong>把一块确定大小的内存</strong>从<strong>Java堆中划分出来</strong>。
 分配方式有<strong>”指针碰撞“</strong>和<strong>”空闲列表“</strong>两种，选择哪种分配方式由<strong>Java堆是否规整决定</strong>，而<strong>Java堆是否规整</strong>又由<strong>所采用的垃圾收集器是否带有压缩整理功能决定</strong>
@@ -600,20 +602,20 @@ Input/Output)类，引入一种基于<strong>通道（Channel）</strong>与<str
 <ul>
 <li>适用场合：<strong>堆内存规整（即没有内存碎片）</strong>的情况下</li>
 <li>原理：用过的内存全部整合到一边，没有用过的内存放在另一边，<strong>中间有一个分界指针</strong>只需要<strong>向着没用过的内存方向</strong>，将该指针<strong>移动对象内存的大小的位置</strong>即可</li>
-<li>使用该分配方式的GC收集器：Serial，PartNew</li>
+<li>使用该分配方式的GC收集器：<strong>Serial</strong>，<strong>PartNew</strong></li>
 </ul></li>
 <li><p>空闲列表</p>
 <ul>
 <li>适合场合：<strong>堆内存不规整的情况下</strong></li>
 <li>原理：虚拟机会维护一个列表，该列表中会<strong>记录哪些内存块是可用</strong>的，在分配的时候，找一块<strong>足够大的内存块</strong>来划分给对象实例，最后<strong>更新列表记录</strong></li>
-<li>使用该分配方式的GC收集器：CMS</li>
+<li>使用该分配方式的GC收集器：<strong>CMS</strong></li>
 </ul>
 <p>选择以上两种方式中的哪一种，取决于 Java 堆内存是否规整。而 Java
 堆内存是否规整，取决于 <strong>GC
 收集器的算法</strong>是<strong>"标记-清除"</strong>，还是<strong>"标记-整理"</strong>（也称作<strong>"标记-压缩"</strong>），值得注意的是，<strong>复制算法内存也是规整</strong>的</p></li>
 </ul>
 <p><strong>内存分配并发问题</strong>：</p>
-<p>创建对象时的重要问题---线程安全，因为在实际开发过程中，<strong>创建对象是很频繁的事</strong>，作为虚拟机来说，必须要保证线城市安全的，虚拟机采用<strong>两种方式保证线程安全</strong>：</p>
+<p>创建对象时的重要问题---线程安全，因为在实际开发过程中，<strong>创建对象是很频繁的事</strong>，作为虚拟机来说，必须要保证线程安全的，虚拟机采用<strong>两种方式保证线程安全</strong>：</p>
 <ol type="1">
 <li><p>CAS+失败重试:</p>
 <blockquote>
@@ -624,7 +626,7 @@ Input/Output)类，引入一种基于<strong>通道（Channel）</strong>与<str
 <li><p>TLAB：为<strong>每一个线程</strong> <strong>预先</strong>
 <strong>在Eden区分配一块内存</strong>，JVM在<strong>给线程中的对象分配内存</strong>时，首先在TLAB（该内存区域）分配，当对象大于TLAB中的<strong>剩余内存</strong>或TLAB的内存<strong>已用尽</strong>时，再采用上述的<strong>CAS</strong>进行内存分配</p>
 <blockquote>
-<p>在预留这个操作发生的时候，需要进行加锁或者采用CAS等操作进行保护，避免多个线程预留同一个区域</p>
+<p>在<strong>预留</strong>这个操作发生的时候，需要进行加锁或者采用CAS等操作进行保护，避免多个线程预留同一个区域</p>
 </blockquote></li>
 </ol></li>
 <li><p>初始化零值
@@ -636,8 +638,9 @@ Input/Output)类，引入一种基于<strong>通道（Channel）</strong>与<str
 GC 分代年龄等信息。 <strong>这些信息存放在对象头中。</strong>
 另外，根据虚拟机当前运行状态的不同，如是否启用偏向锁等，对象头会有不同的设置方式。</p></li>
 <li><p>执行init方法<br />
-在上面工作都完成之后，<strong>从虚拟机的视角来看，一个新的对象已经产生了</strong>，但从
-Java 程序的视角来看，对象创建才刚开始，<strong><code>&lt;init&gt;</code>
+在上面工作都完成之后，<strong>从虚拟机的视角来看，一个新的对象已经产生了</strong>，但<strong>从
+Java
+程序的视角</strong>来看，对象创建才刚开始，<strong><code>&lt;init&gt;</code>
 方法还没有执行，所有的字段都还为零</strong>。所以一般来说，执行 new
 指令之后会接着执行 <strong><code>&lt;init&gt;</code>
 方法</strong>，把对象<strong>按照程序员的意愿进行初始化</strong>，这样一个真正可用的对象才算完全产生出来。</p>
@@ -672,7 +675,7 @@ init 方法中</strong>，收敛顺序为：</p>
 <h2 id="对象的访问定位">对象的访问定位</h2>
 <p>建立对象就是为了<strong>使用对象</strong>，我们的 Java
 程序通过<strong>栈上的 reference
-数据</strong>来<strong>操作堆上的具体对象</strong>。对象的访问方式由虚拟机实现而定，目前<strong>主流的访问方式</strong>有：<strong>使用句柄</strong>、<strong>直接指针</strong>。</p>
+数据</strong>来<strong>操作堆上的具体对象</strong>。<strong>对象的访问方式</strong>由虚拟机实现而定，目前<strong>主流的访问方式</strong>有：<strong>使用句柄</strong>、<strong>直接指针</strong>。</p>
 <ol type="1">
 <li><p>句柄 如果使用句柄的话，那么 Java
 堆中将会划分出<strong>一块内存来作为句柄池</strong>，<strong>reference
