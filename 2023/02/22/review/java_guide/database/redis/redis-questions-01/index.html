@@ -239,14 +239,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>14k</span>
+              <span>16k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>26 分钟</span>
+              <span>29 分钟</span>
             </span>
             <div class="post-description">redis面试题01</div>
 
@@ -802,9 +802,9 @@ CPU 时间的影响。</li>
 <strong>CPU</strong> 更加友好。两者各有千秋，所以 Redis 采用的是
 <strong>定期删除+惰性/懒汉式删除</strong> 。</p>
 <p>但是，仅仅通过给 key
-设置过期时间还是有问题的。因为还是可能存在定期删除和惰性删除漏掉了很多过期
-key 的情况。这样就导致大量过期 key 堆积在内存里，然后就 Out of memory
-了。</p>
+设置过期时间还是有问题的。因为还是可能存在<strong>定期删除</strong>和<strong>惰性删除</strong>漏掉了很多过期
+key 的情况。这样就导致大量过期 key 堆积在内存里，然后就 <strong>Out of
+memory</strong> 了。</p>
 <p>怎么解决这个问题呢？答案就是：<strong>Redis
 内存淘汰机制。</strong></p>
 <h3 id="redis-内存淘汰机制了解么">Redis 内存淘汰机制了解么？</h3>
@@ -812,17 +812,21 @@ key 的情况。这样就导致大量过期 key 堆积在内存里，然后就 O
 <p>相关问题：MySQL 里有 2000w 数据，Redis 中只存 20w 的数据，如何保证
 Redis 中的数据都是热点数据?</p>
 </blockquote>
+<blockquote>
+<p>当缓存数据越来越多，Redis 不可避免的会被写满，这时候就涉及到 Redis
+的内存淘汰机制了</p>
+</blockquote>
 <p>Redis 提供 6 种数据淘汰策略：</p>
 <ol type="1">
 <li><strong>volatile-lru（least recently
-used）</strong>：从已设置过期时间的数据集（server.db[i].expires）中挑选最近最少使用的数据淘汰</li>
-<li><strong>volatile-ttl</strong>：从已设置过期时间的数据集（server.db[i].expires）中挑选将要过期的数据淘汰</li>
-<li><strong>volatile-random</strong>：从已设置过期时间的数据集（server.db[i].expires）中任意选择数据淘汰</li>
+used）</strong>：从<strong>已设置过期时间的数据集</strong>（server.db[i].expires）中挑选<strong>最近最少使用的数据淘汰</strong></li>
+<li><strong>volatile-ttl</strong>：从已设置过期时间的数据集（server.db[i].expires）中挑选<strong>将要过期的数据</strong>淘汰</li>
+<li><strong>volatile-random</strong>：从已设置过期时间的数据集（server.db[i].expires）中<strong>任意选择数据淘汰</strong></li>
 <li><strong>allkeys-lru（least recently
-used）</strong>：当内存不足以容纳新写入数据时，在键空间中，移除最近最少使用的
+used）</strong>：当内存不足以容纳新写入数据时，在键空间中，<strong>移除最近最少使用</strong>的
 key（这个是最常用的）</li>
-<li><strong>allkeys-random</strong>：从数据集（server.db[i].dict）中任意选择数据淘汰</li>
-<li><strong>no-eviction</strong>：禁止驱逐数据，也就是说当内存不足以容纳新写入数据时，新写入操作会报错。这个应该没人使用吧！</li>
+<li><strong>allkeys-random</strong>：从数据集（server.db[i].dict）中<strong>任意选择数据淘汰</strong></li>
+<li><strong>no-eviction</strong>：禁止驱逐数据，也就是说当内存不足以容纳新写入数据时，新写入操作会<strong>报错</strong>。这个应该没人使用吧！</li>
 </ol>
 <p>4.0 版本后增加以下两种：</p>
 <ol type="1">
@@ -832,10 +836,24 @@ used）</strong>：从已设置过期时间的数据集（server.db[i].expires�
 used）</strong>：当内存不足以容纳新写入数据时，在键空间中，移除最不经常使用的
 key</li>
 </ol>
+<blockquote>
+<p>关于最近最少使用：<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/v2-71b21233c615b1ce899cd4bd3122cbab_720w.webp"
+alt="img" /></p>
+<ol type="1">
+<li><p>链表尾部的数据会被丢弃</p></li>
+<li><p>长期不被使用的数据，在未来被用到的几率也不大。因此，当数据所占<a
+target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=内存&amp;spm=1001.2101.3001.7020">内存</a>达到一定阈值时，要移除掉最近最少使用的数据。</p></li>
+<li><p>关于翻译问题：least，程度最轻的。recently，最近的。其实翻译应该是“非最近的，越远越要淘汰”</p></li>
+<li><p>java算法实现</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">LRUCache</span> &#123;</span><br><span class="line">    <span class="keyword">class</span> <span class="title class_">DLinkedNode</span> &#123;</span><br><span class="line">        <span class="type">int</span> key;</span><br><span class="line">        <span class="type">int</span> value;</span><br><span class="line">        DLinkedNode prev;</span><br><span class="line">        DLinkedNode next;</span><br><span class="line">        <span class="keyword">public</span> <span class="title function_">DLinkedNode</span><span class="params">()</span> &#123;&#125;</span><br><span class="line">        <span class="keyword">public</span> <span class="title function_">DLinkedNode</span><span class="params">(<span class="type">int</span> _key, <span class="type">int</span> _value)</span> &#123;key = _key; value = _value;&#125;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">private</span> Map&lt;Integer, DLinkedNode&gt; cache = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;Integer, DLinkedNode&gt;();</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> size;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> capacity;</span><br><span class="line">    <span class="keyword">private</span> DLinkedNode head, tail;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">LRUCache</span><span class="params">(<span class="type">int</span> capacity)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.size = <span class="number">0</span>;</span><br><span class="line">        <span class="built_in">this</span>.capacity = capacity;</span><br><span class="line">        <span class="comment">// 使用伪头部和伪尾部节点</span></span><br><span class="line">        head = <span class="keyword">new</span> <span class="title class_">DLinkedNode</span>();</span><br><span class="line">        tail = <span class="keyword">new</span> <span class="title class_">DLinkedNode</span>();</span><br><span class="line">        head.next = tail;</span><br><span class="line">        tail.prev = head;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">get</span><span class="params">(<span class="type">int</span> key)</span> &#123;</span><br><span class="line">        <span class="type">DLinkedNode</span> <span class="variable">node</span> <span class="operator">=</span> cache.get(key);</span><br><span class="line">        <span class="keyword">if</span> (node == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 如果 key 存在，先通过哈希表定位，再移到头部</span></span><br><span class="line">        moveToHead(node);</span><br><span class="line">        <span class="keyword">return</span> node.value;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">put</span><span class="params">(<span class="type">int</span> key, <span class="type">int</span> value)</span> &#123;</span><br><span class="line">        <span class="type">DLinkedNode</span> <span class="variable">node</span> <span class="operator">=</span> cache.get(key);</span><br><span class="line">        <span class="keyword">if</span> (node == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="comment">// 如果 key 不存在，创建一个新的节点</span></span><br><span class="line">            <span class="type">DLinkedNode</span> <span class="variable">newNode</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">DLinkedNode</span>(key, value);</span><br><span class="line">            <span class="comment">// 添加进哈希表</span></span><br><span class="line">            cache.put(key, newNode);</span><br><span class="line">            <span class="comment">// 添加至双向链表的头部</span></span><br><span class="line">            addToHead(newNode);</span><br><span class="line">            ++size;</span><br><span class="line">            <span class="keyword">if</span> (size &gt; capacity) &#123;</span><br><span class="line">                <span class="comment">// 如果超出容量，删除双向链表的尾部节点</span></span><br><span class="line">                <span class="type">DLinkedNode</span> <span class="variable">tail</span> <span class="operator">=</span> removeTail();</span><br><span class="line">                <span class="comment">// 删除哈希表中对应的项</span></span><br><span class="line">                cache.remove(tail.key);</span><br><span class="line">                --size;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// 如果 key 存在，先通过哈希表定位，再修改 value，并移到头部</span></span><br><span class="line">            node.value = value;</span><br><span class="line">            moveToHead(node);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">addToHead</span><span class="params">(DLinkedNode node)</span> &#123;</span><br><span class="line">        node.prev = head;</span><br><span class="line">        node.next = head.next;</span><br><span class="line">        head.next.prev = node;</span><br><span class="line">        head.next = node;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">removeNode</span><span class="params">(DLinkedNode node)</span> &#123;</span><br><span class="line">        node.prev.next = node.next;</span><br><span class="line">        node.next.prev = node.prev;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">moveToHead</span><span class="params">(DLinkedNode node)</span> &#123;</span><br><span class="line">        removeNode(node);</span><br><span class="line">        addToHead(node);</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">private</span> DLinkedNode <span class="title function_">removeTail</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">DLinkedNode</span> <span class="variable">res</span> <span class="operator">=</span> tail.prev;</span><br><span class="line">        removeNode(res);</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ol>
+</blockquote>
 <h2 id="redis-持久化机制">Redis 持久化机制</h2>
 <h3 id="怎么保证-redis-挂掉之后再重启数据可以进行恢复">怎么保证 Redis
 挂掉之后再重启数据可以进行恢复？</h3>
-<p>很多时候我们需要持久化数据也就是将内存中的数据写入到硬盘里面，大部分原因是为了之后重用数据（比如重启机器、机器故障之后恢复数据），或者是为了防止系统故障而将数据备份到一个远程位置。</p>
+<p>很多时候我们需要持久化数据也就是将<strong>内存中的数据写入到硬盘</strong>里面，大部分原因是为了之后<strong>重用数据</strong>（比如<strong>重启</strong>机器、机器<strong>故障之后恢复</strong>数据），或者是为了防止系统故障而将数据备份到一个远程位置。</p>
 <p>Redis 不同于 Memcached 的很重要一点就是，Redis
 支持持久化，而且支持两种不同的持久化操作。<strong>Redis
 的一种持久化方式叫快照（snapshotting，RDB），另一种方式是只追加文件（append-only
@@ -1155,7 +1173,7 @@ UV 怎么做？</span></a></li></ol></li><li class="nav-item nav-level-2"><a cla
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">37:46</span>
+    <span title="站点阅读时长">37:49</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
