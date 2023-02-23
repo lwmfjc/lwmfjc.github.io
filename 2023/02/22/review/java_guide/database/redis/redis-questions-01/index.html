@@ -861,37 +861,42 @@ file,
 AOF）</strong>。这两种方法各有千秋，下面我会详细这两种持久化方法是什么，怎么用，如何选择适合自己的持久化方法。</p>
 <h3 id="什么是-rdb-持久化">什么是 RDB 持久化？</h3>
 <p>Redis
-可以通过创建快照来获得存储在内存里面的数据在某个时间点上的副本。Redis
-创建快照之后，可以对快照进行备份，可以将快照复制到其他服务器从而创建具有相同数据的服务器副本（Redis
-主从结构，主要用来提高 Redis
-性能），还可以将快照留在原地以便重启服务器的时候使用。</p>
-<p>快照持久化是 Redis 默认采用的持久化方式，在 <code>redis.conf</code>
-配置文件中默认有此下配置：</p>
+可以通过创建快照来获得<strong>存储在内存里面的数据在某个时间点上的副本</strong>。Redis
+创建快照之后，可以对快照进行备份，可以将快照复制到其他服务器从而创建<strong>具有相同数据的服务器副本</strong>（Redis
+<strong>主从</strong>结构，主要用来提高 Redis
+性能），还可以将<strong>快照留在原地以便重启服务器的时候</strong>使用。</p>
+<p>快照持久化是 Redis <strong>默认采用的持久化</strong>方式，在
+<code>redis.conf</code> 配置文件中默认有此下配置：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">save 900 1           #在900秒(15分钟)之后，如果至少有1个key发生变化，Redis就会自动触发bgsave命令创建快照。</span><br><span class="line"></span><br><span class="line">save 300 10          #在300秒(5分钟)之后，如果至少有10个key发生变化，Redis就会自动触发bgsave命令创建快照。</span><br><span class="line"></span><br><span class="line">save 60 10000        #在60秒(1分钟)之后，如果至少有10000个key发生变化，Redis就会自动触发bgsave命令创建快照。</span><br></pre></td></tr></table></figure>
 <h3 id="rdb-创建快照时会阻塞主线程吗">RDB
 创建快照时会阻塞主线程吗？</h3>
 <p>Redis 提供了两个命令来生成 RDB 快照文件：</p>
 <ul>
-<li><code>save</code> : 主线程执行，会阻塞主线程；</li>
-<li><code>bgsave</code> : 子线程执行，不会阻塞主线程，默认选项。</li>
+<li><strong><code>save</code></strong> :
+<strong>主线程</strong>执行，<strong>会阻塞</strong>主线程；</li>
+<li><strong><code>bgsave</code></strong> :
+<strong>子线程</strong>执行，<strong>不会阻塞</strong>主线程，默认选项。</li>
 </ul>
 <h3 id="什么是-aof-持久化">什么是 AOF 持久化？</h3>
 <p>与快照持久化相比，AOF
-持久化的实时性更好，因此已成为主流的持久化方案。默认情况下 Redis
-没有开启 AOF（append only file）方式的持久化，可以通过 appendonly
+持久化的<strong>实时性更好</strong>，因此已成为主流的持久化方案。默认情况下
+Redis 没有开启 AOF（append only file）方式的持久化，可以通过 appendonly
 参数开启：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">appendonly yes</span><br></pre></td></tr></table></figure>
-<p>开启 AOF 持久化后每执行一条会更改 Redis 中的数据的命令，Redis
-就会将该命令写入到内存缓存 <code>server.aof_buf</code> 中，然后再根据
-<code>appendfsync</code> 配置来决定何时将其同步到硬盘中的 AOF 文件。</p>
+<p>开启 AOF 持久化后<strong>每执行一条会更改 Redis
+中的数据</strong>的命令，Redis 就会<strong>将该命令写入到内存缓存
+<code>server.aof_buf</code> 中</strong>，然后再根据
+<strong><code>appendfsync</code></strong>
+配置来决定何时将其<strong>同步到硬盘</strong>中的 AOF 文件。</p>
 <p>AOF 文件的保存位置和 RDB 文件的位置相同，都是通过 dir
 参数设置的，默认的文件名是 <code>appendonly.aof</code>。</p>
-<p>在 Redis 的配置文件中存在三种不同的 AOF 持久化方式，它们分别是：</p>
+<p>在 Redis 的配置文件中存在<strong>三种</strong>不同的 AOF
+持久化方式，它们分别是：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">appendfsync always    #每次有数据修改发生时都会写入AOF文件,这样会严重降低Redis的速度</span><br><span class="line">appendfsync everysec  #每秒钟同步一次，显式地将多个写命令同步到硬盘</span><br><span class="line">appendfsync no        #让操作系统决定何时进行同步</span><br></pre></td></tr></table></figure>
 <p>为了兼顾数据和写入性能，用户可以考虑
-<code>appendfsync everysec</code> 选项 ，让 Redis 每秒同步一次 AOF
-文件，Redis
-性能几乎没受到任何影响。而且这样即使出现系统崩溃，用户最多只会丢失一秒之内产生的数据。当硬盘忙于执行写入操作的时候，Redis
+<code>appendfsync everysec</code> 选项 ，让 Redis <strong>每秒同步一次
+AOF</strong> 文件，Redis
+性能几乎没受到任何影响。而且这样即使出现系统崩溃，用户最多只会<strong>丢失一秒之内产生的数据</strong>。当硬盘忙于执行写入操作的时候，Redis
 还会优雅的放慢自己的速度以便适应硬盘的最大写入速度。</p>
 <p><strong>相关 issue</strong> ：</p>
 <ul>
@@ -902,87 +907,111 @@ AOF 重写描述不准确 #1439</a></li>
 </ul>
 <h3 id="aof-日志是如何实现的">AOF 日志是如何实现的？</h3>
 <p>关系型数据库（如
-MySQL）通常都是执行命令之前记录日志（方便故障恢复），而 Redis AOF
-持久化机制是在执行完命令之后再记录日志。</p>
+MySQL）通常都是<strong>执行命令之前记录日志</strong>（方便故障恢复），而
+Redis AOF 持久化机制是在<strong>执行完命令之后再记</strong>录日志。</p>
 <p><a
 target="_blank" rel="noopener" href="https://github.com/Snailclimb/JavaGuide/blob/main/docs/database/redis/images/redis-aof-write-log-disc.png"><img
 src="https://github.com/Snailclimb/JavaGuide/raw/main/docs/database/redis/images/redis-aof-write-log-disc.png"
 alt="AOF 记录日志过程" /></a></p>
 <p><strong>为什么是在执行完命令之后记录日志呢？</strong></p>
 <ul>
-<li>避免额外的检查开销，AOF 记录日志不会对命令进行语法检查；</li>
-<li>在命令执行完之后再记录，不会阻塞当前的命令执行。</li>
+<li>避免<strong>额外的检查</strong>开销，AOF
+记录日志<strong>不会对命令进行语法检查</strong>；</li>
+<li>在命令执行完之后再记录，<strong>不会阻塞当前的命令执行</strong>。</li>
 </ul>
 <p>这样也带来了风险（我在前面介绍 AOF 持久化的时候也提到过）：</p>
 <ul>
-<li>如果刚执行完命令 Redis 就宕机会导致对应的修改丢失；</li>
-<li>可能会阻塞后续其他命令的执行（AOF 记录日志是在 Redis
-主线程中进行的）。</li>
+<li>如果刚执行完命令 Redis
+就宕机会导致对应的<strong>修改丢失</strong>；</li>
+<li>可能会<strong>阻塞后续其他命令</strong>的执行（AOF 记录日志是在
+Redis 主线程中进行的）。</li>
 </ul>
 <h3 id="aof-重写了解吗">AOF 重写了解吗？</h3>
 <p>当 AOF 变得太大时，Redis 能够在后台自动重写 AOF 产生一个新的 AOF
 文件，这个新的 AOF 文件和原有的 AOF
-文件所保存的数据库状态一样，但体积更小。</p>
+文件<strong>所保存的数据库状态一样</strong>，<strong>但体积更小</strong>。</p>
 <p>AOF
-重写是一个有歧义的名字，该功能是通过读取数据库中的键值对来实现的，程序无须对现有
-AOF 文件进行任何读入、分析或者写入操作。</p>
-<p>在执行 <code>BGREWRITEAOF</code> 命令时，Redis 服务器会维护一个 AOF
-重写缓冲区，该缓冲区会在子进程创建新 AOF
-文件期间，记录服务器执行的所有写命令。当子进程完成创建新 AOF
-文件的工作之后，服务器会将重写缓冲区中的所有内容追加到新 AOF
-文件的末尾，使得新的 AOF
+重写是一个有<strong>歧义</strong>的名字，该功能是<strong>通过读取数据库中的键值对来实现</strong>的，程序<strong>无须对现有
+AOF
+文件进行任何读入</strong>、<strong>分析</strong>或者<strong>写入</strong>操作。</p>
+<p>在执行 <code>BGREWRITEAOF</code> 命令时，Redis 服务器会维护一个
+<strong>AOF 重写缓冲区</strong>，该缓冲区会在<strong>子进程创建新 AOF
+文件期间</strong>，<strong>记录服务器执行的所有写命令</strong>。当<strong>子进程完成创建新
+AOF
+文件的工作之后</strong>，服务器会<strong>将重写缓冲区中的所有内容追加到新
+AOF 文件的末尾</strong>，使得新的 AOF
 文件保存的数据库状态与现有的数据库状态一致。最后，服务器用新的 AOF
 文件替换旧的 AOF 文件，以此来完成 AOF 文件重写操作。</p>
-<p>Redis 7.0 版本之前，如果在重写期间有写入命令，AOF
-可能会使用大量内存，重写期间到达的所有写入命令都会写入磁盘两次。</p>
+<p>Redis 7.0 版本之前，如果在<strong>重写期间有写入命令，AOF
+可能会使用大量内存，重写期间到达的所有写入命令都会写入磁盘两次</strong>。</p>
+<blockquote>
+<p>aof 文件重写是将 <strong>redis 中的数据转换为
+写命令</strong>同步更新到 aof 文件的过程。</p>
+<p><strong>重写 aof 后 为什么么可以变小</strong></p>
+<ul>
+<li>清除了一些无效命令 eg. del srem</li>
+<li>进程内超时的数据不再写入 aof 文件</li>
+<li>多条写命令可以合并为批量写命令 eg.
+<code>lpush list v1 lpush list v2 lpush list v3 合并为一条写入命令 lpush list v1 v2 v3</code></li>
+</ul>
+</blockquote>
 <h3 id="如何选择-rdb-和-aof">如何选择 RDB 和 AOF？</h3>
 <p>关于 RDB 和 AOF 的优缺点，官网上面也给了比较详细的说明<a
 target="_blank" rel="noopener" href="https://redis.io/docs/manual/persistence/">Redis
 persistence</a>，这里结合自己的理解简单总结一下。</p>
 <p><strong>RDB 比 AOF 优秀的地方</strong> ：</p>
 <ul>
-<li>RDB 文件存储的内容是经过压缩的二进制数据，
-保存着某个时间点的数据集，文件很小，适合做数据的备份，灾难恢复。AOF
-文件存储的是每一次写命令，类似于 MySQL 的 binlog 日志，通常会必 RDB
-文件大很多。当 AOF 变得太大时，Redis 能够在后台自动重写 AOF。新的 AOF
-文件和原有的 AOF 文件所保存的数据库状态一样，但体积更小。不过， Redis
+<li>RDB 文件存储的内容是<strong>经过压缩的二进制</strong>数据，
+保存着<strong>某个时间点</strong>的数据集，文件很小，适合做数据的备份，灾难恢复。AOF
+文件存储的是<strong>每一次写</strong>命令，类似于 MySQL 的
+<strong>binlog 日志</strong>，通常会必 RDB
+文件<strong>大很多</strong>。当 AOF 变得太大时，Redis 能够在后台自动重写
+AOF。新的 AOF 文件和原有的 AOF
+文件所保存的数据库状态一样，但<strong>体积更小</strong>。不过， Redis
 7.0 版本之前，如果在重写期间有写入命令，AOF
 可能会使用大量内存，重写期间到达的所有写入命令都会写入磁盘两次。</li>
 <li>使用 RDB
-文件恢复数据，直接解析还原数据即可，不需要一条一条地执行命令，速度非常快。而
-AOF 则需要依次执行每个写命令，速度非常慢。也就是说，与 AOF
-相比，恢复大数据集的时候，RDB 速度更快。</li>
+文件恢复数据，<strong>直接解析还原数据即可，不需要一条一条地执行命令</strong>，速度非常快。而
+AOF 则需要依次执行每个写命令，<strong>速度非常慢</strong>。也就是说，与
+AOF 相比，恢复大数据集的时候，RDB 速度更快。</li>
 </ul>
 <p><strong>AOF 比 RDB 优秀的地方</strong> ：</p>
 <ul>
-<li>RDB 的数据安全性不如 AOF，没有办法实时或者秒级持久化数据。生成 RDB
-文件的过程是比繁重的， 虽然 BGSAVE 子进程写入 RDB
-文件的工作不会阻塞主线程，但会对机器的 CPU
-资源和内存资源产生影响，严重的情况下甚至会直接把 Redis 服务干宕机。AOF
-支持秒级数据丢失（取决 fsync 策略，如果是 everysec，最多丢失 1
-秒的数据），仅仅是追加命令到 AOF 文件，操作轻量。</li>
-<li>RDB 文件是以特定的二进制格式保存的，并且在 Redis
-版本演进中有多个版本的 RDB，所以存在老版本的 Redis 服务不兼容新版本的
-RDB 格式的问题。</li>
-<li>AOF 以一种易于理解和解析的格式包含所有操作的日志。你可以轻松地导出
+<li>RDB 的数据<strong>安全性</strong>不如
+AOF，没有办法<strong>实时</strong>或者<strong>秒级持久化</strong>数据。生成
+RDB 文件的过程是比繁重的， 虽然 BGSAVE 子进程写入 RDB
+文件的工作不会阻塞主线程，但会对机器的 <strong>CPU
+资源</strong>和<strong>内存资源</strong>产生影响，严重的情况下甚至会直接把
+Redis 服务干宕机。<strong>AOF 支持秒级数据丢失</strong>（取决 fsync
+策略，如果是 everysec，最多丢失 1 秒的数据），仅仅是追加命令到 AOF
+文件，操作轻量。</li>
+<li>RDB 文件是以<strong>特定的二进制格式</strong>保存的，并且在 Redis
+版本演进中有<strong>多个版本的 RDB</strong>，所以存在老版本的 Redis
+服务不兼容新版本的 RDB 格式的问题。</li>
+<li>AOF
+以一种<strong>易于理解和解析</strong>的格式包含所有操作的日志。你可以轻松地导出
 AOF 文件进行分析，你也可以直接操作 AOF
 文件来解决一些问题。比如，如果执行<code>FLUSHALL</code>命令意外地刷新了所有内容后，只要
-AOF 文件没有被重写，删除最新命令并重启即可恢复之前的状态。</li>
+AOF
+文件没有被重写，<strong>删除最新命令并重启</strong>即可恢复之前的状态。</li>
 </ul>
 <h3 id="redis-4.0-对于持久化机制做了什么优化">Redis 4.0
 对于持久化机制做了什么优化？</h3>
 <p>由于 RDB 和 AOF 各有优势，于是，Redis 4.0 开始支持 RDB 和 AOF
-的混合持久化（默认关闭，可以通过配置项 <code>aof-use-rdb-preamble</code>
-开启）。</p>
-<p>如果把混合持久化打开，AOF 重写的时候就直接把 RDB 的内容写到 AOF
-文件开头。这样做的好处是可以结合 RDB 和 AOF 的优点,
-快速加载同时避免丢失过多的数据。当然缺点也是有的， AOF 里面的 RDB
-部分是压缩格式不再是 AOF 格式，可读性较差。</p>
+的<strong>混合持久化</strong>（默认关闭，可以通过配置项
+<code>aof-use-rdb-preamble</code> 开启）。</p>
+<p>如果把混合持久化打开，AOF 重写的时候就<strong>直接把 RDB 的内容写到
+AOF 文件开头</strong>。这样做的好处是可以结合 RDB 和 AOF 的优点,
+<strong>快速加载</strong>同时避<strong>免丢失过多</strong>的数据。当然缺点也是有的，
+<strong>AOF 里面的 RDB 部分是压缩格式不再是 AOF
+格式</strong>，可读性较差。</p>
 <p>官方文档地址：https://redis.io/topics/persistence</p>
-<p><a
-target="_blank" rel="noopener" href="https://camo.githubusercontent.com/053ebed03f24c39d8373ea7a694c908334674d0c644a9f3114171c58a1d090ce/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f64617461626173652f72656469732f7265646973342e302d706572736974656e63652e706e67"><img
+<figure>
+<img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f64617461626173652f72656469732f7265646973342e302d706572736974656e63652e706e67"
-alt="img" /></a></p>
+alt="img" />
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
 <h2 id="参考">参考</h2>
 <ul>
 <li>《Redis 开发与运维》</li>
@@ -1017,7 +1046,10 @@ persistence：https://www.sobyte.net/post/2022-04/redis-rdb-and-aof/</li>
     <a href="/2023/02/21/review/java_guide/system-design/security/web-real-time-message-push/" rel="prev" title="web-real-time-message-push">
       <i class="fa fa-chevron-left"></i> web-real-time-message-push
     </a></div>
-      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2023/02/23/review/java_guide/database/redis/redis-questions-02/" rel="next" title="redis面试题02">
+      redis面试题02 <i class="fa fa-chevron-right"></i>
+    </a></div>
     </div>
       </footer>
     
@@ -1114,7 +1146,7 @@ UV 怎么做？</span></a></li></ol></li><li class="nav-item nav-level-2"><a cla
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">179</span>
+          <span class="site-state-item-count">180</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1168,12 +1200,12 @@ UV 怎么做？</span></a></li></ol></li><li class="nav-item nav-level-2"><a cla
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">1.2m</span>
+    <span title="站点总字数">1.3m</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">37:49</span>
+    <span title="站点阅读时长">38:03</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
