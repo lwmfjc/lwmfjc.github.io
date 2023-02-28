@@ -239,14 +239,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>80</span>
+              <span>1.2k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
+              <span>2 分钟</span>
             </span>
             <div class="post-description">redis问题图解</div>
 
@@ -274,7 +274,36 @@ alt="主从复制原理" />
 <img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230227231636309.png"
 alt="image-20230227231636309" /></p></li>
-<li><p>哨兵模式</p></li>
+<li><p>哨兵模式详解</p>
+<blockquote>
+<p>先配置<strong>主从模式</strong>，再配置<strong>哨兵模式</strong></p>
+</blockquote>
+<p>所有的哨兵 sentinel.conf 都是配置为监听master--&gt;
+192.168.14.101，如果主机宕机，sentinel.conf
+中的配置也会自动更改为选举后的<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230228151217464.png"
+alt="image-20230228151217464" /></p>
+<ol type="1">
+<li><p>Java客户端连接原理</p>
+<blockquote>
+<p>客户端是和Sentinel来进行交互的,通过Sentinel来获取真正的Redis节点信息,然后来操作.实际工作时,Sentinel
+内部维护了一个主题队列,用来保存Redis的节点信息,并实时更新,客户端订阅了这个主题,然后实时的去获取这个队列的Redis节点信息.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">代码相对比较简单</span></span><br><span class="line"><span class="comment">**/</span></span><br><span class="line"><span class="comment">//1.设置sentinel 各个节点集合</span></span><br><span class="line">Set&lt;String&gt; sentinelSet = <span class="keyword">new</span> <span class="title class_">HashSet</span>&lt;&gt;();</span><br><span class="line">sentinelSet.add(<span class="string">&quot;192.168.14.101:26379&quot;</span>);</span><br><span class="line">sentinelSet.add(<span class="string">&quot;192.168.14.102:26380&quot;</span>);</span><br><span class="line">sentinelSet.add(<span class="string">&quot;192.168.14.103:26381&quot;</span>);</span><br><span class="line"> </span><br><span class="line"><span class="comment">//2.设置jedispool 连接池配置文件</span></span><br><span class="line"><span class="type">JedisPoolConfig</span> <span class="variable">config</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">JedisPoolConfig</span>();</span><br><span class="line">config.setMaxTotal(<span class="number">10</span>);</span><br><span class="line">config.setMaxWaitMillis(<span class="number">1000</span>);</span><br><span class="line"> </span><br><span class="line"><span class="comment">//3.设置mastername,sentinelNode集合,配置文件,Redis登录密码</span></span><br><span class="line"><span class="type">JedisSentinelPool</span> <span class="variable">jedisSentinelPool</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">JedisSentinelPool</span>(<span class="string">&quot;mymaster&quot;</span>,sentinelSet,config,<span class="string">&quot;123&quot;</span>);</span><br><span class="line"><span class="type">Jedis</span> <span class="variable">jedis</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    jedis = jedisSentinelPool.getResource();</span><br><span class="line">    <span class="comment">//获取Redis中key=hello的值</span></span><br><span class="line">    <span class="type">String</span> <span class="variable">value</span> <span class="operator">=</span> jedis.get(<span class="string">&quot;hello&quot;</span>);</span><br><span class="line">    System.out.println(value);</span><br><span class="line">&#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">    <span class="keyword">if</span>(jedis != <span class="literal">null</span>)&#123;</span><br><span class="line">        jedis.close();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</blockquote>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230228152739283.png"
+alt="image-20230228152739283" />
+<figcaption aria-hidden="true">image-20230228152739283</figcaption>
+</figure></li>
+<li><p>哨兵工作原理<br />
+主观宕机：sentinel自认为redis不可用<br />
+客观宕机：sentinel集群认为redis不可用<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230228155513262.png"
+alt="image-20230228155513262" /></p></li>
+<li><p>故障转移</p></li>
+</ol></li>
 </ol>
 
     </div>
@@ -439,7 +468,7 @@ alt="image-20230227231636309" /></p></li>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">38:35</span>
+    <span title="站点阅读时长">38:37</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
