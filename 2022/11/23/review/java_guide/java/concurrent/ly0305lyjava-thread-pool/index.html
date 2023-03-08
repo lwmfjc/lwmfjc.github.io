@@ -287,7 +287,7 @@
 <p>this逃逸，指的是<strong>构造函数返回之前</strong>，<strong>其他线程就持有该对象的引用</strong>，会导致调用尚未构造完全的对象<br />
 例子：</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ThisEscape</span> &#123; </span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">ThisEscape</span><span class="params">()</span> &#123; </span><br><span class="line">    <span class="keyword">new</span> <span class="title class_">Thread</span>(<span class="keyword">new</span> <span class="title class_">EscapeRunnable</span>()).start(); </span><br><span class="line">    <span class="comment">// ... </span></span><br><span class="line">  &#125; </span><br><span class="line">    </span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">class</span> <span class="title class_">EscapeRunnable</span> <span class="keyword">implements</span> <span class="title class_">Runnable</span> &#123; </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123; </span><br><span class="line">      <span class="comment">// 通过ThisEscape.this就可以引用外围类对象, 但是此时外围类对象可能还没有构造完成, 即发生了外围类的this引用的逃逸 </span></span><br><span class="line">    &#125; </span><br><span class="line">  &#125; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>处理办法</p>
+<p>处理办法 <strong>//不要在构造函数中运行线程</strong></p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ThisEscape</span> &#123; </span><br><span class="line">  <span class="keyword">private</span> Thread t; </span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">ThisEscape</span><span class="params">()</span> &#123; </span><br><span class="line">    t = <span class="keyword">new</span> <span class="title class_">Thread</span>(<span class="keyword">new</span> <span class="title class_">EscapeRunnable</span>()); </span><br><span class="line">    <span class="comment">// ... </span></span><br><span class="line">  &#125; </span><br><span class="line">    </span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">init</span><span class="params">()</span> &#123; </span><br><span class="line">    <span class="comment">//也就是说对象没有构造完成前，不要调用ThisEscape.this即可</span></span><br><span class="line">    t.start(); </span><br><span class="line">  &#125; </span><br><span class="line">    </span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">class</span> <span class="title class_">EscapeRunnable</span> <span class="keyword">implements</span> <span class="title class_">Runnable</span> &#123; </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123; </span><br><span class="line">      <span class="comment">// 通过ThisEscape.this就可以引用外围类对象, 此时可以保证外围类对象已经构造完成 </span></span><br><span class="line">    &#125; </span><br><span class="line">  &#125; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 </blockquote>
 <p>Executor框架不仅包括<strong>线程池的管理</strong>，提供<strong>线程工厂</strong>、<strong>队列</strong>以及<strong>拒绝策略</strong>。</p>
@@ -552,7 +552,7 @@ CachedThreadPool是一个会根据需要创建新线程的线程池，源码：<
 中线程处理任务的速度时，<code>CachedThreadPool</code>
 会<strong>不断创建新的线程</strong>。极端情况下，这样会导致<strong>耗尽
 cpu</strong> 和<strong>内存资源</strong></p>
-<p>★：SynchronousQueue队列只能容纳单个元素
+<p>★：SynchronousQueue队列只能容纳零个元素
 执行过程（execute()示意图）</p>
 <p><img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221128163237634.png"
@@ -598,7 +598,8 @@ alt="image-20221129092022551" /></p>
 <li><p>TimerTask中抛出运行时异常会杀死一个线程，从而导致Timer死机（即计划任务将不在运行）；而<strong>ScheduleThreadExecutor</strong>不仅<strong>捕获运行时异常</strong>，还允许<strong>需要时处理（afterExecute方法）</strong>，<strong>抛出异常的任务会被取消</strong>而<strong>其他任务将继续运行</strong></p></li>
 </ul>
 <p>JDK1.5 之后，没有理由再使用Timer进行任务调度</p></li>
-<li><p>运行机制 <img
+<li><p>运行机制 <strong>//下面这块内容后面更新后原作者删除了</strong>
+<img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221129103700454.png"
 alt="image-20221129103700454" />
 ScheduledThreadPoolExecutor的执行分为：</p>
@@ -844,7 +845,7 @@ ThreadPoolExecutor使用+原理分析</span></a><ol class="nav-child"><li class=
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">38:44</span>
+    <span title="站点阅读时长">38:45</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
