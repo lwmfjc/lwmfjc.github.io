@@ -269,7 +269,7 @@
 <p>我们把内存看作外存的高速缓存，程序运行时把外存的数据复制到内存，由于<strong>内存的处理速度远高于外存</strong>，这样提高了处理速度</p>
 </blockquote></li>
 <li><p>总结，<strong>CPU
-Cache缓存的是内存数据</strong>，用于解决<strong>CPU处理速度和内存不匹配</strong>的问题，内存缓存的是硬盘数据用于解决硬盘访问速度过慢的问题
+Cache缓存的是内存数据</strong>，用于解决<strong>CPU处理速度和内存不匹配</strong>的问题，<strong>内存缓存的是硬盘数据</strong>用于解决硬盘访问速度过慢的问题
 CPU Cache示意图：</p>
 <p><img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221121161418654.png"
@@ -283,6 +283,13 @@ src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img
 alt="image-20221121163447850" />
 操作系统，通过<strong>内存模型MemoryModel</strong>定义一系列规范来解决这个问题</p></li>
 </ul>
+<h2 id="java内存模型">Java内存模型</h2>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230308104349321.png"
+alt="image-20230308104349321" />
+<figcaption aria-hidden="true">image-20230308104349321</figcaption>
+</figure>
 <h2 id="指令重排序">指令重排序</h2>
 <ul>
 <li><p><strong>什么是指令重排序？</strong>
@@ -298,11 +305,11 @@ Parallelism，ILP)来将多条指令重叠执行</strong>。如果不存在数�
 <blockquote>
 <p>另外，<strong>内存系统</strong>也会有“重排序”，但又不是真正意义上的重排序。在
 JMM
-里表现为主存和本地内存的内容可能不一致，进而<strong>导致程序在多线程下执行可能出现问题</strong>。</p>
+里表现为<strong>主存和本地内存的内容可能不一致</strong>，进而<strong>导致程序在多线程下执行可能出现问题</strong>。</p>
 </blockquote>
 <p>即Java源代码会经历
-<strong>编译器优化重排</strong>---&gt;<strong>指令并行重排</strong>---&gt;<strong>内存系统重排</strong>，最终编程操作系统可执行的<strong>指令序列</strong></p>
-<p>极其重要★：指令重排序可以<strong>保证串行语义一致</strong>，但是<strong>没有义务保证多线程间的语义也一致</strong>，所以在多线程下指令重排可能导致一些问题</p>
+<strong>编译器优化重排</strong>---&gt;<strong>指令并行重排</strong>---&gt;<strong>内存系统重排</strong>，最终<strong>编程</strong>操作系统可执行的<strong>指令序列</strong></p>
+<p>极其重要★：指令重排序可以<strong>保证串行语义一致</strong>，但是<strong>没有义务保证多线程间的语义也一致</strong>，所以在多线程下<strong>指令重排</strong>可能导致一些问题</p>
 <blockquote>
 <p>编译器和处理器的指令重排序的处理方式不一样。对于<strong>编译器</strong>，通过<strong>禁止特定类型的编译器重排序</strong>的方式来禁止重排序。对于<strong>处理器</strong>，通过<strong>插入内存屏障（Memory
 Barrier，或有时叫做内存栅栏，Memory
@@ -657,10 +664,10 @@ window</a>）来解决内存缓存不一致性问题。</li>
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8Ecpu%E7%BC%93%E5%AD%98%E6%A8%A1%E5%9E%8B%E8%AF%B4%E8%B5%B7"><span class="nav-number">1.</span> <span class="nav-text">从CPU缓存模型说起</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8C%87%E4%BB%A4%E9%87%8D%E6%8E%92%E5%BA%8F"><span class="nav-number">2.</span> <span class="nav-text">指令重排序</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#jmmjavamemorymode"><span class="nav-number">3.</span> <span class="nav-text">JMM（JavaMemoryMode）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF-jmm%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81-jmm"><span class="nav-number">3.1.</span> <span class="nav-text">什么是 JMM？为什么需要 JMM？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#jmm-%E6%98%AF%E5%A6%82%E4%BD%95%E6%8A%BD%E8%B1%A1%E7%BA%BF%E7%A8%8B%E5%92%8C%E4%B8%BB%E5%86%85%E5%AD%98%E4%B9%8B%E9%97%B4%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="nav-number">3.2.</span> <span class="nav-text">JMM
-是如何抽象线程和主内存之间的关系？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#java-%E5%86%85%E5%AD%98%E5%8C%BA%E5%9F%9F%E5%92%8C-jmm-%E6%9C%89%E4%BD%95%E5%8C%BA%E5%88%AB"><span class="nav-number">3.3.</span> <span class="nav-text">Java 内存区域和 JMM
-有何区别？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#happens-before-%E5%8E%9F%E5%88%99%E6%98%AF%E4%BB%80%E4%B9%88"><span class="nav-number">3.4.</span> <span class="nav-text">happens-before 原则是什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#happens-before-%E5%B8%B8%E8%A7%81%E8%A7%84%E5%88%99%E6%9C%89%E5%93%AA%E4%BA%9B%E8%B0%88%E8%B0%88%E4%BD%A0%E7%9A%84%E7%90%86%E8%A7%A3"><span class="nav-number">3.5.</span> <span class="nav-text">happens-before
-常见规则有哪些？谈谈你的理解？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#happens-before-%E5%92%8Cjmm%E4%BB%80%E4%B9%88%E5%85%B3%E7%B3%BB"><span class="nav-number">3.6.</span> <span class="nav-text">happens-before 和JMM什么关系</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%8D%E7%9C%8B%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E4%B8%89%E4%B8%AA%E9%87%8D%E8%A6%81%E7%89%B9%E6%80%A7"><span class="nav-number">4.</span> <span class="nav-text">再看并发编程三个重要特性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8Ecpu%E7%BC%93%E5%AD%98%E6%A8%A1%E5%9E%8B%E8%AF%B4%E8%B5%B7"><span class="nav-number">1.</span> <span class="nav-text">从CPU缓存模型说起</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#java%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B"><span class="nav-number">2.</span> <span class="nav-text">Java内存模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8C%87%E4%BB%A4%E9%87%8D%E6%8E%92%E5%BA%8F"><span class="nav-number">3.</span> <span class="nav-text">指令重排序</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#jmmjavamemorymode"><span class="nav-number">4.</span> <span class="nav-text">JMM（JavaMemoryMode）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF-jmm%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81-jmm"><span class="nav-number">4.1.</span> <span class="nav-text">什么是 JMM？为什么需要 JMM？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#jmm-%E6%98%AF%E5%A6%82%E4%BD%95%E6%8A%BD%E8%B1%A1%E7%BA%BF%E7%A8%8B%E5%92%8C%E4%B8%BB%E5%86%85%E5%AD%98%E4%B9%8B%E9%97%B4%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="nav-number">4.2.</span> <span class="nav-text">JMM
+是如何抽象线程和主内存之间的关系？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#java-%E5%86%85%E5%AD%98%E5%8C%BA%E5%9F%9F%E5%92%8C-jmm-%E6%9C%89%E4%BD%95%E5%8C%BA%E5%88%AB"><span class="nav-number">4.3.</span> <span class="nav-text">Java 内存区域和 JMM
+有何区别？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#happens-before-%E5%8E%9F%E5%88%99%E6%98%AF%E4%BB%80%E4%B9%88"><span class="nav-number">4.4.</span> <span class="nav-text">happens-before 原则是什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#happens-before-%E5%B8%B8%E8%A7%81%E8%A7%84%E5%88%99%E6%9C%89%E5%93%AA%E4%BA%9B%E8%B0%88%E8%B0%88%E4%BD%A0%E7%9A%84%E7%90%86%E8%A7%A3"><span class="nav-number">4.5.</span> <span class="nav-text">happens-before
+常见规则有哪些？谈谈你的理解？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#happens-before-%E5%92%8Cjmm%E4%BB%80%E4%B9%88%E5%85%B3%E7%B3%BB"><span class="nav-number">4.6.</span> <span class="nav-text">happens-before 和JMM什么关系</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%8D%E7%9C%8B%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E4%B8%89%E4%B8%AA%E9%87%8D%E8%A6%81%E7%89%B9%E6%80%A7"><span class="nav-number">5.</span> <span class="nav-text">再看并发编程三个重要特性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">6.</span> <span class="nav-text">总结</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
