@@ -269,7 +269,7 @@
 <li>对于Java程序员，虚拟机自动管理机制，不需要像C/C++程序员为每一个new
 操作去写对应的delete/free 操作，不容易出现<strong>内存泄漏</strong> 和
 <strong>内存溢出</strong>问题</li>
-<li>但由于内存控制权交给Java虚拟机，一旦出现内存泄漏和溢出方面问题，如果不了解虚拟机是怎么样使用内存，那么很难<strong>排查任务</strong></li>
+<li>但由于内存控制权交给Java虚拟机，一旦出现<strong>内存泄漏和溢出</strong>方面问题，如果不了解虚拟机是怎么样使用内存，那么很难<strong>排查任务</strong></li>
 </ul>
 <h1 id="运行时数据区域">运行时数据区域</h1>
 <p><strong>Java虚拟机</strong>在执行Java程序的过程中，会把它管理的内存，<strong>划分成若干个</strong>不同的数据区域</p>
@@ -304,6 +304,10 @@ alt="Java 运行时数据区域（JDK1.8 之后）" />
 <h2 id="程序计数器">程序计数器</h2>
 <ul>
 <li><p>是一块较小内存空间，看作是<strong>当前线程所执行的字节码</strong>的<strong>行号指示器</strong></p></li>
+<li><p>java程序流程<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220928110902410.png"
+alt="image-20220928110902410" /></p></li>
 <li><p>字节码解释器，工作时通过<strong>改变这个计数器的值</strong>来选取下一条需要执行的<strong>字节码指令</strong></p>
 <blockquote>
 <p>分支、循环、跳转、异常处理、线程恢复等功能都需要依赖这个计数器</p>
@@ -354,7 +358,7 @@ src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img
 alt="img" />
 <figcaption aria-hidden="true">img</figcaption>
 </figure></li>
-<li><p>如果函数调用陷入<strong>无限循环</strong>，会导致栈中被压入太多栈帧而占用太多空间，导致<strong>栈空间过深</strong>。当<strong>线程请求栈的深度超过当前Java虚拟机栈的最大深度</strong>时，就会抛出<strong>StackOverError</strong>错误</p></li>
+<li><p>如果函数调用陷入<strong>无限循环</strong>，会导致栈中被压入太多栈帧而占用太多空间，导致<strong>栈空间过深</strong>。当<strong>线程请求栈的深度超过当前Java虚拟机栈的最大深度</strong>时，就会抛出<strong>StackOverFlowError</strong>错误</p></li>
 <li><p>Java 方法有两种返回方式，一种是 return
 语句正常返回，一种是抛出异常。不管哪种返回方式，都会导致栈帧被弹出。也就是说，
 <strong>栈帧随着方法调用而创建，随着方法结束而销毁。无论方法正常完成还是异常完成都算作方法结束。</strong></p></li>
@@ -380,9 +384,9 @@ alt="img" />
 </blockquote></li>
 </ul>
 <h2 id="本地方法栈">本地方法栈</h2>
-<p><code>和虚拟机栈作用相似</code>，区别：<strong>虚拟机栈为虚拟机执行Java方法（字节码）服务，本地方法栈则为虚拟机使用到的Native方法服务</strong>。HotSpot虚拟机中和Java虚拟机栈合二为一</p>
+<p><code>和虚拟机栈作用相似</code>，区别：虚拟机栈为<strong>虚拟机执行Java方法（字节码）</strong>服务，本地方法栈则为虚拟机使用到的<strong>Native方法</strong>服务。HotSpot虚拟机中和Java虚拟机栈合二为一</p>
 <blockquote>
-<p>同上，本地方法被执行时，本地方法栈会创建一个栈帧，用于存放本地方法的局部变量表、操作数栈、动态链接、出口信息</p>
+<p>同上，本地方法被执行时，本地方法栈会创建一个栈帧，用于存放本地方法的<strong>局部变量表</strong>、<strong>操作数栈</strong>、<strong>动态链接</strong>、<strong>出口信息</strong></p>
 <p>方法执行完毕后相应的栈帧也会出栈并释放内存空间，也会出现StackOverFlowError和OutOfMemoryError两种错误</p>
 </blockquote>
 <h2 id="堆">堆</h2>
@@ -454,7 +458,7 @@ Java 8 max heap sizeopen in new window</a>)</p>
 <blockquote>
 <p>“逻辑”，《Java虚拟机规范》规定了有方法区这么个<strong>概念</strong>和它的<strong>作用</strong>，方法区如何实现是虚拟机的事。即，不同虚拟机实现上，方法区的实现是不同的</p>
 </blockquote></li>
-<li><p>当虚拟机要使用一个类时，它需要<strong>读取并解析Class文件获取相关信息</strong>，再将<strong>信息存入方法区</strong>。方法区会存储已被虚拟机加载的<strong>类信息、字段信息、方法信息、常量、静态变量、即时编译器编译后的代码缓存</strong>等数据</p></li>
+<li><p>当虚拟机要使用一个类时，它需要<strong>读取并解析Class文件获取相关信息</strong>，再将<strong>信息存入方法区</strong>。方法区会存储<strong>已被</strong>虚拟机加载的<strong>类信息、字段信息、方法信息、常量、静态变量、即时编译器编译后的代码缓存</strong>等数据</p></li>
 <li><p><strong>方法区和永久代以及元空间有什么关系呢？</strong></p>
 <ol type="1">
 <li>方法区和永久代以及元空间的关系很像Java中接口和类的关系，类实现了接口，这里的类就可以看作是<strong>永久代</strong>和<strong>元空间</strong>，接口则看作是<strong>方法区</strong></li>
