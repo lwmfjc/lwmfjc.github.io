@@ -246,7 +246,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>6k</span>
+              <span>6.1k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -302,7 +302,7 @@ SQL 执行效率</strong>。</li>
 <li><p>哈希表是键值对的集合，通过<strong>键（key）</strong>即可<strong>快速取出对应的值（value）</strong>，因此哈希表可以<strong>快速检索数据（接近O(1))</strong></p></li>
 <li><p>为何能够通过key快速取出value呢？原因在于<strong>哈希算法（也叫散列算法）</strong>。通过哈希算法，我们可以<strong>快速找到key对应的index</strong>，找到了index也就找到了对应的value</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line">hash = hashfunc(key)</span><br><span class="line">index = hash % array_size</span><br></pre></td></tr></table></figure>
-<p>注意，图中keys是<strong>字符串</strong>，<strong>不是什么莫名其妙的人</strong>
+<p>注意，图中keys[天蓝色]是<strong>字符串</strong>，<strong>不是什么莫名其妙的人</strong>
 <img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230111105843993.png"
 alt="image-20230111105843993" /></p></li>
@@ -319,11 +319,13 @@ JDK1.8 之前 <code>HashMap</code>
 <blockquote>
 <p>例如： <code>SELECT * FROM tb1 WHERE id &lt; 500 ;</code></p>
 <ul>
-<li>这种范围查询中，B+树 优势非常大 直接遍历比500小的叶子节点即可</li>
+<li>这种范围查询中，B+树 优势非常大
+直接遍历比500小的<strong>叶子</strong>节点即可</li>
 <li>如果使用Hash索引，由于<strong>Hash索引</strong>是根据hash算法来定位的，难不成把1
 ~499
 （小于500）的数据都进行一次hash计算来定位吗？这就是Hash最大的缺点</li>
 </ul>
+<p>这里其实说的是已经找到了索引，但是索引没有数据的情形。要么通过<strong>hash</strong>一个个取数据，要么利用<strong>B+树</strong>的特性（叶子节点有完整数据）</p>
 </blockquote></li>
 </ul>
 <h2 id="b树-b-树">B树&amp; B+ 树</h2>
@@ -336,6 +338,7 @@ JDK1.8 之前 <code>HashMap</code>
 <li>B树的所有结点<strong>既存放键（key）</strong>也存放<strong>数据（data）</strong>，而B+树<strong>只有叶子结点</strong>存放key和data，其他<strong>内节点</strong>只存放key</li>
 <li>B树的叶子节点都是独立的；B+树的<strong>叶子节点有一条引用链指向与它相邻的叶子节点</strong></li>
 <li>B树的检索的过程相当于<strong>对范围内的每个结点的关键字做二分查找</strong>，可能还没有到达叶子节点，检索就结束了。而<strong>B+树</strong>的检索效率比较稳定，任何查找都是从根节点到叶子节点的过程，叶子结点的顺序检索很明显</li>
+<li>B树中某个子节点，他都包括了父节点的某个节点</li>
 <li>如图 <img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230111144258302.png"
 alt="image-20230111144258302" /></li>
@@ -347,7 +350,8 @@ alt="image-20230111144258302" /></li>
 域存放的是<strong>数据记录的地址</strong>。在索引检索的时候，首先<strong>按照
 B+Tree 搜索算法</strong>搜索索引，如果指定的 Key 存在，则<strong>取出其
 data 域的值</strong>，然后<strong>以 data
-域的值为地址读取相应的数据记录</strong>。这被称为“<strong>非聚簇索引（非聚集索引）</strong>”。</li>
+域的值为地址读取相应的数据记录</strong>。这被称为“<strong>非聚簇索引（非聚集索引）</strong>”。【反例，B+
+树非叶子节点没有存储<strong>数据记录的地址/数据记录本身</strong>】</li>
 <li>InnoDB 引擎中，其<strong>数据文件本身就是索引文件</strong>。
 <strong>MyISAM</strong> 的
 索引文件和数据文件是分离的，而<strong>InnoDB引擎</strong>中其表数据文件本身就是按
@@ -369,6 +373,12 @@ B+Tree 组织的一个索引结构，<strong>树的叶节点 data
 </ol>
 </blockquote></li>
 </ul>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230314113712964.png"
+alt="image-20230314113712964" />
+<figcaption aria-hidden="true">image-20230314113712964</figcaption>
+</figure>
 <h1 id="索引类型">索引类型</h1>
 <h2 id="主键索引primary-key">主键索引（Primary Key）</h2>
 <ul>
