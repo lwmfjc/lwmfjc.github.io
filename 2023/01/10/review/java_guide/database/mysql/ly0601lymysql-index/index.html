@@ -246,7 +246,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>7.2k</span>
+              <span>7.3k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -455,8 +455,8 @@ alt="image-20230111155549265" /></li>
 </ul>
 <h2 id="二级索引辅助索引">二级索引（辅助索引）</h2>
 <ul>
-<li>二级索引又称为辅助索引，是因为<strong>二级索引的叶子结点存储的数据是主键</strong>。也就是说，通过二级索引，可以定位<strong>主键</strong>的位置（<strong>还有值</strong>）</li>
-<li>唯一索引、普通索引、前缀索引等索引都属于二级索引
+<li><p>二级索引又称为辅助索引，是因为<strong>二级索引的叶子结点存储的数据是主键</strong>。也就是说，通过二级索引，可以定位<strong>主键</strong>的位置（<strong>还有值</strong>）</p></li>
+<li><p><strong>唯一索引</strong>、<strong>普通索引</strong>、<strong>前缀索引</strong>等索引都属于二级索引</p>
 <ol type="1">
 <li><p><strong>唯一索引 Unique
 Key</strong>：是一种约束，该索引的属性列<strong>不能出现重复的数据</strong>，但是<strong>允许数据为NULL</strong>，一张表允许创建<strong>多个唯一索引</strong>。建立唯一索引的目的多是为了<strong>该属性列的数据的唯一性</strong>，而不是为了查询效率</p></li>
@@ -471,9 +471,9 @@ Text</strong>：全文索引主要是为了检索<strong>大文本数据中的�
 也支持了全文索引。</p>
 </blockquote></li>
 </ol></li>
-<li>二级索引： <img
+<li><p>二级索引： <img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230112085212547.png"
-alt="image-20230112085212547" /></li>
+alt="image-20230112085212547" /></p></li>
 </ul>
 <h1 id="聚簇索引与非聚簇索引">聚簇索引与非聚簇索引</h1>
 <h2 id="聚簇索引聚集索引">聚簇索引（聚集索引）</h2>
@@ -482,7 +482,7 @@ alt="image-20230112085212547" /></li>
 <ol type="1">
 <li>聚簇索引即<strong>索引结构和数据一起存放</strong>的索引，并<strong>不是一种单独的索引类型</strong>。InnoDB中的<strong>主键索引</strong>就属于<strong>聚簇索引</strong></li>
 <li>MySQL中<strong>InnoDB引擎的表</strong>的<strong>.ibd
-文件</strong>就包含了<strong>该表的索引</strong>和<strong>数据</strong>，对于InnoDB引擎表来说，该表的<strong>索引（B+树）</strong>的<strong>每个非叶子节点存储索引</strong>，叶子结点存储<strong>索引</strong>和<strong>索引对应的数据</strong></li>
+文件</strong>就包含了<strong>该表的索引</strong>和<strong>数据</strong>，对于InnoDB引擎表来说，该表的<strong>索引（B+树）</strong>的<strong>每个非叶子节点存储索引(和页地址)</strong>，叶子结点存储<strong>索引</strong>和<strong>索引对应的数据</strong></li>
 </ol></li>
 <li>聚簇索引的优缺点
 <ul>
@@ -523,8 +523,8 @@ alt="image-20230113212558682" /></p>
 <p>那么这个索引的 key 本身就是 name，查到对应的 name
 直接返回就行了，无需回表查询。</p>
 <p>即使是 MYISAM 也是这样，虽然 MYISAM
-的主键索引确实需要回表，因为它的主键索引的叶子节点存放的是指针。但是！<strong>如果
-SQL 查的就是主键呢?</strong></p>
+的主键索引确实需要回表，因为它的<strong>主键索引的叶子节点存放的是指针</strong>。但是！<strong>如果
+SQL 查的就是主键(本身)呢?</strong></p>
 <figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> id <span class="keyword">FROM</span> <span class="keyword">table</span> <span class="keyword">WHERE</span> id<span class="operator">=</span><span class="number">1</span>;</span><br></pre></td></tr></table></figure>
 <p>主键索引本身的 key
 就是主键，查到返回就行了。这种情况就称之为覆盖索引了</p>
@@ -637,7 +637,13 @@ id="考虑在字符串类型的字段上使用前缀索引代替普通索引">�
 <li><p>使用 <code>SELECT *</code> 进行查询;</p></li>
 <li><p>创建了<strong>组合索引</strong>，但查询条件<strong>未准守最左匹配</strong>原则;</p></li>
 <li><p>在索引列上进行计算、函数、类型转换等操作;</p></li>
-<li><p>以 % 开头的 LIKE 查询比如 <code>like '%abc';</code>;</p></li>
+<li><p>以 % 开头的 LIKE 查询比如 <code>like '%abc';</code></p>
+<blockquote>
+<ul>
+<li>%在左边，即使有索引，也会失效</li>
+<li>只有当%在右边时，才会生效</li>
+</ul>
+</blockquote></li>
 <li><p>查询条件中使用 or，<strong>且 or
 的前后</strong>条件中<strong>有一个列没有索引</strong>，<strong>涉及的索引都不会被使用到</strong>(也就是说，反正都是要全表扫描，所以就不用索引了)</p></li>
 </ul>
