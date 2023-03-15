@@ -239,7 +239,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>9.3k</span>
+              <span>9.4k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -337,7 +337,9 @@ alt="image-20230114174517643" />
 log（重做日志）是<strong>InnoDB</strong>存储引擎独有的，它让MySQL拥有了<strong>崩溃恢复</strong>的能力</p>
 <blockquote>
 <p>比如 <code>MySQL</code>
-实例<strong>挂了或宕机</strong>了，<strong>重启</strong>时，<code>InnoDB</code>存储引擎会使用<code>redo log</code>恢复数据，保证数据的<strong>持久性</strong>与<strong>完整性</strong>。</p>
+实例<strong>挂了或宕机</strong>了，<strong>重启</strong>时，<code>InnoDB</code>存储引擎会使用<code>redo log</code>恢复数据，保证数据的<strong>持久性</strong>与<strong>完整性</strong>。<br />
+再具体点：防止在<strong>发生故障的时间点</strong>，尚有<strong>脏页未写入磁盘</strong>，在重启mysql服务的时候，根据redo
+log进行重做，从而达到事务的持久性这一特性</p>
 </blockquote>
 <figure>
 <img
@@ -661,7 +663,7 @@ log</strong>日志后，<strong>binlog日志写期间发生了异常</strong>，
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230115222416227.png"
 alt="image-20230115222416227" /></p>
 <blockquote>
-<p>由于<code>binlog</code>没写完就异常，这时候<strong><code>binlog</code>里面没有对应的修改记录</strong>。因此，之后用<strong><code>binlog</code>日志恢复数据</strong>时，就会少这一次更新，恢复出来的这一行<code>c</code>值是<code>0</code>，而<strong>原库因为<code>redo log</code>日志恢复，这一行<code>c</code>值是<code>1</code>，最终数据不一致</strong>。</p>
+<p>由于<code>binlog</code>没写完就异常，这时候<strong><code>binlog</code>里面没有对应的修改记录</strong>。因此，之后用<strong><code>binlog</code>日志恢复(备库)数据</strong>时，就会少这一次更新，恢复出来的这一行<code>c</code>值是<code>0</code>，而<strong>原库因为<code>redo log</code>日志恢复，这一行<code>c</code>值是<code>1</code>，最终数据不一致</strong>。</p>
 <figure>
 <img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/03-20220305235104445.png"
@@ -809,6 +811,10 @@ log(回滚日志)</strong> 来保证事务的<strong>原子性</strong>。</li>
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230116002657069.png"
 alt="image-20230116002657069" /></li>
 </ul>
+<p>总结<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230315225205398.png"
+alt="image-20230315225205398" /></p>
 
     </div>
 
@@ -917,7 +923,7 @@ alt="image-20230116002657069" /></li>
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">188</span>
+          <span class="site-state-item-count">189</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -976,7 +982,7 @@ alt="image-20230116002657069" /></li>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">40:26</span>
+    <span title="站点阅读时长">40:33</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
