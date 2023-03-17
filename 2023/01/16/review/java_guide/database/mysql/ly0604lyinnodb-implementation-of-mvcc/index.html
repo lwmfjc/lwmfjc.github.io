@@ -253,7 +253,7 @@
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>13 分钟</span>
+              <span>14 分钟</span>
             </span>
             <div class="post-description">innodb引擎对MVCC的实现</div>
 
@@ -294,15 +294,14 @@ read）</strong>。<br />
 <li><p>如果执行的是下列语句，就是<strong>锁定读（Locking
 Reads）</strong></p>
 <ol type="1">
-<li><code>select ... lock in share</code></li>
-<li><code>select ... for update</code></li>
-<li><code>insert</code>、<code>upate</code>、<code>delete</code></li>
-</ol></li>
+<li><p><code>select ... lock in share</code></p></li>
+<li><p><code>select ... for update</code></p></li>
+<li><p><code>insert</code>、<code>upate</code>、<code>delete</code></p></li>
 <li><p>锁定读下，读取的是数据的最新版本，这种读也被称为<strong>当前读current
-read</strong>。<strong>锁定读</strong>会对读取到的记录加锁</p>
-<ol type="1">
-<li><code>select ... lock in share mode</code>：对(读取到的)记录加<strong>S锁</strong>，其他事务也可以加S锁，如果加X锁则会被阻塞</li>
-<li><code>select ... for update</code>、<code>insert</code>、<code>update</code>、<code>delete</code>：对记录加<strong>X锁</strong>，且其他事务不能加任何锁</li>
+read</strong>。<strong>锁定读</strong>会对读取到的记录加锁<br />
+</p></li>
+<li><p><code>select ... lock in share mode</code>：对(读取到的)记录加<strong>S锁</strong>，其他事务也可以加S锁，如果加X锁则会被阻塞</p></li>
+<li><p><code>select ... for update</code>、<code>insert</code>、<code>update</code>、<code>delete</code>：对记录加<strong>X锁</strong>，且其他事务不能加任何锁</p></li>
 </ol></li>
 <li><p>在一致性非锁定读下，即使读取的记录<strong>已被其他事务加上X锁</strong>，这时记录也是可以被读取的，即读取的<strong>快照数据</strong>。</p>
 <ol type="1">
@@ -359,7 +358,7 @@ log</strong>中的历史版本。<strong>因此</strong>，每个事务读到的
 header</strong>中的<strong>deleted_flag</strong>字段将其标记为<strong>已删除</strong><br />
 </li>
 <li><strong>DB_ROLL_PTR(7字节)</strong>：回滚指针，指向<strong>该行的undo
-log</strong>。如果该行<strong>违背更新</strong>，则为<strong>空</strong></li>
+log</strong>。如果该行<strong>未被更新</strong>，则为<strong>空</strong></li>
 <li><strong>DB_ROW_ID(6字节)</strong>：如果<strong>没有设置主键</strong>且<strong>该表没有唯一非空索引</strong>时，InnoDB会使用该id来<strong>生成聚簇索引</strong></li>
 </ol></li>
 </ul>
@@ -458,7 +457,8 @@ m_up_limit_id</strong>，那么表明最新修改该行的事务（DB_TRX_ID）�
 <li>如果 <strong>DB_TRX_ID &gt;=
 m_low_limit_id</strong>，那么表明最新修改该行的事务（DB_TRX_ID）在当前事务创建快照之后才修改该行，所以该记录行的值对当前事务<strong>不可见</strong>。跳到步骤
 5</li>
-<li><strong>m_ids 为空（且DB_TRX_ID &lt;
+<li><strong>m_ids
+为空[那就不用排除啦，只要小于m_low_limit_id都可见]（且DB_TRX_ID &lt;
 m_low_limit_id）</strong>，则表明在当前事务创建快照之前，修改该行的事务就已经提交了，所以该记录行的值<strong>对当前事务是可见</strong>的</li>
 <li>如果 <strong>m_up_limit_id &lt;= DB_TRX_ID &lt;
 m_low_limit_id</strong>，表明最新修改该行的事务（DB_TRX_ID）在当前事务创建快照的时候可能处于“活动状态”或者“已提交状态”；所以就要对活跃事务列表
@@ -470,7 +470,7 @@ DB_TRX_ID</strong>，表明：①
 DB_TRX_ID 的事务<strong>修改了，但没有提交</strong>；或者 ②
 在<strong>当前事务创建快照后</strong>，该记录行的值<strong>被事务 ID 为
 DB_TRX_ID
-的事务修改</strong>了。这些情况下，这个记录行的值对当前事务都是不可见的。跳到步骤
+的事务修改</strong>了且提交了(可重复读)。这些情况下，这个记录行的值对当前事务都是不可见的。跳到步骤
 5</li>
 <li>在活跃事务列表中<strong>找不到</strong>，则表明“id 为 trx_id
 的事务”在修改“该记录行的值”后，在<strong>“当前事务”创建快照前就已经提交</strong>了，所以记录行对当前事务可见</li>
