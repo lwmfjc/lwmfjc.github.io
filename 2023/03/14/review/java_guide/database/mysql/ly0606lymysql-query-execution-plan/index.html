@@ -23,7 +23,7 @@
   <meta name="description" content="mysql执行计划">
 <meta property="og:type" content="article">
 <meta property="og:title" content="mysql执行计划">
-<meta property="og:url" content="http://example.com/2023/03/14/review/java_guide/database/mysql/ly0612lymysql-query-execution-plan/index.html">
+<meta property="og:url" content="http://example.com/2023/03/14/review/java_guide/database/mysql/ly0606lymysql-query-execution-plan/index.html">
 <meta property="og:site_name" content="随记">
 <meta property="og:description" content="mysql执行计划">
 <meta property="og:locale" content="zh_CN">
@@ -35,7 +35,7 @@
 <meta property="article:tag" content="复习-javaGuide-database">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="http://example.com/2023/03/14/review/java_guide/database/mysql/ly0612lymysql-query-execution-plan/">
+<link rel="canonical" href="http://example.com/2023/03/14/review/java_guide/database/mysql/ly0606lymysql-query-execution-plan/">
 
 
 <script id="page-configurations">
@@ -191,7 +191,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2023/03/14/review/java_guide/database/mysql/ly0612lymysql-query-execution-plan/">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/03/14/review/java_guide/database/mysql/ly0606lymysql-query-execution-plan/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/avatar.png">
@@ -239,14 +239,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>3.7k</span>
+              <span>4.7k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>7 分钟</span>
+              <span>9 分钟</span>
             </span>
             <div class="post-description">mysql执行计划</div>
 
@@ -272,9 +272,12 @@
 <h2 id="什么是执行计划">什么是执行计划？</h2>
 <p><strong>执行计划</strong> 是指一条 SQL 语句在经过 <strong>MySQL
 查询优化器</strong> 的优化会后，具体的执行方式。</p>
-<p>执行计划通常用于 SQL 性能分析、优化等场景。通过 <code>EXPLAIN</code>
-的结果，可以了解到如数据表的查询顺序、数据查询操作的操作类型、哪些索引可以被命中、哪些索引实际会命中、每个数据表有多少行记录被查询等信息。</p>
+<p>执行计划通常用于 <strong>SQL
+性能分析</strong>、<strong>优化</strong>等场景。通过
+<code>EXPLAIN</code>
+的结果，可以了解到如<strong>数据表的查询顺序</strong>、数据查询操作的<strong>操作类型</strong>、<strong>哪些索引</strong>可以被命中、哪些索引<strong>实际</strong>会命中、每个数据表有多少<strong>行记录被查询</strong>等信息。</p>
 <h2 id="如何获取执行计划">如何获取执行计划？</h2>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">-- 提交准备数据</span><br><span class="line">SET NAMES utf8mb4;</span><br><span class="line">SET FOREIGN_KEY_CHECKS = 0;</span><br><span class="line"></span><br><span class="line">-- ----------------------------</span><br><span class="line">-- Table structure for dept_emp</span><br><span class="line">-- ----------------------------</span><br><span class="line">DROP TABLE IF EXISTS `dept_emp`;</span><br><span class="line">CREATE TABLE `dept_emp`  (</span><br><span class="line">  `id` int(0) NOT NULL,</span><br><span class="line">  `emp_no` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,</span><br><span class="line">  `other1` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,</span><br><span class="line">  `other2` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,</span><br><span class="line">  PRIMARY KEY (`id`) USING BTREE,</span><br><span class="line">  INDEX `index_emp_no`(`emp_no`) USING BTREE</span><br><span class="line">) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;</span><br><span class="line"></span><br><span class="line">-- ----------------------------</span><br><span class="line">-- Records of dept_emp</span><br><span class="line">-- ----------------------------</span><br><span class="line">INSERT INTO `dept_emp` VALUES (1, &#x27;a1&#x27;, &#x27;o11&#x27;, &#x27;012&#x27;);</span><br><span class="line">INSERT INTO `dept_emp` VALUES (2, &#x27;a2&#x27;, &#x27;o21&#x27;, &#x27;o22&#x27;);</span><br><span class="line">INSERT INTO `dept_emp` VALUES (3, &#x27;a3&#x27;, &#x27;o31&#x27;, &#x27;o32&#x27;);</span><br><span class="line">INSERT INTO `dept_emp` VALUES (4, &#x27;a4&#x27;, &#x27;o41&#x27;, &#x27;o42&#x27;);</span><br><span class="line">INSERT INTO `dept_emp` VALUES (5, &#x27;a5&#x27;, &#x27;o51&#x27;, &#x27;o52&#x27;);</span><br><span class="line"></span><br><span class="line">SET FOREIGN_KEY_CHECKS = 1;</span><br></pre></td></tr></table></figure>
 <p>MySQL 为我们提供了 <code>EXPLAIN</code>
 命令，来获取执行计划的相关信息。</p>
 <p>需要注意的是，<code>EXPLAIN</code>
@@ -414,8 +417,9 @@ key 列显示 NULL ，则 key_len 列也显示 NULL 。</p>
 <p>rows
 列表示根据表统计信息及选用情况，大致估算出找到所需的记录或所需读取的行数，数值越小越好。</p>
 <h3 id="extra重要">Extra（重要）</h3>
-<p>这列包含了 MySQL 解析查询的额外信息，通过这些信息，可以更准确的理解
-MySQL 到底是如何执行查询的。常见的值如下：</p>
+<p>这列包含了 MySQL
+解析查询的额外信息，通过这些信息，可以更<strong>准确的理解 MySQL
+到底是如何执行查询</strong>的。常见的值如下：</p>
 <ul>
 <li><strong>Using
 filesort</strong>：在排序时使用了外部的索引排序，没有用到表内索引进行排序。</li>
@@ -603,7 +607,7 @@ Loop)</strong>：连表查询的方式，表示当被驱动表的没有使用索
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">40:23</span>
+    <span title="站点阅读时长">40:26</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
