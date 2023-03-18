@@ -239,7 +239,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>4k</span>
+              <span>4.1k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -291,7 +291,7 @@ alt="image-20230119113638560" />
 <li>简单来说 MySQL 主要分为 Server 层和存储引擎层：
 <ul>
 <li><strong>Server
-层</strong>：主要包括<strong>连接器</strong>、<strong>查询缓存</strong>、<strong>分析器</strong>、<strong>优化器</strong>、<strong>执行器</strong>等，所有跨存储引擎的功能都在这一层实现，比如<strong>存储过程</strong>、<strong>触发器</strong>、<strong>视图</strong>，<strong>函数</strong>等，还有一个<strong>通用的日志模块
+层</strong>：主要包括<strong>连接器</strong>、<strong>查询缓存</strong>、<strong>分析器</strong>、<strong>优化器</strong>、<strong>执行器</strong>等，所有<strong>跨存储引擎</strong>的功能都在这一层实现，比如<strong>存储过程</strong>、<strong>触发器</strong>、<strong>视图</strong>，<strong>函数</strong>等，还有一个<strong>通用的日志模块
 binlog 日志模块</strong>。</li>
 <li><strong>存储引擎</strong>：
 主要负责数据的<strong>存储</strong>和<strong>读取</strong>，采用<strong>可以替换的插件式架构</strong>，支持
@@ -373,7 +373,8 @@ SQL
 <code>update tb_student A set A.age='19' where A.name=' 张三 ';</code></p>
 <blockquote>
 <ul>
-<li>我们来给张三修改下年龄，在实际数据库肯定不会设置年龄这个字段的，不然要被技术负责人打的</li>
+<li>我们来给张三修改下年龄，在实际数据库肯定不会设置年龄这个字段的，不然要被技术负责人打的
+(因为可能有生日，<strong>年龄是不可人为手动修改</strong>)</li>
 <li>其实这条语句也基本上会沿着上一个查询的流程走，只不过执行更新的时候肯定要记录日志啦，这就会<strong>引入日志模块</strong>了，MySQL
 自带的日志模块是 <strong>binlog（归档日志）</strong>
 ，所有的存储引擎都可以使用，我们常用的 InnoDB 引擎还自带了一个日志模块
@@ -410,10 +411,10 @@ redo log 要引入 prepare
 redo log 后，机器挂了，binlog
 日志没有被写入，那么机器重启后，这台机器会通过 redo log
 恢复数据，但是这个时候 binlog
-并没有记录该数据，后续进行机器备份的时候，就会丢失这一条数据，同时主从同步也会丢失这一条数据。</li>
+并没有记录该数据，<strong>后续进行机器备份(从机)</strong>的时候，就会丢失这一条数据，同时主从同步也会丢失这一条数据。</li>
 <li><strong>先写 binlog，然后写 redo log</strong>，假设写完了
 binlog，机器异常重启了，由于没有 redo
-log，本机是无法恢复这一条记录的，但是 binlog
+log，<strong>本机是无法恢复</strong>这一条记录的，但是 binlog
 又有记录，那么和上面同样的道理，就会产生数据不一致的情况。</li>
 </ul></li>
 <li><p>如果采用 redo log 两阶段提交的方式就不一样了，<strong>写完 binlog
