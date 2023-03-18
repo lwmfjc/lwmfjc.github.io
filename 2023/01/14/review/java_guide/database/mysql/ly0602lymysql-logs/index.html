@@ -422,9 +422,8 @@ alt="image-20230114211124499" />
 <figcaption aria-hidden="true">image-20230114211124499</figcaption>
 </figure>
 <p><strong>不同刷盘策略的流程图</strong></p>
-<ul>
-<li><h4
-id="innodb_flush_log_at_trx_commit0不对是否刷盘做出处理">innodb_flush_log_at_trx_commit=0（不对是否刷盘做出处理）</h4>
+<h3
+id="innodb_flush_log_at_trx_commit0不对是否刷盘做出处理">innodb_flush_log_at_trx_commit=0（不对是否刷盘做出处理）</h3>
 <blockquote>
 <p>为<code>0</code>时，如果<code>MySQL</code>挂了或宕机可能会有<code>1</code>秒数据的丢失。<br />
 （<strong>由于事务提交成功也不会主动写入page cache，所以即使只有MySQL
@@ -435,9 +434,9 @@ id="innodb_flush_log_at_trx_commit0不对是否刷盘做出处理">innodb_flush_
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230114211255976.png"
 alt="image-20230114211255976" />
 <figcaption aria-hidden="true">image-20230114211255976</figcaption>
-</figure></li>
-<li><h4
-id="innodb_flush_log_at_trx_commit1">innodb_flush_log_at_trx_commit=1</h4>
+</figure>
+<h3
+id="innodb_flush_log_at_trx_commit1">innodb_flush_log_at_trx_commit=1</h3>
 <blockquote>
 <p>为<code>1</code>时，
 <strong>只要事务提交成功</strong>，<strong><code>redo log</code>记录就一定在硬盘里</strong>，不会有任何数据丢失。如果事务执行期间<code>MySQL</code>挂了或宕机，这部分日志丢了，但是事务并没有提交，所以日志丢了也不会有损失。</p>
@@ -447,9 +446,9 @@ id="innodb_flush_log_at_trx_commit1">innodb_flush_log_at_trx_commit=1</h4>
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230114211419216.png"
 alt="image-20230114211419216" />
 <figcaption aria-hidden="true">image-20230114211419216</figcaption>
-</figure></li>
-<li><h4
-id="innodb_flush_log_at_trx_commit2">innodb_flush_log_at_trx_commit=2</h4>
+</figure>
+<h3
+id="innodb_flush_log_at_trx_commit2">innodb_flush_log_at_trx_commit=2</h3>
 <blockquote>
 <ul>
 <li><p>为<code>2</code>时，
@@ -462,8 +461,7 @@ id="innodb_flush_log_at_trx_commit2">innodb_flush_log_at_trx_commit=2</h4>
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230114211535295.png"
 alt="image-20230114211535295" />
 <figcaption aria-hidden="true">image-20230114211535295</figcaption>
-</figure></li>
-</ul>
+</figure>
 <h2 id="日志文件组">日志文件组</h2>
 <ul>
 <li><p>硬盘上存储的 <strong><code>redo log</code>
@@ -760,8 +758,7 @@ Log”日志方案给出的解决办法是：增加了一种被称为 Undo Log
 <p><strong>变动数据写入磁盘前，必须先记录 Undo Log，Undo Log
 中存储了回滚需要的数据。在事务回滚或者崩溃恢复时，根据 Undo Log
 中的信息对提前写入的数据变动进行擦除。</strong></p>
-<h2
-id="更新一条语句的执行过程ly根据多方资料验证这个是对的事务提交前并不会持久化到db磁盘数据库文件中">更新一条语句的执行过程(ly:根据多方资料验证，这个是对的，事务提交前并不会持久化到db磁盘数据库文件中)</h2>
+<p><strong>更新一条语句的执行过程(ly:根据多方资料验证，这个是对的，事务提交前并不会持久化到db磁盘数据库文件中)</strong></p>
 <blockquote>
 <p>回答题主的问题，对MySQL数据库来说，事务提交之前，操作的数据存储在数据库在内存区域中的缓冲池中，即写的是内存缓冲池中的页(page
 cache)，同时会在缓冲池中写undolog(用于回滚)和redolog、binlog(用于故障恢复，保证数据持久化的一致性)，事务提交后，有数据变更的页，即脏页，会被持久化到物理磁盘。</p>
@@ -791,7 +788,7 @@ commit 状态。</li>
 <li><strong>事务结束</strong></li>
 </ol>
 </blockquote>
-<h2 id="mvcc">MVCC</h2>
+<h1 id="mvcc">MVCC</h1>
 <ul>
 <li><p><code>MVCC</code> 的实现依赖于：<strong>隐藏字段、Read View、undo
 log</strong>。</p></li>
@@ -805,7 +802,7 @@ log</strong>。</p></li>
 <code>Read View</code> 之前已经提交的修改和该事务本身做的修改</p>
 </blockquote></li>
 </ul>
-<h2 id="总结">总结</h2>
+<h1 id="总结">总结</h1>
 <ul>
 <li>MySQL InnoDB 引擎使用 <strong>redo log(重做日志)</strong>
 保证事务的<strong>持久性</strong>，使用 <strong>undo
@@ -907,7 +904,7 @@ alt="image-20230116002657069" /></li>
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#redo-log"><span class="nav-number">2.</span> <span class="nav-text">redo log</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%B7%E7%9B%98%E6%97%B6%E6%9C%BA"><span class="nav-number">2.1.</span> <span class="nav-text">刷盘时机</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#innodb_flush_log_at_trx_commit0%E4%B8%8D%E5%AF%B9%E6%98%AF%E5%90%A6%E5%88%B7%E7%9B%98%E5%81%9A%E5%87%BA%E5%A4%84%E7%90%86"><span class="nav-number">2.1.0.1.</span> <span class="nav-text">innodb_flush_log_at_trx_commit&#x3D;0（不对是否刷盘做出处理）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#innodb_flush_log_at_trx_commit1"><span class="nav-number">2.1.0.2.</span> <span class="nav-text">innodb_flush_log_at_trx_commit&#x3D;1</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#innodb_flush_log_at_trx_commit2"><span class="nav-number">2.1.0.3.</span> <span class="nav-text">innodb_flush_log_at_trx_commit&#x3D;2</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%97%A5%E5%BF%97%E6%96%87%E4%BB%B6%E7%BB%84"><span class="nav-number">2.2.</span> <span class="nav-text">日志文件组</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#redo-log-%E5%B0%8F%E7%BB%93"><span class="nav-number">2.3.</span> <span class="nav-text">redo log 小结</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#binlog"><span class="nav-number">3.</span> <span class="nav-text">binlog</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%B0%E5%BD%95%E6%A0%BC%E5%BC%8F"><span class="nav-number">3.1.</span> <span class="nav-text">记录格式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%99%E5%85%A5%E6%9C%BA%E5%88%B6"><span class="nav-number">3.2.</span> <span class="nav-text">写入机制</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%A4%E9%98%B6%E6%AE%B5%E6%8F%90%E4%BA%A4"><span class="nav-number">4.</span> <span class="nav-text">两阶段提交</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#undo-log"><span class="nav-number">5.</span> <span class="nav-text">undo log</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9B%B4%E6%96%B0%E4%B8%80%E6%9D%A1%E8%AF%AD%E5%8F%A5%E7%9A%84%E6%89%A7%E8%A1%8C%E8%BF%87%E7%A8%8Bly%E6%A0%B9%E6%8D%AE%E5%A4%9A%E6%96%B9%E8%B5%84%E6%96%99%E9%AA%8C%E8%AF%81%E8%BF%99%E4%B8%AA%E6%98%AF%E5%AF%B9%E7%9A%84%E4%BA%8B%E5%8A%A1%E6%8F%90%E4%BA%A4%E5%89%8D%E5%B9%B6%E4%B8%8D%E4%BC%9A%E6%8C%81%E4%B9%85%E5%8C%96%E5%88%B0db%E7%A3%81%E7%9B%98%E6%95%B0%E6%8D%AE%E5%BA%93%E6%96%87%E4%BB%B6%E4%B8%AD"><span class="nav-number">5.1.</span> <span class="nav-text">更新一条语句的执行过程(ly:根据多方资料验证，这个是对的，事务提交前并不会持久化到db磁盘数据库文件中)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mvcc"><span class="nav-number">5.2.</span> <span class="nav-text">MVCC</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">5.3.</span> <span class="nav-text">总结</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#redo-log"><span class="nav-number">2.</span> <span class="nav-text">redo log</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%B7%E7%9B%98%E6%97%B6%E6%9C%BA"><span class="nav-number">2.1.</span> <span class="nav-text">刷盘时机</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#innodb_flush_log_at_trx_commit0%E4%B8%8D%E5%AF%B9%E6%98%AF%E5%90%A6%E5%88%B7%E7%9B%98%E5%81%9A%E5%87%BA%E5%A4%84%E7%90%86"><span class="nav-number">2.1.1.</span> <span class="nav-text">innodb_flush_log_at_trx_commit&#x3D;0（不对是否刷盘做出处理）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#innodb_flush_log_at_trx_commit1"><span class="nav-number">2.1.2.</span> <span class="nav-text">innodb_flush_log_at_trx_commit&#x3D;1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#innodb_flush_log_at_trx_commit2"><span class="nav-number">2.1.3.</span> <span class="nav-text">innodb_flush_log_at_trx_commit&#x3D;2</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%97%A5%E5%BF%97%E6%96%87%E4%BB%B6%E7%BB%84"><span class="nav-number">2.2.</span> <span class="nav-text">日志文件组</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#redo-log-%E5%B0%8F%E7%BB%93"><span class="nav-number">2.3.</span> <span class="nav-text">redo log 小结</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#binlog"><span class="nav-number">3.</span> <span class="nav-text">binlog</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%B0%E5%BD%95%E6%A0%BC%E5%BC%8F"><span class="nav-number">3.1.</span> <span class="nav-text">记录格式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%99%E5%85%A5%E6%9C%BA%E5%88%B6"><span class="nav-number">3.2.</span> <span class="nav-text">写入机制</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%A4%E9%98%B6%E6%AE%B5%E6%8F%90%E4%BA%A4"><span class="nav-number">4.</span> <span class="nav-text">两阶段提交</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#undo-log"><span class="nav-number">5.</span> <span class="nav-text">undo log</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#mvcc"><span class="nav-number">6.</span> <span class="nav-text">MVCC</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">7.</span> <span class="nav-text">总结</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
