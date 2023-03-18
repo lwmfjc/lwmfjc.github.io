@@ -246,7 +246,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>8.8k</span>
+              <span>8.9k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -343,12 +343,10 @@ id="禁止从开发环境测试环境直接连接生产环境数据库">禁止�
 <h1 id="数据库字段设计规范">数据库字段设计规范</h1>
 <h2
 id="优先选择符合存储需要的最小数据类型">优先选择符合存储需要的最小数据类型</h2>
-<figure>
+<p><strong>Byte：字节</strong><br />
 <img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230123123412164.png"
-alt="image-20230123123412164" />
-<figcaption aria-hidden="true">image-20230123123412164</figcaption>
-</figure>
+alt="image-20230123123412164" /></p>
 <p>存储字节越小，<strong>占用也就空间越小</strong>，<strong>性能也越好</strong>。</p>
 <p><strong>a.某些字符串可以转换成数字类型存储比如可以将 IP
 地址转换成整型数据。</strong></p>
@@ -400,9 +398,13 @@ MySQL 的 enum 类型？ - 架构文摘 - 知乎open in new window</a></p>
 NULL</h2>
 <p>除非有特别的原因使用 NULL 值，应该总是让字段保持 NOT NULL。</p>
 <ul>
-<li><strong>索引 NULL
-列需要额外的空间</strong>来保存，所以要占用更多的空间；</li>
-<li>进行<strong>比较和计算时要对 NULL 值做特别的处理</strong>。</li>
+<li><p><strong>索引 NULL
+列需要额外的空间</strong>来保存，所以要占用更多的空间；</p>
+<blockquote>
+<p><strong>该位指示了该行数据中是否有NULL值，有则使用1来表示，该部分占的字节大小大概为1字节</strong>，比如当NULL标志位为06时，06转换为二进制为110，表示第二列和第三列为NULL。</p>
+</blockquote></li>
+<li><p>进行<strong>比较和计算时要对 NULL
+值做特别的处理</strong>。</p></li>
 </ul>
 <p>相关阅读：<a
 target="_blank" rel="noopener" href="https://opensource.actionsky.com/20190710-mysql/">技术分享 | MySQL
@@ -448,7 +450,7 @@ id="限制每张表上的索引数量建议单张表索引不超过5个">限制�
 <li><p>索引可以增加查询效率，但同样也会<strong>降低插入</strong>和<strong>更新</strong>的效率，甚至有些情况下会<strong>降低查询效率</strong>。</p>
 <blockquote>
 <p>因为 MySQL
-优化器在选择如何优化查询时，会根据统一信息，对每一个可以用到的索引来进行评估，以生成出一个最好的执行计划，如果同时有很多个索引都可以用于查询，就会<strong>增加
+<strong>优化器</strong>在选择如何优化查询时，会根据统一信息，<strong>对每一个可以用到的索引来进行评估</strong>，以生成出一个最好的执行计划，如果同时有很多个索引都可以用于查询，就会<strong>增加
 MySQL
 优化器生成执行计划的时间</strong>，同样会<strong>降低查询性能</strong>。</p>
 </blockquote></li>
@@ -472,7 +474,7 @@ id="禁止给表中的每一列都建立单独的索引">禁止给表中的每�
 是一种<strong>索引组织表</strong>：数据的<strong>存储的逻辑顺序</strong>和<strong>索引的顺序</strong>是相同的。每个表都可以有多个索引，但是<strong>表的存储顺序只能有一种</strong>。</li>
 <li>InnoDB 是按照<strong>主键索引的顺序</strong>来组织表的
 <ul>
-<li><strong>不要使用更新频繁的列</strong>作为主键，<strong>不适用多列主键</strong>（相当于联合索引）</li>
+<li><strong>不要使用更新频繁的列</strong>作为主键，<strong>不适用(使用)多列主键</strong>（相当于联合索引）</li>
 <li>不要使用
 <strong>UUID,MD5,HASH,字符串</strong>列作为主键（无法保证数据的<strong>顺序增长</strong>）</li>
 <li>主键<strong>建议使用自增 ID</strong> 值</li>
