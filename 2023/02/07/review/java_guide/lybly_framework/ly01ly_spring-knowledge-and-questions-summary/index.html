@@ -903,7 +903,10 @@ alt="img" />
 查找实际的 <code>View</code></strong>。</li>
 <li><code>DispaterServlet</code> 把<strong>返回的 <code>Model</code>
 传给 <code>View</code>（视图渲染</strong>）。</li>
-<li>把 <strong><code>View</code> 返回</strong>给请求者（浏览器）</li>
+<li>把 <strong><code>View</code> 返回</strong>给请求者（浏览器）<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/20230321141002.png"
+alt="image.png" /></li>
 </ol>
 <h3 id="统一异常处理怎么做">统一异常处理怎么做？</h3>
 <p>推荐使用注解的方式统一异常处理，具体会使用到
@@ -1040,7 +1043,7 @@ cglib与java动态代理最大区别是<strong>代理目标对象不用实现接
 <h3 id="spring-事务中哪几种事务传播行为">Spring
 事务中哪几种事务传播行为?</h3>
 <p><strong>事务传播行为是为了解决业务层方法之间互相调用的事务问题</strong>。</p>
-<p>当事务方法被另一个事务方法调用时，必须指定事务应该如何传播。例如：方法可能继续在现有事务中运行，也可能开启一个新事务，并在自己的事务中运行。</p>
+<p>当事务方法被另一个事务方法(也可能非事务)调用时，必须指定事务应该如何传播。例如：方法可能继续在现有事务中运行，也可能开启一个新事务，并在自己的事务中运行。</p>
 <blockquote>
 <p>注意几点，下面这个值都是<strong>内方法</strong>上的注解的值，且两个方法必须属于不同类</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyClassServiceImpl</span> <span class="keyword">extends</span> <span class="title class_">ServiceImpl</span>&lt;MyClassMapper, MyClass&gt; <span class="keyword">implements</span> <span class="title class_">MyClassService</span> &#123;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> UserService userService;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//外方法 </span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">methodOuter</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="comment">//新增一条记录</span></span><br><span class="line">        MyClass myClass=<span class="keyword">new</span> <span class="title class_">MyClass</span>();</span><br><span class="line">        myClass.setName(<span class="string">&quot;class_name&quot;</span>);</span><br><span class="line">        <span class="built_in">this</span>.saveOrUpdate(myClass);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//调用内方法</span></span><br><span class="line">        userService.methodInner();</span><br><span class="line">        <span class="comment">//抛出异常</span></span><br><span class="line">        <span class="comment">//throw new Exception(&quot;hello&quot;);</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -1081,7 +1084,9 @@ cglib与java动态代理最大区别是<strong>代理目标对象不用实现接
 <li><strong><code>TransactionDefinition.PROPAGATION_NOT_SUPPORTED</code></strong>:
 以非事务方式运行，如果当前存在事务，则把当前事务挂起。</li>
 <li><strong><code>TransactionDefinition.PROPAGATION_NEVER</code></strong>:
-以非事务方式运行，如果当前存在事务，则抛出异常。</li>
+以非事务方式运行，如果当前存在事务，则抛出异常。 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/20230321162427.png"
+alt="image.png" /></li>
 </ul>
 <h3 id="spring-事务中的隔离级别有哪几种">Spring
 事务中的隔离级别有哪几种?</h3>
