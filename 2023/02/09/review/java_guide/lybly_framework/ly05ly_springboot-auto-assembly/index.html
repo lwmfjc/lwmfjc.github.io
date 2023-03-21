@@ -351,9 +351,9 @@ id="autoconfigurationimportselector加载自动装配类">AutoConfigurationImpor
 <p><code>AutoConfigurationImportSelector</code>类的继承体系如下：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">public class AutoConfigurationImportSelector implements DeferredImportSelector, BeanClassLoaderAware, ResourceLoaderAware, BeanFactoryAware, EnvironmentAware, Ordered &#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">public interface DeferredImportSelector extends ImportSelector &#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">public interface ImportSelector &#123;</span><br><span class="line">    String[] selectImports(AnnotationMetadata var1);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>可以看出，<code>AutoConfigurationImportSelector</code> 类实现了
-<strong><code>ImportSelector</code></strong>接口，也就实现了这个接口中的
-<strong><code>selectImports</code></strong>方法，该方法主要用于<strong>获取所有符合条件的类的全限定类名，这些类需要被加载到
-IoC 容器中</strong>。</p>
+<strong><code>ImportSelector</code>接口，也就实现了这个接口中的
+<code>selectImports</code>方法，该方法主要用于</strong>获取所有符合条件的类的全限定类名，这些类需要被加载到
+IoC 容器中。</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String[] NO_IMPORTS = <span class="keyword">new</span> <span class="title class_">String</span>[<span class="number">0</span>];</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> String[] selectImports(AnnotationMetadata annotationMetadata) &#123;</span><br><span class="line">        <span class="comment">// &lt;1&gt;.判断自动装配开关是否打开</span></span><br><span class="line">        <span class="keyword">if</span> (!<span class="built_in">this</span>.isEnabled(annotationMetadata)) &#123;</span><br><span class="line">            <span class="keyword">return</span> NO_IMPORTS;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">          <span class="comment">//&lt;2&gt;.获取所有需要装配的bean</span></span><br><span class="line">            <span class="type">AutoConfigurationMetadata</span> <span class="variable">autoConfigurationMetadata</span> <span class="operator">=</span> AutoConfigurationMetadataLoader.loadMetadata(<span class="built_in">this</span>.beanClassLoader);</span><br><span class="line">            AutoConfigurationImportSelector.<span class="type">AutoConfigurationEntry</span> <span class="variable">autoConfigurationEntry</span> <span class="operator">=</span> <span class="built_in">this</span>.getAutoConfigurationEntry(autoConfigurationMetadata, annotationMetadata);</span><br><span class="line">            <span class="keyword">return</span> StringUtils.toStringArray(autoConfigurationEntry.getConfigurations());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
 <p>这里我们需要重点关注一下<code>getAutoConfigurationEntry()</code>方法，这个方法主要负责加载自动配置类的。</p>
 <p>该方法调用链如下：</p>
@@ -489,6 +489,12 @@ alt="img" /></p>
 通过<strong><code>@EnableAutoConfiguration</code></strong>开启自动装配，通过
 <strong>SpringFactoriesLoader</strong>
 最终加载<strong><code>META-INF/spring.factories</code></strong>中的<strong>自动配置类</strong>实现<strong>自动装配</strong>，自动配置类其实就是<strong>通过<code>@Conditional</code>按需加载的配置类</strong>，想要其生效必须引入<strong><code>spring-boot-starter-xxx</code>包实现起步依赖</strong></p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/20230321182423.png"
+alt="image.png" />
+<figcaption aria-hidden="true">image.png</figcaption>
+</figure>
 
     </div>
 
