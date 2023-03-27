@@ -27,11 +27,14 @@
 <meta property="og:site_name" content="随记">
 <meta property="og:description" content="api">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/api.services.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/api.transient.variable.example.png">
 <meta property="article:published_time" content="2022-04-29T09:57:47.000Z">
 <meta property="article:modified_time" content="2022-04-29T10:37:47.000Z">
 <meta property="article:author" content="刘易">
 <meta property="article:tag" content="flowable官方">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/api.services.png">
 
 <link rel="canonical" href="http://example.com/2022/04/29/study/flowable/offical/03/">
 
@@ -258,226 +261,188 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h3 id="流程引擎api和服务">流程引擎API和服务</h3>
-<p>引擎API是与Flowable交互的常见方式，主要起点是ProcessEngine，可以通过配置（Configuration章节）中描述的多种方式创建。</p>
+        <h3 id="流程引擎API和服务"><a href="#流程引擎API和服务" class="headerlink" title="流程引擎API和服务"></a>流程引擎API和服务</h3><p>引擎API是与Flowable交互的常见方式，主要起点是ProcessEngine，可以通过配置（Configuration章节）中描述的多种方式创建。</p>
 <p>从ProcessEngine获取包含工作流/BPM方法的各种服务。ProcessEngine和服务对象是线程安全的</p>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/api.services.png"
-alt="api.services" />
-<figcaption aria-hidden="true">api.services</figcaption>
-</figure>
+<p><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/api.services.png" alt="api.services"></p>
 <p>下面是通过processEngine获取各种服务的方法</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">ProcessEngine</span> <span class="variable">processEngine</span> <span class="operator">=</span> ProcessEngines.getDefaultProcessEngine();</span><br><span class="line"></span><br><span class="line"><span class="type">RuntimeService</span> <span class="variable">runtimeService</span> <span class="operator">=</span> processEngine.getRuntimeService();</span><br><span class="line"><span class="type">RepositoryService</span> <span class="variable">repositoryService</span> <span class="operator">=</span> processEngine.getRepositoryService();</span><br><span class="line"><span class="type">TaskService</span> <span class="variable">taskService</span> <span class="operator">=</span> processEngine.getTaskService();</span><br><span class="line"><span class="type">ManagementService</span> <span class="variable">managementService</span> <span class="operator">=</span> processEngine.getManagementService();</span><br><span class="line"><span class="type">IdentityService</span> <span class="variable">identityService</span> <span class="operator">=</span> processEngine.getIdentityService();</span><br><span class="line"><span class="type">HistoryService</span> <span class="variable">historyService</span> <span class="operator">=</span> processEngine.getHistoryService();</span><br><span class="line"><span class="type">FormService</span> <span class="variable">formService</span> <span class="operator">=</span> processEngine.getFormService();</span><br><span class="line"><span class="type">DynamicBpmnService</span> <span class="variable">dynamicBpmnService</span> <span class="operator">=</span> processEngine.getDynamicBpmnService();</span><br></pre></td></tr></table></figure>
 <p>ProcessEngines.getDefaultProcessEngine()在第一次调用时初始化并构建流程引擎，然后返回相同的流程引擎</p>
 <p>ProcessEngines类将扫描所有flowable.cfg.xml和flowable-context.xml文件。</p>
 <blockquote>
-<p>对于所有 flowable.cfg.xml 文件，流程引擎将以典型的 Flowable
-方式构建：ProcessEngineConfiguration.createProcessEngineConfigurationFromInputStream(inputStream).buildProcessEngine()。</p>
-<p>对于所有 flowable-context.xml 文件，流程引擎将以 Spring
-方式构建：首先创建 Spring
-应用程序上下文，然后从该应用程序上下文中获取流程引擎。</p>
-</blockquote>
-<blockquote>
-<p>The <strong>RepositoryService</strong> is probably the first service
-needed when working with the Flowable engine.</p>
+<p>对于所有 flowable.cfg.xml 文件，流程引擎将以典型的 Flowable 方式构建：ProcessEngineConfiguration.createProcessEngineConfigurationFromInputStream(inputStream).buildProcessEngine()。</p>
+<p>对于所有 flowable-context.xml 文件，流程引擎将以 Spring 方式构建：首先创建 Spring 应用程序上下文，然后从该应用程序上下文中获取流程引擎。</p>
+<p>The <strong>RepositoryService</strong> is probably the first service needed when working with the Flowable engine.</p>
 </blockquote>
 <p>该服务<strong>(RepositoryService)</strong>提供用于管理和操作部署<strong>deployments</strong>和流程定义的操作</p>
 <ul>
 <li>查询引擎已知的部署和流程定义</li>
 <li>暂停和激活作为一个整体或特定流程定义的部署。挂起意味着不能对它们执行进一步的操作，而激活则相反并再次启用操作</li>
 <li>检索各种资源，例如引擎自动生成的部署或流程图中包含的文件</li>
-<li>检索流程定义的 POJO 版本，该版本可用于使用 Java 而不是 XML
-来内省流程</li>
+<li>检索流程定义的 POJO 版本，该版本可用于使用 Java 而不是 XML 来内省流程</li>
 </ul>
-<p>RepositoryService主要是关于静态信息（不会改变的数据，或者至少不会改变太多），而RuntimeService处理启动流程定义的<em>新流程实例</em></p>
+<p>RepositoryService主要是关于静态信息（不会改变的数据，或者至少不会改变太多），而RuntimeService处理启动流程定义的<em>新流程实例</em> </p>
 <ul>
-<li><p>流程定义定义了流程中不同步骤的结构和行为，流程实例是此类流程定义的一次执行</p></li>
-<li><p>对于每个流程定义，通常有许多实例同时运行</p></li>
-<li><p>Runtime也用于检索和存储<strong>流程变量</strong></p></li>
+<li><p>流程定义定义了流程中不同步骤的结构和行为，流程实例是此类流程定义的一次执行</p>
+</li>
+<li><p>对于每个流程定义，通常有许多实例同时运行</p>
+</li>
+<li><p>Runtime也用于检索和存储<strong>流程变量</strong></p>
+</li>
 <li><p>Runtimeservice还可以用来查询流程实例和执行(executions)</p>
 <blockquote>
-<p>Executions are a representation of the 'token' concept of BPMN 2.0.
-执行是指向流程实例当前所在位置的指针</p>
-</blockquote></li>
-<li><p>只要流程实例正在等待外部触发器并且流程需要继续，就会使用
-RuntimeService</p></li>
-<li><p>流程实例可以有各种等待状态，并且该服务包含各种操作以向实例发出“信号”，即接收到外部触发器并且流程实例可以继续</p></li>
+<p>Executions are a representation of the ‘token’ concept of BPMN 2.0.<br>执行是指向流程实例当前所在位置的指针</p>
+</blockquote>
+</li>
+<li><p>只要流程实例正在等待外部触发器并且流程需要继续，就会使用 RuntimeService</p>
+</li>
+<li><p>流程实例可以有各种等待状态，并且该服务包含各种操作以向实例发出“信号”，即接收到外部触发器并且流程实例可以继续</p>
+</li>
 </ul>
 <p>需要由系统的人类用户执行的任务是BPM引擎（如Floable）的核心，围绕任务的所有内容都在TaskService中进行分组</p>
 <ul>
 <li>查询分配给用户或组的任务</li>
 <li>创建新的独立任务（与流程实例无关）</li>
 <li>任务被分配给哪个用户或哪些用户，以及让这些用户以某种方式参与该任务</li>
-<li>要求并完成一项任务，声明意味着某人决定成为该任务的受让人<strong>assignee</strong></li>
+<li>要求并完成一项任务，声明意味着某人决定成为该任务的受让人<strong>assignee</strong> </li>
 </ul>
 <p>IdentityService支持组和用户的管理（创建、更新、删除、查询）</p>
-<p>FormService是可选服务，引入了启动表单（<strong>start
-form</strong>）和任务表单(<strong>a task form</strong>)的概念</p>
+<p>FormService是可选服务，引入了启动表单（<strong>start form</strong>）和任务表单(<strong>a task form</strong>)的概念</p>
 <blockquote>
-<p><strong>HistoryService</strong>公开了 Flowable
-引擎收集的所有历史数据。在执行流程时，引擎可以保留很多数据（这是可配置的），例如流程实例的启动时间，谁做了哪些任务，完成任务花了多长时间，每个流程实例中遵循的路径，等等。</p>
+<p><strong>HistoryService</strong>公开了 Flowable 引擎收集的所有历史数据。在执行流程时，引擎可以保留很多数据（这是可配置的），例如流程实例的启动时间，谁做了哪些任务，完成任务花了多长时间，每个流程实例中遵循的路径，等等。</p>
 </blockquote>
-<p>使用Flowable
-编写自定义应用程序时，通常不需要<strong>ManagementService
-。</strong>它允许检索有关数据库表和表元数据的信息。此外，它还公开了作业的查询功能和管理操作</p>
+<p>使用Flowable 编写自定义应用程序时，通常不需要<strong>ManagementService 。</strong>它允许检索有关数据库表和表元数据的信息。此外，它还公开了作业的查询功能和管理操作</p>
 <p><strong>DynamicBpmnService</strong>可用于更改流程定义的一部分，而无需重新部署它。例如，您可以更改流程定义中用户任务的受理人定义，或更改服务任务的类名。</p>
-<h3 id="异常策略">异常策略</h3>
-<p>Flowable 中的基本异常是 org.flowable.engine.FlowableException</p>
+<h3 id="异常策略"><a href="#异常策略" class="headerlink" title="异常策略"></a>异常策略</h3><p>Flowable 中的基本异常是 org.flowable.engine.FlowableException</p>
 <p>Flowable的一些异常子类</p>
 <ul>
-<li>FlowableWrongDbException：当 Flowable
-引擎发现数据库架构版本和引擎版本不匹配时抛出。</li>
+<li>FlowableWrongDbException：当 Flowable 引擎发现数据库架构版本和引擎版本不匹配时抛出。</li>
 <li>FlowableOptimisticLockingException：当并发访问同一数据条目导致数据存储发生乐观锁定时抛出。</li>
-<li>FlowableClassLoadingException：当请求加载的类未找到或加载时发生错误时抛出（例如
-JavaDelegates、TaskListeners ......）。</li>
+<li>FlowableClassLoadingException：当请求加载的类未找到或加载时发生错误时抛出（例如 JavaDelegates、TaskListeners ……）。</li>
 <li>FlowableObjectNotFoundException：当请求或操作的对象不存在时抛出。</li>
-<li>FlowableIllegalArgumentException：异常表明在 Flowable API
-调用中提供了非法参数，在引擎配置中配置了非法值，或者提供了非法值，或者在流程定义中使用了非法值。</li>
-<li>FlowableTaskAlreadyClaimedException：当任务已被声明时抛出，当
-taskService.claim(...) 被调用时</li>
+<li>FlowableIllegalArgumentException：异常表明在 Flowable API 调用中提供了非法参数，在引擎配置中配置了非法值，或者提供了非法值，或者在流程定义中使用了非法值。</li>
+<li>FlowableTaskAlreadyClaimedException：当任务已被声明时抛出，当 taskService.claim(…) 被调用时</li>
 </ul>
-<h3 id="查询接口">查询接口</h3>
-<p>引擎查询数据有两种方式：the query API and native queries</p>
+<h3 id="查询接口"><a href="#查询接口" class="headerlink" title="查询接口"></a>查询接口</h3><p>引擎查询数据有两种方式：the query API and native queries</p>
 <ul>
 <li><p>queryAPi允许使用fluent API编写完全类型安全的查询，例如</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">List&lt;Task&gt; tasks = taskService.createTaskQuery()</span><br><span class="line">    .taskAssignee(<span class="string">&quot;kermit&quot;</span>)</span><br><span class="line">    .processVariableValueEquals(<span class="string">&quot;orderId&quot;</span>, <span class="string">&quot;0815&quot;</span>)</span><br><span class="line">    .orderByDueDate().asc()</span><br><span class="line">    .list();</span><br></pre></td></tr></table></figure></li>
-<li><p>native queries
-（返回类型由您使用的查询对象定义，数据映射到正确的对象[比如任务、流程实例、执行等，且您必须使用在数据库中定义的表明和列名]）。如下，可以通过api检索表名等，使依赖关系尽可能小</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">List&lt;Task&gt; tasks = taskService.createNativeTaskQuery()</span><br><span class="line">  .sql(<span class="string">&quot;SELECT count(*) FROM &quot;</span> + managementService.getTableName(Task.class) +</span><br><span class="line">      <span class="string">&quot; T WHERE T.NAME_ = #&#123;taskName&#125;&quot;</span>)</span><br><span class="line">  .parameter(<span class="string">&quot;taskName&quot;</span>, <span class="string">&quot;gonzoTask&quot;</span>)</span><br><span class="line">  .list();</span><br><span class="line"></span><br><span class="line"><span class="type">long</span> <span class="variable">count</span> <span class="operator">=</span> taskService.createNativeTaskQuery()</span><br><span class="line">  .sql(<span class="string">&quot;SELECT count(*) FROM &quot;</span> + managementService.getTableName(Task.class) + <span class="string">&quot; T1, &quot;</span> +</span><br><span class="line">      managementService.getTableName(VariableInstanceEntity.class) + <span class="string">&quot; V1 WHERE V1.TASK_ID_ = T1.ID_&quot;</span>)</span><br><span class="line">  .count();</span><br></pre></td></tr></table></figure></li>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">List&lt;Task&gt; tasks = taskService.createTaskQuery()</span><br><span class="line">    .taskAssignee(<span class="string">&quot;kermit&quot;</span>)</span><br><span class="line">    .processVariableValueEquals(<span class="string">&quot;orderId&quot;</span>, <span class="string">&quot;0815&quot;</span>)</span><br><span class="line">    .orderByDueDate().asc()</span><br><span class="line">    .list();</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>native queries<br>（返回类型由您使用的查询对象定义，数据映射到正确的对象[比如任务、流程实例、执行等，且您必须使用在数据库中定义的表明和列名]）。如下，可以通过api检索表名等，使依赖关系尽可能小</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">List&lt;Task&gt; tasks = taskService.createNativeTaskQuery()</span><br><span class="line">  .sql(<span class="string">&quot;SELECT count(*) FROM &quot;</span> + managementService.getTableName(Task.class) +</span><br><span class="line">      <span class="string">&quot; T WHERE T.NAME_ = #&#123;taskName&#125;&quot;</span>)</span><br><span class="line">  .parameter(<span class="string">&quot;taskName&quot;</span>, <span class="string">&quot;gonzoTask&quot;</span>)</span><br><span class="line">  .list();</span><br><span class="line"></span><br><span class="line"><span class="type">long</span> <span class="variable">count</span> <span class="operator">=</span> taskService.createNativeTaskQuery()</span><br><span class="line">  .sql(<span class="string">&quot;SELECT count(*) FROM &quot;</span> + managementService.getTableName(Task.class) + <span class="string">&quot; T1, &quot;</span> +</span><br><span class="line">      managementService.getTableName(VariableInstanceEntity.class) + <span class="string">&quot; V1 WHERE V1.TASK_ID_ = T1.ID_&quot;</span>)</span><br><span class="line">  .count();</span><br></pre></td></tr></table></figure>
+</li>
 </ul>
-<h3 id="变量">变量</h3>
-<ul>
-<li><p>每个流程实例都需要并使用数据来执行其组成的步骤。在 Flowable
-中，这些数据称为<em>变量</em>，存储在数据库中</p></li>
-<li><p>流程实例可以有变量（称为<em>流程变量</em>），也可以有<em>执</em>行（指向流程处于活动状态的特定指针）。用户任务也可以有变量，变量存储在ACT_RU_VARIABLE数据库表中</p></li>
+<h3 id="变量"><a href="#变量" class="headerlink" title="变量"></a>变量</h3><ul>
+<li><p>每个流程实例都需要并使用数据来执行其组成的步骤。在 Flowable 中，这些数据称为<em>变量</em>，存储在数据库中</p>
+</li>
+<li><p>流程实例可以有变量（称为<em>流程变量</em>），也可以有<em>执</em>行（指向流程处于活动状态的特定指针）。用户任务也可以有变量，变量存储在ACT_RU_VARIABLE数据库表中</p>
+</li>
 <li><p>所有<em>startProcessInstanceXXX</em>方法都有一个可选参数，用于在创建和启动流程实例时提供变量</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">ProcessInstance <span class="title function_">startProcessInstanceByKey</span><span class="params">(String processDefinitionKey, Map&lt;String, Object&gt; variables)</span>;</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">ProcessInstance <span class="title function_">startProcessInstanceByKey</span><span class="params">(String processDefinitionKey, Map&lt;String, Object&gt; variables)</span>;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+</li>
 <li><p>可以在流程执行期间添加变量。例如，（<em>RuntimeService</em>）</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">void</span> <span class="title function_">setVariable</span><span class="params">(String executionId, String variableName, Object value)</span>;</span><br><span class="line"><span class="keyword">void</span> <span class="title function_">setVariableLocal</span><span class="params">(String executionId, String variableName, Object value)</span>;</span><br><span class="line"><span class="keyword">void</span> <span class="title function_">setVariables</span><span class="params">(String executionId, Map&lt;String, ? extends Object&gt; variables)</span>;</span><br><span class="line"><span class="keyword">void</span> <span class="title function_">setVariablesLocal</span><span class="params">(String executionId, Map&lt;String, ? extends Object&gt; variables)</span>;</span><br></pre></td></tr></table></figure></li>
-<li><p>检索变量
-<em>TaskService</em>上存在类似的方法。这意味着任务（如执行）可以具有仅在任务期间“活动”的局部变量</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Map&lt;String, Object&gt; <span class="title function_">getVariables</span><span class="params">(String executionId)</span>;</span><br><span class="line">Map&lt;String, Object&gt; <span class="title function_">getVariablesLocal</span><span class="params">(String executionId)</span>;</span><br><span class="line">Map&lt;String, Object&gt; <span class="title function_">getVariables</span><span class="params">(String executionId, Collection&lt;String&gt; variableNames)</span>;</span><br><span class="line">Map&lt;String, Object&gt; <span class="title function_">getVariablesLocal</span><span class="params">(String executionId, Collection&lt;String&gt; variableNames)</span>;</span><br><span class="line">Object <span class="title function_">getVariable</span><span class="params">(String executionId, String variableName)</span>;</span><br><span class="line">&lt;T&gt; T <span class="title function_">getVariable</span><span class="params">(String executionId, String variableName, Class&lt;T&gt; variableClass)</span>;</span><br></pre></td></tr></table></figure></li>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">void</span> <span class="title function_">setVariable</span><span class="params">(String executionId, String variableName, Object value)</span>;</span><br><span class="line"><span class="keyword">void</span> <span class="title function_">setVariableLocal</span><span class="params">(String executionId, String variableName, Object value)</span>;</span><br><span class="line"><span class="keyword">void</span> <span class="title function_">setVariables</span><span class="params">(String executionId, Map&lt;String, ? extends Object&gt; variables)</span>;</span><br><span class="line"><span class="keyword">void</span> <span class="title function_">setVariablesLocal</span><span class="params">(String executionId, Map&lt;String, ? extends Object&gt; variables)</span>;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>检索变量<br><em>TaskService</em>上存在类似的方法。这意味着任务（如执行）可以具有仅在任务期间“活动”的局部变量</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Map&lt;String, Object&gt; <span class="title function_">getVariables</span><span class="params">(String executionId)</span>;</span><br><span class="line">Map&lt;String, Object&gt; <span class="title function_">getVariablesLocal</span><span class="params">(String executionId)</span>;</span><br><span class="line">Map&lt;String, Object&gt; <span class="title function_">getVariables</span><span class="params">(String executionId, Collection&lt;String&gt; variableNames)</span>;</span><br><span class="line">Map&lt;String, Object&gt; <span class="title function_">getVariablesLocal</span><span class="params">(String executionId, Collection&lt;String&gt; variableNames)</span>;</span><br><span class="line">Object <span class="title function_">getVariable</span><span class="params">(String executionId, String variableName)</span>;</span><br><span class="line">&lt;T&gt; T <span class="title function_">getVariable</span><span class="params">(String executionId, String variableName, Class&lt;T&gt; variableClass)</span>;</span><br></pre></td></tr></table></figure>
+</li>
 <li><p>当前<strong><em>执行</em></strong>或<strong><em>任务</em></strong>对象是可用的，它可以用于变量设置和/或检索</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line">execution.getVariables();</span><br><span class="line">execution.getVariables(Collection&lt;String&gt; variableNames);</span><br><span class="line">execution.getVariable(String variableName);</span><br><span class="line"></span><br><span class="line">execution.setVariables(Map&lt;String, object&gt; variables);</span><br><span class="line">execution.setVariable(String variableName, Object value);</span><br></pre></td></tr></table></figure>
 <ul>
-<li><p><strong>在执行上述任何调用时，所有</strong>变量都会在后台从数据库中获取。这意味着，如果您有
-10
-个变量，但只能通过<em>getVariable("myVariable")</em>获得一个，那么在幕后将获取并缓存其他
-9 个</p></li>
+<li><p><strong>在执行上述任何调用时，所有</strong>变量都会在后台从数据库中获取。这意味着，如果您有 10 个变量，但只能通过<em>getVariable(“myVariable”)</em>获得一个，那么在幕后将获取并缓存其他 9 个</p>
+</li>
 <li><p>接上述，可以设置是否缓存所有变量</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Map&lt;String, Object&gt; <span class="title function_">getVariables</span><span class="params">(Collection&lt;String&gt; variableNames, <span class="type">boolean</span> fetchAllVariables)</span>;</span><br><span class="line">Object <span class="title function_">getVariable</span><span class="params">(String variableName, <span class="type">boolean</span> fetchAllVariables)</span>;</span><br><span class="line"><span class="keyword">void</span> <span class="title function_">setVariable</span><span class="params">(String variableName, Object value, <span class="type">boolean</span> fetchAllVariables)</span>;</span><br></pre></td></tr></table></figure></li>
-</ul></li>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Map&lt;String, Object&gt; <span class="title function_">getVariables</span><span class="params">(Collection&lt;String&gt; variableNames, <span class="type">boolean</span> fetchAllVariables)</span>;</span><br><span class="line">Object <span class="title function_">getVariable</span><span class="params">(String variableName, <span class="type">boolean</span> fetchAllVariables)</span>;</span><br><span class="line"><span class="keyword">void</span> <span class="title function_">setVariable</span><span class="params">(String variableName, Object value, <span class="type">boolean</span> fetchAllVariables)</span>;</span><br></pre></td></tr></table></figure>
+</li>
 </ul>
-<h3 id="瞬态变量">瞬态变量</h3>
-<p>瞬态变量是行为类似于常规变量但不持久的变量。通常，瞬态变量用于高级用例</p>
+</li>
+</ul>
+<h3 id="瞬态变量"><a href="#瞬态变量" class="headerlink" title="瞬态变量"></a>瞬态变量</h3><p>瞬态变量是行为类似于常规变量但不持久的变量。通常，瞬态变量用于高级用例</p>
 <ul>
 <li>对于瞬态变量，根本没有存储历史记录。</li>
 <li>与<em>常规</em>变量一样，瞬态变量在设置时放在<em>最高父</em>级。这意味着在执行时设置变量时，瞬态变量实际上存储在流程实例执行中。与常规变量一样，如果在特定执行或任务上设置变量，则存在方法的<em>局部变体。</em></li>
 <li>只能在流程定义中的下一个“等待状态”之前访问瞬态变量。在那之后，他们就走了。在这里，等待状态是指流程实例中它被持久化到数据存储中的点。请注意，在此定义中，<em>异步</em>活动也是“等待状态”！</li>
-<li>瞬态变量只能由<em>setTransientVariable(name,
-value)</em>设置，但调用<em>getVariable(name)</em>时也会返回瞬态变量（也存在一个<em>getTransientVariable(name)</em>，它只检查瞬态变量）。这样做的原因是使表达式的编写变得容易，并且使用变量的现有逻辑适用于这两种类型。</li>
-<li>瞬态变量会<em>隐藏</em>同名的持久变量。这意味着当在流程实例上同时设置持久变量和瞬态变量并<em>调用
-getVariable("someVariable")</em>时，将返回瞬态变量值。</li>
+<li>瞬态变量只能由<em>setTransientVariable(name, value)</em>设置，但调用<em>getVariable(name)</em>时也会返回瞬态变量（也存在一个<em>getTransientVariable(name)</em>，它只检查瞬态变量）。这样做的原因是使表达式的编写变得容易，并且使用变量的现有逻辑适用于这两种类型。</li>
+<li>瞬态变量会<em>隐藏</em>同名的持久变量。这意味着当在流程实例上同时设置持久变量和瞬态变量并<em>调用 getVariable(“someVariable”)</em>时，将返回瞬态变量值。</li>
 </ul>
 <p>可以在大多数地方设置和获取瞬态变量</p>
 <ul>
-<li><p>关于<em>JavaDelegate</em>实现中的<em>DelegateExecution</em></p></li>
-<li><p>关于<em>ExecutionListener</em>实现中的DelegateExecution<em>和</em>关于<em>TaskListener</em>实现的<em>DelegateTask</em></p></li>
-<li><p><em>通过执行</em>对象在脚本任务中</p></li>
-<li><p>通过运行时服务启动流程实例时</p></li>
-<li><p>完成任务时</p></li>
-<li><p>调用<em>runtimeService.trigger</em>方法时</p></li>
+<li><p>关于<em>JavaDelegate</em>实现中的<em>DelegateExecution</em></p>
+</li>
+<li><p>关于<em>ExecutionListener</em>实现中的DelegateExecution<em>和</em>关于<em>TaskListener</em>实现的<em>DelegateTask</em></p>
+</li>
+<li><p><em>通过执行</em>对象在脚本任务中</p>
+</li>
+<li><p>通过运行时服务启动流程实例时</p>
+</li>
+<li><p>完成任务时</p>
+</li>
+<li><p>调用<em>runtimeService.trigger</em>方法时</p>
+</li>
 <li><p>方法</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">void</span> <span class="title function_">setTransientVariable</span><span class="params">(String variableName, Object variableValue)</span>;</span><br><span class="line"><span class="keyword">void</span> <span class="title function_">setTransientVariableLocal</span><span class="params">(String variableName, Object variableValue)</span>;</span><br><span class="line"><span class="keyword">void</span> <span class="title function_">setTransientVariables</span><span class="params">(Map&lt;String, Object&gt; transientVariables)</span>;</span><br><span class="line"><span class="keyword">void</span> <span class="title function_">setTransientVariablesLocal</span><span class="params">(Map&lt;String, Object&gt; transientVariables)</span>;</span><br><span class="line"></span><br><span class="line">Object <span class="title function_">getTransientVariable</span><span class="params">(String variableName)</span>;</span><br><span class="line">Object <span class="title function_">getTransientVariableLocal</span><span class="params">(String variableName)</span>;</span><br><span class="line"></span><br><span class="line">Map&lt;String, Object&gt; <span class="title function_">getTransientVariables</span><span class="params">()</span>;</span><br><span class="line">Map&lt;String, Object&gt; <span class="title function_">getTransientVariablesLocal</span><span class="params">()</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> <span class="title function_">removeTransientVariable</span><span class="params">(String variableName)</span>;</span><br><span class="line"><span class="keyword">void</span> <span class="title function_">removeTransientVariableLocal</span><span class="params">(String variableName)</span>;</span><br></pre></td></tr></table></figure></li>
-<li><p>典型示例 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/api.transient.variable.example.png"
-alt="api.transient.variable.example" /></p></li>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">void</span> <span class="title function_">setTransientVariable</span><span class="params">(String variableName, Object variableValue)</span>;</span><br><span class="line"><span class="keyword">void</span> <span class="title function_">setTransientVariableLocal</span><span class="params">(String variableName, Object variableValue)</span>;</span><br><span class="line"><span class="keyword">void</span> <span class="title function_">setTransientVariables</span><span class="params">(Map&lt;String, Object&gt; transientVariables)</span>;</span><br><span class="line"><span class="keyword">void</span> <span class="title function_">setTransientVariablesLocal</span><span class="params">(Map&lt;String, Object&gt; transientVariables)</span>;</span><br><span class="line"></span><br><span class="line">Object <span class="title function_">getTransientVariable</span><span class="params">(String variableName)</span>;</span><br><span class="line">Object <span class="title function_">getTransientVariableLocal</span><span class="params">(String variableName)</span>;</span><br><span class="line"></span><br><span class="line">Map&lt;String, Object&gt; <span class="title function_">getTransientVariables</span><span class="params">()</span>;</span><br><span class="line">Map&lt;String, Object&gt; <span class="title function_">getTransientVariablesLocal</span><span class="params">()</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> <span class="title function_">removeTransientVariable</span><span class="params">(String variableName)</span>;</span><br><span class="line"><span class="keyword">void</span> <span class="title function_">removeTransientVariableLocal</span><span class="params">(String variableName)</span>;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>典型示例<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/api.transient.variable.example.png" alt="api.transient.variable.example"></p>
+</li>
 <li><p>瞬态变量传递</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">ProcessInstance</span> <span class="variable">processInstance</span> <span class="operator">=</span> runtimeService.createProcessInstanceBuilder()</span><br><span class="line">       .processDefinitionKey(<span class="string">&quot;someKey&quot;</span>)</span><br><span class="line">       .transientVariable(<span class="string">&quot;configParam01&quot;</span>, <span class="string">&quot;A&quot;</span>)</span><br><span class="line">       .transientVariable(<span class="string">&quot;configParam02&quot;</span>, <span class="string">&quot;B&quot;</span>)</span><br><span class="line">       .transientVariable(<span class="string">&quot;configParam03&quot;</span>, <span class="string">&quot;C&quot;</span>)</span><br><span class="line">       .start();</span><br></pre></td></tr></table></figure>
 <ul>
 <li><p>获取数据</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">FetchDataServiceTask</span> <span class="keyword">implements</span> <span class="title class_">JavaDelegate</span> &#123;</span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">execute</span><span class="params">(DelegateExecution execution)</span> &#123;</span><br><span class="line">    <span class="type">String</span> <span class="variable">configParam01</span> <span class="operator">=</span> (String) execution.getVariable(configParam01);</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line">    <span class="type">RestResponse</span> <span class="variable">restResponse</span> <span class="operator">=</span> executeRestCall();</span><br><span class="line">    execution.setTransientVariable(<span class="string">&quot;response&quot;</span>, restResponse.getBody());</span><br><span class="line">    execution.setTransientVariable(<span class="string">&quot;status&quot;</span>, restResponse.getStatus());</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">FetchDataServiceTask</span> <span class="keyword">implements</span> <span class="title class_">JavaDelegate</span> &#123;</span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">execute</span><span class="params">(DelegateExecution execution)</span> &#123;</span><br><span class="line">    <span class="type">String</span> <span class="variable">configParam01</span> <span class="operator">=</span> (String) execution.getVariable(configParam01);</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line">    <span class="type">RestResponse</span> <span class="variable">restResponse</span> <span class="operator">=</span> executeRestCall();</span><br><span class="line">    execution.setTransientVariable(<span class="string">&quot;response&quot;</span>, restResponse.getBody());</span><br><span class="line">    execution.setTransientVariable(<span class="string">&quot;status&quot;</span>, restResponse.getStatus());</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
 <li><p>离开独占网关的序列流的条件不知道使用的是持久变量还是瞬态变量（在本例中为<em>状态</em>瞬态变量）：</p>
-<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">conditionExpression</span> <span class="attr">xsi:type</span>=<span class="string">&quot;tFormalExpression&quot;</span>&gt;</span>$&#123;status == 200&#125;<span class="tag">&lt;/<span class="name">conditionExpression</span>&gt;</span></span><br></pre></td></tr></table></figure></li>
-</ul></li>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">conditionExpression</span> <span class="attr">xsi:type</span>=<span class="string">&quot;tFormalExpression&quot;</span>&gt;</span>$&#123;status == 200&#125;<span class="tag">&lt;/<span class="name">conditionExpression</span>&gt;</span></span><br></pre></td></tr></table></figure>
+</li>
 </ul>
-<h3 id="表达式">表达式</h3>
-<p>Flowable使用UEL进行表达式解析，UEL代表统一表达式语言，是EE6规范的一部分。两种类型的表达式（值表达式和方法表达式），都可以在需要表达式的地方使用</p>
+</li>
+</ul>
+<h3 id="表达式"><a href="#表达式" class="headerlink" title="表达式"></a>表达式</h3><p>Flowable使用UEL进行表达式解析，UEL代表统一表达式语言，是EE6规范的一部分。两种类型的表达式（值表达式和方法表达式），都可以在需要表达式的地方使用</p>
 <ul>
 <li><p>值表达式，解析为一个值</p>
-<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">$&#123;myVar&#125;</span><br><span class="line">$&#123;myBean.myProperty&#125;</span><br></pre></td></tr></table></figure></li>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">$&#123;myVar&#125;</span><br><span class="line">$&#123;myBean.myProperty&#125;</span><br></pre></td></tr></table></figure>
+</li>
 <li><p>方法表达式：调用带或不带参数的方法</p>
-<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">$&#123;printer.print()&#125;</span><br><span class="line">$&#123;myBean.addNewOrder(&#x27;orderName&#x27;)&#125;</span><br><span class="line">$&#123;myBean.doSomething(myVar, execution)&#125;</span><br></pre></td></tr></table></figure></li>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">$&#123;printer.print()&#125;</span><br><span class="line">$&#123;myBean.addNewOrder(&#x27;orderName&#x27;)&#125;</span><br><span class="line">$&#123;myBean.doSomething(myVar, execution)&#125;</span><br></pre></td></tr></table></figure>
+</li>
 </ul>
-<h3 id="表达式函数">表达式函数</h3>
-<p>一些开箱即用的函数</p>
+<h3 id="表达式函数"><a href="#表达式函数" class="headerlink" title="表达式函数"></a>表达式函数</h3><p>一些开箱即用的函数</p>
 <ul>
-<li><strong>variables:get(varName)</strong>：检索变量的值。与直接在表达式中写变量名的主要区别在于，当变量不存在时，使用这个函数不会抛出异常。例如，如果<em>myVariable</em>不存在，<em><span
-class="math inline">\({myVariable ==
-&quot;hello&quot;}*会抛出异常，但*\)</span>{var:get(myVariable) ==
-'hello'}</em>会正常工作。</li>
-<li><strong>variables:getOrDefault(varName,
-defaultValue)</strong>：类似于<em>get</em>，但可以选择提供默认值，当变量未设置或值为<em>null</em>时返回。</li>
-<li><strong>variables:exists(varName)</strong>
-：如果变量具有非空值，则返回<em>true 。</em></li>
-<li><strong>variables:isEmpty(varName)</strong> (alias <em>:empty</em> )
-: 检查变量值是否不为空。根据变量类型，行为如下：
-<ul>
+<li><strong>variables:get(varName)</strong>：检索变量的值。与直接在表达式中写变量名的主要区别在于，当变量不存在时，使用这个函数不会抛出异常。例如，如果<em>myVariable</em>不存在，<em>${myVariable == “hello”}</em>会抛出异常，但<em>${var:get(myVariable) == ‘hello’}</em>会正常工作。</li>
+<li><strong>variables:getOrDefault(varName, defaultValue)</strong>：类似于<em>get</em>，但可以选择提供默认值，当变量未设置或值为<em>null</em>时返回。</li>
+<li><strong>variables:exists(varName)</strong> ：如果变量具有非空值，则返回<em>true 。</em></li>
+<li><strong>variables:isEmpty(varName)</strong> (alias <em>:empty</em> ) : 检查变量值是否不为空。根据变量类型，行为如下：<ul>
 <li>对于字符串变量，如果变量是空字符串，则认为该变量为空。</li>
-<li>对于 java.util.Collection 变量，如果集合没有元素，则返回<em>true
-。</em></li>
+<li>对于 java.util.Collection 变量，如果集合没有元素，则返回<em>true 。</em></li>
 <li>对于 ArrayNode 变量，如果没有元素则返回<em>true</em></li>
 <li>如果变量为<em>null</em>，则始终返回<em>true</em></li>
-</ul></li>
-<li><strong>variables:isNotEmpty(varName)</strong> (alias <em>:
-notEmpty) :</em> <em>isEmpty</em>的逆运算。</li>
-<li><strong>variables:equals(varName,
-value)</strong>（别名<em>:eq</em>）：检查变量是否等于给定值。这是表达式的简写函数，否则将被写为<em>${execution.getVariable("varName")
-!= null &amp;&amp; execution.getVariable("varName") == value}</em>。
-<ul>
+</ul>
+</li>
+<li><strong>variables:isNotEmpty(varName)</strong> (alias <em>: notEmpty) :</em> <em>isEmpty</em>的逆运算。</li>
+<li><strong>variables:equals(varName, value)</strong>（别名<em>:eq</em>）：检查变量是否等于给定值。这是表达式的简写函数，否则将被写为<em>${execution.getVariable(“varName”) != null &amp;&amp; execution.getVariable(“varName”) == value}</em>。<ul>
 <li>如果变量值为 null，则返回 false（除非与 null 比较）。</li>
-</ul></li>
-<li><strong>variables:notEquals(varName, value)</strong>（别名<em>:ne
-）：</em> <em>equals</em>的反向比较。</li>
-<li><strong>variables:contains(varName, value1, value2,
-...)</strong>：检查提供的<strong>所有</strong>值是否包含在变量中。根据变量类型，行为如下：
-<ul>
+</ul>
+</li>
+<li><strong>variables:notEquals(varName, value)</strong>（别名<em>:ne ）：</em> <em>equals</em>的反向比较。</li>
+<li><strong>variables:contains(varName, value1, value2, …)</strong>：检查提供的<strong>所有</strong>值是否包含在变量中。根据变量类型，行为如下：<ul>
 <li>对于字符串变量，传递的值用作需要成为变量一部分的子字符串</li>
-<li>对于 java.util.Collection
-变量，所有传递的值都需要是集合的一个元素（正则<em>包含</em>语义）。</li>
-<li>对于 ArrayNode 变量：支持检查 arraynode
-是否包含作为变量类型支持的类型的 JsonNode</li>
-<li>当变量值为 null 时，在所有情况下都返回
-false。当变量值不为null，且实例类型不是上述类型之一时，会返回false。</li>
-</ul></li>
-<li><strong>variables:containsAny(varName, value1, value2,
-...)</strong>：类似于<em>contains</em>函数，但如果<strong>任何</strong>（而非全部）传递的值包含在变量中，则将返回<em>true
-。</em></li>
-<li><strong>variables:base64(varName)</strong>：将二进制或字符串变量转换为
-Base64 字符串</li>
-<li>比较器功能：
-<ul>
-<li><strong>variables:lowerThan(varName, value)</strong>
-(别名<em>:lessThan</em>或<em>:lt</em> ) :
-<em>${execution.getVariable("varName") != null &amp;&amp;
-execution.getVariable("varName") &lt; value}的简写</em></li>
-<li><strong>变量：lowerThanOrEquals(varName,
-value)</strong>（别名<em>:lessThanOrEquals</em>或<em>:lte</em>）：类似，但现在用于<em>&lt;
-=</em></li>
-<li><strong>variables:greaterThan(varName, value)</strong> (alias
-<em>:gt</em> ) : 类似，但现在用于<em>&gt;</em></li>
-<li><strong>variables:greaterThanOrEquals(varName, value)</strong>
-(alias <em>:gte</em> ) : 类似，但现在用于<em>&gt; =</em></li>
-</ul></li>
+<li>对于 java.util.Collection 变量，所有传递的值都需要是集合的一个元素（正则<em>包含</em>语义）。</li>
+<li>对于 ArrayNode 变量：支持检查 arraynode 是否包含作为变量类型支持的类型的 JsonNode</li>
+<li>当变量值为 null 时，在所有情况下都返回 false。当变量值不为null，且实例类型不是上述类型之一时，会返回false。</li>
+</ul>
+</li>
+<li><strong>variables:containsAny(varName, value1, value2, …)</strong>：类似于<em>contains</em>函数，但如果<strong>任何</strong>（而非全部）传递的值包含在变量中，则将返回<em>true 。</em></li>
+<li><strong>variables:base64(varName)</strong>：将二进制或字符串变量转换为 Base64 字符串</li>
+<li>比较器功能：<ul>
+<li><strong>variables:lowerThan(varName, value)</strong> (别名<em>:lessThan</em>或<em>:lt</em> ) : <em>${execution.getVariable(“varName”) != null &amp;&amp; execution.getVariable(“varName”) &lt; value}的简写</em></li>
+<li><strong>变量：lowerThanOrEquals(varName, value)</strong>（别名<em>:lessThanOrEquals</em>或<em>:lte</em>）：类似，但现在用于<em>&lt; =</em></li>
+<li><strong>variables:greaterThan(varName, value)</strong> (alias <em>:gt</em> ) : 类似，但现在用于<em>&gt;</em></li>
+<li><strong>variables:greaterThanOrEquals(varName, value)</strong> (alias <em>:gte</em> ) : 类似，但现在用于<em>&gt; =</em></li>
+</ul>
+</li>
 <li></li>
 </ul>
-<h3 id="单元测试">单元测试</h3>
-<p>使用自定义资源进行单元测试</p>
+<h3 id="单元测试"><a href="#单元测试" class="headerlink" title="单元测试"></a>单元测试</h3><p>使用自定义资源进行单元测试</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="meta">@FlowableTest</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyBusinessProcessTest</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> ProcessEngine processEngine;</span><br><span class="line">    <span class="keyword">private</span> RuntimeService runtimeService;</span><br><span class="line">    <span class="keyword">private</span> TaskService taskService;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@BeforeEach</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">setUp</span><span class="params">(ProcessEngine processEngine)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.processEngine = processEngine;</span><br><span class="line">        <span class="built_in">this</span>.runtimeService = processEngine.getRuntimeService();</span><br><span class="line">        <span class="built_in">this</span>.taskService = processEngine.getTaskService();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="meta">@Deployment(resources = &quot;holiday-request.bpmn20.xml&quot;)</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">testSimpleProcess</span><span class="params">()</span> &#123;</span><br><span class="line">        HashMap&lt;String, Object&gt; employeeInfo = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">        employeeInfo.put(<span class="string">&quot;employee&quot;</span>, <span class="string">&quot;wangwu1028930&quot;</span>);</span><br><span class="line">        <span class="comment">//employeeInfo.put()</span></span><br><span class="line">        runtimeService.startProcessInstanceByKey(</span><br><span class="line">                <span class="string">&quot;holidayRequest&quot;</span>, employeeInfo</span><br><span class="line">        );</span><br><span class="line">        <span class="type">Task</span> <span class="variable">task</span> <span class="operator">=</span> taskService.createTaskQuery().singleResult();</span><br><span class="line">        assertEquals(<span class="string">&quot;Approve or reject request&quot;</span>, task.getName());</span><br><span class="line">        HashMap&lt;String, Object&gt; hashMap = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">        hashMap.put(<span class="string">&quot;approved&quot;</span>, <span class="literal">true</span>);</span><br><span class="line">        taskService.complete(task.getId(), hashMap);</span><br><span class="line">        assertEquals(<span class="number">1</span>, runtimeService</span><br><span class="line">                .createProcessInstanceQuery().count());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="调试单元测试">调试单元测试</h3>
-<h3 id="web应用程序中的流程引擎">Web应用程序中的流程引擎</h3>
-<p>编写一个简单的ServletContextListener来初始化和销毁普通Servlet环境中的流程引擎</p>
+<h3 id="调试单元测试"><a href="#调试单元测试" class="headerlink" title="调试单元测试"></a>调试单元测试</h3><h3 id="Web应用程序中的流程引擎"><a href="#Web应用程序中的流程引擎" class="headerlink" title="Web应用程序中的流程引擎"></a>Web应用程序中的流程引擎</h3><p>编写一个简单的ServletContextListener来初始化和销毁普通Servlet环境中的流程引擎</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ProcessEnginesServletContextListener</span> <span class="keyword">implements</span> <span class="title class_">ServletContextListener</span> &#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">contextInitialized</span><span class="params">(ServletContextEvent servletContextEvent)</span> &#123;</span><br><span class="line">    ProcessEngines.init();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">contextDestroyed</span><span class="params">(ServletContextEvent servletContextEvent)</span> &#123;</span><br><span class="line">    ProcessEngines.destroy();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>其中，ProcessEngines.init()将在类路径中查找flowable.cfg.xml资源文件，并为给定的配置创建一个ProcessEngine，使用下面两种方式来获取他</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line">ProcessEngines.getDefaultProcessEngine()</span><br><span class="line"><span class="comment">//或者下面的方式</span></span><br><span class="line">ProcessEngines.getProcessEngine(<span class="string">&quot;myName&quot;</span>);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
@@ -571,7 +536,7 @@ value)</strong>（别名<em>:lessThanOrEquals</em>或<em>:lte</em>）：类似�
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B5%81%E7%A8%8B%E5%BC%95%E6%93%8Eapi%E5%92%8C%E6%9C%8D%E5%8A%A1"><span class="nav-number">1.</span> <span class="nav-text">流程引擎API和服务</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%82%E5%B8%B8%E7%AD%96%E7%95%A5"><span class="nav-number">2.</span> <span class="nav-text">异常策略</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9F%A5%E8%AF%A2%E6%8E%A5%E5%8F%A3"><span class="nav-number">3.</span> <span class="nav-text">查询接口</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%98%E9%87%8F"><span class="nav-number">4.</span> <span class="nav-text">变量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9E%AC%E6%80%81%E5%8F%98%E9%87%8F"><span class="nav-number">5.</span> <span class="nav-text">瞬态变量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A1%A8%E8%BE%BE%E5%BC%8F"><span class="nav-number">6.</span> <span class="nav-text">表达式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A1%A8%E8%BE%BE%E5%BC%8F%E5%87%BD%E6%95%B0"><span class="nav-number">7.</span> <span class="nav-text">表达式函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95"><span class="nav-number">8.</span> <span class="nav-text">单元测试</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B0%83%E8%AF%95%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95"><span class="nav-number">9.</span> <span class="nav-text">调试单元测试</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#web%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F%E4%B8%AD%E7%9A%84%E6%B5%81%E7%A8%8B%E5%BC%95%E6%93%8E"><span class="nav-number">10.</span> <span class="nav-text">Web应用程序中的流程引擎</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B5%81%E7%A8%8B%E5%BC%95%E6%93%8EAPI%E5%92%8C%E6%9C%8D%E5%8A%A1"><span class="nav-number">1.</span> <span class="nav-text">流程引擎API和服务</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%82%E5%B8%B8%E7%AD%96%E7%95%A5"><span class="nav-number">2.</span> <span class="nav-text">异常策略</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9F%A5%E8%AF%A2%E6%8E%A5%E5%8F%A3"><span class="nav-number">3.</span> <span class="nav-text">查询接口</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%98%E9%87%8F"><span class="nav-number">4.</span> <span class="nav-text">变量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9E%AC%E6%80%81%E5%8F%98%E9%87%8F"><span class="nav-number">5.</span> <span class="nav-text">瞬态变量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A1%A8%E8%BE%BE%E5%BC%8F"><span class="nav-number">6.</span> <span class="nav-text">表达式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A1%A8%E8%BE%BE%E5%BC%8F%E5%87%BD%E6%95%B0"><span class="nav-number">7.</span> <span class="nav-text">表达式函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95"><span class="nav-number">8.</span> <span class="nav-text">单元测试</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B0%83%E8%AF%95%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95"><span class="nav-number">9.</span> <span class="nav-text">调试单元测试</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Web%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F%E4%B8%AD%E7%9A%84%E6%B5%81%E7%A8%8B%E5%BC%95%E6%93%8E"><span class="nav-number">10.</span> <span class="nav-text">Web应用程序中的流程引擎</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -646,7 +611,7 @@ value)</strong>（别名<em>:lessThanOrEquals</em>或<em>:lte</em>）：类似�
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">40:26</span>
+    <span title="站点阅读时长">40:16</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
