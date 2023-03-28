@@ -27,10 +27,6 @@
 <meta property="og:site_name" content="随记">
 <meta property="og:description" content="api网关">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f73797374656d2d64657369676e2f64697374726962757465642d73797374656d2f6170692d676174657761792d6f766572766965772e706e67">
-<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f696d672d626c6f672e6373646e696d672e636e2f696d675f636f6e766572742f38363539393165333466363966386362333435623461666639313865393436652e706e67">
-<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f696d672d626c6f672e6373646e696d672e636e2f696d675f636f6e766572742f37323737333266616432653934336264643263353032623833646462316238392e706e67">
-<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f696d672d626c6f672e6373646e696d672e636e2f31313034656234313363626134363863626134646365313139313635653834652e706e67">
 <meta property="article:published_time" content="2023-02-10T22:26:59.000Z">
 <meta property="article:modified_time" content="2023-02-10T22:26:59.000Z">
 <meta property="article:author" content="刘易">
@@ -38,7 +34,6 @@
 <meta property="article:tag" content="复习-javaGuide">
 <meta property="article:tag" content="复习-javaGuide-distributed_system">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f73797374656d2d64657369676e2f64697374726962757465642d73797374656d2f6170692d676174657761792d6f766572766965772e706e67">
 
 <link rel="canonical" href="http://example.com/2023/02/10/review/java_guide/lydly_distributed_system/ly01ly_api-gateway/">
 
@@ -244,7 +239,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>2.7k</span>
+              <span>2.9k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -265,64 +260,134 @@
 
       
         <blockquote>
-<p>转载自<a target="_blank" rel="noopener" href="https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!">https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!</a></p>
+<p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!</p>
 </blockquote>
-<h2 id="什么是网关？有什么用？"><a href="#什么是网关？有什么用？" class="headerlink" title="什么是网关？有什么用？"></a>什么是网关？有什么用？</h2><p>微服务背景下，一个系统被<strong>拆分为多个服务</strong>，但是像<strong>安全认证</strong>，<strong>流量控制</strong>，<strong>日志</strong>，<strong>监控</strong>等功能是每个服务都需要的，没有网关的话，我们就需要在<strong>每个服务</strong>中单独实现，这使得我们做了很多重复的事情并且没有一个<strong>全局的视图来统一管理</strong>这些功能。</p>
-<p><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f73797374656d2d64657369676e2f64697374726962757465642d73797374656d2f6170692d676174657761792d6f766572766965772e706e67" alt="网关示意图"></p>
+<h2 id="什么是网关有什么用">什么是网关？有什么用？</h2>
+<p>微服务背景下，一个系统被<strong>拆分为多个服务</strong>，但是像<strong>安全认证</strong>，<strong>流量控制</strong>，<strong>日志</strong>，<strong>监控</strong>等功能是每个服务都需要的，没有网关的话，我们就需要在<strong>每个服务</strong>中单独实现，这使得我们做了很多重复的事情并且没有一个<strong>全局的视图来统一管理</strong>这些功能。</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f73797374656d2d64657369676e2f64697374726962757465642d73797374656d2f6170692d676.png"
+alt="68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f73797374656d2d64657369676e2f64697374726962757465642d73797374656d2f6170692d676.png" />
+<figcaption
+aria-hidden="true">68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f73797374656d2d64657369676e2f64697374726962757465642d73797374656d2f6170692d676.png</figcaption>
+</figure>
 <p>一般情况下，网关可以为我们提供<strong>请求转发</strong>、<strong>安全认证（身份/权限认证）</strong>、<strong>流量控制</strong>、<strong>负载均衡</strong>、<strong>降级熔断</strong>、<strong>日志</strong>、<strong>监控</strong>等功能。</p>
-<p>上面介绍了这么多功能，实际上，网关主要做了一件事情：<strong>请求过滤</strong> 。</p>
-<h2 id="有哪些常见的网关系统？"><a href="#有哪些常见的网关系统？" class="headerlink" title="有哪些常见的网关系统？"></a>有哪些常见的网关系统？</h2><h3 id="Netflix-Zuul"><a href="#Netflix-Zuul" class="headerlink" title="Netflix Zuul"></a>Netflix Zuul</h3><p>Zuul 是 Netflix 开发的一款提供<strong>动态路由</strong>、<strong>监控</strong>、<strong>弹性</strong>、<strong>安全</strong>的网关服务。</p>
-<p>Zuul 主要通过<strong>过滤器（类似于 AOP）来过滤请求</strong>，从而实现网关必备的各种功能。</p>
-<p><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f696d672d626c6f672e6373646e696d672e636e2f696d675f636f6e766572742f38363539393165333466363966386362333435623461666639313865393436652e706e67" alt="Zuul架构"></p>
-<p>我们可以自定义过滤器来处理请求，并且，Zuul 生态本身就有很多现成的过滤器供我们使用。就比如限流可以直接用国外朋友写的 <a target="_blank" rel="noopener" href="https://github.com/marcosbarbero/spring-cloud-zuul-ratelimit">spring-cloud-zuul-ratelimit</a> (这里只是举例说明，一般是配合 hystrix 来做限流)：</p>
+<p>上面介绍了这么多功能，实际上，网关主要做了一件事情：<strong>请求过滤</strong>
+。</p>
+<h2 id="有哪些常见的网关系统">有哪些常见的网关系统？</h2>
+<h3 id="netflix-zuul">Netflix Zuul</h3>
+<p>Zuul 是 Netflix
+开发的一款提供<strong>动态路由</strong>、<strong>监控</strong>、<strong>弹性</strong>、<strong>安全</strong>的网关服务。</p>
+<p>Zuul 主要通过<strong>过滤器（类似于
+AOP）来过滤请求</strong>，从而实现网关必备的各种功能。</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f696d672d626c6f672e6373646e696d672e636e2f696d675f636f6e766572742f38363539393165333466363966386362333435623461666639313865393436652e706e67"
+alt="Zuul架构" />
+<figcaption aria-hidden="true">Zuul架构</figcaption>
+</figure>
+<p>我们可以自定义过滤器来处理请求，并且，Zuul
+生态本身就有很多现成的过滤器供我们使用。就比如限流可以直接用国外朋友写的
+<a
+target="_blank" rel="noopener" href="https://github.com/marcosbarbero/spring-cloud-zuul-ratelimit">spring-cloud-zuul-ratelimit</a>
+(这里只是举例说明，一般是配合 hystrix 来做限流)：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">  &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;spring-cloud-starter-netflix-zuul&lt;/artifactId&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br><span class="line">&lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;com.marcosbarbero.cloud&lt;/groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;spring-cloud-zuul-ratelimit&lt;/artifactId&gt;</span><br><span class="line">    &lt;version&gt;2.2.0.RELEASE&lt;/version&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br></pre></td></tr></table></figure>
-<p>Zuul 1.x <strong>基于同步 IO，性能较差</strong>。Zuul 2.x <strong>基于 Netty 实现了异步 IO</strong>，性能得到了大幅改进。</p>
+<p>Zuul 1.x <strong>基于同步 IO，性能较差</strong>。Zuul 2.x
+<strong>基于 Netty 实现了异步 IO</strong>，性能得到了大幅改进。</p>
 <ul>
-<li>Github 地址 ： <a target="_blank" rel="noopener" href="https://github.com/Netflix/zuul">https://github.com/Netflix/zuul</a></li>
-<li>官方 Wiki ： <a target="_blank" rel="noopener" href="https://github.com/Netflix/zuul/wiki">https://github.com/Netflix/zuul/wiki</a></li>
+<li>Github 地址 ： https://github.com/Netflix/zuul</li>
+<li>官方 Wiki ： https://github.com/Netflix/zuul/wiki</li>
 </ul>
-<h3 id="Spring-Cloud-Gateway"><a href="#Spring-Cloud-Gateway" class="headerlink" title="Spring Cloud Gateway"></a>Spring Cloud Gateway</h3><p>SpringCloud Gateway 属于 Spring Cloud 生态系统中的网关，其诞生的目标是为了替代老牌网关 <strong>Zuul </strong>。准确点来说，应该是 <strong>Zuul 1.x</strong>。SpringCloud Gateway 起步要比 Zuul 2.x 更早。</p>
-<p>为了提升网关的性能，SpringCloud Gateway <strong>基于 Spring WebFlux</strong> 。Spring WebFlux 使用 Reactor 库来实现<strong>响应式编程模型</strong>，<strong>底层基于 Netty 实现异步 IO</strong>。</p>
-<p>Spring Cloud Gateway 的目标，不仅<strong>提供统一的路由</strong>方式，并且基于 Filter 链的方式提供了网关基本的功能，例如：<strong>安全</strong>，<strong>监控/指标</strong>，和<strong>限流</strong>。</p>
-<p>Spring Cloud Gateway 和 Zuul 2.x 的差别不大，也是<strong>通过过滤器</strong>来处理请求。不过，目前更加推荐使用 Spring Cloud Gateway 而非 Zuul，<strong>Spring Cloud 生态对其支持更加友好</strong>。</p>
+<h3 id="spring-cloud-gateway">Spring Cloud Gateway</h3>
+<p>SpringCloud Gateway 属于 Spring Cloud
+生态系统中的网关，其诞生的目标是为了替代老牌网关 <strong>Zuul
+</strong>。准确点来说，应该是 <strong>Zuul 1.x</strong>。SpringCloud
+Gateway 起步要比 Zuul 2.x 更早。</p>
+<p>为了提升网关的性能，SpringCloud Gateway <strong>基于 Spring
+WebFlux</strong> 。Spring WebFlux 使用 Reactor
+库来实现<strong>响应式编程模型</strong>，<strong>底层基于 Netty 实现异步
+IO</strong>。</p>
+<p>Spring Cloud Gateway
+的目标，不仅<strong>提供统一的路由</strong>方式，并且基于 Filter
+链的方式提供了网关基本的功能，例如：<strong>安全</strong>，<strong>监控/指标</strong>，和<strong>限流</strong>。</p>
+<p>Spring Cloud Gateway 和 Zuul 2.x
+的差别不大，也是<strong>通过过滤器</strong>来处理请求。不过，目前更加推荐使用
+Spring Cloud Gateway 而非 Zuul，<strong>Spring Cloud
+生态对其支持更加友好</strong>。</p>
 <ul>
-<li>Github 地址 ： <a target="_blank" rel="noopener" href="https://github.com/spring-cloud/spring-cloud-gateway">https://github.com/spring-cloud/spring-cloud-gateway</a></li>
-<li>官网 ： <a target="_blank" rel="noopener" href="https://spring.io/projects/spring-cloud-gateway">https://spring.io/projects/spring-cloud-gateway</a></li>
+<li>Github 地址 ：
+https://github.com/spring-cloud/spring-cloud-gateway</li>
+<li>官网 ： https://spring.io/projects/spring-cloud-gateway</li>
 </ul>
-<h3 id="Kong"><a href="#Kong" class="headerlink" title="Kong"></a>Kong</h3><p>Kong 是一款基于 <a target="_blank" rel="noopener" href="https://github.com/openresty/">OpenResty</a> 的高性能、云原生、可扩展的网关系统。</p>
+<h3 id="kong">Kong</h3>
+<p>Kong 是一款基于 <a target="_blank" rel="noopener" href="https://github.com/openresty/">OpenResty</a>
+的高性能、云原生、可扩展的网关系统。</p>
 <blockquote>
-<p>OpenResty 是一个基于 Nginx 与 Lua 的高性能 Web 平台，其内部集成了大量精良的 Lua 库、第三方模块以及大多数的依赖项。用于方便地搭建能够处理超高并发、扩展性极高的动态 Web 应用、Web 服务和动态网关。</p>
+<p>OpenResty 是一个基于 Nginx 与 Lua 的高性能 Web
+平台，其内部集成了大量精良的 Lua
+库、第三方模块以及大多数的依赖项。用于方便地搭建能够处理超高并发、扩展性极高的动态
+Web 应用、Web 服务和动态网关。</p>
 </blockquote>
 <p>Kong 提供了插件机制来扩展其功能。比如、在服务上启用 Zipkin 插件</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">$ curl -X POST http://kong:8001/services/&#123;service&#125;/plugins \</span><br><span class="line">    --data &quot;name=zipkin&quot;  \</span><br><span class="line">    --data &quot;config.http_endpoint=http://your.zipkin.collector:9411/api/v2/spans&quot; \</span><br><span class="line">    --data &quot;config.sample_ratio=0.001&quot;</span><br></pre></td></tr></table></figure>
 <ul>
-<li>Github 地址： <a target="_blank" rel="noopener" href="https://github.com/Kong/kong">https://github.com/Kong/kong</a></li>
-<li>官网地址 ： <a target="_blank" rel="noopener" href="https://konghq.com/kong">https://konghq.com/kong</a></li>
+<li>Github 地址： https://github.com/Kong/kong</li>
+<li>官网地址 ： https://konghq.com/kong</li>
 </ul>
-<h3 id="APISIX"><a href="#APISIX" class="headerlink" title="APISIX"></a>APISIX</h3><p>APISIX 是一款<strong>基于 Nginx 和 etcd</strong> 的高性能、云原生、可扩展的网关系统。</p>
+<h3 id="apisix">APISIX</h3>
+<p>APISIX 是一款<strong>基于 Nginx 和 etcd</strong>
+的高性能、云原生、可扩展的网关系统。</p>
 <blockquote>
-<p><em>etcd</em>是使用 <strong>Go 语言</strong>开发的一个开源的、高可用的分布式 key-value 存储系统，使用 Raft 协议做分布式共识。</p>
+<p><em>etcd</em>是使用 <strong>Go
+语言</strong>开发的一个开源的、高可用的分布式 key-value 存储系统，使用
+Raft 协议做分布式共识。</p>
 </blockquote>
-<p>与传统 API 网关相比，APISIX 具有<strong>动态路由</strong>和<strong>插件热加载</strong>，特别适合微服务系统下的 API 管理。并且，APISIX 与 SkyWalking（分布式链路追踪系统）、Zipkin（分布式链路追踪系统）、Prometheus（监控系统） 等 DevOps 生态工具对接都十分方便。</p>
-<p><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f696d672d626c6f672e6373646e696d672e636e2f696d675f636f6e766572742f37323737333266616432653934336264643263353032623833646462316238392e706e67" alt="apisix架构图"></p>
-<p>作为 NGINX 和 Kong 的替代项目，APISIX 目前已经是 Apache 顶级开源项目，并且是最快毕业的国产开源项目。国内目前已经有很多知名企业（比如金山、有赞、爱奇艺、腾讯、贝壳）使用 APISIX 处理核心的业务流量。</p>
-<p>根据官网介绍：“APISIX 已经生产可用，功能、性能、架构全面优于 Kong”。</p>
+<p>与传统 API 网关相比，APISIX
+具有<strong>动态路由</strong>和<strong>插件热加载</strong>，特别适合微服务系统下的
+API 管理。并且，APISIX 与
+SkyWalking（分布式链路追踪系统）、Zipkin（分布式链路追踪系统）、Prometheus（监控系统）
+等 DevOps 生态工具对接都十分方便。</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f696d672d626c6f672e6373646e696d672e636e2f696d675f636f6e766572742f37323737333266616432653934336264643263353032623833646462316238392e706e67"
+alt="apisix架构图" />
+<figcaption aria-hidden="true">apisix架构图</figcaption>
+</figure>
+<p>作为 NGINX 和 Kong 的替代项目，APISIX 目前已经是 Apache
+顶级开源项目，并且是最快毕业的国产开源项目。国内目前已经有很多知名企业（比如金山、有赞、爱奇艺、腾讯、贝壳）使用
+APISIX 处理核心的业务流量。</p>
+<p>根据官网介绍：“APISIX 已经生产可用，功能、性能、架构全面优于
+Kong”。</p>
 <ul>
-<li>Github 地址 ：<a target="_blank" rel="noopener" href="https://github.com/apache/apisix">https://github.com/apache/apisix</a></li>
-<li>官网地址： <a target="_blank" rel="noopener" href="https://apisix.apache.org/zh/">https://apisix.apache.org/zh/</a></li>
+<li>Github 地址 ：https://github.com/apache/apisix</li>
+<li>官网地址： https://apisix.apache.org/zh/</li>
 </ul>
 <p>相关阅读：</p>
 <ul>
-<li><a target="_blank" rel="noopener" href="https://www.apiseven.com/zh/blog/why-we-need-Apache-APISIX">有了 NGINX 和 Kong，为什么还需要 Apache APISIX</a></li>
+<li><a
+target="_blank" rel="noopener" href="https://www.apiseven.com/zh/blog/why-we-need-Apache-APISIX">有了
+NGINX 和 Kong，为什么还需要 Apache APISIX</a></li>
 <li><a target="_blank" rel="noopener" href="https://www.apiseven.com/zh/blog">APISIX 技术博客</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.apiseven.com/zh/usercases">APISIX 用户案例</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.apiseven.com/zh/usercases">APISIX
+用户案例</a></li>
 </ul>
-<h3 id="Shenyu"><a href="#Shenyu" class="headerlink" title="Shenyu"></a>Shenyu</h3><p>Shenyu 是一款<strong>基于 WebFlux 的可扩展、高性能、响应式网关</strong>，<strong>Apache 顶级开源项目</strong>。</p>
-<p><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f696d672d626c6f672e6373646e696d672e636e2f31313034656234313363626134363863626134646365313139313635653834652e706e67" alt="Shenyu架构"></p>
-<p>Shenyu 通过插件扩展功能，<strong>插件</strong>是 ShenYu 的灵魂，并且插件也是可扩展和热插拔的。不同的插件实现不同的功能。Shenyu 自带了诸如<strong>限流、熔断、转发 、重写、重定向、和路由监控</strong>等插件。</p>
+<h3 id="shenyu">Shenyu</h3>
+<p>Shenyu 是一款<strong>基于 WebFlux
+的可扩展、高性能、响应式网关</strong>，<strong>Apache
+顶级开源项目</strong>。</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f696d672d626c6f672e6373646e696d672e636e2f31313034656234313363626134363863626134646365313139313635653834652e706e67"
+alt="Shenyu架构" />
+<figcaption aria-hidden="true">Shenyu架构</figcaption>
+</figure>
+<p>Shenyu 通过插件扩展功能，<strong>插件</strong>是 ShenYu
+的灵魂，并且插件也是可扩展和热插拔的。不同的插件实现不同的功能。Shenyu
+自带了诸如<strong>限流、熔断、转发
+、重写、重定向、和路由监控</strong>等插件。</p>
 <ul>
-<li>Github 地址： <a target="_blank" rel="noopener" href="https://github.com/apache/incubator-shenyu">https://github.com/apache/incubator-shenyu</a></li>
-<li>官网地址 ： <a target="_blank" rel="noopener" href="https://shenyu.apache.org/">https://shenyu.apache.org/</a></li>
+<li>Github 地址： https://github.com/apache/incubator-shenyu</li>
+<li>官网地址 ： https://shenyu.apache.org/</li>
 </ul>
 
     </div>
@@ -416,7 +481,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E7%BD%91%E5%85%B3%EF%BC%9F%E6%9C%89%E4%BB%80%E4%B9%88%E7%94%A8%EF%BC%9F"><span class="nav-number">1.</span> <span class="nav-text">什么是网关？有什么用？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%89%E5%93%AA%E4%BA%9B%E5%B8%B8%E8%A7%81%E7%9A%84%E7%BD%91%E5%85%B3%E7%B3%BB%E7%BB%9F%EF%BC%9F"><span class="nav-number">2.</span> <span class="nav-text">有哪些常见的网关系统？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Netflix-Zuul"><span class="nav-number">2.1.</span> <span class="nav-text">Netflix Zuul</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Spring-Cloud-Gateway"><span class="nav-number">2.2.</span> <span class="nav-text">Spring Cloud Gateway</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Kong"><span class="nav-number">2.3.</span> <span class="nav-text">Kong</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#APISIX"><span class="nav-number">2.4.</span> <span class="nav-text">APISIX</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Shenyu"><span class="nav-number">2.5.</span> <span class="nav-text">Shenyu</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E7%BD%91%E5%85%B3%E6%9C%89%E4%BB%80%E4%B9%88%E7%94%A8"><span class="nav-number">1.</span> <span class="nav-text">什么是网关？有什么用？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%89%E5%93%AA%E4%BA%9B%E5%B8%B8%E8%A7%81%E7%9A%84%E7%BD%91%E5%85%B3%E7%B3%BB%E7%BB%9F"><span class="nav-number">2.</span> <span class="nav-text">有哪些常见的网关系统？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#netflix-zuul"><span class="nav-number">2.1.</span> <span class="nav-text">Netflix Zuul</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#spring-cloud-gateway"><span class="nav-number">2.2.</span> <span class="nav-text">Spring Cloud Gateway</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#kong"><span class="nav-number">2.3.</span> <span class="nav-text">Kong</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#apisix"><span class="nav-number">2.4.</span> <span class="nav-text">APISIX</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#shenyu"><span class="nav-number">2.5.</span> <span class="nav-text">Shenyu</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -491,7 +556,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">40:16</span>
+    <span title="站点阅读时长">40:29</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>

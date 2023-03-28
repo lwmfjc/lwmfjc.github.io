@@ -27,15 +27,11 @@
 <meta property="og:site_name" content="随记">
 <meta property="og:description" content="应用">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220531233431323.png">
-<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220531233605671.png">
-<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220531233910990.png">
 <meta property="article:published_time" content="2022-05-29T22:20:39.000Z">
 <meta property="article:modified_time" content="2022-05-31T22:20:39.000Z">
 <meta property="article:author" content="刘易">
 <meta property="article:tag" content="算法红皮书(第四版)">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220531233431323.png">
 
 <link rel="canonical" href="http://example.com/2022/05/29/study/algorithm/algorithhms_4th/2.5/">
 
@@ -273,110 +269,124 @@
 <li>通用排序算法是最重要的</li>
 <li>算法思想虽然简单，但是适用领域广泛</li>
 </ul>
-<h2 id="将各种数据排序"><a href="#将各种数据排序" class="headerlink" title="将各种数据排序"></a>将各种数据排序</h2><ul>
+<h2 id="将各种数据排序">将各种数据排序</h2>
+<ul>
 <li><p>Java的约定使得我们能够利用Java的回调机制将任意实现Comparable接口的数据类型排序</p>
 <ul>
-<li>我们的代码直接能够将String、Integer、Double 和一些其他例如File 和URL 类型的数组排序，因为它们都实现了Comparable 接口</li>
-</ul>
-</li>
-<li><p>交易事务<br>商业数据的处理，设想一家互联网商业公司为每笔交易记录都保存了所有的相关信息</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">compareTo</span><span class="params">(Transaction that)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="built_in">this</span>.when.compareTo(that.when);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>指针排序<br>我们使用的方法在经典教材中被称为<strong>指针排序</strong>，因为我们只处理元素的引用而不移动数据本身</p>
-</li>
-<li><p>不可变的键<br>用不可变的数据类型作为键，比如String、Integer、Double和File等</p>
-</li>
+<li>我们的代码直接能够将String、Integer、Double 和一些其他例如File 和URL
+类型的数组排序，因为它们都实现了Comparable 接口</li>
+</ul></li>
+<li><p>交易事务
+商业数据的处理，设想一家互联网商业公司为每笔交易记录都保存了所有的相关信息</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">compareTo</span><span class="params">(Transaction that)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="built_in">this</span>.when.compareTo(that.when);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>指针排序
+我们使用的方法在经典教材中被称为<strong>指针排序</strong>，因为我们只处理元素的引用而不移动数据本身</p></li>
+<li><p>不可变的键
+用不可变的数据类型作为键，比如String、Integer、Double和File等</p></li>
 <li><p>廉价的交换</p>
 <ul>
-<li><p>使用引用的另一个好处是不必移动整个元素对于几乎任意大小的元素，使用引用使得在一般情况下交换的成本和比较的成本几乎相同（代价是需要额外的空间存储这些引用）</p>
-</li>
-<li><p>研究将数字排序的算法性能的一种方法就是观察其所需的比较和交换总数，因为这里隐式地假设了比较和交换的成本是相同的</p>
-</li>
-</ul>
-</li>
+<li><p>使用引用的另一个好处是不必移动整个元素对于几乎任意大小的元素，使用引用使得在一般情况下交换的成本和比较的成本几乎相同（代价是需要额外的空间存储这些引用）</p></li>
+<li><p>研究将数字排序的算法性能的一种方法就是观察其所需的比较和交换总数，因为这里隐式地假设了比较和交换的成本是相同的</p></li>
+</ul></li>
 <li><p>多种排序方法</p>
 <ul>
-<li>根据情况将一组对象按照不同的方式排序。Java 的Comparator 接口允许我们在一个类之中实现多种排序方法</li>
-</ul>
-</li>
+<li>根据情况将一组对象按照不同的方式排序。Java 的Comparator
+接口允许我们在一个类之中实现多种排序方法</li>
+</ul></li>
 <li><p>多键数组</p>
 <ul>
 <li><p>一个元素的多种属性都可能被用作排序的键</p>
 <ul>
-<li>我们可以定义多种比较器，要将Transaction 对象的数组按照时间排序可以调用：<br>Insertion.sort(a, new Transaction.WhenOrder())<br>或者这样来按照金额排序：<br>Insertion.sort(a, new Transaction.HowMuchOrder())</li>
-</ul>
-</li>
+<li>我们可以定义多种比较器，要将Transaction
+对象的数组按照时间排序可以调用： Insertion.sort(a, new
+Transaction.WhenOrder()) 或者这样来按照金额排序： Insertion.sort(a, new
+Transaction.HowMuchOrder())</li>
+</ul></li>
 <li><p>使用Comparator的插入排序</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">sort</span><span class="params">(Object[] a, Comparator c)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="type">int</span> <span class="variable">N</span> <span class="operator">=</span> a.length;</span><br><span class="line">	<span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt; N; i++)</span><br><span class="line">	<span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> i; j &gt; <span class="number">0</span> &amp;&amp; less(Comparator, a[j], a[j-<span class="number">1</span>]); j--)</span><br><span class="line">	exch(a, j, j-<span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> Boolean <span class="title function_">less</span><span class="params">(Comparator c, Object v, Object w)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">return</span> c.compare(v, w) &lt; <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">exch</span><span class="params">(Object[] a, <span class="type">int</span> i, <span class="type">int</span> j)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="type">Object</span> <span class="variable">t</span> <span class="operator">=</span> a[i];</span><br><span class="line">	a[i] = a[j];</span><br><span class="line">	a[j] = t;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">sort</span><span class="params">(Object[] a, Comparator c)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="type">int</span> <span class="variable">N</span> <span class="operator">=</span> a.length;</span><br><span class="line">	<span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt; N; i++)</span><br><span class="line">	<span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> i; j &gt; <span class="number">0</span> &amp;&amp; less(Comparator, a[j], a[j-<span class="number">1</span>]); j--)</span><br><span class="line">	exch(a, j, j-<span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> Boolean <span class="title function_">less</span><span class="params">(Comparator c, Object v, Object w)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">return</span> c.compare(v, w) &lt; <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">exch</span><span class="params">(Object[] a, <span class="type">int</span> i, <span class="type">int</span> j)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="type">Object</span> <span class="variable">t</span> <span class="operator">=</span> a[i];</span><br><span class="line">	a[i] = a[j];</span><br><span class="line">	a[j] = t;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
 <li><p>使用比较器实现优先队列</p>
 <ul>
-<li>扩展优先队列<ul>
+<li>扩展优先队列
+<ul>
 <li>导入 java.util.Comparator；</li>
-<li>为 MaxPQ 添加一个实例变量 comparator 以及一个构造函数，该构造函数接受一个比较器<br>作为参数并用它将comparator 初始化；</li>
-<li>在 less()中检查 comparator属性是否为 null（如果不是的话就用它进行比较）。</li>
+<li>为 MaxPQ 添加一个实例变量 comparator
+以及一个构造函数，该构造函数接受一个比较器 作为参数并用它将comparator
+初始化；</li>
+<li>在 less()中检查 comparator属性是否为
+null（如果不是的话就用它进行比较）。</li>
+</ul></li>
 </ul>
-</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//使用了Comparator的插入排序</span></span><br><span class="line"><span class="keyword">import</span> java.util.Comparator;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Transaction</span></span><br><span class="line">&#123;</span><br><span class="line">	...</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">final</span> String who;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">final</span> Date when;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">final</span> <span class="type">double</span> amount;</span><br><span class="line">	...</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">WhoOrder</span> <span class="keyword">implements</span> <span class="title class_">Comparator</span>&lt;Transaction&gt;</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">public</span> <span class="type">int</span> <span class="title function_">compare</span><span class="params">(Transaction v, Transaction w)</span></span><br><span class="line">		&#123;</span><br><span class="line">			<span class="keyword">return</span> v.who.compareTo(w.who);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">WhenOrder</span> <span class="keyword">implements</span> <span class="title class_">Comparator</span>&lt;Transaction&gt;</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">public</span> <span class="type">int</span> <span class="title function_">compare</span><span class="params">(Transaction v, Transaction w)</span></span><br><span class="line">		&#123;</span><br><span class="line">			<span class="keyword">return</span> v.when.compareTo(w.when);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">HowMuchOrder</span> <span class="keyword">implements</span> <span class="title class_">Comparator</span>&lt;Transaction&gt;</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">public</span> <span class="type">int</span> <span class="title function_">compare</span><span class="params">(Transaction v, Transaction w)</span></span><br><span class="line">		&#123;</span><br><span class="line">			<span class="keyword">if</span> (v.amount &lt; w.amount) <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">			<span class="keyword">if</span> (v.amount &gt; w.amount) <span class="keyword">return</span> +<span class="number">1</span>;</span><br><span class="line">			<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-</li>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//使用了Comparator的插入排序</span></span><br><span class="line"><span class="keyword">import</span> java.util.Comparator;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Transaction</span></span><br><span class="line">&#123;</span><br><span class="line">	...</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">final</span> String who;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">final</span> Date when;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">final</span> <span class="type">double</span> amount;</span><br><span class="line">	...</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">WhoOrder</span> <span class="keyword">implements</span> <span class="title class_">Comparator</span>&lt;Transaction&gt;</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">public</span> <span class="type">int</span> <span class="title function_">compare</span><span class="params">(Transaction v, Transaction w)</span></span><br><span class="line">		&#123;</span><br><span class="line">			<span class="keyword">return</span> v.who.compareTo(w.who);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">WhenOrder</span> <span class="keyword">implements</span> <span class="title class_">Comparator</span>&lt;Transaction&gt;</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">public</span> <span class="type">int</span> <span class="title function_">compare</span><span class="params">(Transaction v, Transaction w)</span></span><br><span class="line">		&#123;</span><br><span class="line">			<span class="keyword">return</span> v.when.compareTo(w.when);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">HowMuchOrder</span> <span class="keyword">implements</span> <span class="title class_">Comparator</span>&lt;Transaction&gt;</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">public</span> <span class="type">int</span> <span class="title function_">compare</span><span class="params">(Transaction v, Transaction w)</span></span><br><span class="line">		&#123;</span><br><span class="line">			<span class="keyword">if</span> (v.amount &lt; w.amount) <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">			<span class="keyword">if</span> (v.amount &gt; w.amount) <span class="keyword">return</span> +<span class="number">1</span>;</span><br><span class="line">			<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
 <li><p>稳定性</p>
 <ul>
 <li>如果一个排序算法能够保留数组中重复元素的相对位置则可以被称为是稳定的</li>
-<li>例如，考虑一个需要处理大量含有地理位置和时间戳的事件的互联网商业应用程<br>序。首先，我们在事件发生时将它们挨个存储在一个数组中，这样在数组中它们已经是按照时间顺序排好了的。现在假设在进一步处理前将按照地理位置切分。一种简单的方法是将数组按照位置排序。如果排序算法不是稳定的，排序后的每个城市的交易可能不会再是按照时间顺序排列的了</li>
+<li>例如，考虑一个需要处理大量含有地理位置和时间戳的事件的互联网商业应用程
+序。首先，我们在事件发生时将它们挨个存储在一个数组中，这样在数组中它们已经是按照时间顺序排好了的。现在假设在进一步处理前将按照地理位置切分。一种简单的方法是将数组按照位置排序。如果排序算法不是稳定的，排序后的每个城市的交易可能不会再是按照时间顺序排列的了</li>
 <li>我们学习过的一部分算法是稳定的（插入排序和归并排序），但很多不是（选择排序、希尔排序、快速排序和堆排序）</li>
 <li>有很多办法能够将任意排序算法变成稳定的（请见练习2.5.18），但一般只有在稳定性是必要的情况下稳定的排序算法才有优势</li>
-<li>图示<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220531233431323.png" alt="image-20220531233431323"></li>
+<li>图示 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220531233431323.png"
+alt="image-20220531233431323" /></li>
+</ul></li>
+</ul></li>
 </ul>
-</li>
-</ul>
-</li>
-</ul>
-<h2 id="我应该使用哪种排序算法"><a href="#我应该使用哪种排序算法" class="headerlink" title="我应该使用哪种排序算法"></a>我应该使用哪种排序算法</h2><ul>
-<li>各种排序算法的性能特点<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220531233605671.png" alt="image-20220531233605671"><ul>
+<h2 id="我应该使用哪种排序算法">我应该使用哪种排序算法</h2>
+<ul>
+<li>各种排序算法的性能特点 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220531233605671.png"
+alt="image-20220531233605671" />
+<ul>
 <li>快速排序是最快的通用排序算法</li>
-</ul>
-</li>
-<li>将原始类型数据排序<br>一些性能优先的应用的重点可能是将数字排序，因此更合理的做法是跳过引用直接将原始数据<br>类型的数据排序</li>
-<li>Java系统库的排序算法 java.util.Arrays.sort()<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220531233910990.png" alt="image-20220531233910990"></li>
-<li>Java 的系统程序员选择对原始数据类型使用（三向切分的）快速排序，对引用类型使用归并排<br>序。这些选择实际上也暗示着用速度和空间（对于原始数据类型）来换取稳定性（对于引用类型），</li>
+</ul></li>
+<li>将原始类型数据排序
+一些性能优先的应用的重点可能是将数字排序，因此更合理的做法是跳过引用直接将原始数据
+类型的数据排序</li>
+<li>Java系统库的排序算法 java.util.Arrays.sort() <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220531233910990.png"
+alt="image-20220531233910990" /></li>
+<li>Java
+的系统程序员选择对原始数据类型使用（三向切分的）快速排序，对引用类型使用归并排
+序。这些选择实际上也暗示着用速度和空间（对于原始数据类型）来换取稳定性（对于引用类型），</li>
 <li>如果考虑稳定性，则选择Merge.sort() 归并排序</li>
 </ul>
-<h2 id="问题的归约"><a href="#问题的归约" class="headerlink" title="问题的归约"></a>问题的归约</h2><ul>
-<li><p>归约指的是为解决某个问题而发明的算法正好可以用来解决另一种问题</p>
-</li>
-<li><p>使用解决问题B 的方法来解决问题A 时，你都是在将A 归约为B。</p>
-</li>
+<h2 id="问题的归约">问题的归约</h2>
+<ul>
+<li><p>归约指的是为解决某个问题而发明的算法正好可以用来解决另一种问题</p></li>
+<li><p>使用解决问题B 的方法来解决问题A 时，你都是在将A
+归约为B。</p></li>
 <li><p>如果先将数据排序，那么解决剩下的问题就剩下线性级别的时间，归约后的运行时间的增长数量级由平方级别降低到了线性级别</p>
 <ul>
 <li><p>找出重复元素的个数（先排序，后遍历）</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Quick.sort(a);</span><br><span class="line"><span class="type">int</span> <span class="variable">count</span> <span class="operator">=</span> <span class="number">1</span>; <span class="comment">// 假设a.length &gt; 0.</span></span><br><span class="line"><span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt; a.length; i++)</span><br><span class="line">  <span class="keyword">if</span> (a[i].compareTo(a[i-<span class="number">1</span>]) != <span class="number">0</span>)</span><br><span class="line">    count++;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>Kendall tau距离</p>
-</li>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Quick.sort(a);</span><br><span class="line"><span class="type">int</span> <span class="variable">count</span> <span class="operator">=</span> <span class="number">1</span>; <span class="comment">// 假设a.length &gt; 0.</span></span><br><span class="line"><span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt; a.length; i++)</span><br><span class="line">  <span class="keyword">if</span> (a[i].compareTo(a[i-<span class="number">1</span>]) != <span class="number">0</span>)</span><br><span class="line">    count++;</span><br></pre></td></tr></table></figure></li>
+<li><p>Kendall tau距离</p></li>
 <li><p>优先队列</p>
 <blockquote>
-<p>在2.4 节中我们已经见过两个被归约为优先队列操作的问题的例子。一个是2.4.2.1 节中的TopM，它能够找到输入流中M 个最大的元素；另一个是2.4.4.7 节中的Multiway，它能够将M 个输入流归并为一个有序的输出流。这两个问题都可以轻易用长度为M 的优先队列解决</p>
-</blockquote>
-</li>
-<li><p>中位数与顺序统计 (与快速排序有关)</p>
-</li>
+<p>在2.4
+节中我们已经见过两个被归约为优先队列操作的问题的例子。一个是2.4.2.1
+节中的TopM，它能够找到输入流中M 个最大的元素；另一个是2.4.4.7
+节中的Multiway，它能够将M
+个输入流归并为一个有序的输出流。这两个问题都可以轻易用长度为M
+的优先队列解决</p>
+</blockquote></li>
+<li><p>中位数与顺序统计 (与快速排序有关)</p></li>
 <li></li>
+</ul></li>
 </ul>
-</li>
-</ul>
-<h2 id="排序应用一览"><a href="#排序应用一览" class="headerlink" title="排序应用一览"></a>排序应用一览</h2><ul>
-<li>商业计算：按照名字或者数字排序的账号、按照日期或者金额排序的交易、按照<br>邮编或者地址排序的邮件、按照名称或者日期排序的文件等，<br>处理这些数据必然需要排序算</li>
+<h2 id="排序应用一览">排序应用一览</h2>
+<ul>
+<li>商业计算：按照名字或者数字排序的账号、按照日期或者金额排序的交易、按照
+邮编或者地址排序的邮件、按照名称或者日期排序的文件等，
+处理这些数据必然需要排序算</li>
 <li>信息搜索：有序的顺序可以使用经典的<strong>二分查找法</strong></li>
 <li><strong>运筹学</strong>指的是研究数学模型并将其应用于问题解决和决策的领域</li>
 <li>事件驱动模拟、数值计算、组合搜索</li>
-<li>基于排序算法的算法<ul>
+<li>基于排序算法的算法
+<ul>
 <li>Prim算法和Dijkstra算法</li>
 <li>Kruskal算法</li>
 <li>霍夫曼压缩</li>
 <li>字符串处理</li>
-</ul>
-</li>
+</ul></li>
 </ul>
 
     </div>
@@ -543,7 +553,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">40:16</span>
+    <span title="站点阅读时长">40:29</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>

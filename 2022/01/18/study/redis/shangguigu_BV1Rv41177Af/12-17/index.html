@@ -27,18 +27,11 @@
 <meta property="og:site_name" content="随记">
 <meta property="og:description" content="redis中单位的设置，支持k,kb,m,mb,g,gb">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1642470299824.png">
-<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1642471413477.png">
-<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1642496809416.png">
-<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1642557791117.png">
-<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1642560262874.png">
-<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1642562600909.png">
 <meta property="article:published_time" content="2022-01-18T08:48:54.000Z">
 <meta property="article:modified_time" content="2022-01-19T08:48:54.000Z">
 <meta property="article:author" content="刘易">
 <meta property="article:tag" content="redis_尚硅谷">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1642470299824.png">
 
 <link rel="canonical" href="http://example.com/2022/01/18/study/redis/shangguigu_BV1Rv41177Af/12-17/">
 
@@ -251,7 +244,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>2k</span>
+              <span>2.1k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -271,68 +264,94 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h2 id="Redis配置文件"><a href="#Redis配置文件" class="headerlink" title="Redis配置文件"></a>Redis配置文件</h2><ul>
-<li>redis中单位的设置，支持k,kb,m,mb,g,gb，且不区分大小写<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1642470299824.png" alt=""></li>
-<li>include (包含其他文件，比如公共部分)<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1642471413477.png" alt="">  </li>
-<li>bind<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bind 127.0.0.1 ::1 #listens on loopback IPv4 and IPv6 </span><br></pre></td></tr></table></figure>
+        <h2 id="redis配置文件">Redis配置文件</h2>
+<ul>
+<li>redis中单位的设置，支持k,kb,m,mb,g,gb，且不区分大小写<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1642470299824.png" /></li>
+<li>include (包含其他文件，比如公共部分)<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1642471413477.png" /><br />
+</li>
+<li>bind <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bind 127.0.0.1 ::1 #listens on loopback IPv4 and IPv6 </span><br></pre></td></tr></table></figure>
 <ul>
 <li>后面这个::1，相当于ipv6版的127.0.0.1。在redis配置文件中，整句表示只允许本地网卡的某个ip连接(但是它并不能指定某个主机连接到redis中。比如本机有两个网卡，两个ip，可以限定只有其中一个ip可以连接)</li>
 <li>如果注释掉了/或者bind 0.0.0.0，表示允许所有主机连接</li>
-</ul>
-</li>
+</ul></li>
 <li>protected-mode <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">protected-mode yes </span><br></pre></td></tr></table></figure>
 <ul>
-<li>设置保护模式为yes，protected是redis本身的一个安全层，这个安全层在同时满足下面三个条件的时候会开启，开启后只有本机可以访问redis<ul>
+<li>设置保护模式为yes，protected是redis本身的一个安全层，这个安全层在同时满足下面三个条件的时候会开启，开启后只有本机可以访问redis
+<ul>
 <li>protected-mode yes</li>
 <li>没有bind指令(bind 0.0.0.0不属于这个条件)</li>
-<li>没有设置密码 (没有设置requirepass password)  </li>
-</ul>
+<li>没有设置密码 (没有设置requirepass password)<br />
 </li>
-<li>只要上面一个条件不满足，就不会开启保护模式。换言之，只要设置了bind 0.0.0.0或者没有设置bind，且不满足上面三个条件之一，就能够进行远程访问(当然，linux/windows的6379端口要开放) </li>
-</ul>
+</ul></li>
+<li>只要上面一个条件不满足，就不会开启保护模式。换言之，只要设置了bind
+0.0.0.0或者没有设置bind，且不满足上面三个条件之一，就能够进行远程访问(当然，linux/windows的6379端口要开放)</li>
+</ul></li>
+<li>tcp-backlog 表示未连接队列总和<br />
 </li>
-<li>tcp-backlog 表示未连接队列总和  </li>
 <li>timeout 秒为单位，时间内没操作则断开连接</li>
 <li>tcp-keepalive 300 心跳检测，每隔300s检测连接是否存在</li>
 <li>pidfile /var/run/redis_6379.pid 将进程号保存到文件中</li>
-<li>loglevel 表示日志的级别/debug/verbose/<strong>notice</strong>/warning</li>
-<li>logfile “”  设置日志的路径</li>
+<li>loglevel
+表示日志的级别/debug/verbose/<strong>notice</strong>/warning</li>
+<li>logfile "" 设置日志的路径</li>
 <li>database 16 默认有16个库</li>
 <li>requirepass password 设置密码</li>
 <li>maxclients 设置最大连接数</li>
-<li>maxmemory 设置最大内存量，达到则会根据移除策略进行移除操作<h2 id="Redis的发布和订阅"><a href="#Redis的发布和订阅" class="headerlink" title="Redis的发布和订阅"></a>Redis的发布和订阅</h2></li>
+<li>maxmemory 设置最大内存量，达到则会根据移除策略进行移除操作 ##
+Redis的发布和订阅</li>
 <li>发布订阅，pub/sub，是一种消息通信模式：发送者pub发送消息，订阅器sub接收消息</li>
-<li>发布者能发布消息，订阅者可以订阅/接收消息<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1642496809416.png" alt="">  </li>
-<li><p>操作  </p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">subscribe channel1 #客户端A订阅频道 </span><br></pre></td></tr></table></figure>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">publish channel1 helloly #向频道发送消息</span><br></pre></td></tr></table></figure>
-<p>此时订阅channel1频道的客户端就会接收到消息<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1642557791117.png" alt=""></p>
-<h2 id="redis新数据类型"><a href="#redis新数据类型" class="headerlink" title="redis新数据类型"></a>redis新数据类型</h2><h3 id="Bitmaps"><a href="#Bitmaps" class="headerlink" title="Bitmaps"></a>Bitmaps</h3><ul>
-<li>进行二进制操作</li>
-<li>可以把Bitmaps想象成一个以位为单位的数组，数组的每个单元只能存储0和1，数组的下标在Bitmaps中叫做<strong>偏移量</strong><br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1642560262874.png" alt="">  </li>
-<li>bitcount:统计字符串被设置为1的bit数，这里结果是5</li>
-<li><p>bitcount u1 0 1 #统计字符串第0个字节到第1个字节1的bit数<br>(1,6,11,15,19bit值为1)[也就是统计第0到第15位的1的个数]  </p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">setbit u1 1 1</span><br><span class="line">setbit u1 2 1</span><br><span class="line">setbit u1 5 1</span><br><span class="line">setbit u1 9 1</span><br></pre></td></tr></table></figure>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">setbit u2 0 1</span><br><span class="line">setbit u2 1 1</span><br><span class="line">setbit u2 4 1</span><br><span class="line">setbit u2 9 1</span><br></pre></td></tr></table></figure></li>
-<li>获取u1，u2共同位为1的个数，如上1,9都是1，所以返回2，且 bitcount u1—u2的值为2（第1和第9位为1），其实就是<strong>u1和u2进行&amp;操作</strong>      <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bitop and u1-and-u2 u1 u2 </span><br></pre></td></tr></table></figure></li>
-<li>获取u1或u2存在值为1的位的个数，如上结果为8-2=6，结果存在u1-or-u2中，即1，2，5，9，0，4的位 值为1(的字符串)，其实就是<strong>u1和u2进行或操作</strong>  </li>
-<li>性能比较，假设有一亿个用户，用户id数值递增，需求是存储每个用户是否活跃。下面是使用hashMap和bitmaps的比较<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1642562600909.png" alt=""></li>
-<li>bitmaps主要用来进行位操作计算<h3 id="HyperLogLog"><a href="#HyperLogLog" class="headerlink" title="HyperLogLog"></a>HyperLogLog</h3></li>
-</ul>
+<li>发布者能发布消息，订阅者可以订阅/接收消息<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1642496809416.png" /><br />
 </li>
-<li>解决基数问题<br>从{1,3,5,5,7,8,8,7,9}找出基数：基数为5，即不重复元素的个数</li>
-<li>解决方案<ul>
+<li>操作<br />
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">subscribe channel1 #客户端A订阅频道 </span><br></pre></td></tr></table></figure> <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">publish channel1 helloly #向频道发送消息</span><br></pre></td></tr></table></figure>
+此时订阅channel1频道的客户端就会接收到消息<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1642557791117.png" />
+## redis新数据类型<br />
+### Bitmaps
+<ul>
+<li><p>进行二进制操作</p></li>
+<li><p>可以把Bitmaps想象成一个以位为单位的数组，数组的每个单元只能存储0和1，数组的下标在Bitmaps中叫做<strong>偏移量</strong><br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1642560262874.png" /><br />
+</p></li>
+<li><p>bitcount:统计字符串被设置为1的bit数，这里结果是5</p></li>
+<li><p>bitcount u1 0 1 #统计字符串第0个字节到第1个字节1的bit数<br />
+(1,6,11,15,19bit值为1)[也就是统计第0到第15位的1的个数]<br />
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">setbit u1 1 1</span><br><span class="line">setbit u1 2 1</span><br><span class="line">setbit u1 5 1</span><br><span class="line">setbit u1 9 1</span><br></pre></td></tr></table></figure></p>
+<p><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">setbit u2 0 1</span><br><span class="line">setbit u2 1 1</span><br><span class="line">setbit u2 4 1</span><br><span class="line">setbit u2 9 1</span><br></pre></td></tr></table></figure></p></li>
+<li><p>获取u1，u2共同位为1的个数，如上1,9都是1，所以返回2，且 bitcount
+u1--u2的值为2（第1和第9位为1），其实就是<strong>u1和u2进行&amp;操作</strong><br />
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bitop and u1-and-u2 u1 u2 </span><br></pre></td></tr></table></figure></p></li>
+<li><p>获取u1或u2存在值为1的位的个数，如上结果为8-2=6，结果存在u1-or-u2中，即1，2，5，9，0，4的位
+值为1(的字符串)，其实就是<strong>u1和u2进行或操作</strong><br />
+</p></li>
+<li><p>性能比较，假设有一亿个用户，用户id数值递增，需求是存储每个用户是否活跃。下面是使用hashMap和bitmaps的比较<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/1642562600909.png" /></p></li>
+<li><p>bitmaps主要用来进行位操作计算 ### HyperLogLog</p></li>
+</ul></li>
+<li>解决基数问题<br />
+从{1,3,5,5,7,8,8,7,9}找出基数：基数为5，即不重复元素的个数</li>
+<li>解决方案
+<ul>
 <li>mysql中可以用distinct count</li>
 <li>redis中可以用hash,set,bitmaps</li>
-</ul>
+</ul></li>
+<li>使用 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">pfadd a 1 2 3 4 3 3 3 2 1 6 7</span><br><span class="line">pfcount a #得到基数 6 </span><br><span class="line">pfadd b 1 10 7 15 #基数4</span><br><span class="line">pfmerge c a b #将a，b合并到c</span><br><span class="line">pfcount c #得到基数8</span><br></pre></td></tr></table></figure> ### GEO类型 (geographic)<br />
 </li>
-<li>使用<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">pfadd a 1 2 3 4 3 3 3 2 1 6 7</span><br><span class="line">pfcount a #得到基数 6 </span><br><span class="line">pfadd b 1 10 7 15 #基数4</span><br><span class="line">pfmerge c a b #将a，b合并到c</span><br><span class="line">pfcount c #得到基数8</span><br></pre></td></tr></table></figure>
-<h3 id="GEO类型-geographic"><a href="#GEO类型-geographic" class="headerlink" title="GEO类型  (geographic)"></a>GEO类型  (geographic)</h3></li>
-<li>基本命令  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">geoadd china:city 121.47 31.43 shanghai</span><br><span class="line">geoadd china:city 166.50 29.53 chongqing 114.05 22.52  shenzhen</span><br><span class="line">geoadd china:city 16.38 39.90 beijing </span><br></pre></td></tr></table></figure></li>
+<li>基本命令<br />
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">geoadd china:city 121.47 31.43 shanghai</span><br><span class="line">geoadd china:city 166.50 29.53 chongqing 114.05 22.52  shenzhen</span><br><span class="line">geoadd china:city 16.38 39.90 beijing </span><br></pre></td></tr></table></figure></li>
 <li>不支持南北极，所以有效经度在-180到180度，有效纬度从-85.05xxx度到85.05xxx度</li>
-<li>获取坐标值及直线距离<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">geopos china:city beijing #获取beijing经纬度</span><br><span class="line">geodist china:city beijing shenzhen km #获取beijing到shenzhen的直线距离</span><br><span class="line"># 单位有m,km,ft,mi</span><br></pre></td></tr></table></figure></li>
-<li>以给定的经纬度为中心，找出某一半径内的元素  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">georadius china:city 110 30 1000 km</span><br></pre></td></tr></table></figure>
-<h2 id="End"><a href="#End" class="headerlink" title="End"></a>End</h2></li>
+<li>获取坐标值及直线距离 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">geopos china:city beijing #获取beijing经纬度</span><br><span class="line">geodist china:city beijing shenzhen km #获取beijing到shenzhen的直线距离</span><br><span class="line"># 单位有m,km,ft,mi</span><br></pre></td></tr></table></figure></li>
+<li>以给定的经纬度为中心，找出某一半径内的元素<br />
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">georadius china:city 110 30 1000 km</span><br></pre></td></tr></table></figure> ## End</li>
 </ul>
 
     </div>
@@ -424,7 +443,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Redis%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="nav-number">1.</span> <span class="nav-text">Redis配置文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Redis%E7%9A%84%E5%8F%91%E5%B8%83%E5%92%8C%E8%AE%A2%E9%98%85"><span class="nav-number">2.</span> <span class="nav-text">Redis的发布和订阅</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#redis%E6%96%B0%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B"><span class="nav-number">3.</span> <span class="nav-text">redis新数据类型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Bitmaps"><span class="nav-number">3.1.</span> <span class="nav-text">Bitmaps</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#HyperLogLog"><span class="nav-number">3.2.</span> <span class="nav-text">HyperLogLog</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#GEO%E7%B1%BB%E5%9E%8B-geographic"><span class="nav-number">3.3.</span> <span class="nav-text">GEO类型  (geographic)</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#End"><span class="nav-number">4.</span> <span class="nav-text">End</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#redis%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="nav-number">1.</span> <span class="nav-text">Redis配置文件</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -499,7 +518,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">40:16</span>
+    <span title="站点阅读时长">40:29</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>

@@ -27,7 +27,6 @@
 <meta property="og:site_name" content="随记">
 <meta property="og:description" content="jvm参数">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230312152902423.png">
 <meta property="article:published_time" content="2022-12-19T15:24:01.000Z">
 <meta property="article:modified_time" content="2022-12-19T15:24:01.000Z">
 <meta property="article:author" content="刘易">
@@ -35,7 +34,6 @@
 <meta property="article:tag" content="复习-javaGuide">
 <meta property="article:tag" content="复习-javaGuide-jvm">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230312152902423.png">
 
 <link rel="canonical" href="http://example.com/2022/12/19/review/java_guide/java/jvm/ly0406lyjvm-params/">
 
@@ -262,68 +260,100 @@
 
       
         <blockquote>
-<p>转载自<a target="_blank" rel="noopener" href="https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!">https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!</a></p>
-<p>本文由 JavaGuide 翻译自 <a target="_blank" rel="noopener" href="https://www.baeldung.com/jvm-parameters">https://www.baeldung.com/jvm-parametersopen in new window</a>，并对文章进行了大量的完善补充。翻译不易，如需转载请注明出处，作者：<a target="_blank" rel="noopener" href="https://www.baeldung.com/author/baeldung/">baeldungopen in new window</a> 。</p>
+<p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!</p>
 </blockquote>
-<h1 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h1><p>本篇文章中，将掌握最常用的<strong>JVM参数配置</strong>。下面提到了一些概念，<strong>堆</strong>、<strong>方法区</strong>、<strong>垃圾回收</strong>等。</p>
-<h1 id="堆内存相关"><a href="#堆内存相关" class="headerlink" title="堆内存相关"></a>堆内存相关</h1><p>Java 虚拟机所管理的<strong>内存中最大的一块</strong>，<strong>Java 堆</strong>是<strong>所有线程共享的一块内存区域</strong>，在虚拟机<strong>启动时创建</strong>。此内存区域的<strong>唯一目的就是存放对象实例</strong>，<strong>几乎</strong> <strong>所有的对象实例</strong>以及<strong>数组</strong>都在这里分配内存。<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230312152902423.png" alt="image-20230312152902423"></p>
-<h2 id="显式指定堆内存-Xms和-Xmx"><a href="#显式指定堆内存-Xms和-Xmx" class="headerlink" title="显式指定堆内存-Xms和-Xmx"></a>显式指定堆内存-Xms和-Xmx</h2><ul>
-<li><p>与<strong>性能相关</strong>的最常见实践之一是根据应用程序要求<strong>初始化堆内存</strong>。</p>
-</li>
-<li><p>如果我们需要指定<strong>最小</strong>和<strong>最大堆</strong>大小（推荐显示指定大小）：  </p>
+<blockquote>
+<p>本文由 JavaGuide 翻译自 <a
+target="_blank" rel="noopener" href="https://www.baeldung.com/jvm-parameters">https://www.baeldung.com/jvm-parametersopen
+in new
+window</a>，并对文章进行了大量的完善补充。翻译不易，如需转载请注明出处，作者：<a
+target="_blank" rel="noopener" href="https://www.baeldung.com/author/baeldung/">baeldungopen in new
+window</a> 。</p>
+</blockquote>
+<h1 id="概述">概述</h1>
+<p>本篇文章中，将掌握最常用的<strong>JVM参数配置</strong>。下面提到了一些概念，<strong>堆</strong>、<strong>方法区</strong>、<strong>垃圾回收</strong>等。</p>
+<h1 id="堆内存相关">堆内存相关</h1>
+<p>Java 虚拟机所管理的<strong>内存中最大的一块</strong>，<strong>Java
+堆</strong>是<strong>所有线程共享的一块内存区域</strong>，在虚拟机<strong>启动时创建</strong>。此内存区域的<strong>唯一目的就是存放对象实例</strong>，<strong>几乎</strong>
+<strong>所有的对象实例</strong>以及<strong>数组</strong>都在这里分配内存。<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230312152902423.png"
+alt="image-20230312152902423" /></p>
+<h2 id="显式指定堆内存-xms和-xmx">显式指定堆内存-Xms和-Xmx</h2>
+<ul>
+<li><p>与<strong>性能相关</strong>的最常见实践之一是根据应用程序要求<strong>初始化堆内存</strong>。</p></li>
+<li><p>如果我们需要指定<strong>最小</strong>和<strong>最大堆</strong>大小（推荐显示指定大小）：</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">-Xms&lt;heap size&gt;[unit] </span><br><span class="line">-Xmx&lt;heap size&gt;[unit]</span><br></pre></td></tr></table></figure>
 <ul>
 <li><strong>heap size</strong> 表示要初始化内存的具体大小。</li>
-<li><strong>unit</strong> 表示要初始化内存的单位。单位为<strong><em>“ g”</em></strong> (GB) 、<strong><em>“ m”</em></strong>（MB）、<strong><em>“ k”</em></strong>（KB）。</li>
-</ul>
-</li>
+<li><strong>unit</strong> 表示要初始化内存的单位。单位为<strong><em>“
+g”</em></strong> (GB) 、<strong><em>“
+m”</em></strong>（MB）、<strong><em>“ k”</em></strong>（KB）。</li>
+</ul></li>
 <li><p>举例，为JVM分配最小2GB和最大5GB的堆内存大小</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">-Xms2G -Xmx5G</span><br></pre></td></tr></table></figure>
-</li>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">-Xms2G -Xmx5G</span><br></pre></td></tr></table></figure></li>
 </ul>
-<h2 id="显示新生代内存（Young-Generation）"><a href="#显示新生代内存（Young-Generation）" class="headerlink" title="显示新生代内存（Young Generation）"></a>显示新生代内存（Young Generation）</h2><ul>
-<li><p>在堆总可用内存配置完成之后，第二大影响因素是为 <strong><code>Young Generation</code></strong> 在堆内存所占的比例。默认情况下，<strong>YG 的最小大小为 1310 <em>MB</em></strong>，最大大小为<em>无限制</em>。</p>
-</li>
-<li><p>两种指定 <strong>新生代内存(Young Generation)</strong> 大小的方法  </p>
-<ol>
+<h2 id="显示新生代内存young-generation">显示新生代内存（Young
+Generation）</h2>
+<ul>
+<li><p>在堆总可用内存配置完成之后，第二大影响因素是为
+<strong><code>Young Generation</code></strong>
+在堆内存所占的比例。默认情况下，<strong>YG 的最小大小为 1310
+<em>MB</em></strong>，最大大小为<em>无限制</em>。</p></li>
+<li><p>两种指定 <strong>新生代内存(Young Generation)</strong>
+大小的方法</p>
+<ol type="1">
 <li><p>通过 <code>-XX:NewSize</code> 和 <code>-XX:MaxNewSize</code></p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line">-XX:NewSize=&lt;young size&gt;[unit] </span><br><span class="line">-XX:MaxNewSize=&lt;young size&gt;[unit]</span><br></pre></td></tr></table></figure>
-<p>如，为新生代分配<strong>最小256m</strong>的内存，<strong>最大1024m</strong>的内存我们的参数为：  </p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">-XX:NewSize=256m</span><br><span class="line">-XX:MaxNewSize=1024m</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>通过<code>-Xmn&lt;young size&gt;[unit]</code>指定<br>举例，为新生代分配256m的内存（NewSize与MaxNewSize设为一致）<br><code>-Xmn256m</code></p>
+<p>如，为新生代分配<strong>最小256m</strong>的内存，<strong>最大1024m</strong>的内存我们的参数为：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">-XX:NewSize=256m</span><br><span class="line">-XX:MaxNewSize=1024m</span><br></pre></td></tr></table></figure></li>
+<li><p>通过<code>-Xmn&lt;young size&gt;[unit]</code>指定
+举例，为新生代分配256m的内存（NewSize与MaxNewSize设为一致）
+<code>-Xmn256m</code></p>
 <blockquote>
-<p>将新对象预留在新生代，由于 <strong>Full GC 的成本远高于 Minor GC</strong>，因此尽可能<strong>将对象分配在新生代</strong>是明智的做法，实际项目中<strong>根据 GC 日志分析新生代空间大小分配是否合理</strong>，适当通过“-Xmn”命令调节新生代大小，<strong>最大限度降低新对象直接进入老年代</strong>的情况。</p>
+<p>将新对象预留在新生代，由于 <strong>Full GC 的成本远高于 Minor
+GC</strong>，因此尽可能<strong>将对象分配在新生代</strong>是明智的做法，实际项目中<strong>根据
+GC
+日志分析新生代空间大小分配是否合理</strong>，适当通过“-Xmn”命令调节新生代大小，<strong>最大限度降低新对象直接进入老年代</strong>的情况。</p>
 </blockquote>
-<p>另外，你还可以通过 <strong><code>-XX:NewRatio=&lt;int&gt;</code></strong> 来设置老年代与新生代内存的比值。</p>
+<p>另外，你还可以通过
+<strong><code>-XX:NewRatio=&lt;int&gt;</code></strong>
+来设置老年代与新生代内存的比值。</p>
 <blockquote>
-<p>下面的参数，设置<strong>老年代</strong>与<strong>新生代</strong>内存的比例为1，即 老年代：新生代 = 1：1，新生代占整个堆栈的1/2<br><code>-XX:NewRadio=1</code></p>
-</blockquote>
-</li>
-</ol>
-</li>
+<p>下面的参数，设置<strong>老年代</strong>与<strong>新生代</strong>内存的比例为1，即
+老年代：新生代 = 1：1，新生代占整个堆栈的1/2
+<code>-XX:NewRadio=1</code></p>
+</blockquote></li>
+</ol></li>
 </ul>
-<h2 id="显示指定永久代-元空间的大小"><a href="#显示指定永久代-元空间的大小" class="headerlink" title="显示指定永久代/元空间的大小"></a>显示指定永久代/元空间的大小</h2><p>从Java 8开始，<strong>如果我们没有指定 Metaspace(元空间)</strong> 的大小，随着更多类的创建，<strong>虚拟机会耗尽</strong>所有<strong>可用的系统内存</strong>（永久代并不会出现这种情况）  </p>
+<h2 id="显示指定永久代元空间的大小">显示指定永久代/元空间的大小</h2>
+<p>从Java 8开始，<strong>如果我们没有指定 Metaspace(元空间)</strong>
+的大小，随着更多类的创建，<strong>虚拟机会耗尽</strong>所有<strong>可用的系统内存</strong>（永久代并不会出现这种情况）</p>
 <ul>
-<li><p><strong>JDK 1.8 之前永久代还没被彻底移除</strong>的时候通常通过下面这些参数来调节方法区大小</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">-XX:PermSize=N <span class="comment">//方法区 (永久代) 初始大小</span></span><br><span class="line">-XX:MaxPermSize=N <span class="comment">//方法区 (永久代) 最大大小,超过这个值将会抛出 OutOfMemoryError 异常:java.lang.OutOfMemoryError: PermGen </span></span><br></pre></td></tr></table></figure>
-</li>
-<li><p><strong>相对</strong>而言，垃圾收集行为在这个区域是<strong>比较少出现</strong>的，但<strong>并非数据进入方法区后就“永久存在”</strong>了。</p>
-</li>
-<li><p><strong>JDK 1.8 的时候，方法区（HotSpot 的永久代）被彻底移除了（JDK1.7 就已经开始了），取而代之是元空间，元空间使用的是本地内存</strong></p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">-XX:MetaspaceSize=N <span class="comment">//设置 Metaspace 的初始（和最小大小）</span></span><br><span class="line">-XX:MaxMetaspaceSize=N <span class="comment">//设置 Metaspace 的最大大小，如果不指定大小的话，随着更多类的创建，虚拟机会耗尽所有可用的系统内存。 </span></span><br></pre></td></tr></table></figure>
-</li>
+<li><p><strong>JDK 1.8
+之前永久代还没被彻底移除</strong>的时候通常通过下面这些参数来调节方法区大小</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">-XX:PermSize=N <span class="comment">//方法区 (永久代) 初始大小</span></span><br><span class="line">-XX:MaxPermSize=N <span class="comment">//方法区 (永久代) 最大大小,超过这个值将会抛出 OutOfMemoryError 异常:java.lang.OutOfMemoryError: PermGen </span></span><br></pre></td></tr></table></figure></li>
+<li><p><strong>相对</strong>而言，垃圾收集行为在这个区域是<strong>比较少出现</strong>的，但<strong>并非数据进入方法区后就“永久存在”</strong>了。</p></li>
+<li><p><strong>JDK 1.8 的时候，方法区（HotSpot
+的永久代）被彻底移除了（JDK1.7
+就已经开始了），取而代之是元空间，元空间使用的是本地内存</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">-XX:MetaspaceSize=N <span class="comment">//设置 Metaspace 的初始（和最小大小）</span></span><br><span class="line">-XX:MaxMetaspaceSize=N <span class="comment">//设置 Metaspace 的最大大小，如果不指定大小的话，随着更多类的创建，虚拟机会耗尽所有可用的系统内存。 </span></span><br></pre></td></tr></table></figure></li>
 </ul>
-<h1 id="垃圾收集相关"><a href="#垃圾收集相关" class="headerlink" title="垃圾收集相关"></a>垃圾收集相关</h1><h2 id="垃圾回收器"><a href="#垃圾回收器" class="headerlink" title="垃圾回收器"></a>垃圾回收器</h2><p>为了提高应用程序的稳定性，选择正确的<strong>垃圾收集算法</strong>至关重要<br>JVM具有<strong>四种类型</strong>的GC实现：  </p>
-<ol>
+<h1 id="垃圾收集相关">垃圾收集相关</h1>
+<h2 id="垃圾回收器">垃圾回收器</h2>
+<p>为了提高应用程序的稳定性，选择正确的<strong>垃圾收集算法</strong>至关重要<br />
+JVM具有<strong>四种类型</strong>的GC实现：</p>
+<ol type="1">
 <li>串行垃圾收集器</li>
 <li>并行垃圾收集器</li>
 <li>CMS垃圾收集器（并发）</li>
 <li>G1垃圾收集器（并发）</li>
 </ol>
-<p>使用下列参数实现：  </p>
+<p>使用下列参数实现：</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">-XX:+UseSerialGC</span><br><span class="line">-XX:+UseParallelGC</span><br><span class="line">-XX:+UseParNewGC</span><br><span class="line">-XX:+UseG1GC</span><br></pre></td></tr></table></figure>
-<h2 id="GC记录"><a href="#GC记录" class="headerlink" title="GC记录"></a>GC记录</h2><p>为了严格<strong>监控应用程序</strong>的<strong>运行状况</strong>，应该始终<strong>检查JVM的垃圾回收性能</strong>。最简单的方法是<strong>以人类可读的格式记录GC活动</strong><br>通过以下参数  </p>
+<h2 id="gc记录">GC记录</h2>
+<p>为了严格<strong>监控应用程序</strong>的<strong>运行状况</strong>，应该始终<strong>检查JVM的垃圾回收性能</strong>。最简单的方法是<strong>以人类可读的格式记录GC活动</strong><br />
+通过以下参数</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">-XX:+UseGCLogFileRotation </span><br><span class="line">-XX:NumberOfGCLogFiles=&lt; number of log files &gt; </span><br><span class="line">-XX:GCLogFileSize=&lt; file size &gt;[ unit ]</span><br><span class="line">-Xloggc:/path/to/gc.log </span><br></pre></td></tr></table></figure>
 
     </div>
@@ -417,7 +447,8 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A6%82%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%A0%86%E5%86%85%E5%AD%98%E7%9B%B8%E5%85%B3"><span class="nav-number">2.</span> <span class="nav-text">堆内存相关</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%98%BE%E5%BC%8F%E6%8C%87%E5%AE%9A%E5%A0%86%E5%86%85%E5%AD%98-Xms%E5%92%8C-Xmx"><span class="nav-number">2.1.</span> <span class="nav-text">显式指定堆内存-Xms和-Xmx</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%98%BE%E7%A4%BA%E6%96%B0%E7%94%9F%E4%BB%A3%E5%86%85%E5%AD%98%EF%BC%88Young-Generation%EF%BC%89"><span class="nav-number">2.2.</span> <span class="nav-text">显示新生代内存（Young Generation）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%98%BE%E7%A4%BA%E6%8C%87%E5%AE%9A%E6%B0%B8%E4%B9%85%E4%BB%A3-%E5%85%83%E7%A9%BA%E9%97%B4%E7%9A%84%E5%A4%A7%E5%B0%8F"><span class="nav-number">2.3.</span> <span class="nav-text">显示指定永久代&#x2F;元空间的大小</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E7%9B%B8%E5%85%B3"><span class="nav-number">3.</span> <span class="nav-text">垃圾收集相关</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8"><span class="nav-number">3.1.</span> <span class="nav-text">垃圾回收器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GC%E8%AE%B0%E5%BD%95"><span class="nav-number">3.2.</span> <span class="nav-text">GC记录</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A6%82%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%A0%86%E5%86%85%E5%AD%98%E7%9B%B8%E5%85%B3"><span class="nav-number">2.</span> <span class="nav-text">堆内存相关</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%98%BE%E5%BC%8F%E6%8C%87%E5%AE%9A%E5%A0%86%E5%86%85%E5%AD%98-xms%E5%92%8C-xmx"><span class="nav-number">2.1.</span> <span class="nav-text">显式指定堆内存-Xms和-Xmx</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%98%BE%E7%A4%BA%E6%96%B0%E7%94%9F%E4%BB%A3%E5%86%85%E5%AD%98young-generation"><span class="nav-number">2.2.</span> <span class="nav-text">显示新生代内存（Young
+Generation）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%98%BE%E7%A4%BA%E6%8C%87%E5%AE%9A%E6%B0%B8%E4%B9%85%E4%BB%A3%E5%85%83%E7%A9%BA%E9%97%B4%E7%9A%84%E5%A4%A7%E5%B0%8F"><span class="nav-number">2.3.</span> <span class="nav-text">显示指定永久代&#x2F;元空间的大小</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E7%9B%B8%E5%85%B3"><span class="nav-number">3.</span> <span class="nav-text">垃圾收集相关</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8"><span class="nav-number">3.1.</span> <span class="nav-text">垃圾回收器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#gc%E8%AE%B0%E5%BD%95"><span class="nav-number">3.2.</span> <span class="nav-text">GC记录</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -492,7 +523,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">40:16</span>
+    <span title="站点阅读时长">40:29</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>

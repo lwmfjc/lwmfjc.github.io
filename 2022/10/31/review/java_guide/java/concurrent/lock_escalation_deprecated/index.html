@@ -27,14 +27,6 @@
 <meta property="og:site_name" content="随记">
 <meta property="og:description" content="(该文弃用)锁升级">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221031112225665.png">
-<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221031112946966.png">
-<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221031114235312.png">
-<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221031132702183.png">
-<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221031172548988.png">
-<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221031174605461.png">
-<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221101171515521.png">
-<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/20221102153032.png">
 <meta property="article:published_time" content="2022-10-31T11:08:59.000Z">
 <meta property="article:modified_time" content="2022-10-31T11:08:59.000Z">
 <meta property="article:author" content="刘易">
@@ -42,7 +34,6 @@
 <meta property="article:tag" content="复习-javaGuide">
 <meta property="article:tag" content="复习-javaGuide-并发">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221031112225665.png">
 
 <link rel="canonical" href="http://example.com/2022/10/31/review/java_guide/java/concurrent/lock_escalation_deprecated/">
 
@@ -268,98 +259,115 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>无锁 =&gt; 偏向锁 =&gt; 轻量锁 =&gt; 重量锁</p>
+        <h2 id="简介">简介</h2>
+<p>无锁 =&gt; 偏向锁 =&gt; 轻量锁 =&gt; 重量锁</p>
 <p>复习Class类锁和实例对象锁，说明Class类锁和实例对象锁不是同一把锁，互相不影响</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException &#123; </span><br><span class="line">        Object object=<span class="keyword">new</span> <span class="title class_">Object</span>();</span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">Thread</span>(()-&gt;&#123;</span><br><span class="line">           <span class="keyword">synchronized</span> (Customer.class)&#123;</span><br><span class="line">               System.out.println(Thread.currentThread().getName()+<span class="string">&quot;Object.class类锁&quot;</span>);</span><br><span class="line">               <span class="keyword">try</span> &#123;</span><br><span class="line">                   TimeUnit.SECONDS.sleep(<span class="number">5</span>);</span><br><span class="line">               &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                   e.printStackTrace();</span><br><span class="line">               &#125;</span><br><span class="line">           &#125;</span><br><span class="line">            System.out.println(Thread.currentThread().getName()+<span class="string">&quot;结束并释放锁&quot;</span>);</span><br><span class="line">        &#125;,<span class="string">&quot;线程1&quot;</span>).start();</span><br><span class="line">        <span class="comment">//保证线程1已经获得类锁</span></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            TimeUnit.SECONDS.sleep(<span class="number">2</span>);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">Thread</span>(()-&gt;&#123;</span><br><span class="line">            <span class="keyword">synchronized</span> (object)&#123;</span><br><span class="line">                System.out.println(Thread.currentThread().getName()+<span class="string">&quot;获得object实例对象锁&quot;</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            System.out.println(Thread.currentThread().getName()+<span class="string">&quot;结束并释放锁&quot;</span>);</span><br><span class="line">        &#125;,<span class="string">&quot;线程2&quot;</span>).start();</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 输出</span></span><br><span class="line"><span class="comment">线程1Object.class类锁</span></span><br><span class="line"><span class="comment">线程2获得object实例对象锁</span></span><br><span class="line"><span class="comment">线程2结束并释放锁</span></span><br><span class="line"><span class="comment">线程1结束并释放锁</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
-<p>总结图  , 00 , 01 , 10 ，没有11</p>
+<p>总结图 , 00 , 01 , 10 ，没有11</p>
 <p>001（无锁）和101（偏向锁），00（轻量级锁），10（重量级锁）</p>
-<p><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221031112225665.png" alt="image-20221031112225665"></p>
-<h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>下面这部分，其实在io模块有提到过</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221031112225665.png"
+alt="image-20221031112225665" />
+<figcaption aria-hidden="true">image-20221031112225665</figcaption>
+</figure>
+<h2 id="背景">背景</h2>
+<p>下面这部分，其实在io模块有提到过</p>
 <blockquote>
 <ul>
-<li>为了保证系统稳定性和安全性，一个进程的地址空间划分为<strong>用户空间User space</strong>和<strong>内核空间Kernel space</strong> </li>
-<li>平常运行的应用程序都运行在用户空间，只有内核空间才能进行系统态级别的资源有关操作—-文件管理、进程通信、内存管理</li>
+<li>为了保证系统稳定性和安全性，一个进程的地址空间划分为<strong>用户空间User
+space</strong>和<strong>内核空间Kernel space</strong></li>
+<li>平常运行的应用程序都运行在用户空间，只有内核空间才能进行系统态级别的资源有关操作---文件管理、进程通信、内存管理</li>
 </ul>
 </blockquote>
-<p>如果直接synchronized加锁，会有下面图的流程出现，频繁进行用户态和内核态的切换(阻塞和唤醒线程[线程通信]，需要频繁切换cpu的状态)<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221031112946966.png" alt="image-20221031112946966"></p>
+<p>如果直接synchronized加锁，会有下面图的流程出现，频繁进行用户态和内核态的切换(阻塞和唤醒线程[线程通信]，需要频繁切换cpu的状态)<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221031112946966.png"
+alt="image-20221031112946966" /></p>
 <ul>
-<li>为什么每一个对象都可以成为一个锁<br>markOop.hpp （对应对象标识）<br>每一个java对象里面，有一个Monitor对象（ObjectMonitor.cpp)关联<br>如图，_owner指向持有ObjectMonitor对象的线程<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221031114235312.png" alt="image-20221031114235312"><br>Monitor本质依赖于底层操作系统的MutexLock实现，操作系统实现线程之间的切换，需要从用户态到内核态的切换，成本极高</li>
-<li>★★ 重点：Monitor与Java对象以及线程是如何关联<ul>
+<li>为什么每一个对象都可以成为一个锁 markOop.hpp （对应对象标识）
+每一个java对象里面，有一个Monitor对象（ObjectMonitor.cpp)关联
+如图，_owner指向持有ObjectMonitor对象的线程 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221031114235312.png"
+alt="image-20221031114235312" />
+Monitor本质依赖于底层操作系统的MutexLock实现，操作系统实现线程之间的切换，需要从用户态到内核态的切换，成本极高</li>
+<li>★★ 重点：Monitor与Java对象以及线程是如何关联
+<ul>
 <li>如果一个java对象被某个线程锁住，则该对象的MarkWord字段中，LockWord指向monitor的起始地址（这里说的应该是重量级锁）</li>
 <li>Monitor的Owner字段会存放拥有相关联对象锁的线程id</li>
-<li>图<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221031132702183.png" alt="image-20221031132702183"></li>
+<li>图 <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221031132702183.png"
+alt="image-20221031132702183" /></li>
+</ul></li>
 </ul>
-</li>
-</ul>
-<h2 id="锁升级"><a href="#锁升级" class="headerlink" title="锁升级"></a>锁升级</h2><ul>
-<li><p>synchronized用的锁，存在Java对象头里的MarkWord中，锁升级功能主要依赖MarkWord中<strong>锁标志位(后2位)</strong>和<strong>释放偏向锁标志位(无锁和偏向锁，倒数第3位)</strong></p>
-</li>
+<h2 id="锁升级">锁升级</h2>
+<ul>
+<li><p>synchronized用的锁，存在Java对象头里的MarkWord中，锁升级功能主要依赖MarkWord中<strong>锁标志位(后2位)</strong>和<strong>释放偏向锁标志位(无锁和偏向锁，倒数第3位)</strong></p></li>
 <li><p>对于锁的指向</p>
-<ol>
+<ol type="1">
 <li>无锁情况：（放hashcode(调用了Object.hashcode才有))</li>
 <li>偏向锁：MarkWord存储的是偏向的线程ID</li>
 <li>轻量锁：MarkWord存储的是指向线程栈中LockRecord的指针</li>
 <li>重量锁：MarkWord存储的是指向堆中的monitor对象的指针</li>
-</ol>
-</li>
+</ol></li>
 </ul>
-<h2 id="从这之后往下，是有误的的"><a href="#从这之后往下，是有误的的" class="headerlink" title="=================================从这之后往下，是有误的的============================="></a>=================================从这之后往下，是有误的的=============================</h2><ul>
-<li><p>无锁状态<br>初始状态，一个对象被实例化后，如果还没有任何线程竞争锁，那么它就为无锁状态（001）</p>
+<h2
+id="从这之后往下是有误的的">=================================从这之后往下，是有误的的=============================</h2>
+<ul>
+<li><p>无锁状态
+初始状态，一个对象被实例化后，如果还没有任何线程竞争锁，那么它就为无锁状态（001）</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">Object</span> <span class="variable">o</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Object</span>();</span><br><span class="line">        System.out.println(ClassLayout.parseInstance(o).toPrintable()); <span class="comment">//16字节</span></span><br><span class="line">    &#125;</span><br><span class="line"><span class="comment">/* 输出( 这里的mark,VALUE为0x0000000000000001，没有hashCode的值):</span></span><br><span class="line"><span class="comment">java.lang.Object object internals:</span></span><br><span class="line"><span class="comment">OFF  SZ   TYPE DESCRIPTION               VALUE</span></span><br><span class="line"><span class="comment">  0   8        (object header: mark)     0x0000000000000001 (non-biasable; age: 0)</span></span><br><span class="line"><span class="comment">  8   4        (object header: class)    0xf80001e5</span></span><br><span class="line"><span class="comment"> 12   4        (object alignment gap)    </span></span><br><span class="line"><span class="comment">Instance size: 16 bytes</span></span><br><span class="line"><span class="comment">Space losses: 0 bytes internal + 4 bytes external = 4 bytes total</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
-<p>下面是调用了hashCode()这个方法的情形:  </p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">Object</span> <span class="variable">o</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Object</span>();</span><br><span class="line">        System.out.println(Integer.toHexString(o.hashCode()));</span><br><span class="line">        System.out.println(ClassLayout.parseInstance(o).toPrintable()); <span class="comment">//16字节</span></span><br><span class="line">    &#125;</span><br><span class="line"><span class="comment">/**输出:</span></span><br><span class="line"><span class="comment">74a14482</span></span><br><span class="line"><span class="comment">java.lang.Object object internals:</span></span><br><span class="line"><span class="comment">OFF  SZ   TYPE DESCRIPTION               VALUE</span></span><br><span class="line"><span class="comment">  0   8        (object header: mark)     0x00000074a1448201 (hash: 0x74a14482; age: 0)</span></span><br><span class="line"><span class="comment">  8   4        (object header: class)    0xf80001e5</span></span><br><span class="line"><span class="comment"> 12   4        (object alignment gap)    </span></span><br><span class="line"><span class="comment">Instance size: 16 bytes</span></span><br><span class="line"><span class="comment">Space losses: 0 bytes internal + 4 bytes external = 4 bytes total</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
-</li>
+<p>下面是调用了hashCode()这个方法的情形:</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">Object</span> <span class="variable">o</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Object</span>();</span><br><span class="line">        System.out.println(Integer.toHexString(o.hashCode()));</span><br><span class="line">        System.out.println(ClassLayout.parseInstance(o).toPrintable()); <span class="comment">//16字节</span></span><br><span class="line">    &#125;</span><br><span class="line"><span class="comment">/**输出:</span></span><br><span class="line"><span class="comment">74a14482</span></span><br><span class="line"><span class="comment">java.lang.Object object internals:</span></span><br><span class="line"><span class="comment">OFF  SZ   TYPE DESCRIPTION               VALUE</span></span><br><span class="line"><span class="comment">  0   8        (object header: mark)     0x00000074a1448201 (hash: 0x74a14482; age: 0)</span></span><br><span class="line"><span class="comment">  8   4        (object header: class)    0xf80001e5</span></span><br><span class="line"><span class="comment"> 12   4        (object alignment gap)    </span></span><br><span class="line"><span class="comment">Instance size: 16 bytes</span></span><br><span class="line"><span class="comment">Space losses: 0 bytes internal + 4 bytes external = 4 bytes total</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure></li>
 <li><p>偏向锁：单线程竞争</p>
 <ul>
-<li><p>当线程A第一次竞争到锁时，通过操作修改MarkWord中的偏向线程ID、偏向模式。如果不存在其他线程竞争，那么持有偏向锁的线程将永远不需要同步</p>
-</li>
-<li><p>如果没有偏向锁，那么就会频繁出现<strong>用户态</strong>到<strong>内核态</strong>的切换</p>
-</li>
-<li><p>意义：当一段同步代码，一直<strong>被同一个线程</strong>多次访问，由于<strong>只有一个线程</strong>那么该线程在后续访问时便会<strong>自动获得锁</strong><br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221031172548988.png" alt="image-20221031172548988"></p>
-</li>
+<li><p>当线程A第一次竞争到锁时，通过操作修改MarkWord中的偏向线程ID、偏向模式。如果不存在其他线程竞争，那么持有偏向锁的线程将永远不需要同步</p></li>
+<li><p>如果没有偏向锁，那么就会频繁出现<strong>用户态</strong>到<strong>内核态</strong>的切换</p></li>
+<li><p>意义：当一段同步代码，一直<strong>被同一个线程</strong>多次访问，由于<strong>只有一个线程</strong>那么该线程在后续访问时便会<strong>自动获得锁</strong>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221031172548988.png"
+alt="image-20221031172548988" /></p></li>
 <li><p>锁在<strong>第一次被拥有</strong>的时候，记录下<strong>偏向线程ID</strong>（后续这个线程进入和退出这段加了同步锁的代码块时，不需要再次加锁和释放锁，只需要<strong>直接检查锁的MarkWord</strong>是不是放的<strong>自己的线程ID</strong>）</p>
 <ul>
 <li>如果相等，表示<strong>偏向锁是偏向于当前线程</strong>的，不需要再尝试获得锁，<strong>直到竞争才会释放锁</strong>；以后每次同步，检查<strong>锁的偏向线程ID与当前线程ID</strong>是否一致，若一致则进入同步，无需每次都加锁解锁去CAS更新对象头；如果自始至终使用锁的线程只有一个，很明显偏向锁几乎没有额外开销</li>
-<li>如果不等，表示<strong>发生了竞争</strong>，锁已经<strong>不偏向于同一个线程</strong>，此时会尝试<strong>使用CAS来替换MarkWord里面的线程ID</strong>为新线程的ID<ul>
+<li>如果不等，表示<strong>发生了竞争</strong>，锁已经<strong>不偏向于同一个线程</strong>，此时会尝试<strong>使用CAS来替换MarkWord里面的线程ID</strong>为新线程的ID
+<ul>
 <li><strong>竞争成功</strong>，说明之前线程不存在了，MarkWord里的线程ID为新线程ID，所不会升级，<strong>仍然为偏向锁</strong></li>
 <li><strong>竞争失败</strong>，需要升级为<strong>轻量级锁</strong>，才能保证线程间公平竞争锁</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p>偏向锁只有遇到<strong>其他线程尝试竞争偏向锁</strong>时，持有偏向锁的线程才会释放锁，<strong>线程是不会主动释放锁的</strong>（尽量不会涉及用户到内核态转换）</p>
-</li>
-</ul>
-</li>
-<li><p>一个<strong>synchronized方法被一个线程抢到锁</strong>时，这个方法所在的对象，就会在<strong>其所在的MarkWord</strong>中**将偏向锁修改状态位 </p>
+</ul></li>
+</ul></li>
+<li><p>偏向锁只有遇到<strong>其他线程尝试竞争偏向锁</strong>时，持有偏向锁的线程才会释放锁，<strong>线程是不会主动释放锁的</strong>（尽量不会涉及用户到内核态转换）</p></li>
+</ul></li>
+<li><p>一个<strong>synchronized方法被一个线程抢到锁</strong>时，这个方法所在的对象，就会在<strong>其所在的MarkWord</strong>中**将偏向锁修改状态位</p>
 <ul>
-<li><p>如图<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221031174605461.png" alt="image-20221031174605461"></p>
-</li>
-<li><p>JVM不用和操作系统协商设置Mutex（争取内核），不需要操作系统介入</p>
-</li>
+<li><p>如图<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221031174605461.png"
+alt="image-20221031174605461" /></p></li>
+<li><p>JVM不用和操作系统协商设置Mutex（争取内核），不需要操作系统介入</p></li>
 <li><p>偏向锁相关参数</p>
-  <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">java -XX:+PrintFlagsInitial | grep BiasedLock*</span><br><span class="line">     intx BiasedLockingBulkRebiasThreshold          = 20</span><br><span class="line">    &#123;product&#125;</span><br><span class="line">     intx BiasedLockingBulkRevokeThreshold          = 40</span><br><span class="line">    &#123;product&#125;</span><br><span class="line">     intx BiasedLockingDecayTime                    = 25000</span><br><span class="line">    &#123;product&#125;</span><br><span class="line">   intx BiasedLockingStartupDelay                 = 4000 #偏向锁启动延迟 4s</span><br><span class="line">    &#123;product&#125;</span><br><span class="line">   bool TraceBiasedLocking                        = false</span><br><span class="line">    &#123;product&#125;</span><br><span class="line">     bool UseBiasedLocking                          = true #默认开启偏向锁</span><br><span class="line">    &#123;product&#125;</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">使用-XX:UseBiasedLocking 关闭偏向锁</span></span><br></pre></td></tr></table></figure>
-<p>例子：  </p>
-  <figure class="highlight java"><table><tr><td class="code"><pre><span class="line">      <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">          TimeUnit.SECONDS.sleep(<span class="number">5</span>); <span class="comment">//1 如果1跟下面的2兑换，则就不是偏向锁，是否是偏向锁，在创建对象的时候，就已经确认了</span></span><br><span class="line">          <span class="type">Object</span> <span class="variable">o</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Object</span>();   <span class="comment">//2</span></span><br><span class="line">          <span class="comment">//System.out.println(Integer.toHexString(o.hashCode()));</span></span><br><span class="line">          <span class="keyword">synchronized</span> (o)&#123;</span><br><span class="line">  </span><br><span class="line">          &#125;</span><br><span class="line">          System.out.println(ClassLayout.parseInstance(o).toPrintable()); <span class="comment">//16字节</span></span><br><span class="line">      &#125;</span><br><span class="line">  <span class="comment">//延迟5秒(&gt;4)后，就会看到偏向锁</span></span><br><span class="line">  <span class="comment">/* 打印，005，即二进制101</span></span><br><span class="line"><span class="comment">  java.lang.Object object internals:</span></span><br><span class="line"><span class="comment">OFF  SZ   TYPE DESCRIPTION               VALUE</span></span><br><span class="line"><span class="comment">    0   8        (object header: mark)     0x0000000002f93005 (biased: 0x000000000000be4c; epoch: 0; age: 0)</span></span><br><span class="line"><span class="comment">    8   4        (object header: class)    0xf80001e5</span></span><br><span class="line"><span class="comment">   12   4        (object alignment gap)    </span></span><br><span class="line"><span class="comment">  Instance size: 16 bytes</span></span><br><span class="line"><span class="comment">  Space losses: 0 bytes internal + 4 bytes external = 4 bytes total</span></span><br><span class="line"><span class="comment">  */</span></span><br></pre></td></tr></table></figure>
-</li>
+<p><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">java -XX:+PrintFlagsInitial | grep BiasedLock*</span><br><span class="line">     intx BiasedLockingBulkRebiasThreshold          = 20</span><br><span class="line">    &#123;product&#125;</span><br><span class="line">     intx BiasedLockingBulkRevokeThreshold          = 40</span><br><span class="line">    &#123;product&#125;</span><br><span class="line">     intx BiasedLockingDecayTime                    = 25000</span><br><span class="line">    &#123;product&#125;</span><br><span class="line">   intx BiasedLockingStartupDelay                 = 4000 #偏向锁启动延迟 4s</span><br><span class="line">    &#123;product&#125;</span><br><span class="line">   bool TraceBiasedLocking                        = false</span><br><span class="line">    &#123;product&#125;</span><br><span class="line">     bool UseBiasedLocking                          = true #默认开启偏向锁</span><br><span class="line">    &#123;product&#125;</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">使用-XX:UseBiasedLocking 关闭偏向锁</span></span><br></pre></td></tr></table></figure></p>
+<p>例子：</p>
+<p><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">      <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">          TimeUnit.SECONDS.sleep(<span class="number">5</span>); <span class="comment">//1 如果1跟下面的2兑换，则就不是偏向锁，是否是偏向锁，在创建对象的时候，就已经确认了</span></span><br><span class="line">          <span class="type">Object</span> <span class="variable">o</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Object</span>();   <span class="comment">//2</span></span><br><span class="line">          <span class="comment">//System.out.println(Integer.toHexString(o.hashCode()));</span></span><br><span class="line">          <span class="keyword">synchronized</span> (o)&#123;</span><br><span class="line">  </span><br><span class="line">          &#125;</span><br><span class="line">          System.out.println(ClassLayout.parseInstance(o).toPrintable()); <span class="comment">//16字节</span></span><br><span class="line">      &#125;</span><br><span class="line">  <span class="comment">//延迟5秒(&gt;4)后，就会看到偏向锁</span></span><br><span class="line">  <span class="comment">/* 打印，005，即二进制101</span></span><br><span class="line"><span class="comment">  java.lang.Object object internals:</span></span><br><span class="line"><span class="comment">OFF  SZ   TYPE DESCRIPTION               VALUE</span></span><br><span class="line"><span class="comment">    0   8        (object header: mark)     0x0000000002f93005 (biased: 0x000000000000be4c; epoch: 0; age: 0)</span></span><br><span class="line"><span class="comment">    8   4        (object header: class)    0xf80001e5</span></span><br><span class="line"><span class="comment">   12   4        (object alignment gap)    </span></span><br><span class="line"><span class="comment">  Instance size: 16 bytes</span></span><br><span class="line"><span class="comment">  Space losses: 0 bytes internal + 4 bytes external = 4 bytes total</span></span><br><span class="line"><span class="comment">  */</span></span><br></pre></td></tr></table></figure></p></li>
 <li><p>偏向锁的升级</p>
 <ul>
-<li>是一种等到<strong>竞争出现</strong>才释放锁的机制，只有当其他线程竞争锁时，持有偏向锁的原来线程才会被撤销；撤销需要等待全局安全点（该时间点没有字节码在执行），同时检查持有偏向锁的线程是否还在执行<ul>
+<li>是一种等到<strong>竞争出现</strong>才释放锁的机制，只有当其他线程竞争锁时，持有偏向锁的原来线程才会被撤销；撤销需要等待全局安全点（该时间点没有字节码在执行），同时检查持有偏向锁的线程是否还在执行
+<ul>
 <li>如果此时第一个线程<strong>正在</strong>执行synchronized方法（处于同步块），还没执行完其他线程来抢，该偏向锁被取消并出现<strong>锁升级</strong>；此时<strong>轻量级锁</strong>由<strong>原持有偏向锁的线程</strong>持有，<strong>继续执行其同步代码</strong>，而<strong>正在竞争</strong>的线程会进入<strong>自旋等待</strong>获得该轻量级锁</li>
 <li>如果第一个线程执行完成synchronized方法（<strong>退出同步块</strong>），而将<strong>对象头</strong>设置成<strong>无锁状态</strong>并撤销偏向锁，重新偏向</li>
-<li><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221101171515521.png" alt="image-20221101171515521"></li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p>Java15之后，HotSpot不再默认开启偏向锁，使用<code>+XX:UseBiasedLocking</code>手动开启</p>
-</li>
-<li><p>偏向锁流程总结 (转自<a target="_blank" rel="noopener" href="https://blog.csdn.net/MariaOzawa/article/details/107665689">https://blog.csdn.net/MariaOzawa/article/details/107665689</a>)<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/20221102153032.png" alt=""></p>
-</li>
-</ul>
-</li>
-<li><p>轻量级锁<br>主要是为了在线程近乎交替执行同步块时提高性能<br>升级时机，当关闭偏向锁或多线程竞争偏向锁会导致偏向锁升级为轻量级锁<br>标志位为00</p>
-</li>
+<li><img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221101171515521.png"
+title="fig:" alt="image-20221101171515521" /></li>
+</ul></li>
+</ul></li>
+<li><p>Java15之后，HotSpot不再默认开启偏向锁，使用<code>+XX:UseBiasedLocking</code>手动开启</p></li>
+<li><p>偏向锁流程总结
+(转自https://blog.csdn.net/MariaOzawa/article/details/107665689) <img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/20221102153032.png" /></p></li>
+</ul></li>
+<li><p>轻量级锁 主要是为了在线程近乎交替执行同步块时提高性能
+升级时机，当关闭偏向锁或多线程竞争偏向锁会导致偏向锁升级为轻量级锁
+标志位为00</p></li>
 </ul>
 
     </div>
@@ -453,7 +461,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%80%E4%BB%8B"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%83%8C%E6%99%AF"><span class="nav-number">2.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%94%81%E5%8D%87%E7%BA%A7"><span class="nav-number">3.</span> <span class="nav-text">锁升级</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8E%E8%BF%99%E4%B9%8B%E5%90%8E%E5%BE%80%E4%B8%8B%EF%BC%8C%E6%98%AF%E6%9C%89%E8%AF%AF%E7%9A%84%E7%9A%84"><span class="nav-number">4.</span> <span class="nav-text">&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;从这之后往下，是有误的的&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%80%E4%BB%8B"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%83%8C%E6%99%AF"><span class="nav-number">2.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%94%81%E5%8D%87%E7%BA%A7"><span class="nav-number">3.</span> <span class="nav-text">锁升级</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8E%E8%BF%99%E4%B9%8B%E5%90%8E%E5%BE%80%E4%B8%8B%E6%98%AF%E6%9C%89%E8%AF%AF%E7%9A%84%E7%9A%84"><span class="nav-number">4.</span> <span class="nav-text">&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;从这之后往下，是有误的的&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -528,7 +536,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">40:16</span>
+    <span title="站点阅读时长">40:29</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
