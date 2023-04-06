@@ -237,7 +237,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>3.7k</span>
+              <span>4.1k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -276,6 +276,41 @@
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">配置namesrv为环境变量</span></span><br><span class="line">export NAMESRV_ADDR=localhost:9876</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">运行程序（发送消息）</span></span><br><span class="line">sh bin/tools.sh org.apache.rocketmq.example.quickstart.Producer</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">结果</span></span><br><span class="line">SendResult [sendStatus=SEND_OK, msgId=C0A801640B012503DBD319DEF7D203E1, offsetMsgId=C0A8010300002A9F0000000000057878, messageQueue=MessageQueue [topic=TopicTest, brokerName=rheCentos700, queueId=3], queueOffset=498]</span><br><span class="line">SendResult [sendStatus=SEND_OK, msgId=C0A801640B012503DBD319DEF7D803E2, offsetMsgId=C0A8010300002A9F000000000005792C, messageQueue=MessageQueue [topic=TopicTest, brokerName=rheCentos700, queueId=0], queueOffset=498]</span><br><span class="line">SendResult [sendStatus=SEND_OK, msgId=C0A801640B012503DBD319DEF7DB03E3, offsetMsgId=C0A8010300002A9F00000000000579E0, messageQueue=MessageQueue [topic=TopicTest, brokerName=rheCentos700, queueId=1], queueOffset=498]  </span><br></pre></td></tr></table></figure>
 <h3 id="接收端">接收端</h3>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">配置namesrv为环境变量</span></span><br><span class="line">export NAMESRV_ADDR=localhost:9876</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">运行程序（发送消息）</span></span><br><span class="line">sh bin/tools.sh org.apache.rocketmq.example.quickstart.Consumer</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">结果</span></span><br><span class="line">ConsumeMessageThread_5 Receive New Messages: [MessageExt [queueId=0, storeSize=180, queueOffset=499, sysFlag=0, bornTimestamp=1680712442864, bornHost=/192.168.1.3:45716, storeTimestamp=1680712442878, storeHost=/192.168.1.3:10911, msgId=C0A8010300002A9F0000000000057BFC, commitLogOffset=359420, bodyCRC=1359908749, reconsumeTimes=0, preparedTransactionOffset=0, toString()=Message&#123;topic=&#x27;TopicTest&#x27;, flag=0, properties=&#123;MIN_OFFSET=0, MAX_OFFSET=500, CONSUME_START_TIME=1680712442881, UNIQ_KEY=C0A801640B012503DBD319DEF7F003E6, WAIT=true, TAGS=TagA&#125;, body=[72, 101, 108, 108, 111, 32, 82, 111, 99, 107, 101, 116, 77, 81, 32, 57, 57, 56], transactionId=&#x27;null&#x27;&#125;]] </span><br><span class="line">ConsumeMessageThread_2 Receive New Messages: [MessageExt [queueId=1, storeSize=180, queueOffset=499, sysFlag=0, bornTimestamp=1680712442879, bornHost=/192.168.1.3:45716, storeTimestamp=1680712442883, storeHost=/192.168.1.3:10911, msgId=C0A8010300002A9F0000000000057CB0, commitLogOffset=359600, bodyCRC=638172955, reconsumeTimes=0, preparedTransactionOffset=0, toString()=Message&#123;topic=&#x27;TopicTest&#x27;, flag=0, properties=&#123;MIN_OFFSET=0, MAX_OFFSET=500, CONSUME_START_TIME=1680712442889, UNIQ_KEY=C0A801640B012503DBD319DEF7FF03E7, WAIT=true, TAGS=TagA&#125;, body=[72, 101, 108, 108, 111, 32, 82, 111, 99, 107, 101, 116, 77, 81, 32, 57, 57, 57], transactionId=&#x27;null&#x27;&#125;]]</span><br></pre></td></tr></table></figure>
+<h1 id="rocketmq基本架构">RocketMQ基本架构</h1>
+<h2 id="简单解释">简单解释</h2>
+<ol type="1">
+<li>nameserver：broker的管理者</li>
+<li>broker：自己找nameserer上报</li>
+<li>broker：真正存储消息的地方</li>
+<li>nameserver是无状态的，即nameserver之间不用同步broker信息，由broker自己上报</li>
+<li>Producer集群之间也不需要同步；Consumer集群之间也不需要同步</li>
+<li>BrokerMaster和BrokerSlave之间信息是有同步的</li>
+</ol>
+<h2 id="如图">如图</h2>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230406102316614.png"
+alt="image-20230406102316614" />
+<figcaption aria-hidden="true">image-20230406102316614</figcaption>
+</figure>
+<h1 id="broker集群模式">Broker集群模式</h1>
+<h2 id="架构">架构</h2>
+<p>单Master、多Master、多Master多Slave(异步)、多Master多Slave(同步)</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230406103454040.png"
+alt="image-20230406103454040" />
+<figcaption aria-hidden="true">image-20230406103454040</figcaption>
+</figure>
+<h2 id="双主双从同步双写">双主双从，同步双写</h2>
+<h3 id="集群工作流程">集群工作流程</h3>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230406103639008.png"
+alt="image-20230406103639008" />
+<figcaption aria-hidden="true">image-20230406103639008</figcaption>
+</figure>
+<h3 id="section"></h3>
 
     </div>
 
@@ -363,7 +398,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C"><span class="nav-number">1.</span> <span class="nav-text">基本操作</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8B%E8%BD%BD"><span class="nav-number">1.1.</span> <span class="nav-text">下载</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E6%8F%90java%E8%BF%90%E8%A1%8C%E7%8E%AF%E5%A2%83"><span class="nav-number">1.2.</span> <span class="nav-text">前提java运行环境</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8"><span class="nav-number">1.3.</span> <span class="nav-text">启动</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B5%8B%E8%AF%95"><span class="nav-number">1.4.</span> <span class="nav-text">测试</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%91%E9%80%81%E7%AB%AF"><span class="nav-number">1.4.1.</span> <span class="nav-text">发送端</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8E%A5%E6%94%B6%E7%AB%AF"><span class="nav-number">1.4.2.</span> <span class="nav-text">接收端</span></a></li></ol></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C"><span class="nav-number">1.</span> <span class="nav-text">基本操作</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8B%E8%BD%BD"><span class="nav-number">1.1.</span> <span class="nav-text">下载</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E6%8F%90java%E8%BF%90%E8%A1%8C%E7%8E%AF%E5%A2%83"><span class="nav-number">1.2.</span> <span class="nav-text">前提java运行环境</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8"><span class="nav-number">1.3.</span> <span class="nav-text">启动</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B5%8B%E8%AF%95"><span class="nav-number">1.4.</span> <span class="nav-text">测试</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%91%E9%80%81%E7%AB%AF"><span class="nav-number">1.4.1.</span> <span class="nav-text">发送端</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8E%A5%E6%94%B6%E7%AB%AF"><span class="nav-number">1.4.2.</span> <span class="nav-text">接收端</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#rocketmq%E5%9F%BA%E6%9C%AC%E6%9E%B6%E6%9E%84"><span class="nav-number">2.</span> <span class="nav-text">RocketMQ基本架构</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%80%E5%8D%95%E8%A7%A3%E9%87%8A"><span class="nav-number">2.1.</span> <span class="nav-text">简单解释</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A6%82%E5%9B%BE"><span class="nav-number">2.2.</span> <span class="nav-text">如图</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#broker%E9%9B%86%E7%BE%A4%E6%A8%A1%E5%BC%8F"><span class="nav-number">3.</span> <span class="nav-text">Broker集群模式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9E%B6%E6%9E%84"><span class="nav-number">3.1.</span> <span class="nav-text">架构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%8C%E4%B8%BB%E5%8F%8C%E4%BB%8E%E5%90%8C%E6%AD%A5%E5%8F%8C%E5%86%99"><span class="nav-number">3.2.</span> <span class="nav-text">双主双从，同步双写</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9B%86%E7%BE%A4%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="nav-number">3.2.1.</span> <span class="nav-text">集群工作流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#section"><span class="nav-number">3.2.2.</span> <span class="nav-text"></span></a></li></ol></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -438,7 +473,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">40:40</span>
+    <span title="站点阅读时长">40:41</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
