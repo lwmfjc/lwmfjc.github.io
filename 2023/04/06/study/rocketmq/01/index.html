@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="rocketmq学习">
+<meta property="og:type" content="article">
+<meta property="og:title" content="rocketmq学习">
+<meta property="og:url" content="http://example.com/2023/04/06/study/rocketmq/01/index.html">
+<meta property="og:site_name" content="随记">
+<meta property="og:description" content="rocketmq学习">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-04-06T00:11:58.000Z">
+<meta property="article:modified_time" content="2023-04-06T00:11:58.000Z">
+<meta property="article:author" content="刘易">
+<meta property="article:tag" content="rocketmq-hm">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2023/04/06/study/rocketmq/01/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>rocketmq学习 | 随记</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">随记</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/04/06/study/rocketmq/01/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/avatar.png">
+      <meta itemprop="name" content="刘易">
+      <meta itemprop="description" content="知命不惧 日日自新">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="随记">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          rocketmq学习
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-04-06 00:11:58" itemprop="dateCreated datePublished" datetime="2023-04-06T00:11:58+00:00">2023-04-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%AD%A6%E4%B9%A0/" itemprop="url" rel="index"><span itemprop="name">学习</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.1k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>7 分钟</span>
+            </span>
+            <div class="post-description">rocketmq学习</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!</p>
+</blockquote>
+<h1 id="基本操作">基本操作</h1>
+<h2 id="下载">下载</h2>
+<p>https://rocketmq.apache.org/download/
+选择Binary下载即可，放到Linux主机中</p>
+<h2 id="前提java运行环境">前提java运行环境</h2>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">yum search java | grep jdk</span><br><span class="line">yum install -y java-1.8.0-openjdk-devel.x86_64</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">java -version 正常</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">javac -version 正常</span></span><br></pre></td></tr></table></figure>
+<h2 id="启动">启动</h2>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">nameserver启动</span></span><br><span class="line">nohup sh bin/mqnamesrv &amp;</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">nameserver日志查看</span></span><br><span class="line">tail -f ~/logs/rocketmqlogs/namesrv.log</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">输出</span></span><br><span class="line">2023-04-06 00:08:34 INFO main - tls.client.certPath = null</span><br><span class="line">2023-04-06 00:08:34 INFO main - tls.client.authServer = false</span><br><span class="line">2023-04-06 00:08:34 INFO main - tls.client.trustCertPath = null</span><br><span class="line">2023-04-06 00:08:35 INFO main - Using OpenSSL provider</span><br><span class="line">2023-04-06 00:08:35 INFO main - SSLContext created for server</span><br><span class="line">2023-04-06 00:08:36 INFO NettyEventExecutor - NettyEventExecutor service started</span><br><span class="line">2023-04-06 00:08:36 INFO main - The Name Server boot success. serializeType=JSON</span><br><span class="line">2023-04-06 00:08:36 INFO FileWatchService - FileWatchService service started</span><br><span class="line">2023-04-06 00:09:35 INFO NSScheduledThread1 - --------------------------------------------------------</span><br><span class="line">2023-04-06 00:09:35 INFO NSScheduledThread1 - configTable SIZE: 0</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">broker启动</span></span><br><span class="line">nohup sh bin/mqbroker -n localhost:9876 &amp;</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">查看broker日志</span></span><br><span class="line">tail -f ~/logs/rocketmqlogs/broker.log</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">日志如下</span></span><br><span class="line">tail: 无法打开&quot;/root/logs/rocketmqlogs/broker.log&quot; 读取数据: 没有那个文件或目录</span><br><span class="line">tail: 没有剩余文件</span><br><span class="line">👇</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">jps查看</span></span><br><span class="line">2465 Jps</span><br><span class="line">2430 NamesrvStartup</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">说明没有启动成功,因为默认配置的虚拟机内存较大</span></span><br><span class="line">vim bin/runbroker.sh  以及 vim runserver.sh</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">修改</span> </span><br><span class="line">JAVA_OPT=&quot;$&#123;JAVA_OPT&#125; -server -Xms8g -Xmx8g -Xmn4g&quot;</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">修改为</span></span><br><span class="line">JAVA_OPT=&quot;$&#123;JAVA_OPT&#125; -server -Xms256m -Xmx256m -Xmn128m -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=320m&quot;</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">修改完毕后启动</span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">先关闭namesrv后</span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">按上述启动namesrv以及broker</span></span><br><span class="line">sh bin/mqshutdown namesrv</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">jsp命令查看进程</span></span><br><span class="line">2612 Jps</span><br><span class="line">2551 BrokerStartup</span><br><span class="line">2524 NamesrvStartup</span><br></pre></td></tr></table></figure>
+<h2 id="测试">测试</h2>
+<p>同一台机器上，两个cmd窗口</p>
+<h3 id="发送端">发送端</h3>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">配置namesrv为环境变量</span></span><br><span class="line">export NAMESRV_ADDR=localhost:9876</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">运行程序（发送消息）</span></span><br><span class="line">sh bin/tools.sh org.apache.rocketmq.example.quickstart.Producer</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">结果</span></span><br><span class="line">SendResult [sendStatus=SEND_OK, msgId=C0A801640B012503DBD319DEF7D203E1, offsetMsgId=C0A8010300002A9F0000000000057878, messageQueue=MessageQueue [topic=TopicTest, brokerName=rheCentos700, queueId=3], queueOffset=498]</span><br><span class="line">SendResult [sendStatus=SEND_OK, msgId=C0A801640B012503DBD319DEF7D803E2, offsetMsgId=C0A8010300002A9F000000000005792C, messageQueue=MessageQueue [topic=TopicTest, brokerName=rheCentos700, queueId=0], queueOffset=498]</span><br><span class="line">SendResult [sendStatus=SEND_OK, msgId=C0A801640B012503DBD319DEF7DB03E3, offsetMsgId=C0A8010300002A9F00000000000579E0, messageQueue=MessageQueue [topic=TopicTest, brokerName=rheCentos700, queueId=1], queueOffset=498]  </span><br></pre></td></tr></table></figure>
+<h3 id="接收端">接收端</h3>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">配置namesrv为环境变量</span></span><br><span class="line">export NAMESRV_ADDR=localhost:9876</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">运行程序（发送消息）</span></span><br><span class="line">sh bin/tools.sh org.apache.rocketmq.example.quickstart.Consumer</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">结果</span></span><br><span class="line">ConsumeMessageThread_5 Receive New Messages: [MessageExt [queueId=0, storeSize=180, queueOffset=499, sysFlag=0, bornTimestamp=1680712442864, bornHost=/192.168.1.3:45716, storeTimestamp=1680712442878, storeHost=/192.168.1.3:10911, msgId=C0A8010300002A9F0000000000057BFC, commitLogOffset=359420, bodyCRC=1359908749, reconsumeTimes=0, preparedTransactionOffset=0, toString()=Message&#123;topic=&#x27;TopicTest&#x27;, flag=0, properties=&#123;MIN_OFFSET=0, MAX_OFFSET=500, CONSUME_START_TIME=1680712442881, UNIQ_KEY=C0A801640B012503DBD319DEF7F003E6, WAIT=true, TAGS=TagA&#125;, body=[72, 101, 108, 108, 111, 32, 82, 111, 99, 107, 101, 116, 77, 81, 32, 57, 57, 56], transactionId=&#x27;null&#x27;&#125;]] </span><br><span class="line">ConsumeMessageThread_2 Receive New Messages: [MessageExt [queueId=1, storeSize=180, queueOffset=499, sysFlag=0, bornTimestamp=1680712442879, bornHost=/192.168.1.3:45716, storeTimestamp=1680712442883, storeHost=/192.168.1.3:10911, msgId=C0A8010300002A9F0000000000057CB0, commitLogOffset=359600, bodyCRC=638172955, reconsumeTimes=0, preparedTransactionOffset=0, toString()=Message&#123;topic=&#x27;TopicTest&#x27;, flag=0, properties=&#123;MIN_OFFSET=0, MAX_OFFSET=500, CONSUME_START_TIME=1680712442889, UNIQ_KEY=C0A801640B012503DBD319DEF7FF03E7, WAIT=true, TAGS=TagA&#125;, body=[72, 101, 108, 108, 111, 32, 82, 111, 99, 107, 101, 116, 77, 81, 32, 57, 57, 57], transactionId=&#x27;null&#x27;&#125;]]</span><br></pre></td></tr></table></figure>
+<h1 id="rocketmq基本架构">RocketMQ基本架构</h1>
+<h2 id="简单解释">简单解释</h2>
+<ol type="1">
+<li>nameserver：broker的管理者</li>
+<li>broker：自己找nameserer上报</li>
+<li>broker：真正存储消息的地方</li>
+<li>nameserver是无状态的，即nameserver之间不用同步broker信息，由broker自己上报</li>
+<li>Producer集群之间也不需要同步；Consumer集群之间也不需要同步</li>
+<li>BrokerMaster和BrokerSlave之间信息是有同步的</li>
+</ol>
+<h2 id="如图">如图</h2>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230406102316614.png"
+alt="image-20230406102316614" />
+<figcaption aria-hidden="true">image-20230406102316614</figcaption>
+</figure>
+<h1 id="broker集群模式">Broker集群模式</h1>
+<h2 id="架构">架构</h2>
+<p>单Master、多Master、多Master多Slave(异步)、多Master多Slave(同步)</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230406103454040.png"
+alt="image-20230406103454040" />
+<figcaption aria-hidden="true">image-20230406103454040</figcaption>
+</figure>
+<h2 id="双主双从同步双写">双主双从，同步双写</h2>
+<h3 id="集群工作流程">集群工作流程</h3>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230406103639008.png"
+alt="image-20230406103639008" />
+<figcaption aria-hidden="true">image-20230406103639008</figcaption>
+</figure>
+<h3 id="section"></h3>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/rocketmq-hm/" rel="tag"># rocketmq-hm</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/04/05/study/linux/base/base/" rel="prev" title="一些基本操作">
+      <i class="fa fa-chevron-left"></i> 一些基本操作
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/04/06/study/rocketmq/02/" rel="next" title="双主双从集群搭建">
+      双主双从集群搭建 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    
+  
+  <div class="comments">
+  <script src="https://utteranc.es/client.js" repo="lwmfjc/lwmfjc.github.io.comment" issue-term="pathname" theme="github-light" crossorigin="anonymous" async></script>
+  </div>
+  
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C"><span class="nav-number">1.</span> <span class="nav-text">基本操作</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8B%E8%BD%BD"><span class="nav-number">1.1.</span> <span class="nav-text">下载</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E6%8F%90java%E8%BF%90%E8%A1%8C%E7%8E%AF%E5%A2%83"><span class="nav-number">1.2.</span> <span class="nav-text">前提java运行环境</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8"><span class="nav-number">1.3.</span> <span class="nav-text">启动</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B5%8B%E8%AF%95"><span class="nav-number">1.4.</span> <span class="nav-text">测试</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%91%E9%80%81%E7%AB%AF"><span class="nav-number">1.4.1.</span> <span class="nav-text">发送端</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8E%A5%E6%94%B6%E7%AB%AF"><span class="nav-number">1.4.2.</span> <span class="nav-text">接收端</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#rocketmq%E5%9F%BA%E6%9C%AC%E6%9E%B6%E6%9E%84"><span class="nav-number">2.</span> <span class="nav-text">RocketMQ基本架构</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%80%E5%8D%95%E8%A7%A3%E9%87%8A"><span class="nav-number">2.1.</span> <span class="nav-text">简单解释</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A6%82%E5%9B%BE"><span class="nav-number">2.2.</span> <span class="nav-text">如图</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#broker%E9%9B%86%E7%BE%A4%E6%A8%A1%E5%BC%8F"><span class="nav-number">3.</span> <span class="nav-text">Broker集群模式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9E%B6%E6%9E%84"><span class="nav-number">3.1.</span> <span class="nav-text">架构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%8C%E4%B8%BB%E5%8F%8C%E4%BB%8E%E5%90%8C%E6%AD%A5%E5%8F%8C%E5%86%99"><span class="nav-number">3.2.</span> <span class="nav-text">双主双从，同步双写</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9B%86%E7%BE%A4%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="nav-number">3.2.1.</span> <span class="nav-text">集群工作流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#section"><span class="nav-number">3.2.2.</span> <span class="nav-text"></span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="刘易"
+      src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/avatar.png">
+  <p class="site-author-name" itemprop="name">刘易</p>
+  <div class="site-description" itemprop="description">知命不惧 日日自新</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">191</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/lwmfjc" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;lwmfjc" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i></a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">刘易</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">1.3m</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">40:43</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+</body>
+</html>

@@ -20,20 +20,20 @@
     var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="rocketmq学习">
+  <meta name="description" content="双主双从集群搭建">
 <meta property="og:type" content="article">
-<meta property="og:title" content="rocketmq学习">
-<meta property="og:url" content="http://example.com/2022/04/06/study/rocketmq/01/index.html">
+<meta property="og:title" content="双主双从集群搭建">
+<meta property="og:url" content="http://example.com/2023/04/06/study/rocketmq/02/index.html">
 <meta property="og:site_name" content="随记">
-<meta property="og:description" content="rocketmq学习">
+<meta property="og:description" content="双主双从集群搭建">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2022-04-06T00:11:58.000Z">
-<meta property="article:modified_time" content="2022-04-06T00:11:58.000Z">
+<meta property="article:published_time" content="2023-04-06T10:55:23.000Z">
+<meta property="article:modified_time" content="2023-04-06T10:55:23.000Z">
 <meta property="article:author" content="刘易">
 <meta property="article:tag" content="rocketmq-hm">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="http://example.com/2022/04/06/study/rocketmq/01/">
+<link rel="canonical" href="http://example.com/2023/04/06/study/rocketmq/02/">
 
 
 <script id="page-configurations">
@@ -46,7 +46,7 @@
   };
 </script>
 
-  <title>rocketmq学习 | 随记</title>
+  <title>双主双从集群搭建 | 随记</title>
   
 
 
@@ -189,7 +189,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/04/06/study/rocketmq/01/">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/04/06/study/rocketmq/02/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/avatar.png">
@@ -202,7 +202,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          rocketmq学习
+          双主双从集群搭建
         </h1>
 
         <div class="post-meta">
@@ -212,7 +212,7 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2022-04-06 00:11:58" itemprop="dateCreated datePublished" datetime="2022-04-06T00:11:58+00:00">2022-04-06</time>
+              <time title="创建时间：2023-04-06 10:55:23" itemprop="dateCreated datePublished" datetime="2023-04-06T10:55:23+00:00">2023-04-06</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -237,16 +237,16 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>4.1k</span>
+              <span>847</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>7 分钟</span>
+              <span>2 分钟</span>
             </span>
-            <div class="post-description">rocketmq学习</div>
+            <div class="post-description">双主双从集群搭建</div>
 
         </div>
       </header>
@@ -260,57 +260,27 @@
         <blockquote>
 <p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!</p>
 </blockquote>
-<h1 id="基本操作">基本操作</h1>
-<h2 id="下载">下载</h2>
-<p>https://rocketmq.apache.org/download/
-选择Binary下载即可，放到Linux主机中</p>
-<h2 id="前提java运行环境">前提java运行环境</h2>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">yum search java | grep jdk</span><br><span class="line">yum install -y java-1.8.0-openjdk-devel.x86_64</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">java -version 正常</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">javac -version 正常</span></span><br></pre></td></tr></table></figure>
-<h2 id="启动">启动</h2>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">nameserver启动</span></span><br><span class="line">nohup sh bin/mqnamesrv &amp;</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">nameserver日志查看</span></span><br><span class="line">tail -f ~/logs/rocketmqlogs/namesrv.log</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">输出</span></span><br><span class="line">2023-04-06 00:08:34 INFO main - tls.client.certPath = null</span><br><span class="line">2023-04-06 00:08:34 INFO main - tls.client.authServer = false</span><br><span class="line">2023-04-06 00:08:34 INFO main - tls.client.trustCertPath = null</span><br><span class="line">2023-04-06 00:08:35 INFO main - Using OpenSSL provider</span><br><span class="line">2023-04-06 00:08:35 INFO main - SSLContext created for server</span><br><span class="line">2023-04-06 00:08:36 INFO NettyEventExecutor - NettyEventExecutor service started</span><br><span class="line">2023-04-06 00:08:36 INFO main - The Name Server boot success. serializeType=JSON</span><br><span class="line">2023-04-06 00:08:36 INFO FileWatchService - FileWatchService service started</span><br><span class="line">2023-04-06 00:09:35 INFO NSScheduledThread1 - --------------------------------------------------------</span><br><span class="line">2023-04-06 00:09:35 INFO NSScheduledThread1 - configTable SIZE: 0</span><br></pre></td></tr></table></figure>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">broker启动</span></span><br><span class="line">nohup sh bin/mqbroker -n localhost:9876 &amp;</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">查看broker日志</span></span><br><span class="line">tail -f ~/logs/rocketmqlogs/broker.log</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">日志如下</span></span><br><span class="line">tail: 无法打开&quot;/root/logs/rocketmqlogs/broker.log&quot; 读取数据: 没有那个文件或目录</span><br><span class="line">tail: 没有剩余文件</span><br><span class="line">👇</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">jps查看</span></span><br><span class="line">2465 Jps</span><br><span class="line">2430 NamesrvStartup</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">说明没有启动成功,因为默认配置的虚拟机内存较大</span></span><br><span class="line">vim bin/runbroker.sh  以及 vim runserver.sh</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">修改</span> </span><br><span class="line">JAVA_OPT=&quot;$&#123;JAVA_OPT&#125; -server -Xms8g -Xmx8g -Xmn4g&quot;</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">修改为</span></span><br><span class="line">JAVA_OPT=&quot;$&#123;JAVA_OPT&#125; -server -Xms256m -Xmx256m -Xmn128m -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=320m&quot;</span><br></pre></td></tr></table></figure>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">修改完毕后启动</span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">先关闭namesrv后</span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">按上述启动namesrv以及broker</span></span><br><span class="line">sh bin/mqshutdown namesrv</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">jsp命令查看进程</span></span><br><span class="line">2612 Jps</span><br><span class="line">2551 BrokerStartup</span><br><span class="line">2524 NamesrvStartup</span><br></pre></td></tr></table></figure>
-<h2 id="测试">测试</h2>
-<p>同一台机器上，两个cmd窗口</p>
-<h3 id="发送端">发送端</h3>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">配置namesrv为环境变量</span></span><br><span class="line">export NAMESRV_ADDR=localhost:9876</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">运行程序（发送消息）</span></span><br><span class="line">sh bin/tools.sh org.apache.rocketmq.example.quickstart.Producer</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">结果</span></span><br><span class="line">SendResult [sendStatus=SEND_OK, msgId=C0A801640B012503DBD319DEF7D203E1, offsetMsgId=C0A8010300002A9F0000000000057878, messageQueue=MessageQueue [topic=TopicTest, brokerName=rheCentos700, queueId=3], queueOffset=498]</span><br><span class="line">SendResult [sendStatus=SEND_OK, msgId=C0A801640B012503DBD319DEF7D803E2, offsetMsgId=C0A8010300002A9F000000000005792C, messageQueue=MessageQueue [topic=TopicTest, brokerName=rheCentos700, queueId=0], queueOffset=498]</span><br><span class="line">SendResult [sendStatus=SEND_OK, msgId=C0A801640B012503DBD319DEF7DB03E3, offsetMsgId=C0A8010300002A9F00000000000579E0, messageQueue=MessageQueue [topic=TopicTest, brokerName=rheCentos700, queueId=1], queueOffset=498]  </span><br></pre></td></tr></table></figure>
-<h3 id="接收端">接收端</h3>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">配置namesrv为环境变量</span></span><br><span class="line">export NAMESRV_ADDR=localhost:9876</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">运行程序（发送消息）</span></span><br><span class="line">sh bin/tools.sh org.apache.rocketmq.example.quickstart.Consumer</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">结果</span></span><br><span class="line">ConsumeMessageThread_5 Receive New Messages: [MessageExt [queueId=0, storeSize=180, queueOffset=499, sysFlag=0, bornTimestamp=1680712442864, bornHost=/192.168.1.3:45716, storeTimestamp=1680712442878, storeHost=/192.168.1.3:10911, msgId=C0A8010300002A9F0000000000057BFC, commitLogOffset=359420, bodyCRC=1359908749, reconsumeTimes=0, preparedTransactionOffset=0, toString()=Message&#123;topic=&#x27;TopicTest&#x27;, flag=0, properties=&#123;MIN_OFFSET=0, MAX_OFFSET=500, CONSUME_START_TIME=1680712442881, UNIQ_KEY=C0A801640B012503DBD319DEF7F003E6, WAIT=true, TAGS=TagA&#125;, body=[72, 101, 108, 108, 111, 32, 82, 111, 99, 107, 101, 116, 77, 81, 32, 57, 57, 56], transactionId=&#x27;null&#x27;&#125;]] </span><br><span class="line">ConsumeMessageThread_2 Receive New Messages: [MessageExt [queueId=1, storeSize=180, queueOffset=499, sysFlag=0, bornTimestamp=1680712442879, bornHost=/192.168.1.3:45716, storeTimestamp=1680712442883, storeHost=/192.168.1.3:10911, msgId=C0A8010300002A9F0000000000057CB0, commitLogOffset=359600, bodyCRC=638172955, reconsumeTimes=0, preparedTransactionOffset=0, toString()=Message&#123;topic=&#x27;TopicTest&#x27;, flag=0, properties=&#123;MIN_OFFSET=0, MAX_OFFSET=500, CONSUME_START_TIME=1680712442889, UNIQ_KEY=C0A801640B012503DBD319DEF7FF03E7, WAIT=true, TAGS=TagA&#125;, body=[72, 101, 108, 108, 111, 32, 82, 111, 99, 107, 101, 116, 77, 81, 32, 57, 57, 57], transactionId=&#x27;null&#x27;&#125;]]</span><br></pre></td></tr></table></figure>
-<h1 id="rocketmq基本架构">RocketMQ基本架构</h1>
-<h2 id="简单解释">简单解释</h2>
-<ol type="1">
-<li>nameserver：broker的管理者</li>
-<li>broker：自己找nameserer上报</li>
-<li>broker：真正存储消息的地方</li>
-<li>nameserver是无状态的，即nameserver之间不用同步broker信息，由broker自己上报</li>
-<li>Producer集群之间也不需要同步；Consumer集群之间也不需要同步</li>
-<li>BrokerMaster和BrokerSlave之间信息是有同步的</li>
-</ol>
-<h2 id="如图">如图</h2>
+<h1 id="服务器信息修改">服务器信息修改</h1>
+<p>在.135和.138均进行下面的操作</p>
+<h2 id="解压">解压</h2>
+<p>rocketmq解压到/usr/local/rocketmq目录下</p>
+<h2 id="host添加">host添加</h2>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">添加host</span></span><br><span class="line">vim /etc/hosts</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment">#添加内容</span></span></span><br><span class="line">192.168.1.135 rocketmq-nameserver1</span><br><span class="line">192.168.1.138 rocketmq-nameserver2</span><br><span class="line">192.168.1.135 rocketmq-master1</span><br><span class="line">192.168.1.135 rocketmq-slave2</span><br><span class="line">192.168.1.138 rocketmq-master2</span><br><span class="line">192.168.1.138 rocketmq-slave1</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment"># 保存后</span></span></span><br><span class="line">systemctl restart network</span><br></pre></td></tr></table></figure>
+<h2 id="防火墙">防火墙</h2>
+<h3 id="直接关闭">直接关闭</h3>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment"># 防火墙关闭</span></span></span><br><span class="line">systemctl stop firewalld.service</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment"># 防火墙状态查看</span></span></span><br><span class="line">firewall-cmd --state</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment">#禁止开机启动</span></span></span><br><span class="line">systemctl disable firewalld.service</span><br></pre></td></tr></table></figure>
+<h3 id="或者直接关闭对应端口即可">或者直接关闭对应端口即可</h3>
 <figure>
 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230406102316614.png"
-alt="image-20230406102316614" />
-<figcaption aria-hidden="true">image-20230406102316614</figcaption>
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230406122046779.png"
+alt="image-20230406122046779" />
+<figcaption aria-hidden="true">image-20230406122046779</figcaption>
 </figure>
-<h1 id="broker集群模式">Broker集群模式</h1>
-<h2 id="架构">架构</h2>
-<p>单Master、多Master、多Master多Slave(异步)、多Master多Slave(同步)</p>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230406103454040.png"
-alt="image-20230406103454040" />
-<figcaption aria-hidden="true">image-20230406103454040</figcaption>
-</figure>
-<h2 id="双主双从同步双写">双主双从，同步双写</h2>
-<h3 id="集群工作流程">集群工作流程</h3>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230406103639008.png"
-alt="image-20230406103639008" />
-<figcaption aria-hidden="true">image-20230406103639008</figcaption>
-</figure>
-<h3 id="section"></h3>
+<h2 id="环境变量配置">环境变量配置</h2>
+<p>为了执行rocketmq命令方便</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">添加环境变量</span></span><br><span class="line">vim etc/profile</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">添加</span></span><br><span class="line">ROCKETMQ_HOME=/usr/local/rocketmq/rocketmq-all-4.4.0-bin-release</span><br><span class="line">PATH=$PATH:$ROCKETMQ_HOME/bin</span><br><span class="line">export ROCKETMQ_HOME PATH</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">使配置生效</span></span><br><span class="line">source /etc/profile</span><br></pre></td></tr></table></figure>
+<h2 id="消息存储路径创建">消息存储路径创建</h2>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">mkdir /usr/local/rocketmq/store</span><br><span class="line">mkdir /usr/local/rocketmq/store/commitlog</span><br><span class="line">mkdir /usr/local/rocketmq/store/consumequeue</span><br><span class="line">mkdir /usr/local/rocketmq/store/index</span><br></pre></td></tr></table></figure>
 
     </div>
 
@@ -329,13 +299,10 @@ alt="image-20230406103639008" />
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2022/03/22/study/algorithm/algorithhms_4th/1.3.1.1-1.3.2.5/" rel="prev" title="算法红皮书 1.3.1.1-1.3.2.5">
-      <i class="fa fa-chevron-left"></i> 算法红皮书 1.3.1.1-1.3.2.5
+    <a href="/2023/04/06/study/rocketmq/01/" rel="prev" title="rocketmq学习">
+      <i class="fa fa-chevron-left"></i> rocketmq学习
     </a></div>
-      <div class="post-nav-item">
-    <a href="/2022/04/06/study/rocketmq/02/" rel="next" title="post">
-      post <i class="fa fa-chevron-right"></i>
-    </a></div>
+      <div class="post-nav-item"></div>
     </div>
       </footer>
     
@@ -401,7 +368,7 @@ alt="image-20230406103639008" />
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C"><span class="nav-number">1.</span> <span class="nav-text">基本操作</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8B%E8%BD%BD"><span class="nav-number">1.1.</span> <span class="nav-text">下载</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E6%8F%90java%E8%BF%90%E8%A1%8C%E7%8E%AF%E5%A2%83"><span class="nav-number">1.2.</span> <span class="nav-text">前提java运行环境</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8"><span class="nav-number">1.3.</span> <span class="nav-text">启动</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B5%8B%E8%AF%95"><span class="nav-number">1.4.</span> <span class="nav-text">测试</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%91%E9%80%81%E7%AB%AF"><span class="nav-number">1.4.1.</span> <span class="nav-text">发送端</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8E%A5%E6%94%B6%E7%AB%AF"><span class="nav-number">1.4.2.</span> <span class="nav-text">接收端</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#rocketmq%E5%9F%BA%E6%9C%AC%E6%9E%B6%E6%9E%84"><span class="nav-number">2.</span> <span class="nav-text">RocketMQ基本架构</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%80%E5%8D%95%E8%A7%A3%E9%87%8A"><span class="nav-number">2.1.</span> <span class="nav-text">简单解释</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A6%82%E5%9B%BE"><span class="nav-number">2.2.</span> <span class="nav-text">如图</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#broker%E9%9B%86%E7%BE%A4%E6%A8%A1%E5%BC%8F"><span class="nav-number">3.</span> <span class="nav-text">Broker集群模式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9E%B6%E6%9E%84"><span class="nav-number">3.1.</span> <span class="nav-text">架构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%8C%E4%B8%BB%E5%8F%8C%E4%BB%8E%E5%90%8C%E6%AD%A5%E5%8F%8C%E5%86%99"><span class="nav-number">3.2.</span> <span class="nav-text">双主双从，同步双写</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9B%86%E7%BE%A4%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="nav-number">3.2.1.</span> <span class="nav-text">集群工作流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#section"><span class="nav-number">3.2.2.</span> <span class="nav-text"></span></a></li></ol></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%9C%8D%E5%8A%A1%E5%99%A8%E4%BF%A1%E6%81%AF%E4%BF%AE%E6%94%B9"><span class="nav-number">1.</span> <span class="nav-text">服务器信息修改</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%A3%E5%8E%8B"><span class="nav-number">1.1.</span> <span class="nav-text">解压</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#host%E6%B7%BB%E5%8A%A0"><span class="nav-number">1.2.</span> <span class="nav-text">host添加</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%98%B2%E7%81%AB%E5%A2%99"><span class="nav-number">1.3.</span> <span class="nav-text">防火墙</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9B%B4%E6%8E%A5%E5%85%B3%E9%97%AD"><span class="nav-number">1.3.1.</span> <span class="nav-text">直接关闭</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%88%96%E8%80%85%E7%9B%B4%E6%8E%A5%E5%85%B3%E9%97%AD%E5%AF%B9%E5%BA%94%E7%AB%AF%E5%8F%A3%E5%8D%B3%E5%8F%AF"><span class="nav-number">1.3.2.</span> <span class="nav-text">或者直接关闭对应端口即可</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E9%85%8D%E7%BD%AE"><span class="nav-number">1.4.</span> <span class="nav-text">环境变量配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B6%88%E6%81%AF%E5%AD%98%E5%82%A8%E8%B7%AF%E5%BE%84%E5%88%9B%E5%BB%BA"><span class="nav-number">1.5.</span> <span class="nav-text">消息存储路径创建</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -417,7 +384,7 @@ alt="image-20230406103639008" />
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">190</span>
+          <span class="site-state-item-count">191</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -476,7 +443,7 @@ alt="image-20230406103639008" />
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">40:41</span>
+    <span title="站点阅读时长">40:43</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
