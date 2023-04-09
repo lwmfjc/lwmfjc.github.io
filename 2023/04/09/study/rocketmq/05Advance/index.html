@@ -237,14 +237,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>261</span>
+              <span>897</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
+              <span>2 分钟</span>
             </span>
             <div class="post-description">高级功能</div>
 
@@ -259,8 +259,9 @@
       
         <blockquote>
 <p>学习来源
-https://www.bilibili.com/video/BV1L4411y7mn（添加小部分笔记）感谢作者!消息存储</p>
+https://www.bilibili.com/video/BV1L4411y7mn（添加小部分笔记）感谢作者！</p>
 </blockquote>
+<h1 id="消息存储">消息存储</h1>
 <h2 id="流程">流程</h2>
 <figure>
 <img
@@ -270,13 +271,64 @@ alt="image-20230409093042579" />
 </figure>
 <h2 id="存储介质">存储介质</h2>
 <h3 id="关系型数据库db">关系型数据库DB</h3>
-<p>适合数据量不够大，比如ActiveMQ可选用JDBC方式作为消息持久化</p>
+<p>适合数据量不够大，比如<strong>ActiveMQ</strong>可选用JDBC方式作为消息持久化</p>
 <h3 id="文件系统">文件系统</h3>
 <ol type="1">
 <li>关系型数据库最终也是要存到文件系统中的，不如直接存到文件系统，绕过关系型数据库</li>
 <li>常见的RocketMQ/RabbitMQ/Kafka都是采用消息刷盘到计算机的文件系统来做持久化(<strong>同步刷盘</strong>/<strong>异步刷盘</strong>)</li>
 </ol>
 <h1 id="高可用性机制">高可用性机制</h1>
+<h2 id="消息发送">消息发送</h2>
+<ol type="1">
+<li><p>顺序写：600MB/s，随机写：100KB/s</p>
+<blockquote>
+<ul>
+<li><p>系统运行一段时间后，我们对文件的增删改会导致磁盘上数据无法连续，非常的分散。</p></li>
+<li><p>顺序读也只是逻辑上的顺序，也就是按照当前文件的相对偏移量顺序读取，并非磁盘上连续空间读取</p></li>
+<li><p>对于磁盘的读写分为两种模式，<strong>顺序IO</strong>和<strong>随机IO</strong>。
+随机IO存在一个寻址的过程，所以效率比较低。而顺序IO，相当于有一个<strong>物理索引</strong>，在读取的时候不需要寻找地址，效率很高。</p></li>
+<li><p>来源： https://www.cnblogs.com/liuche/p/15455808.html</p></li>
+</ul>
+</blockquote></li>
+<li><p>数据网络传输</p>
+<p>零拷贝技术<strong>MappedByteBuffer</strong>，省去了用户态，由<strong>内核态</strong>直接拷贝到<strong>网络驱动内核</strong>。<br />
+RocketMQ默认设置单个CommitLog日志数据文件为1G</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230409100016046.png"
+alt="image-20230409100016046" />
+<figcaption aria-hidden="true">image-20230409100016046</figcaption>
+</figure></li>
+</ol>
+<h2 id="消息存储-1">消息存储</h2>
+<p>三个概念：commitLog、ConsumerQueue、index</p>
+<h3 id="commitlog">CommitLog</h3>
+<ol type="1">
+<li>默认大小1G<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230409101340190.png"
+alt="image-20230409101340190" /></li>
+<li>存储消息的元数据，包括了Topic、QueueId、Message</li>
+<li>还存储了ConsumerQueue相关信息，所以ConsumerQueue丢了也没事</li>
+</ol>
+<h3 id="consumerqueue">ConsumerQueue</h3>
+<ol type="1">
+<li>存储了消息在CommitLog的索引（几百K，Linux会事先加载到内存中）</li>
+<li>包括最小/最大偏移量、已经消费的偏移量</li>
+<li>一个Topic多个队列，每个队列对应一个ConsumerQueue<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230409104112974.png"
+alt="image-20230409104112974" /></li>
+</ol>
+<h3 id="index">Index</h3>
+<p>也是索引文件，为消息查询服务，通过key或时间区间查询消息</p>
+<h3 id="总结">总结</h3>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230409104824102.png"
+alt="image-20230409104824102" />
+<figcaption aria-hidden="true">image-20230409104824102</figcaption>
+</figure>
 <h1 id="负载均衡">负载均衡</h1>
 <h1 id="消息重试">消息重试</h1>
 <h1 id="死信队列">死信队列</h1>
@@ -368,7 +420,7 @@ alt="image-20230409093042579" />
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B5%81%E7%A8%8B"><span class="nav-number">1.</span> <span class="nav-text">流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AD%98%E5%82%A8%E4%BB%8B%E8%B4%A8"><span class="nav-number">2.</span> <span class="nav-text">存储介质</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B3%E7%B3%BB%E5%9E%8B%E6%95%B0%E6%8D%AE%E5%BA%93db"><span class="nav-number">2.1.</span> <span class="nav-text">关系型数据库DB</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F"><span class="nav-number">2.2.</span> <span class="nav-text">文件系统</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%AB%98%E5%8F%AF%E7%94%A8%E6%80%A7%E6%9C%BA%E5%88%B6"><span class="nav-number"></span> <span class="nav-text">高可用性机制</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1"><span class="nav-number"></span> <span class="nav-text">负载均衡</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%B6%88%E6%81%AF%E9%87%8D%E8%AF%95"><span class="nav-number"></span> <span class="nav-text">消息重试</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%AD%BB%E4%BF%A1%E9%98%9F%E5%88%97"><span class="nav-number"></span> <span class="nav-text">死信队列</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%B6%88%E8%B4%B9%E5%B9%82%E7%AD%89"><span class="nav-number"></span> <span class="nav-text">消费幂等</span></a></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%B6%88%E6%81%AF%E5%AD%98%E5%82%A8"><span class="nav-number">1.</span> <span class="nav-text">消息存储</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B5%81%E7%A8%8B"><span class="nav-number">1.1.</span> <span class="nav-text">流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AD%98%E5%82%A8%E4%BB%8B%E8%B4%A8"><span class="nav-number">1.2.</span> <span class="nav-text">存储介质</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B3%E7%B3%BB%E5%9E%8B%E6%95%B0%E6%8D%AE%E5%BA%93db"><span class="nav-number">1.2.1.</span> <span class="nav-text">关系型数据库DB</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F"><span class="nav-number">1.2.2.</span> <span class="nav-text">文件系统</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%AB%98%E5%8F%AF%E7%94%A8%E6%80%A7%E6%9C%BA%E5%88%B6"><span class="nav-number">2.</span> <span class="nav-text">高可用性机制</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B6%88%E6%81%AF%E5%8F%91%E9%80%81"><span class="nav-number">2.1.</span> <span class="nav-text">消息发送</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B6%88%E6%81%AF%E5%AD%98%E5%82%A8-1"><span class="nav-number">2.2.</span> <span class="nav-text">消息存储</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#commitlog"><span class="nav-number">2.2.1.</span> <span class="nav-text">CommitLog</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#consumerqueue"><span class="nav-number">2.2.2.</span> <span class="nav-text">ConsumerQueue</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#index"><span class="nav-number">2.2.3.</span> <span class="nav-text">Index</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">2.2.4.</span> <span class="nav-text">总结</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1"><span class="nav-number">3.</span> <span class="nav-text">负载均衡</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%B6%88%E6%81%AF%E9%87%8D%E8%AF%95"><span class="nav-number">4.</span> <span class="nav-text">消息重试</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%AD%BB%E4%BF%A1%E9%98%9F%E5%88%97"><span class="nav-number">5.</span> <span class="nav-text">死信队列</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%B6%88%E8%B4%B9%E5%B9%82%E7%AD%89"><span class="nav-number">6.</span> <span class="nav-text">消费幂等</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -443,7 +495,7 @@ alt="image-20230409093042579" />
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">41:23</span>
+    <span title="站点阅读时长">41:24</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
