@@ -237,7 +237,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>12k</span>
+              <span>13k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -476,9 +476,34 @@ shell中执行，可通过{int..int}指定多个插槽位</td>
 </tbody>
 </table>
 <h1 id="rediscluster架构原理分析">RedisCluster架构原理分析</h1>
-<h2 id="启动集群原理">启动集群原理</h2>
-<h2 id="集群通信原理">集群通信原理</h2>
+<h2 id="基础架构数据分片">基础架构（数据分片）</h2>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230414215403801.png"
+alt="image-20230414215403801" />
+<figcaption aria-hidden="true">image-20230414215403801</figcaption>
+</figure>
 <h2 id="集群分片原理">集群分片原理</h2>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230414215902852.png"
+alt="image-20230414215902852" />
+<figcaption aria-hidden="true">image-20230414215902852</figcaption>
+</figure>
+<h2 id="启动集群原理">启动集群原理</h2>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230414220624119.png"
+alt="image-20230414220624119" />
+<figcaption aria-hidden="true">image-20230414220624119</figcaption>
+</figure>
+<h2 id="集群通信原理">集群通信原理</h2>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230414221225818.png"
+alt="image-20230414221225818" />
+<figcaption aria-hidden="true">image-20230414221225818</figcaption>
+</figure>
 
     </div>
 
@@ -566,7 +591,7 @@ shell中执行，可通过{int..int}指定多个插槽位</td>
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E5%87%86%E5%A4%87"><span class="nav-number">1.</span> <span class="nav-text">基本准备</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9E%B6%E6%9E%84"><span class="nav-number">1.1.</span> <span class="nav-text">架构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#hosts%E4%BF%AE%E6%94%B9"><span class="nav-number">1.2.</span> <span class="nav-text">hosts修改</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9B%86%E7%BE%A4%E5%87%86%E5%A4%87"><span class="nav-number">1.3.</span> <span class="nav-text">集群准备</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%B9%E6%AF%8F%E4%B8%AA%E8%8A%82%E7%82%B9"><span class="nav-number">1.3.1.</span> <span class="nav-text">对每个节点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E4%BF%AE%E6%94%B96%E4%B8%AA%E8%8A%82%E7%82%B9%E4%B8%AD%E7%9A%84%E6%AF%8F%E4%B8%80%E4%B8%AA"><span class="nav-number">1.4.</span> <span class="nav-text">配置文件修改(6个节点中的每一个)</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C"><span class="nav-number">2.</span> <span class="nav-text">运行</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8A%A0%E5%85%A5%E9%9B%86%E7%BE%A4"><span class="nav-number">3.</span> <span class="nav-text">加入集群</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%BB%E4%BB%8E%E9%85%8D%E7%BD%AE"><span class="nav-number">4.</span> <span class="nav-text">主从配置</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%88%86%E9%85%8D%E6%A7%BD%E4%BD%8D"><span class="nav-number">5.</span> <span class="nav-text">分配槽位</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#moved%E9%87%8D%E5%AE%9A%E5%90%91"><span class="nav-number">6.</span> <span class="nav-text">MOVED重定向</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%95%85%E9%9A%9C%E8%BD%AC%E7%A7%BB"><span class="nav-number">7.</span> <span class="nav-text">故障转移</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#cluster%E5%91%BD%E4%BB%A4"><span class="nav-number">8.</span> <span class="nav-text">cluster命令</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#rediscluster%E6%9E%B6%E6%9E%84%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90"><span class="nav-number">9.</span> <span class="nav-text">RedisCluster架构原理分析</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8%E9%9B%86%E7%BE%A4%E5%8E%9F%E7%90%86"><span class="nav-number">9.1.</span> <span class="nav-text">启动集群原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9B%86%E7%BE%A4%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86"><span class="nav-number">9.2.</span> <span class="nav-text">集群通信原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9B%86%E7%BE%A4%E5%88%86%E7%89%87%E5%8E%9F%E7%90%86"><span class="nav-number">9.3.</span> <span class="nav-text">集群分片原理</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E5%87%86%E5%A4%87"><span class="nav-number">1.</span> <span class="nav-text">基本准备</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9E%B6%E6%9E%84"><span class="nav-number">1.1.</span> <span class="nav-text">架构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#hosts%E4%BF%AE%E6%94%B9"><span class="nav-number">1.2.</span> <span class="nav-text">hosts修改</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9B%86%E7%BE%A4%E5%87%86%E5%A4%87"><span class="nav-number">1.3.</span> <span class="nav-text">集群准备</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%B9%E6%AF%8F%E4%B8%AA%E8%8A%82%E7%82%B9"><span class="nav-number">1.3.1.</span> <span class="nav-text">对每个节点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E4%BF%AE%E6%94%B96%E4%B8%AA%E8%8A%82%E7%82%B9%E4%B8%AD%E7%9A%84%E6%AF%8F%E4%B8%80%E4%B8%AA"><span class="nav-number">1.4.</span> <span class="nav-text">配置文件修改(6个节点中的每一个)</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C"><span class="nav-number">2.</span> <span class="nav-text">运行</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8A%A0%E5%85%A5%E9%9B%86%E7%BE%A4"><span class="nav-number">3.</span> <span class="nav-text">加入集群</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%BB%E4%BB%8E%E9%85%8D%E7%BD%AE"><span class="nav-number">4.</span> <span class="nav-text">主从配置</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%88%86%E9%85%8D%E6%A7%BD%E4%BD%8D"><span class="nav-number">5.</span> <span class="nav-text">分配槽位</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#moved%E9%87%8D%E5%AE%9A%E5%90%91"><span class="nav-number">6.</span> <span class="nav-text">MOVED重定向</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%95%85%E9%9A%9C%E8%BD%AC%E7%A7%BB"><span class="nav-number">7.</span> <span class="nav-text">故障转移</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#cluster%E5%91%BD%E4%BB%A4"><span class="nav-number">8.</span> <span class="nav-text">cluster命令</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#rediscluster%E6%9E%B6%E6%9E%84%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90"><span class="nav-number">9.</span> <span class="nav-text">RedisCluster架构原理分析</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E7%A1%80%E6%9E%B6%E6%9E%84%E6%95%B0%E6%8D%AE%E5%88%86%E7%89%87"><span class="nav-number">9.1.</span> <span class="nav-text">基础架构（数据分片）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9B%86%E7%BE%A4%E5%88%86%E7%89%87%E5%8E%9F%E7%90%86"><span class="nav-number">9.2.</span> <span class="nav-text">集群分片原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8%E9%9B%86%E7%BE%A4%E5%8E%9F%E7%90%86"><span class="nav-number">9.3.</span> <span class="nav-text">启动集群原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9B%86%E7%BE%A4%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86"><span class="nav-number">9.4.</span> <span class="nav-text">集群通信原理</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -641,7 +666,7 @@ shell中执行，可通过{int..int}指定多个插槽位</td>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">41:50</span>
+    <span title="站点阅读时长">41:51</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
