@@ -244,7 +244,7 @@
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>25 分钟</span>
+              <span>26 分钟</span>
             </span>
             <div class="post-description">字符集和比较规则</div>
 
@@ -329,7 +329,7 @@ alt="image-20230418174018583" />
 <p>“我" utf8--&gt; 编码成0xE68891<br />
 接收到0xE68891后，对它解码，然后又按照GBK字符集编码，编码后是0xCED2。过程称为<strong>”字符集的转换“</strong></p>
 <h2 id="mysql中字符集转换过程">MySQL中字符集转换过程</h2>
-<p>从用户角度，客户发送请求和服务器返回响应都是字符串；从机器角度，<strong>客户端发送的请求和服务端返回的响应</strong>本质上就是一个<strong>字节序列</strong>，这个过程经历了多次的字符集转换</p>
+<p>从用户角度，客户发送请求和服务器返回响应都是字符串；从机器角度，<strong>客户端发送的请求和服务端返回的响应</strong>本质上就是一个<strong>字节序列</strong>，这个过程经历了<strong>多次的字符集转换</strong></p>
 <h3 id="客户端发送请求">客户端发送请求</h3>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">查看当前系统使用的字符集</span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">linux</span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">以第一个优先，没有依次往下取</span></span><br><span class="line">▶ echo $LC_ALL</span><br><span class="line"></span><br><span class="line">root@centos7101:~   </span><br><span class="line">▶ echo $LC_CTYPE</span><br><span class="line"></span><br><span class="line">root@centos7101:~   </span><br><span class="line">▶ echo $LANG    </span><br><span class="line">zh_CN.UTF-8</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">window</span></span><br><span class="line">C:\Users\ly&gt;chcp</span><br><span class="line">活动代码页: 936 -&gt; GBK</span><br></pre></td></tr></table></figure>
 <p>windows中，使用mysql客户端时，可以使用<code>mysql --default-character-set=utf8</code>，客户端将以UTF-8字符集<strong>对请求的字符串</strong>进行<strong>编码</strong></p>
@@ -404,10 +404,16 @@ alt="image-20230418190117592" />
 <img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230418191847757.png"
 alt="image-20230418191847757" /></p>
-<p>整个过程，五件事：<br />
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230418191950170.png"
-alt="image-20230418191950170" /></p>
+<p>整个过程，五件事：</p>
+<ol type="1">
+<li>客户端发送的请求字节序列是采用哪种字符集进行编码的
+[<strong>由客户端启动选项--default-character-set/其次是系统默认的(linux可能是utf-8/windows可能是gbk)</strong>]</li>
+<li>服务端接收到请求字节序列后会认为它是采用哪种字符集进行编码的[<strong>由character_set_client决定，而character_set_client[还有character_set_connection、character_set_results这2个系统变量]的值初始化为客户端的默认字符集，也就是上面1中的</strong>]</li>
+<li>服务器在运行过程中会把请求的字符序列转换为以哪种字符集编码的字节序列[<strong>character_set_connection</strong>]</li>
+<li>服务器在向客户端返回字节序列时，是采用哪种字符集进行编码的[<strong>character_set_results</strong>]</li>
+<li>上面的<strong>character_set_clien、character_set_connection、character_set_results这3个系统变量]的值</strong>在客户端连接到服务端之后，都是可以修改的，且都是<strong>SESSION级别</strong>的</li>
+<li>客户端在接收到响应字节序列后，是怎么把他们写到黑框框中的[<strong>windows中由default-character-set/其次是系统默认</strong>]</li>
+</ol>
 <h1 id="比较规则的应用">比较规则的应用</h1>
 <p>通常用来比较大小和排序</p>
 <p>例子：</p>
@@ -581,7 +587,7 @@ alt="image-20230418191950170" /></p>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">43:03</span>
+    <span title="站点阅读时长">43:04</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
