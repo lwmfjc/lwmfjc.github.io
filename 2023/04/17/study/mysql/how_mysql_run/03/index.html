@@ -237,14 +237,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>8.8k</span>
+              <span>14k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>16 分钟</span>
+              <span>25 分钟</span>
             </span>
             <div class="post-description">字符集和比较规则</div>
 
@@ -266,10 +266,10 @@
 字符集：<strong>某个字符范围的编码规则</strong><br />
 同一种字符集可以有多种比较规则</p>
 <h2 id="重要的字符集">重要的字符集</h2>
-<p>ASCALL字符集：128个，包括空格标点数字大小写及不可见字符，使用一个字节编码<br />
+<p>ASCAII字符集：128个，包括空格标点数字大小写及不可见字符，使用一个字节编码<br />
 ISO
-8859-1字符集：256个，ASCALL基础扩充128个西欧常用字符（包括德法），使用1个字节，别名Latin1<br />
-GB2312字符集：收录部分汉字，兼容ASCALL字符集，如果字符在ASCALL字符集中则采用1字节，否则两字节。即<strong>变长编码方式</strong></p>
+8859-1字符集：256个，ASCAII基础扩充128个西欧常用字符（包括德法），使用1个字节，别名Latin1<br />
+GB2312字符集：收录部分汉字，兼容ASCAII字符集，如果字符在ASCAII字符集中则采用1字节，否则两字节。即<strong>变长编码方式</strong></p>
 <blockquote>
 <p>区分某个字节，<strong>代表一个单独字符</strong>，还是<strong>某个字符的一部分</strong>。<br />
 比如0xB0AE75，由于是16进制，所有两个代表1个字节。所以这里有三个字节，其中最后那个字节为7<em>16+5=117
@@ -277,7 +277,7 @@ GB2312字符集：收录部分汉字，兼容ASCALL字符集，如果字符在AS
 ，所以是某个字符的一部分</p>
 </blockquote>
 <p>GBK字符集：对GB2312字符集扩充，编码方式兼容GB2312<br />
-UTF-8字符集：几乎收录所有字符，且不断扩充，兼容ASCALL字符集。变长：采用1~4字节<br />
+UTF-8字符集：几乎收录所有字符，且不断扩充，兼容ASCAII字符集。变长：采用1~4字节<br />
 L-&gt;0x4C 1字节，啊-&gt;0xE5958A，两字节<br />
 UTF-8是Unicode字符集的一种编码方案，Unicode字符集有三种方案：UTF-8(1~4字节编码一个字符)，UTF-16(2或4字节编码一个字符)，UTF-32(4字节编码一个字符)</p>
 <blockquote>
@@ -318,6 +318,107 @@ alt="image-20230418164312045" /></p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">例子</span>  </span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">describe t;</span></span><br><span class="line">+-------+-------------+------+-----+---------+-------+</span><br><span class="line">| Field | Type        | Null | Key | Default | Extra |</span><br><span class="line">+-------+-------------+------+-----+---------+-------+</span><br><span class="line">| col   | varchar(10) | YES  |     | NULL    |       |</span><br><span class="line">+-------+-------------+------+-----+---------+-------+</span><br><span class="line">1 row in set (0.01 sec)</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">INSERT INTO t(col) VALUES(<span class="string">&#x27;我我&#x27;</span>);</span></span><br><span class="line">Query OK, 1 row affected (0.01 sec)</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment"># 如果列col使用的字符集是gbk，则每个字符占用2字节，两个字符占用4字节；如果列col使用字符集为utf8，则两个字符实际占用的存储空间为6字节</span></span></span><br></pre></td></tr></table></figure>
 <h1
 id="客户端和服务端通信过程中使用的字符集">客户端和服务端通信过程中使用的字符集</h1>
+<h2 id="编码和解码使用的字符集不一样">编码和解码使用的字符集不一样</h2>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230418174018583.png"
+alt="image-20230418174018583" />
+<figcaption aria-hidden="true">image-20230418174018583</figcaption>
+</figure>
+<h2 id="字符集转换的概念">字符集转换的概念</h2>
+<p>“我" utf8--&gt; 编码成0xE68891<br />
+接收到0xE68891后，对它解码，然后又按照GBK字符集编码，编码后是0xCED2。过程称为<strong>”字符集的转换“</strong></p>
+<h2 id="mysql中字符集转换过程">MySQL中字符集转换过程</h2>
+<p>从用户角度，客户发送请求和服务器返回响应都是字符串；从机器角度，<strong>客户端发送的请求和服务端返回的响应</strong>本质上就是一个<strong>字节序列</strong>，这个过程经历了多次的字符集转换</p>
+<h3 id="客户端发送请求">客户端发送请求</h3>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">查看当前系统使用的字符集</span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">linux</span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">以第一个优先，没有依次往下取</span></span><br><span class="line">▶ echo $LC_ALL</span><br><span class="line"></span><br><span class="line">root@centos7101:~   </span><br><span class="line">▶ echo $LC_CTYPE</span><br><span class="line"></span><br><span class="line">root@centos7101:~   </span><br><span class="line">▶ echo $LANG    </span><br><span class="line">zh_CN.UTF-8</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">window</span></span><br><span class="line">C:\Users\ly&gt;chcp</span><br><span class="line">活动代码页: 936 -&gt; GBK</span><br></pre></td></tr></table></figure>
+<p>windows中，使用mysql客户端时，可以使用<code>mysql --default-character-set=utf8</code>，客户端将以UTF-8字符集<strong>对请求的字符串</strong>进行<strong>编码</strong></p>
+<h3 id="服务端接收请求">服务端接收请求</h3>
+<p>服务端接收到的应该是一个<strong>字节序列</strong>，是系统变量<strong>character_set_client</strong>代表的字符集<strong>进行编码后</strong>的<strong>字节序列</strong></p>
+<blockquote>
+<ol type="1">
+<li>每个客户端与服务端建立连接后，服务器会为该客户端维护一个独立的character_set_client变量，是SESSION级别的</li>
+<li>客户端在编码请求字符串时实际使用的<strong>字符集</strong>，与服务器在收到一个字节序列后<strong>认为该序列采用的编码字符集</strong>，是两个独立的字符集。要尽量保证<strong>这两个字符集是一致的</strong></li>
+<li>例子：如果客户端用的UTF8编码"我"为0xE68891，并发给服务端，而服务端的character_set_client=latin1，则服务端会理解为<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230418175754936.png"
+alt="image-20230418175754936" /></li>
+</ol>
+</blockquote>
+<p>如果character_set_client对应的字符集不能解释请求的字节序列，那么服务器发生警告</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">SET character_set_client =ascii;</span></span><br><span class="line">Query OK, 0 rows affected (0.00 sec)</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">select <span class="string">&#x27;我&#x27;</span>; <span class="comment">#utf8将它编码成了0xE68891发给服务端，而服务端以ASCII字符集解码</span></span></span><br><span class="line">+-----+</span><br><span class="line">| ??? |</span><br><span class="line">+-----+</span><br><span class="line">| ??? |</span><br><span class="line">+-----+</span><br><span class="line">1 row in set, 1 warning (0.00 sec)</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">SHOW WARNINGS\G</span></span><br><span class="line">*************************** 1. row ***************************</span><br><span class="line">  Level: Warning</span><br><span class="line">   Code: 1300</span><br><span class="line">Message: Invalid ascii character string: &#x27;\xE6\x88\x91&#x27;</span><br><span class="line">1 row in set (0.00 sec)</span><br></pre></td></tr></table></figure>
+<h3 id="服务器处理请求">服务器处理请求</h3>
+<p>服务端会将请求的<strong>字节序列当作采用character_set_client</strong>对应的字符集进行编码，不过真正处理请求时会将其转换为<strong>SESSION级别的系统变量character_set_connection对应的字符集进行编码</strong>的字符序列</p>
+<blockquote>
+<p>假设character_set_client=utf8，character_set_connection=gbk，则对于"我"--&gt;0xE68891--&gt;0xCED2</p>
+</blockquote>
+<h4 id="情形1">情形1</h4>
+<p>例子： <code>SELECT 'a' = 'A'</code></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">默认情况</span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">SHOW VARIABLES LIKE <span class="string">&#x27;character_connection&#x27;</span>;</span></span><br><span class="line">Empty set (0.00 sec)</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">SHOW VARIABLES LIKE <span class="string">&#x27;collation_connection&#x27;</span>;</span></span><br><span class="line">+----------------------+-----------------+</span><br><span class="line">| Variable_name        | Value           |</span><br><span class="line">+----------------------+-----------------+</span><br><span class="line">| collation_connection | utf8_general_ci |</span><br><span class="line">+----------------------+-----------------+</span><br><span class="line">1 row in set (0.00 sec)</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">SELECT <span class="string">&#x27;A&#x27;</span>=<span class="string">&#x27;a&#x27;</span>;</span></span><br><span class="line">+---------+</span><br><span class="line">| &#x27;A&#x27;=&#x27;a&#x27; |</span><br><span class="line">+---------+</span><br><span class="line">|       1 |</span><br><span class="line">+---------+</span><br><span class="line">1 row in set (0.00 sec)</span><br></pre></td></tr></table></figure>
+<p>其他情况：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">SET character_set_connection = gbk;</span></span><br><span class="line">Query OK, 0 rows affected (0.00 sec)</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">SET collation_connection=gbk_chinese_ci;</span></span><br><span class="line">Query OK, 0 rows affected (0.00 sec)</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">SELECT <span class="string">&#x27;a&#x27;</span>=<span class="string">&#x27;A&#x27;</span>;</span></span><br><span class="line">+---------+</span><br><span class="line">| &#x27;a&#x27;=&#x27;A&#x27; |</span><br><span class="line">+---------+</span><br><span class="line">|       1 |</span><br><span class="line">+---------+</span><br><span class="line">1 row in set (0.00 sec)</span><br></pre></td></tr></table></figure>
+<p>另一种情况：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">SET character_set_connection = gbk;</span></span><br><span class="line">Query OK, 0 rows affected (0.00 sec)</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">SET collation_connection=gbk_bin;</span></span><br><span class="line">Query OK, 0 rows affected (0.00 sec)</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">SELECT <span class="string">&#x27;a&#x27;</span>=<span class="string">&#x27;A&#x27;</span>;</span></span><br><span class="line">+---------+</span><br><span class="line">| &#x27;a&#x27;=&#x27;A&#x27; |</span><br><span class="line">+---------+</span><br><span class="line">|       0 |</span><br><span class="line">+---------+</span><br><span class="line">1 row in set (0.00 sec)</span><br></pre></td></tr></table></figure>
+<p><strong>gbk_bin 简体中文, 二进制</strong> <strong>gbk_chinese_ci
+简体中文, 不区分大小写</strong></p>
+<h4 id="情形2">情形2</h4>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">创建一个表</span></span><br><span class="line">CREATE TABLE tt(c VARCHAR(100)) ENGINE=INNODB CHARSET=utf8;</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">先改回来</span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">SET character_set_connection = utf8;</span></span><br><span class="line">Query OK, 0 rows affected (0.00 sec) </span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">SHOW VARIABLES LIKE <span class="string">&#x27;collation_connection&#x27;</span>;</span></span><br><span class="line">+----------------------+-----------------+</span><br><span class="line">| Variable_name        | Value           |</span><br><span class="line">+----------------------+-----------------+</span><br><span class="line">| collation_connection | utf8_general_ci |</span><br><span class="line">+----------------------+-----------------+</span><br><span class="line">1 row in set (0.00 sec)</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">插入一条记录</span></span><br><span class="line">INSERT INTO tt(c) VALUES(&#x27;我&#x27;);</span><br></pre></td></tr></table></figure>
+<p>当前数据库、表、列使用的是utf8，现在把collection改为gbk：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">SET character_set_connection = gbk;</span></span><br><span class="line">Query OK, 0 rows affected (0.00 sec)</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">SET collation_connection=gbk_chinese_ci;</span></span><br><span class="line">Query OK, 0 rows affected (0.00 sec)</span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">SELECT * FROM tt WHERE c=<span class="string">&#x27;我&#x27;</span>;</span></span><br><span class="line">+------+</span><br><span class="line">| c    |</span><br><span class="line">+------+</span><br><span class="line">| 我   |</span><br><span class="line">+------+</span><br><span class="line">1 row in set (0.00 sec)</span><br></pre></td></tr></table></figure>
+<p>此时<code>SELECT * FROM tt WHERE c='我';</code>中，'我'是使用gbk字符集进行编码的，比较规则是gbk_chinese_ci；而列c使用utf8字符集编码，比较规则为utf8_general_ci。这种情况下列的字符集和排序规则的优先级更高，会将gbk字符集转换成utf8字符集，然后使用列c的比较规则utf8_general_ci进行比较</p>
+<h3 id="服务器生成响应">服务器生成响应</h3>
+<p>继续以最近的上面例子为例<code>SELECT * FROM tt</code>,是否是直接将0xE68891读出来发送到客户端呢？不是的，取决于SESSION级别的系统变量character_set_result的值</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">SET character_set_results=gbk;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>服务器会将字符串'我'从utf8字符集编码的0xE68891转换为character_set_results系统变量对应的字符集编码后的字节序列，再发给客户端</p>
+</blockquote>
+<p>此时传给客户端的响应中，字符串'我'对应的就是字节序列0xCED2('我'的gbk编码字节序列)</p>
+<h3 id="总结">总结</h3>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230418185907232.png"
+alt="image-20230418185907232" />
+<figcaption aria-hidden="true">image-20230418185907232</figcaption>
+</figure>
+<p>每个客户端在服务器建立连接后，服务器都会<strong>为这个连接维护这3个变量</strong></p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230418190117592.png"
+alt="image-20230418190117592" />
+<figcaption aria-hidden="true">image-20230418190117592</figcaption>
+</figure>
+<ol type="1">
+<li><p>每个MySQL客户端都维护着一个<strong>客户端默认字符集</strong>，客户端在启动时会自动检测<strong>所在系统(是客户端所在系统)当前使用的字符集</strong>，并按照一定规则<strong>映射成（最接近）MySQL支持的字符集</strong>，然后将该字符集作为<strong>客户端默认的字符集。</strong></p></li>
+<li><p>如果启动MySQL客户端时设置了default-character-set
+则忽略操作系统当前使用的字符集，直接将default-character-set启动选项中指定的值作为客户端默认字符集</p></li>
+<li><p>连接服务器时，客户端将<strong>默认的字符集信息</strong>与用户密码等<strong>发送给服务端</strong>，服务端在收到后会将character_set_client、character_set_connection、character_set_results这3个系统变量的值初始化为客户端的默认字符集</p></li>
+<li><p>客户端连接到服务器之后，可以使用SET分别<strong>修改</strong>character_set_client、character_set_connection、character_set_results这3个系统变量的值(或者使用<code>SET NAMES charset_name</code>一次性修改)</p>
+<blockquote>
+<p>不会改变客户端在<strong>编码请求字符串时使用的字符集</strong>，也不会修改客户端的<strong>默认字符集</strong></p>
+</blockquote></li>
+</ol>
+<h3 id="客户端接收到请求">客户端接收到请求</h3>
+<p>客户端收到的响应其实也是一个<strong>字节序列</strong><br />
+对于类UNIX系统，收到的字节序列相当于写到黑框框中，再由黑框框<strong>将这个字节序列解释为人类能看懂的字符</strong>（用操作系统当前使用的字符集来解释）；对于Windows，客户端使用客户端的默认字符集来解释</p>
+<p>也就是说，如果在linux下指定的default-character-set和系统不一致，就会导致乱码<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230418191847757.png"
+alt="image-20230418191847757" /></p>
+<p>整个过程，五件事：<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230418191950170.png"
+alt="image-20230418191950170" /></p>
+<h1 id="比较规则的应用">比较规则的应用</h1>
+<p>通常用来比较大小和排序</p>
+<p>例子：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">CREATE TABLE t(col VARCHAR(100)) ENGINE=INNODB CHARSET=gbk;</span></span><br><span class="line">Query OK, 0 rows affected (0.02 sec)</span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">INSERT INTO t(col) VALUES(<span class="string">&#x27;a&#x27;</span>),(<span class="string">&#x27;b&#x27;</span>),(<span class="string">&#x27;A&#x27;</span>),(<span class="string">&#x27;B&#x27;</span>);</span></span><br><span class="line">Query OK, 4 rows affected (0.01 sec)</span><br><span class="line">Records: 4  Duplicates: 0  Warnings: 0</span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">SELECT * FROM t ORDER BY col;</span></span><br><span class="line">+------+</span><br><span class="line">| col  |</span><br><span class="line">+------+</span><br><span class="line">| a    |</span><br><span class="line">| A    |</span><br><span class="line">| b    |</span><br><span class="line">| B    |</span><br><span class="line">| 我   |</span><br><span class="line">+------+</span><br><span class="line">5 rows in set (0.00 sec)</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">如上，排序规则gbk_chinese_ci是不区分大小写的</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">修改为gbk_bin;</span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">ALTER TABLE t MODIFY col VARCHAR(10) COLLATE gbk_bin;</span></span><br><span class="line">Query OK, 5 rows affected (0.06 sec)</span><br><span class="line">Records: 5  Duplicates: 0  Warnings: 0</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">SELECT * FROM t ORDER BY col;</span></span><br><span class="line">+------+</span><br><span class="line">| col  |</span><br><span class="line">+------+</span><br><span class="line">| A    |</span><br><span class="line">| B    |</span><br><span class="line">| a    |</span><br><span class="line">| b    |</span><br><span class="line">| 我   |</span><br><span class="line">+------+</span><br><span class="line">5 rows in set (0.00 sec)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>解释：<br />
+列col各个字符在使用gbk字符集编码后对应的数字如下：<br />
+'A' -&gt; 65</p>
+<p>'B'-&gt;66</p>
+<p>'a'-&gt;97</p>
+<p>'b'-&gt;98</p>
+<p>'我'-&gt;52946</p>
 
     </div>
 
@@ -405,7 +506,7 @@ id="客户端和服务端通信过程中使用的字符集">客户端和服务�
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AD%97%E7%AC%A6%E9%9B%86"><span class="nav-number">1.</span> <span class="nav-text">字符集</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%87%8D%E8%A6%81%E7%9A%84%E5%AD%97%E7%AC%A6%E9%9B%86"><span class="nav-number">1.1.</span> <span class="nav-text">重要的字符集</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#mysql%E4%B8%AD%E6%94%AF%E6%8C%81%E7%9A%84%E5%AD%97%E7%AC%A6%E9%9B%86%E5%92%8C%E6%AF%94%E8%BE%83%E8%A7%84%E5%88%99"><span class="nav-number">2.</span> <span class="nav-text">MySQL中支持的字符集和比较规则</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AD%97%E7%AC%A6%E9%9B%86%E5%92%8C%E6%AF%94%E8%BE%83%E8%A7%84%E5%88%99%E7%9A%84%E5%BA%94%E7%94%A8"><span class="nav-number">3.</span> <span class="nav-text">字符集和比较规则的应用</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%BA%A7%E5%88%AB"><span class="nav-number">3.1.</span> <span class="nav-text">服务器级别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E7%BA%A7%E5%88%AB"><span class="nav-number">3.2.</span> <span class="nav-text">数据库级别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A1%A8%E7%BA%A7%E5%88%AB"><span class="nav-number">3.3.</span> <span class="nav-text">表级别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%97%E7%BA%A7%E5%88%AB"><span class="nav-number">3.4.</span> <span class="nav-text">列级别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B6%E4%BB%96"><span class="nav-number">3.5.</span> <span class="nav-text">其他</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%92%8C%E6%9C%8D%E5%8A%A1%E7%AB%AF%E9%80%9A%E4%BF%A1%E8%BF%87%E7%A8%8B%E4%B8%AD%E4%BD%BF%E7%94%A8%E7%9A%84%E5%AD%97%E7%AC%A6%E9%9B%86"><span class="nav-number">4.</span> <span class="nav-text">客户端和服务端通信过程中使用的字符集</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AD%97%E7%AC%A6%E9%9B%86"><span class="nav-number">1.</span> <span class="nav-text">字符集</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%87%8D%E8%A6%81%E7%9A%84%E5%AD%97%E7%AC%A6%E9%9B%86"><span class="nav-number">1.1.</span> <span class="nav-text">重要的字符集</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#mysql%E4%B8%AD%E6%94%AF%E6%8C%81%E7%9A%84%E5%AD%97%E7%AC%A6%E9%9B%86%E5%92%8C%E6%AF%94%E8%BE%83%E8%A7%84%E5%88%99"><span class="nav-number">2.</span> <span class="nav-text">MySQL中支持的字符集和比较规则</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AD%97%E7%AC%A6%E9%9B%86%E5%92%8C%E6%AF%94%E8%BE%83%E8%A7%84%E5%88%99%E7%9A%84%E5%BA%94%E7%94%A8"><span class="nav-number">3.</span> <span class="nav-text">字符集和比较规则的应用</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%BA%A7%E5%88%AB"><span class="nav-number">3.1.</span> <span class="nav-text">服务器级别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E7%BA%A7%E5%88%AB"><span class="nav-number">3.2.</span> <span class="nav-text">数据库级别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A1%A8%E7%BA%A7%E5%88%AB"><span class="nav-number">3.3.</span> <span class="nav-text">表级别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%97%E7%BA%A7%E5%88%AB"><span class="nav-number">3.4.</span> <span class="nav-text">列级别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B6%E4%BB%96"><span class="nav-number">3.5.</span> <span class="nav-text">其他</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%92%8C%E6%9C%8D%E5%8A%A1%E7%AB%AF%E9%80%9A%E4%BF%A1%E8%BF%87%E7%A8%8B%E4%B8%AD%E4%BD%BF%E7%94%A8%E7%9A%84%E5%AD%97%E7%AC%A6%E9%9B%86"><span class="nav-number">4.</span> <span class="nav-text">客户端和服务端通信过程中使用的字符集</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BC%96%E7%A0%81%E5%92%8C%E8%A7%A3%E7%A0%81%E4%BD%BF%E7%94%A8%E7%9A%84%E5%AD%97%E7%AC%A6%E9%9B%86%E4%B8%8D%E4%B8%80%E6%A0%B7"><span class="nav-number">4.1.</span> <span class="nav-text">编码和解码使用的字符集不一样</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AD%97%E7%AC%A6%E9%9B%86%E8%BD%AC%E6%8D%A2%E7%9A%84%E6%A6%82%E5%BF%B5"><span class="nav-number">4.2.</span> <span class="nav-text">字符集转换的概念</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mysql%E4%B8%AD%E5%AD%97%E7%AC%A6%E9%9B%86%E8%BD%AC%E6%8D%A2%E8%BF%87%E7%A8%8B"><span class="nav-number">4.3.</span> <span class="nav-text">MySQL中字符集转换过程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%8F%91%E9%80%81%E8%AF%B7%E6%B1%82"><span class="nav-number">4.3.1.</span> <span class="nav-text">客户端发送请求</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%8D%E5%8A%A1%E7%AB%AF%E6%8E%A5%E6%94%B6%E8%AF%B7%E6%B1%82"><span class="nav-number">4.3.2.</span> <span class="nav-text">服务端接收请求</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%A4%84%E7%90%86%E8%AF%B7%E6%B1%82"><span class="nav-number">4.3.3.</span> <span class="nav-text">服务器处理请求</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%83%85%E5%BD%A21"><span class="nav-number">4.3.3.1.</span> <span class="nav-text">情形1</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%83%85%E5%BD%A22"><span class="nav-number">4.3.3.2.</span> <span class="nav-text">情形2</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%94%9F%E6%88%90%E5%93%8D%E5%BA%94"><span class="nav-number">4.3.4.</span> <span class="nav-text">服务器生成响应</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">4.3.5.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF%E6%8E%A5%E6%94%B6%E5%88%B0%E8%AF%B7%E6%B1%82"><span class="nav-number">4.3.6.</span> <span class="nav-text">客户端接收到请求</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%AF%94%E8%BE%83%E8%A7%84%E5%88%99%E7%9A%84%E5%BA%94%E7%94%A8"><span class="nav-number">5.</span> <span class="nav-text">比较规则的应用</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -480,7 +581,7 @@ id="客户端和服务端通信过程中使用的字符集">客户端和服务�
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">42:53</span>
+    <span title="站点阅读时长">43:03</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
