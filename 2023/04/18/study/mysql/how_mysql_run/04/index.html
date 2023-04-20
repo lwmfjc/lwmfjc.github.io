@@ -237,14 +237,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>2.3k</span>
+              <span>3.5k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>4 分钟</span>
+              <span>6 分钟</span>
             </span>
             <div class="post-description">InnoDB记录存储结构</div>
 
@@ -346,6 +346,52 @@ heap_no前面8位是0，再取5位：即 00000000 0001 0，即0x02<br />
 n_field：000 0000111，即0x07<br />
 1byte_offs_flag：0x01<br />
 next_record：00000000 1011 1100，即0xBC</p>
+<h3
+id="记录头信息中的1byte_offs_flag的值是怎么选择的">记录头信息中的1byte_offs_flag的值是怎么选择的</h3>
+<p>字段长度偏移列表存储的<strong>偏移量</strong>指的是<strong>每个列的值占用的空间</strong>在<strong>记录的真</strong>
+<strong>实数据处结束</strong>的位置<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230419212005826.png"
+alt="image-20230419212005826" /></p>
+<blockquote>
+<p>如上，0x06代表第一列(DB_ROW_ID)在真实数据的第6字节处结束；0x0C
+代表第二列(DB_TRX_ID)在真实数据的第12字节处结束....</p>
+</blockquote>
+<p>讨论：每个列对应的偏移量可以使用1字节或2字节来存储，那么什么时候1什么时候2<br />
+<strong>根据REDUNDANT行格式记录的真实数据占用的总大小</strong>来判断<br />
+如果真实数据占用的字节数不大于127时，每个列对应的偏移量占用1字节<strong>[注意，这里只用到了1字节的7位，即max=01111111]</strong><br />
+如果大于127但不大于32767
+（2^15-1，也就是15位的最大表示）时，使用2字节。</p>
+<blockquote>
+<p>如果超过32767，则本页中只保留前768字节和20字节的<strong>溢出页面地址</strong>（20字节还有别的信息）。这种情况下只是用2字节存储每个列对应的偏移量即可（127&lt;768&lt;=32767)</p>
+</blockquote>
+<p>在<strong>头信息</strong>中放置了一个1byte_offs_flag属性，值为1时表明使用1字节存储偏移量；值为0时表明使用2字节存储偏移量</p>
+<h3
+id="redundant行格式中null值的处理">REDUNDANT行格式中NULL值的处理</h3>
+<blockquote>
+<p>REDUNDANT行格式并没有NULL值列表</p>
+</blockquote>
+<p>将<strong>列对应的偏移量值</strong>的<strong>第一个比特位</strong>，作为是否为NULL的依据，也称之为<strong>NULL比特位</strong><br />
+不论是1字节还是2字节，都要使用第1个比特位来标记该列值是否为NULL<br />
+对于<strong>NULL列</strong>来说，该列的类型<strong>是否为变长类型</strong>决定了该列在记录的<strong>真实数据处</strong>的存储方式。</p>
+<p>分析第2条数据<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230420232026832.png"
+alt="image-20230420232026832" /></p>
+<p>字段长度偏移列表-&gt;按照列的顺序排放：06 0C 13 17 1A A4 A4<br />
+c3=NULL，且c3类型-&gt;CHAR(10) ==&gt;真实数据部分占用10字节,0x00<br />
+c3 原偏移量为36=32+4 =
+00100100-&gt;0x24，由于为NULL，所以首位(比特)为1，所以（真实）偏移量为10100100，0xA4<br />
+c2偏移量为0x1A，则c2字节数为0x24-0x1A=36-26=10<br />
+如果<strong>存储NULL值的字段为变长数据类型</strong>，则不在记录的真实数据部分占用任何存储空间<br />
+所以c4的偏移量应该和c3相同，都是00100100，且由于是NULL，所以首位为1-&gt;10100100,0xA4</p>
+<blockquote>
+<p>从结果往回推理，c4也是0xA4，和c3相同，说明c4和c3一样都是NULL</p>
+</blockquote>
+<p>COMPACT行格式的记录占用的空间更少</p>
+<h3 id="charm列的存储格式">CHAR(m)列的存储格式</h3>
+<p>COMPACT中，当定长类型CHAR(M)的字符集的每个字符占用字节不固定时，才会记录CHAR列的长度；而REDUNDANT行格式中，该列<strong>真实数据</strong>占用的存储空间大小，就是该字符集<strong>表示一个字符最多需要的字节数</strong>和<strong>M</strong>的乘积：utf8的CHAR(10)类型的列，<strong>真实数据占用存储空间大小</strong>始终为30字节；使用gbk字符集的CHAR(10)，始终20字节</p>
+<h3 id="溢出列">溢出列</h3>
 
     </div>
 
@@ -433,7 +479,7 @@ next_record：00000000 1011 1100，即0xBC</p>
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%97%AE%E9%A2%98"><span class="nav-number">1.</span> <span class="nav-text">问题</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#innodb%E9%A1%B5%E7%AE%80%E4%BB%8B"><span class="nav-number">2.</span> <span class="nav-text">InnoDB页简介</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#innodb%E8%A1%8C%E6%A0%BC%E5%BC%8F"><span class="nav-number">3.</span> <span class="nav-text">InnoDB行格式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8C%87%E5%AE%9A%E8%A1%8C%E6%A0%BC%E5%BC%8F%E7%9A%84%E8%AF%AD%E6%B3%95"><span class="nav-number">3.1.</span> <span class="nav-text">指定行格式的语法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#compact%E8%A1%8C%E6%A0%BC%E5%BC%8F"><span class="nav-number">3.2.</span> <span class="nav-text">COMPACT行格式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%A2%9D%E5%A4%96%E4%BF%A1%E6%81%AF"><span class="nav-number">3.2.1.</span> <span class="nav-text">额外信息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%B0%E5%BD%95%E7%9A%84%E7%9C%9F%E5%AE%9E%E6%95%B0%E6%8D%AE"><span class="nav-number">3.2.2.</span> <span class="nav-text">记录的真实数据</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#redundant%E8%A1%8C%E6%A0%BC%E5%BC%8F"><span class="nav-number">3.3.</span> <span class="nav-text">REDUNDANT行格式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AD%97%E6%AE%B5%E9%95%BF%E5%BA%A6%E5%81%8F%E7%A7%BB%E5%88%97%E8%A1%A8"><span class="nav-number">3.3.1.</span> <span class="nav-text">字段长度偏移列表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%B0%E5%BD%95%E5%A4%B4%E4%BF%A1%E6%81%AF"><span class="nav-number">3.3.2.</span> <span class="nav-text">记录头信息</span></a></li></ol></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%97%AE%E9%A2%98"><span class="nav-number">1.</span> <span class="nav-text">问题</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#innodb%E9%A1%B5%E7%AE%80%E4%BB%8B"><span class="nav-number">2.</span> <span class="nav-text">InnoDB页简介</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#innodb%E8%A1%8C%E6%A0%BC%E5%BC%8F"><span class="nav-number">3.</span> <span class="nav-text">InnoDB行格式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8C%87%E5%AE%9A%E8%A1%8C%E6%A0%BC%E5%BC%8F%E7%9A%84%E8%AF%AD%E6%B3%95"><span class="nav-number">3.1.</span> <span class="nav-text">指定行格式的语法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#compact%E8%A1%8C%E6%A0%BC%E5%BC%8F"><span class="nav-number">3.2.</span> <span class="nav-text">COMPACT行格式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%A2%9D%E5%A4%96%E4%BF%A1%E6%81%AF"><span class="nav-number">3.2.1.</span> <span class="nav-text">额外信息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%B0%E5%BD%95%E7%9A%84%E7%9C%9F%E5%AE%9E%E6%95%B0%E6%8D%AE"><span class="nav-number">3.2.2.</span> <span class="nav-text">记录的真实数据</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#redundant%E8%A1%8C%E6%A0%BC%E5%BC%8F"><span class="nav-number">3.3.</span> <span class="nav-text">REDUNDANT行格式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AD%97%E6%AE%B5%E9%95%BF%E5%BA%A6%E5%81%8F%E7%A7%BB%E5%88%97%E8%A1%A8"><span class="nav-number">3.3.1.</span> <span class="nav-text">字段长度偏移列表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%B0%E5%BD%95%E5%A4%B4%E4%BF%A1%E6%81%AF"><span class="nav-number">3.3.2.</span> <span class="nav-text">记录头信息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%B0%E5%BD%95%E5%A4%B4%E4%BF%A1%E6%81%AF%E4%B8%AD%E7%9A%841byte_offs_flag%E7%9A%84%E5%80%BC%E6%98%AF%E6%80%8E%E4%B9%88%E9%80%89%E6%8B%A9%E7%9A%84"><span class="nav-number">3.3.3.</span> <span class="nav-text">记录头信息中的1byte_offs_flag的值是怎么选择的</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#redundant%E8%A1%8C%E6%A0%BC%E5%BC%8F%E4%B8%ADnull%E5%80%BC%E7%9A%84%E5%A4%84%E7%90%86"><span class="nav-number">3.3.4.</span> <span class="nav-text">REDUNDANT行格式中NULL值的处理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#charm%E5%88%97%E7%9A%84%E5%AD%98%E5%82%A8%E6%A0%BC%E5%BC%8F"><span class="nav-number">3.3.5.</span> <span class="nav-text">CHAR(m)列的存储格式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%BA%A2%E5%87%BA%E5%88%97"><span class="nav-number">3.3.6.</span> <span class="nav-text">溢出列</span></a></li></ol></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -508,7 +554,7 @@ next_record：00000000 1011 1100，即0xBC</p>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">43:08</span>
+    <span title="站点阅读时长">43:10</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
