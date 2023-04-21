@@ -237,14 +237,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>3.5k</span>
+              <span>4.9k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>6 分钟</span>
+              <span>9 分钟</span>
             </span>
             <div class="post-description">InnoDB记录存储结构</div>
 
@@ -391,7 +391,72 @@ c2偏移量为0x1A，则c2字节数为0x24-0x1A=36-26=10<br />
 <p>COMPACT行格式的记录占用的空间更少</p>
 <h3 id="charm列的存储格式">CHAR(m)列的存储格式</h3>
 <p>COMPACT中，当定长类型CHAR(M)的字符集的每个字符占用字节不固定时，才会记录CHAR列的长度；而REDUNDANT行格式中，该列<strong>真实数据</strong>占用的存储空间大小，就是该字符集<strong>表示一个字符最多需要的字节数</strong>和<strong>M</strong>的乘积：utf8的CHAR(10)类型的列，<strong>真实数据占用存储空间大小</strong>始终为30字节；使用gbk字符集的CHAR(10)，始终20字节</p>
-<h3 id="溢出列">溢出列</h3>
+<h2 id="溢出列">溢出列</h2>
+<h3 id="溢出列-1">溢出列</h3>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">举例</span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">CREATE TABLE off_page_demo(</span></span><br><span class="line">    -&gt; c VARCHAR(65532)</span><br><span class="line">    -&gt; ) CHARSET=ascii ROW_FORMAT=COMPACT;</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">插入一条数据</span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">INSERT INTO off_page_demo(c) VALUES(REPEAT(<span class="string">&#x27;a&#x27;</span>,65532));</span></span><br><span class="line">Query OK, 1 row affected (0.06 sec)</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>ascii字符集中1字符占用1字节，REPEAT('a',65532)生成一个把字符'a'重复65532次数的字符串</p>
+</blockquote>
+<p>**1页有16kb=1024*16=16384字节，65532字节远超1页大小<strong><br />
+</strong>COMPACT和REDUNDANT行格式<strong>中，对于存储空间占用特别多的列，真实数据处只会存储该列一部分数据，剩余数据存储在</strong>几个其他的页<strong>中，在记录的真实数据处用</strong>20字节<strong>存储指向这些页的地址（当然，这20字节还包括</strong>分散在其他页面中的数据所占用的字节数**）</p>
+<blockquote>
+<p>原书加了括号里的话，不是很理解，我的理解是：这20字节指向的页中，包括了溢出的那部分数据</p>
+</blockquote>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230421100332722.png"
+alt="image-20230421100332722" />
+<figcaption aria-hidden="true">image-20230421100332722</figcaption>
+</figure>
+<p>如上，如果列数据非常大，只会存储该列前768字节的数据以及一个指向其他页的地址（存疑，应该不止一个，有时候1个是放不下所有溢出页数据的吧？）<br />
+简化：<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230421100649877.png"
+alt="image-20230421100649877" /><br />
+例子中列c的数据<strong>需要使用溢出页</strong>来存储，我们把这个列称为<strong>溢出列</strong>，不止VARCHAR(M)，TEXT和BLOB也可能成为溢出列</p>
+<h3 id="产生溢出列的临界点">产生溢出列的临界点</h3>
+<p>MySQL中规定一个页<strong>至少存放2条记录</strong></p>
+<blockquote>
+<p>16KB=16384字节</p>
+</blockquote>
+<p>每个页除了记录，还有额外信息，这些额外信息需要<strong>132字节</strong>。<br />
+每个记录需要<strong>27字节</strong>，包括</p>
+<blockquote>
+<p>针对下面的表<br />
+mysql&gt; CREATE TABLE off_page_demo( -&gt; c VARCHAR(65532) -&gt; )
+CHARSET=ascii ROW_FORMAT=COMPACT;</p>
+<p><strong>注意，是COMPACT行格式</strong></p>
+</blockquote>
+<p><strong>对于每一行记录</strong><br />
+存储真实数据长度（2字节）<br />
+存储列是否为NULL值（1字节）<br />
+5字节大小的头信息<br />
+6字节的row_id列<br />
+6字节的row_id列<br />
+7字节的roll_pointer列</p>
+<p>132+2*(27+n) &lt;16384</p>
+<blockquote>
+<p>至于为社么不能等于，这是MySQL设计时规定的，未知。<br />
+正常记录的页和溢出页是两种不同的页，没有规定一个页面中至少存放两条记录</p>
+</blockquote>
+<p>对于该表，得出的解是n&lt;8099，也就是如果一个列存储的数据小于8099，就不会成为溢出页</p>
+<h3 id="结论">结论</h3>
+<p>如果一条记录的某个列中存储的数据<strong>占用字节数非常多</strong>，导致一个页没有办法存储<strong>两条记录</strong>，该列就可能会成为溢出列</p>
+<h2
+id="dynamic行格式和compressed行格式">DYNAMIC行格式和COMPRESSED行格式</h2>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230421102458108.png"
+alt="image-20230421102458108" />
+<figcaption aria-hidden="true">image-20230421102458108</figcaption>
+</figure>
+<p>这两个与COMPACT行记录挺像，对于处理溢出列的数据有分歧：<br />
+<strong>他们</strong>不会在记录真实处存储真实数据的前768字节，而是把该列所有真实数据都存储到溢出页，只在真实记录处存储20字节（指向溢出页的地址）。COMPRESSED行格式不同于DYNAMIC行格式的一点：COMPRESSED行格式会采用压缩算法对页面进行压缩</p>
+<blockquote>
+<p>MySQL5.7默认使用DYNAMIC行记录</p>
+</blockquote>
+<h2 id="总结">总结</h2>
+<p>REDUNDANT是一个比较原始的行格式，较为紧凑；而COMPACT、DYNAMIC以及COMPRESSED行格式是较新的行格式，它们是紧凑的（占用存储空间更少）</p>
 
     </div>
 
@@ -479,7 +544,7 @@ c2偏移量为0x1A，则c2字节数为0x24-0x1A=36-26=10<br />
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%97%AE%E9%A2%98"><span class="nav-number">1.</span> <span class="nav-text">问题</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#innodb%E9%A1%B5%E7%AE%80%E4%BB%8B"><span class="nav-number">2.</span> <span class="nav-text">InnoDB页简介</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#innodb%E8%A1%8C%E6%A0%BC%E5%BC%8F"><span class="nav-number">3.</span> <span class="nav-text">InnoDB行格式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8C%87%E5%AE%9A%E8%A1%8C%E6%A0%BC%E5%BC%8F%E7%9A%84%E8%AF%AD%E6%B3%95"><span class="nav-number">3.1.</span> <span class="nav-text">指定行格式的语法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#compact%E8%A1%8C%E6%A0%BC%E5%BC%8F"><span class="nav-number">3.2.</span> <span class="nav-text">COMPACT行格式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%A2%9D%E5%A4%96%E4%BF%A1%E6%81%AF"><span class="nav-number">3.2.1.</span> <span class="nav-text">额外信息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%B0%E5%BD%95%E7%9A%84%E7%9C%9F%E5%AE%9E%E6%95%B0%E6%8D%AE"><span class="nav-number">3.2.2.</span> <span class="nav-text">记录的真实数据</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#redundant%E8%A1%8C%E6%A0%BC%E5%BC%8F"><span class="nav-number">3.3.</span> <span class="nav-text">REDUNDANT行格式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AD%97%E6%AE%B5%E9%95%BF%E5%BA%A6%E5%81%8F%E7%A7%BB%E5%88%97%E8%A1%A8"><span class="nav-number">3.3.1.</span> <span class="nav-text">字段长度偏移列表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%B0%E5%BD%95%E5%A4%B4%E4%BF%A1%E6%81%AF"><span class="nav-number">3.3.2.</span> <span class="nav-text">记录头信息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%B0%E5%BD%95%E5%A4%B4%E4%BF%A1%E6%81%AF%E4%B8%AD%E7%9A%841byte_offs_flag%E7%9A%84%E5%80%BC%E6%98%AF%E6%80%8E%E4%B9%88%E9%80%89%E6%8B%A9%E7%9A%84"><span class="nav-number">3.3.3.</span> <span class="nav-text">记录头信息中的1byte_offs_flag的值是怎么选择的</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#redundant%E8%A1%8C%E6%A0%BC%E5%BC%8F%E4%B8%ADnull%E5%80%BC%E7%9A%84%E5%A4%84%E7%90%86"><span class="nav-number">3.3.4.</span> <span class="nav-text">REDUNDANT行格式中NULL值的处理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#charm%E5%88%97%E7%9A%84%E5%AD%98%E5%82%A8%E6%A0%BC%E5%BC%8F"><span class="nav-number">3.3.5.</span> <span class="nav-text">CHAR(m)列的存储格式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%BA%A2%E5%87%BA%E5%88%97"><span class="nav-number">3.3.6.</span> <span class="nav-text">溢出列</span></a></li></ol></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%97%AE%E9%A2%98"><span class="nav-number">1.</span> <span class="nav-text">问题</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#innodb%E9%A1%B5%E7%AE%80%E4%BB%8B"><span class="nav-number">2.</span> <span class="nav-text">InnoDB页简介</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#innodb%E8%A1%8C%E6%A0%BC%E5%BC%8F"><span class="nav-number">3.</span> <span class="nav-text">InnoDB行格式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8C%87%E5%AE%9A%E8%A1%8C%E6%A0%BC%E5%BC%8F%E7%9A%84%E8%AF%AD%E6%B3%95"><span class="nav-number">3.1.</span> <span class="nav-text">指定行格式的语法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#compact%E8%A1%8C%E6%A0%BC%E5%BC%8F"><span class="nav-number">3.2.</span> <span class="nav-text">COMPACT行格式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%A2%9D%E5%A4%96%E4%BF%A1%E6%81%AF"><span class="nav-number">3.2.1.</span> <span class="nav-text">额外信息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%B0%E5%BD%95%E7%9A%84%E7%9C%9F%E5%AE%9E%E6%95%B0%E6%8D%AE"><span class="nav-number">3.2.2.</span> <span class="nav-text">记录的真实数据</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#redundant%E8%A1%8C%E6%A0%BC%E5%BC%8F"><span class="nav-number">3.3.</span> <span class="nav-text">REDUNDANT行格式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AD%97%E6%AE%B5%E9%95%BF%E5%BA%A6%E5%81%8F%E7%A7%BB%E5%88%97%E8%A1%A8"><span class="nav-number">3.3.1.</span> <span class="nav-text">字段长度偏移列表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%B0%E5%BD%95%E5%A4%B4%E4%BF%A1%E6%81%AF"><span class="nav-number">3.3.2.</span> <span class="nav-text">记录头信息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%B0%E5%BD%95%E5%A4%B4%E4%BF%A1%E6%81%AF%E4%B8%AD%E7%9A%841byte_offs_flag%E7%9A%84%E5%80%BC%E6%98%AF%E6%80%8E%E4%B9%88%E9%80%89%E6%8B%A9%E7%9A%84"><span class="nav-number">3.3.3.</span> <span class="nav-text">记录头信息中的1byte_offs_flag的值是怎么选择的</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#redundant%E8%A1%8C%E6%A0%BC%E5%BC%8F%E4%B8%ADnull%E5%80%BC%E7%9A%84%E5%A4%84%E7%90%86"><span class="nav-number">3.3.4.</span> <span class="nav-text">REDUNDANT行格式中NULL值的处理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#charm%E5%88%97%E7%9A%84%E5%AD%98%E5%82%A8%E6%A0%BC%E5%BC%8F"><span class="nav-number">3.3.5.</span> <span class="nav-text">CHAR(m)列的存储格式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%BA%A2%E5%87%BA%E5%88%97"><span class="nav-number">3.4.</span> <span class="nav-text">溢出列</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%BA%A2%E5%87%BA%E5%88%97-1"><span class="nav-number">3.4.1.</span> <span class="nav-text">溢出列</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%A7%E7%94%9F%E6%BA%A2%E5%87%BA%E5%88%97%E7%9A%84%E4%B8%B4%E7%95%8C%E7%82%B9"><span class="nav-number">3.4.2.</span> <span class="nav-text">产生溢出列的临界点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%93%E8%AE%BA"><span class="nav-number">3.4.3.</span> <span class="nav-text">结论</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#dynamic%E8%A1%8C%E6%A0%BC%E5%BC%8F%E5%92%8Ccompressed%E8%A1%8C%E6%A0%BC%E5%BC%8F"><span class="nav-number">3.5.</span> <span class="nav-text">DYNAMIC行格式和COMPRESSED行格式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">3.6.</span> <span class="nav-text">总结</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -554,7 +619,7 @@ c2偏移量为0x1A，则c2字节数为0x24-0x1A=36-26=10<br />
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">43:10</span>
+    <span title="站点阅读时长">43:13</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
