@@ -237,14 +237,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>42</span>
+              <span>3k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
+              <span>5 分钟</span>
             </span>
             <div class="post-description">InnoDB数据页结构</div>
 
@@ -260,9 +260,259 @@
         <blockquote>
 <p>学习《MySQL是怎样运行的》，感谢作者！</p>
 </blockquote>
+<h1 id="不同类型的页简介">不同类型的页简介</h1>
+<p>页是<strong>InnoDB管理存储空间</strong>的基本单位，1个页的大小一般是16KB</p>
 <blockquote>
-<p>本章节涉及实操极少，所以不对详情进行记录。</p>
+<p>InnoDB为了不同目的设计多种不同类型的页，包括<strong>存放表空间头部信息</strong>
+的页、<strong>存放Change Buffer
+信息</strong>的页、<strong>存放INODE信息</strong>的页、<strong>存放undo
+日志信息</strong>的页</p>
 </blockquote>
+<p>这里说的是<strong>存放表中记录</strong>的那种类型的页，这种<strong>存放记录</strong>的页称为<strong>索引页</strong>（INDEX页）</p>
+<blockquote>
+<p>暂时称之为<strong>数据页</strong></p>
+</blockquote>
+<h1 id="数据页结构快览">数据页结构快览</h1>
+<p>1个页有16KB，这部分存储空间被划分为了多个部分（7部分），不同部分有不同的功能<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230421104616950.png"
+alt="image-20230421104616950" /></p>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 36%" />
+<col style="width: 11%" />
+<col style="width: 27%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>名称</th>
+<th>中文名</th>
+<th>占用空间</th>
+<th>大小</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>File Header</td>
+<td>文件头部</td>
+<td>38 字节</td>
+<td>页的一些通用信息</td>
+</tr>
+<tr class="even">
+<td>Page Header</td>
+<td>页面头部</td>
+<td>56 字节</td>
+<td>数据页专有的一些信息</td>
+</tr>
+<tr class="odd">
+<td>Infimum + Supremum</td>
+<td>页面中的最小记录和最大记录</td>
+<td>26 字节</td>
+<td>两个虚拟的记录</td>
+</tr>
+<tr class="even">
+<td>User Records</td>
+<td>用户记录</td>
+<td>不确定</td>
+<td>用户存储的记录内容</td>
+</tr>
+<tr class="odd">
+<td>Free Space</td>
+<td>空闲空间</td>
+<td>不确定</td>
+<td>页中尚未使用的空间</td>
+</tr>
+<tr class="even">
+<td>Page Directory</td>
+<td>页目录</td>
+<td>不确定</td>
+<td>某些记录的相对位置</td>
+</tr>
+<tr class="odd">
+<td>File Trailer</td>
+<td>文件尾部</td>
+<td>8 字节</td>
+<td>校验页是否完整</td>
+</tr>
+</tbody>
+</table>
+<h1 id="记录在页中的存储">记录在页中的存储</h1>
+<p>每插入一条记录，从<strong>Free
+Space</strong>申请一个记录大小的空间，并<strong>将这个空间划分到UserRecords</strong>部分。当FreeSpace部分的空间全部被UserRecords部分替代掉后，意味着该页用完。如果再插入，就需要申请新的页</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230421105227745.png"
+alt="image-20230421105227745" />
+<figcaption aria-hidden="true">image-20230421105227745</figcaption>
+</figure>
+<h2 id="记录头信息的秘密">记录头信息的秘密</h2>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">CREATE TABLE page_demo(</span></span><br><span class="line">    -&gt; c1 INT,</span><br><span class="line">    -&gt; c2 INT,</span><br><span class="line">    -&gt; c3 VARCHAR(10000),</span><br><span class="line">    -&gt; PRIMARY KEY(c1)</span><br><span class="line">    -&gt; ) CHARSET=ascii ROW_FORMAT=COMPACT;</span><br><span class="line">Query OK, 0 rows affected (0.03 sec)</span><br></pre></td></tr></table></figure>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230421105707019.png"
+alt="image-20230421105707019" />
+<figcaption aria-hidden="true">image-20230421105707019</figcaption>
+</figure>
+<table>
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 71%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>名称</th>
+<th>大小（比特）</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>预留位1</td>
+<td>1</td>
+<td>没有使用</td>
+</tr>
+<tr class="even">
+<td>预留位2</td>
+<td>1</td>
+<td>没有使用</td>
+</tr>
+<tr class="odd">
+<td>deleted_flag</td>
+<td>1</td>
+<td>标志该记录是否被删除</td>
+</tr>
+<tr class="even">
+<td>min_rec_flag</td>
+<td>1</td>
+<td>B+ 树中每层非叶子节点中的最小的目录项记录都会添加该标记</td>
+</tr>
+<tr class="odd">
+<td>n_owned</td>
+<td>4</td>
+<td>一个页面中的记录会被分成若干个组，每个组中有一个记录是"带头大哥“，其余的记录都是"小弟"。带头大哥"记录的n_owned值代表该组中所有的记录条数，"小弟"记录的n_owned值都为0</td>
+</tr>
+<tr class="even">
+<td>heap_no</td>
+<td>13</td>
+<td>表示当前记录在页面堆中的相对位置</td>
+</tr>
+<tr class="odd">
+<td>record_type</td>
+<td>3</td>
+<td>表示当前记录的类型，0表示普通记录. 1 表示B+ 树非叶节点的目录项记录.
+2 表示Infimum 记录. 3 表示Supremum 记录</td>
+</tr>
+<tr class="even">
+<td>next_record</td>
+<td>16</td>
+<td>表示下一条记录的相对位置</td>
+</tr>
+</tbody>
+</table>
+<p>简化一下（忽略其他<strong>非讲解</strong>的部分信息）<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230421110425298.png"
+alt="image-20230421110425298" /></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">插入4条记录</span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">INSERT INTO page_demo VALUES(1,100,<span class="string">&#x27;aaaa&#x27;</span>),(2,200,<span class="string">&#x27;bbbb&#x27;</span>),(3,300,<span class="string">&#x27;cccc&#x27;</span>),(4,400,<span class="string">&#x27;dddd&#x27;</span>);</span></span><br><span class="line">Query OK, 4 rows affected (0.01 sec)</span><br><span class="line">Records: 4  Duplicates: 0  Warnings: 0</span><br></pre></td></tr></table></figure>
+<p>UserRecords部分的存储结构<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230421110623788.png"
+alt="image-20230421110623788" /></p>
+<h3 id="deleted_flag">deleted_flag</h3>
+<p>标记当前记录是否删除：0表示没有被删除，1表示记录被删除</p>
+<blockquote>
+<p>被删除的记录不从磁盘溢出，因为移除后还需要在磁盘上<strong>重新排列</strong>其他的记录，带来性能消耗<br />
+被删除掉的记录会组成一个垃圾链表，记录在这个链表中占用的空间称为<strong>可重用空间</strong>，如果之后有新纪录插入到表中，就可能<strong>覆盖掉被删除的记录所占用的存储空间</strong><br />
+delete_flag设置为1和将被删除的记录加入到垃圾链表其实是两个阶段，后面介绍undo日志会详细讲解删除操作的详细执行过程</p>
+</blockquote>
+<h3 id="min_rec_flag">min_rec_flag</h3>
+<p>B+树<strong>每层非叶子节点</strong>中的<strong>最小的目录项记录</strong>都会添加该标记</p>
+<h3 id="n_onwed">n_onwed</h3>
+<h3 id="heap_no">heap_no</h3>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230421140900204.png"
+alt="image-20230421140900204" />
+<figcaption aria-hidden="true">image-20230421140900204</figcaption>
+</figure>
+<ul>
+<li><p><strong>记录一条一条亲密无间排列的结构</strong>称之为<strong>堆（heap）</strong>。把一条记录在堆中的<strong>相对位置</strong>称之为heap_no</p></li>
+<li><p>为了<strong>管理这个堆</strong>，每一条记录在堆中的相对位置称为heap_no。</p></li>
+<li><p>页面前面的记录heap_no比后面的小，且每<strong>新申请一条记录的存储空间</strong>，该条记录比<strong>物理位置在它前面</strong>的那条记录的heap_no大1</p></li>
+<li><p>由上可知，4条记录的heap_no为<strong>2，3，4，5</strong></p></li>
+<li><p>InnoDB的设计者自动给每个页添加了两条记录（称之<strong>伪记录</strong>或<strong>虚拟记录</strong>）。一条代表<strong>页面中</strong>的最小记录（也称<strong>Infimum记录</strong><code>美 [ɪn'faɪməm]</code>），一条代表<strong>页面中</strong>的最大记录（也称<strong>Supremum</strong><code>su'pri: m en</code>)。这两条伪记录也算作堆的一部分</p>
+<p>比较<strong>完整记录</strong>的大小就是<strong>比较主键</strong>的大小</p>
+<blockquote>
+<p>规定，用户的任何记录都比Infimum记录大，比supremum记录小</p>
+</blockquote></li>
+</ul>
+<h4 id="infimum和supremum记录">Infimum和Supremum记录</h4>
+<p>单独放在一个称为<strong>Infimum和Supremum</strong>的部分</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230421144043784.png"
+alt="image-20230421144043784" />
+<figcaption aria-hidden="true">image-20230421144043784</figcaption>
+</figure>
+<p>堆中记录的heap_no值在分配之后就不会发生改动了（即使删除了堆中某条记录）<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230421144426656.png"
+alt="image-20230421144426656" /></p>
+<h3 id="record_type">record_type</h3>
+<p>表示当前记录的<strong>类型</strong>，<strong>0</strong>表示<strong>普通记录</strong>（上面自己插入的记录是），<strong>1</strong>表示<strong>B+树非叶节点的目录项记录</strong>（后面索引会讲到），<strong>2</strong>表示<strong>Infimum记录</strong>，<em>3</em>表示<strong>Supremum</strong>记录</p>
+<h3 id="next_record">next_record</h3>
+<p>表示<strong>从当前记录的真实数据</strong>到<strong>下一条记录的真实数据</strong>的距离</p>
+<blockquote>
+<p>如果该属性值为正数， 说明当前记录的下一条记录在当前记录的后面:
+如果该属性值为负数，说明当前记录的下一条记录在当前记录的前面</p>
+</blockquote>
+<p>下一条记录，指的是按照主键值由小到大的顺序排列的下一条记录<br />
+<strong>Infimum的下一条记录</strong>是<strong>本页中主键值最小的用户记录</strong>，本页中<strong>主键值最大</strong>的用户记录的下一条记录就是<strong>Supremum记录</strong><br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230421151158517.png"
+alt="image-20230421151158517" /></p>
+<p>如上，记录按照<strong>主键从小到大</strong>的顺序形成了一个<strong>单向链表</strong><br />
+Supremum记录的next_record值为0，即没有下一条记录了，如果删除其中一条记录<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230421151634745.png"
+alt="image-20230421151634745" /></p>
+<p>Supremum记录的n_owned由5变成了4<br />
+<strong>InnoDB始终维护记录的一个单向链表，链表中的各个节点是按照主键值由小到大的顺序链接起来的</strong></p>
+<blockquote>
+<p>为啥next_record是指向记录头信息和真实数据之间的位置，而不是整条记录的开头。</p>
+<ol type="1">
+<li>这个位置刚好，向左是<strong>记录头信息</strong>，向右是<strong>真实数据</strong></li>
+<li>由于变长字段长度列表、NULL值列表中的信息都是逆序存放，这样可以使<strong>记录中靠前</strong>的字段和他们对应的字段长度信息在内存中的距离更近，<strong>提高高速缓存命中率</strong></li>
+</ol>
+</blockquote>
+<p>如果第2条记录被重新插入<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230421152138295.png"
+alt="image-20230421152138295" /></p>
+<h1 id="pagedirectory页目录">PageDirectory（页目录）</h1>
+<blockquote>
+<p>直接遍历的话，时间复杂度太高</p>
+</blockquote>
+<p><strong>说明</strong>：<br />
+将所有记录（包括Infimum和Supremum记录，不包括已经<strong>移除到垃圾链表</strong>的记录划分为<strong>几个组</strong></p>
+<p>每个组的最后一条记录（组内最大的那条记录）相当于<strong>带头大哥</strong>，其余记录相当于<strong>小弟</strong>。</p>
+<blockquote>
+<p>带头大哥记录的头信息中的n_owned属性表示改组内共有几条记录</p>
+</blockquote>
+<p><strong>操作</strong>：</p>
+<p>将每个组中最后一条记录在<strong>页面中的地址偏移量</strong>(该记录的<strong>真实数据</strong>与<strong>页面中第0个字节之间的距离</strong>)单独提取出来，按<strong>顺序存储</strong>倒靠近页尾部的地方（这个地方就是PageDirectory）<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230421104616950.png"
+alt="image-20230421104616950" />
+<strong>页目录的偏移地址称为槽(Slot)</strong>，每个槽占用2字节，页目录由多个槽组成</p>
+<blockquote>
+<p>1页有16KB，即</p>
+</blockquote>
+<h1 id="pageheader页面头部">PageHeader（页面头部）</h1>
+<h1 id="fileheader文件头部">FileHeader（文件头部）</h1>
+<h1 id="filetrailer文件尾部">FileTrailer（文件尾部）</h1>
 
     </div>
 
@@ -350,6 +600,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%8D%E5%90%8C%E7%B1%BB%E5%9E%8B%E7%9A%84%E9%A1%B5%E7%AE%80%E4%BB%8B"><span class="nav-number">1.</span> <span class="nav-text">不同类型的页简介</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E9%A1%B5%E7%BB%93%E6%9E%84%E5%BF%AB%E8%A7%88"><span class="nav-number">2.</span> <span class="nav-text">数据页结构快览</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%AE%B0%E5%BD%95%E5%9C%A8%E9%A1%B5%E4%B8%AD%E7%9A%84%E5%AD%98%E5%82%A8"><span class="nav-number">3.</span> <span class="nav-text">记录在页中的存储</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%B0%E5%BD%95%E5%A4%B4%E4%BF%A1%E6%81%AF%E7%9A%84%E7%A7%98%E5%AF%86"><span class="nav-number">3.1.</span> <span class="nav-text">记录头信息的秘密</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#deleted_flag"><span class="nav-number">3.1.1.</span> <span class="nav-text">deleted_flag</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#min_rec_flag"><span class="nav-number">3.1.2.</span> <span class="nav-text">min_rec_flag</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#n_onwed"><span class="nav-number">3.1.3.</span> <span class="nav-text">n_onwed</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#heap_no"><span class="nav-number">3.1.4.</span> <span class="nav-text">heap_no</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#infimum%E5%92%8Csupremum%E8%AE%B0%E5%BD%95"><span class="nav-number">3.1.4.1.</span> <span class="nav-text">Infimum和Supremum记录</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#record_type"><span class="nav-number">3.1.5.</span> <span class="nav-text">record_type</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#next_record"><span class="nav-number">3.1.6.</span> <span class="nav-text">next_record</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#pagedirectory%E9%A1%B5%E7%9B%AE%E5%BD%95"><span class="nav-number">4.</span> <span class="nav-text">PageDirectory（页目录）</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#pageheader%E9%A1%B5%E9%9D%A2%E5%A4%B4%E9%83%A8"><span class="nav-number">5.</span> <span class="nav-text">PageHeader（页面头部）</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#fileheader%E6%96%87%E4%BB%B6%E5%A4%B4%E9%83%A8"><span class="nav-number">6.</span> <span class="nav-text">FileHeader（文件头部）</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#filetrailer%E6%96%87%E4%BB%B6%E5%B0%BE%E9%83%A8"><span class="nav-number">7.</span> <span class="nav-text">FileTrailer（文件尾部）</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -424,7 +675,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">43:13</span>
+    <span title="站点阅读时长">43:18</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
