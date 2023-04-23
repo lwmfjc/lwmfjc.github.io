@@ -237,14 +237,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>7.1k</span>
+              <span>8.3k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>13 分钟</span>
+              <span>15 分钟</span>
             </span>
             <div class="post-description">06B+树索引</div>
 
@@ -604,6 +604,71 @@ x</strong>的记录，而且其中c3列的值还不同，那么就会出现<stro
 我猜是这样的，也是再新分配一个页X，然后对页X页分裂，得到页Y。把根节点此时的所有目录项全复制到页X，然后新插入的目录项记录根据键值分配到页X，或Y，然后根节点又变为<strong>存储目录项记录</strong>的页</p>
 </blockquote>
 <h3 id="内节点中目录项记录的唯一性">内节点中目录项记录的唯一性</h3>
+<p>目前为止，我们说<strong>B+树索引</strong>的<strong>内节点</strong>中，<strong>目录项记录</strong>的内容是<strong>索引列</strong>加<strong>页号</strong>的搭配，但是这个搭配对<strong>二级索引</strong>来说有点儿不太严谨。以下面这个表为例（c1是主键，c2是二级索引）</p>
+<table>
+<thead>
+<tr class="header">
+<th>c1</th>
+<th>c2</th>
+<th>c3</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>1</td>
+<td>'u'</td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td>1</td>
+<td>'d'</td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td>1</td>
+<td>'y'</td>
+</tr>
+<tr class="even">
+<td>7</td>
+<td>1</td>
+<td>'a'</td>
+</tr>
+</tbody>
+</table>
+<p>如果<strong>二级索引</strong>中，目录项记录的内容只是<strong>索引列+页号</strong>的匹配，那么为c2列建立索引后的B+树如下图6-16<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230423232353741.png"
+alt="image-20230423232353741" /></p>
+<p>如果此时再插入一条记录
+c1=9，c2=1，c3='c'，那么在修改为c2列建立的<strong>二级索引</strong>对应的<strong>B+树</strong>时：由于页3中存储的目录项记录由<strong>c2列+页号</strong>构成，页3中两条目录项记录<strong>对应的c2列都是1</strong>，而新插入的这条记录中，c2列也是1，那么这条新插入的记录应该放在页4还是页5？<br />
+为了保证B+树<strong>同一层内节点</strong>的<strong>目录项记录</strong>除了<strong>页号</strong>这个字段以外是<strong>唯一</strong>，所以<strong>二级索引</strong>的<strong>内节点</strong>的<strong>目录项记录</strong>内容实际上由3部分构成：
+<strong>索引列的值</strong>，<strong>主键值</strong>，<strong>页号</strong>
+，如上<strong>图6-17</strong></p>
+<blockquote>
+<p>插入记录（9，1，’c'）时，由于页3 中存储的目录项记录是由<strong>c2
+列</strong>+ <strong>主键</strong>+<strong>页号</strong>构成的，
+因此可以先把<strong>新记录的c2 列</strong>的值和<strong>页3
+中各目录项</strong>记录的c2 列的值进行比较， 如果<strong>c2
+列的值</strong>相同，可以<strong>接着比较主键值</strong>。因为B+
+树<strong>同一层中不同目录项记录</strong>的c2
+列+主键的值肯定是不一样的，所以最后肯定<strong>能定位到唯一的一条目录项记录</strong>。
+在本例中， 最后确定新记录应该插入到页5 中</p>
+</blockquote>
+<p>对于二级索引，先按照<strong>二级索引列</strong>的值进行排序，如果相同，再按照<strong>主键值</strong>进行排序。所以，为c2列建立索引，相当于为（c2，c1）列建立了一个<strong>联合索引</strong>。另外，对于<strong>唯一二级索引</strong>来说（当我们为<strong>某个列</strong>或<strong>列组合</strong>声明<strong>UNIQUE</strong>属性时，便会为这个列或组合建立<strong>唯一索引</strong>），也可能出现多条记录<strong>键值相同</strong>的情况（1.
+声明为UNIQUE的列可能存储多个NULL 2.
+后面要讲的MVCC服务），唯一二级索引的<strong>内节点的目录项记录</strong>也会包含记录的主键值</p>
+<blockquote>
+<p>注意，书上没有讲到<strong>删除的情况</strong>，也就是假设有一种情形：索引值1的行被删了，后面又重新添加了。我的理解是不会出现两条索引值一样的记录在树上（根据前面记录行的delete_flag，有可能重复，但是我猜会覆盖掉，所以这里没讲到那个情况，暂时没找到资料证明）</p>
+</blockquote>
+<h3 id="一个页面至少容纳2条记录">一个页面至少容纳2条记录</h3>
+<p>如果一个<strong>大的目录</strong>中只存放<strong>一个子目录</strong>，那么<strong>目录层级</strong>会非常多，而且最后那个<strong>存放真正数据</strong>的<strong>目录</strong>中只能存放<strong>一条记录</strong><br />
+如果让B+树的<strong>叶子节点只存储一条</strong>记录，让内节点存储多条记录，也还是可以发挥B+树作用的。为了避免B+树的层级增长过高，要求<strong>所有数据页</strong>都<strong>至少可以容纳2条记录</strong>（也就是说，会极力避免因为列值过大、或者过多导致容纳不了2条记录）</p>
+<blockquote>
+<p>InnoDB对列的数量有所限制，而如果在最大限制下，结合04章的结论：<br />
+如果一条记录的某个列中存储的数据<strong>占用字节数非常多</strong>，导致一个页<strong>没有办法</strong>存储<strong>两条记录</strong>，该列就可能会成为溢出列</p>
+</blockquote>
+<h2 id="myisam中的索引方案简介">MyISAM中的索引方案简介</h2>
 
     </div>
 
@@ -691,7 +756,7 @@ x</strong>的记录，而且其中c3列的值还不同，那么就会出现<stro
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A6%82%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%B2%A1%E6%9C%89%E7%B4%A2%E5%BC%95%E6%97%B6%E8%BF%9B%E8%A1%8C%E6%9F%A5%E6%89%BE"><span class="nav-number">2.</span> <span class="nav-text">没有索引时进行查找</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9C%A8%E4%B8%80%E4%B8%AA%E9%A1%B5%E4%B8%AD%E6%9F%A5%E6%89%BE"><span class="nav-number">2.1.</span> <span class="nav-text">在一个页中查找</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9C%A8%E5%BE%88%E5%A4%9A%E9%A1%B5%E4%B8%AD%E6%9F%A5%E6%89%BE"><span class="nav-number">2.2.</span> <span class="nav-text">在很多页中查找</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%B4%A2%E5%BC%95"><span class="nav-number">3.</span> <span class="nav-text">索引</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84%E7%B4%A2%E5%BC%95%E6%96%B9%E6%A1%88"><span class="nav-number">3.1.</span> <span class="nav-text">一个简单的索引方案</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%89%E5%BA%8F"><span class="nav-number">3.1.1.</span> <span class="nav-text">有序</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%99%E6%89%80%E6%9C%89%E7%9A%84%E9%A1%B5%E5%BB%BA%E7%AB%8B%E4%B8%80%E4%B8%AA%E7%9B%AE%E5%BD%95%E9%A1%B9"><span class="nav-number">3.1.2.</span> <span class="nav-text">给所有的页建立一个目录项</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#innodb%E4%B8%AD%E7%9A%84%E7%B4%A2%E5%BC%95%E6%96%B9%E6%A1%88"><span class="nav-number">3.2.</span> <span class="nav-text">InnoDB中的索引方案</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%8A%E8%BF%B0%E6%96%B9%E6%A1%88%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-number">3.2.1.</span> <span class="nav-text">上述方案的问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%B9%E6%A1%88"><span class="nav-number">3.2.2.</span> <span class="nav-text">方案</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BE%E4%BE%8B"><span class="nav-number">3.2.3.</span> <span class="nav-text">举例</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8D%95%E4%B8%AA-%E7%9B%AE%E5%BD%95%E9%A1%B9%E8%AE%B0%E5%BD%95%E9%A1%B5"><span class="nav-number">3.2.3.1.</span> <span class="nav-text">单个 目录项记录页</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A4%9A%E4%B8%AA-%E7%9B%AE%E5%BD%95%E9%A1%B9%E8%AE%B0%E5%BD%95%E7%9A%84%E9%A1%B5"><span class="nav-number">3.2.3.2.</span> <span class="nav-text">多个 目录项记录的页</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A4%9A%E4%B8%AA%E7%9B%AE%E5%BD%95%E9%A1%B9%E8%AE%B0%E5%BD%95%E9%A1%B5"><span class="nav-number">3.3.</span> <span class="nav-text">多个目录项记录页</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%81%9A%E7%B0%87%E7%B4%A2%E5%BC%95"><span class="nav-number">3.3.1.</span> <span class="nav-text">聚簇索引</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%8C%E7%BA%A7%E7%B4%A2%E5%BC%95"><span class="nav-number">3.3.2.</span> <span class="nav-text">二级索引</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%BE%E4%BE%8B-1"><span class="nav-number">3.3.2.1.</span> <span class="nav-text">举例</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%9F%A5%E6%89%BE%E8%BF%87%E7%A8%8B"><span class="nav-number">3.3.2.1.1.</span> <span class="nav-text">查找过程</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%81%94%E5%90%88%E7%B4%A2%E5%BC%95"><span class="nav-number">3.3.3.</span> <span class="nav-text">联合索引</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#inno%E4%B8%ADb%E6%A0%91%E7%B4%A2%E5%BC%95%E7%9A%84%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="nav-number">3.4.</span> <span class="nav-text">Inno中B+树索引的注意事项</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A0%B9%E9%A1%B5%E9%9D%A2%E4%B8%87%E5%B9%B4%E4%B8%8D%E5%8A%A8%E7%AA%9D"><span class="nav-number">3.4.1.</span> <span class="nav-text">根页面万年不动窝</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%86%85%E8%8A%82%E7%82%B9%E4%B8%AD%E7%9B%AE%E5%BD%95%E9%A1%B9%E8%AE%B0%E5%BD%95%E7%9A%84%E5%94%AF%E4%B8%80%E6%80%A7"><span class="nav-number">3.4.2.</span> <span class="nav-text">内节点中目录项记录的唯一性</span></a></li></ol></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A6%82%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%B2%A1%E6%9C%89%E7%B4%A2%E5%BC%95%E6%97%B6%E8%BF%9B%E8%A1%8C%E6%9F%A5%E6%89%BE"><span class="nav-number">2.</span> <span class="nav-text">没有索引时进行查找</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9C%A8%E4%B8%80%E4%B8%AA%E9%A1%B5%E4%B8%AD%E6%9F%A5%E6%89%BE"><span class="nav-number">2.1.</span> <span class="nav-text">在一个页中查找</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9C%A8%E5%BE%88%E5%A4%9A%E9%A1%B5%E4%B8%AD%E6%9F%A5%E6%89%BE"><span class="nav-number">2.2.</span> <span class="nav-text">在很多页中查找</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%B4%A2%E5%BC%95"><span class="nav-number">3.</span> <span class="nav-text">索引</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84%E7%B4%A2%E5%BC%95%E6%96%B9%E6%A1%88"><span class="nav-number">3.1.</span> <span class="nav-text">一个简单的索引方案</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%89%E5%BA%8F"><span class="nav-number">3.1.1.</span> <span class="nav-text">有序</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%99%E6%89%80%E6%9C%89%E7%9A%84%E9%A1%B5%E5%BB%BA%E7%AB%8B%E4%B8%80%E4%B8%AA%E7%9B%AE%E5%BD%95%E9%A1%B9"><span class="nav-number">3.1.2.</span> <span class="nav-text">给所有的页建立一个目录项</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#innodb%E4%B8%AD%E7%9A%84%E7%B4%A2%E5%BC%95%E6%96%B9%E6%A1%88"><span class="nav-number">3.2.</span> <span class="nav-text">InnoDB中的索引方案</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%8A%E8%BF%B0%E6%96%B9%E6%A1%88%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-number">3.2.1.</span> <span class="nav-text">上述方案的问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%B9%E6%A1%88"><span class="nav-number">3.2.2.</span> <span class="nav-text">方案</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BE%E4%BE%8B"><span class="nav-number">3.2.3.</span> <span class="nav-text">举例</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8D%95%E4%B8%AA-%E7%9B%AE%E5%BD%95%E9%A1%B9%E8%AE%B0%E5%BD%95%E9%A1%B5"><span class="nav-number">3.2.3.1.</span> <span class="nav-text">单个 目录项记录页</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A4%9A%E4%B8%AA-%E7%9B%AE%E5%BD%95%E9%A1%B9%E8%AE%B0%E5%BD%95%E7%9A%84%E9%A1%B5"><span class="nav-number">3.2.3.2.</span> <span class="nav-text">多个 目录项记录的页</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A4%9A%E4%B8%AA%E7%9B%AE%E5%BD%95%E9%A1%B9%E8%AE%B0%E5%BD%95%E9%A1%B5"><span class="nav-number">3.3.</span> <span class="nav-text">多个目录项记录页</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%81%9A%E7%B0%87%E7%B4%A2%E5%BC%95"><span class="nav-number">3.3.1.</span> <span class="nav-text">聚簇索引</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%8C%E7%BA%A7%E7%B4%A2%E5%BC%95"><span class="nav-number">3.3.2.</span> <span class="nav-text">二级索引</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%BE%E4%BE%8B-1"><span class="nav-number">3.3.2.1.</span> <span class="nav-text">举例</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%9F%A5%E6%89%BE%E8%BF%87%E7%A8%8B"><span class="nav-number">3.3.2.1.1.</span> <span class="nav-text">查找过程</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%81%94%E5%90%88%E7%B4%A2%E5%BC%95"><span class="nav-number">3.3.3.</span> <span class="nav-text">联合索引</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#inno%E4%B8%ADb%E6%A0%91%E7%B4%A2%E5%BC%95%E7%9A%84%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="nav-number">3.4.</span> <span class="nav-text">Inno中B+树索引的注意事项</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A0%B9%E9%A1%B5%E9%9D%A2%E4%B8%87%E5%B9%B4%E4%B8%8D%E5%8A%A8%E7%AA%9D"><span class="nav-number">3.4.1.</span> <span class="nav-text">根页面万年不动窝</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%86%85%E8%8A%82%E7%82%B9%E4%B8%AD%E7%9B%AE%E5%BD%95%E9%A1%B9%E8%AE%B0%E5%BD%95%E7%9A%84%E5%94%AF%E4%B8%80%E6%80%A7"><span class="nav-number">3.4.2.</span> <span class="nav-text">内节点中目录项记录的唯一性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E4%B8%AA%E9%A1%B5%E9%9D%A2%E8%87%B3%E5%B0%91%E5%AE%B9%E7%BA%B32%E6%9D%A1%E8%AE%B0%E5%BD%95"><span class="nav-number">3.4.3.</span> <span class="nav-text">一个页面至少容纳2条记录</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#myisam%E4%B8%AD%E7%9A%84%E7%B4%A2%E5%BC%95%E6%96%B9%E6%A1%88%E7%AE%80%E4%BB%8B"><span class="nav-number">3.5.</span> <span class="nav-text">MyISAM中的索引方案简介</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -766,7 +831,7 @@ x</strong>的记录，而且其中c3列的值还不同，那么就会出现<stro
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">43:37</span>
+    <span title="站点阅读时长">43:39</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
