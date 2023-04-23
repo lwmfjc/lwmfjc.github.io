@@ -237,14 +237,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>2.6k</span>
+              <span>3.8k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>5 分钟</span>
+              <span>7 分钟</span>
             </span>
             <div class="post-description">06B+树索引</div>
 
@@ -387,8 +387,8 @@ alt="image-20230423122846720" />
 </ul>
 <p><strong>将目录项放到数据页中</strong><br />
 <img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230423124952375.png"
-alt="image-20230423124952375" /></p>
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230423140229838.png"
+alt="image-20230423140229838" /></p>
 <p><strong>新分配了一个编号为30的页来专门存储目录项记录</strong><br />
 <strong>目录项记录</strong>和<strong>普通的用户记录</strong>的不同点</p>
 <ul>
@@ -408,6 +408,70 @@ alt="image-20230423124952375" /></p>
 Directory</strong>（页目录）从而在<strong>按照主键值进行查找</strong>时可以<strong>使用</strong>
 <strong>二分法</strong>来加快查询速度。</p>
 <h3 id="举例">举例</h3>
+<h4 id="单个-目录项记录页">单个 目录项记录页</h4>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230423140327842.png"
+alt="image-20230423140327842" />
+<figcaption aria-hidden="true">image-20230423140327842</figcaption>
+</figure>
+<p>其中，页30中存储的<strong>主键值</strong>分别为<strong>1</strong>，<strong>5</strong>，<strong>12</strong>，<strong>209</strong><br />
+假设我们现在要查找<strong>主键值为20的记录</strong>：</p>
+<ol type="1">
+<li>先到<strong>存储目录项记录的页（这里是页30）</strong>中，（由于有<strong>页目录</strong>）通过二分法<strong>快速</strong>定位到对应的<strong>目录项记录</strong>，因为12&lt;20&lt;209，所以定位到对应的<strong>用户记录</strong>所在的页就是<strong>页9</strong></li>
+<li>再到<strong>存储用户记录</strong>的<strong>页9</strong>中根据<strong>二分法</strong>（<strong>由于有页目录）</strong>）快速定位到<strong>主键值为20</strong>的用户记录</li>
+</ol>
+<p><strong>目录项记录</strong>中只<strong>存储主键值</strong>和<strong>对应的页号</strong>，存储空间极小，但一个页只有16KB，存放的<strong>目录项记录</strong>有限。如果表中数据太多（<strong>页太多</strong>），以至于<strong>一个数据页</strong>不足以存放所有的<strong>目录项记录</strong></p>
+<h4 id="多个-目录项记录的页">多个 目录项记录的页</h4>
+<p>解决方案：<strong>新增一个存储目录项记录的页</strong></p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230423141605646.png"
+alt="image-20230423141605646" />
+<figcaption aria-hidden="true">image-20230423141605646</figcaption>
+</figure>
+<p>此时再进行查找</p>
+<ul>
+<li>确定存储目录项记录的页<br />
+现在<strong>存储目录项记录的页</strong>有2个，即页30和页32。又因为页30表示的目录项<strong>记录主键值</strong>范围是<strong>[1，320)</strong>，页32表示的<strong>目录项记录主键值</strong>范围
+<strong>&gt;
+320</strong>。所以确定主键值为20的记录<strong>对应的目录项记录</strong>在页30中</li>
+<li>按照<strong>单个</strong>
+<strong>目录项记录页</strong>的方案查找</li>
+</ul>
+<h1 id="多个目录项记录页">多个目录项记录页</h1>
+<p>如果数据再增加，则再<strong>生成存储更高级目录项记录</strong>的<strong>数据页</strong><br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230423142254862.png"
+alt="image-20230423142254862" /></p>
+<p>无论是<strong>存放用户记录</strong>的数据页，还是<strong>存放目录项记录</strong>的数据页，都放到B+树数据结构中，我们也将这些<strong>数据页</strong>称为<strong>B+树的节点</strong><br />
+如图，我们真正的<strong>用户记录</strong>其实都存放在B+树<strong>最底层的节点上</strong>，这些节点也称为<strong>叶子节点</strong>或<strong>页节点</strong>，其余用来存放<strong>目录项记录</strong>的节点称为<strong>非叶子节点</strong>或者<strong>内节点</strong>，其中B+树最上边的那个节点也称为<strong>根节点</strong>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230423142809455.png"
+alt="image-20230423142809455" /></p>
+<p>这里我们规定，<strong>最下面</strong>那层（存放<strong>用户记录</strong>的那层）为0层，之后<strong>层级</strong>依次往上加。<br />
+这里我们假设所有存放<strong>用户记录</strong>的<strong>叶子节点</strong>所代表的<strong>数据页</strong>可以存放100条<strong>用户记录</strong>（16KB=16
+* 1024 ≈10000
+字节，差不多一条记录100字节），假设所有存放<strong>目录项记录</strong>的<strong>内节点</strong>所代表的<strong>数据页</strong>可以存放1000条<strong>目录项记录</strong>（10000字节，假设<strong>1个目录项10字节</strong>），那么如果</p>
+<ul>
+<li>如果B+树有1层，那么只有一个用于存放用户记录的节点，那么能存放100条用户记录（1百）</li>
+<li>如果B+树有2层，那么能存放 1000 * 100=100,000条用户记录(10万)</li>
+<li>如果B+树有3层，那么能存放 1000 * 1000 *
+100=100,000,000条用户记录(1亿)</li>
+<li>如果B+树有4层，那么能存放 1000 * 1000 * 1000 *
+100=100,000,000,000条用户记录 (1000亿)</li>
+</ul>
+<p>所以<strong>一般情况</strong>下，我们用到的<strong>B+树不会超过4层</strong>。</p>
+<p>当我们要通过<strong>主键值</strong>查找<strong>某条记录 </strong></p>
+<ul>
+<li><strong>最多只需要进行</strong>4个页面内的查找（查找<strong>3个存储目录项记录</strong>的页和<strong>1个存储用户记录</strong>的页）<br />
+</li>
+<li>每个页面内存在<strong>PageDirectory（页目录）</strong>，所以在页面内<strong>也可以</strong>通过<strong>二分法</strong>快速定位记录</li>
+</ul>
+<blockquote>
+<p>PageHeader中，有一个名为<strong>PAGE_LEVEL</strong>的属性，代表着<strong>这个数据页</strong>作为<strong>节点</strong>在B+树中的层级</p>
+</blockquote>
+<h2 id="聚簇索引">聚簇索引</h2>
 
     </div>
 
@@ -495,7 +559,7 @@ Directory</strong>（页目录）从而在<strong>按照主键值进行查找</s
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A6%82%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%B2%A1%E6%9C%89%E7%B4%A2%E5%BC%95%E6%97%B6%E8%BF%9B%E8%A1%8C%E6%9F%A5%E6%89%BE"><span class="nav-number">2.</span> <span class="nav-text">没有索引时进行查找</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9C%A8%E4%B8%80%E4%B8%AA%E9%A1%B5%E4%B8%AD%E6%9F%A5%E6%89%BE"><span class="nav-number">2.1.</span> <span class="nav-text">在一个页中查找</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9C%A8%E5%BE%88%E5%A4%9A%E9%A1%B5%E4%B8%AD%E6%9F%A5%E6%89%BE"><span class="nav-number">2.2.</span> <span class="nav-text">在很多页中查找</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%B4%A2%E5%BC%95"><span class="nav-number">3.</span> <span class="nav-text">索引</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84%E7%B4%A2%E5%BC%95%E6%96%B9%E6%A1%88"><span class="nav-number">3.1.</span> <span class="nav-text">一个简单的索引方案</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%89%E5%BA%8F"><span class="nav-number">3.1.1.</span> <span class="nav-text">有序</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%99%E6%89%80%E6%9C%89%E7%9A%84%E9%A1%B5%E5%BB%BA%E7%AB%8B%E4%B8%80%E4%B8%AA%E7%9B%AE%E5%BD%95%E9%A1%B9"><span class="nav-number">3.1.2.</span> <span class="nav-text">给所有的页建立一个目录项</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#innodb%E4%B8%AD%E7%9A%84%E7%B4%A2%E5%BC%95%E6%96%B9%E6%A1%88"><span class="nav-number">3.2.</span> <span class="nav-text">InnoDB中的索引方案</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%8A%E8%BF%B0%E6%96%B9%E6%A1%88%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-number">3.2.1.</span> <span class="nav-text">上述方案的问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%B9%E6%A1%88"><span class="nav-number">3.2.2.</span> <span class="nav-text">方案</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BE%E4%BE%8B"><span class="nav-number">3.2.3.</span> <span class="nav-text">举例</span></a></li></ol></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A6%82%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%B2%A1%E6%9C%89%E7%B4%A2%E5%BC%95%E6%97%B6%E8%BF%9B%E8%A1%8C%E6%9F%A5%E6%89%BE"><span class="nav-number">2.</span> <span class="nav-text">没有索引时进行查找</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9C%A8%E4%B8%80%E4%B8%AA%E9%A1%B5%E4%B8%AD%E6%9F%A5%E6%89%BE"><span class="nav-number">2.1.</span> <span class="nav-text">在一个页中查找</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9C%A8%E5%BE%88%E5%A4%9A%E9%A1%B5%E4%B8%AD%E6%9F%A5%E6%89%BE"><span class="nav-number">2.2.</span> <span class="nav-text">在很多页中查找</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%B4%A2%E5%BC%95"><span class="nav-number">3.</span> <span class="nav-text">索引</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84%E7%B4%A2%E5%BC%95%E6%96%B9%E6%A1%88"><span class="nav-number">3.1.</span> <span class="nav-text">一个简单的索引方案</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%89%E5%BA%8F"><span class="nav-number">3.1.1.</span> <span class="nav-text">有序</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%99%E6%89%80%E6%9C%89%E7%9A%84%E9%A1%B5%E5%BB%BA%E7%AB%8B%E4%B8%80%E4%B8%AA%E7%9B%AE%E5%BD%95%E9%A1%B9"><span class="nav-number">3.1.2.</span> <span class="nav-text">给所有的页建立一个目录项</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#innodb%E4%B8%AD%E7%9A%84%E7%B4%A2%E5%BC%95%E6%96%B9%E6%A1%88"><span class="nav-number">3.2.</span> <span class="nav-text">InnoDB中的索引方案</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%8A%E8%BF%B0%E6%96%B9%E6%A1%88%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-number">3.2.1.</span> <span class="nav-text">上述方案的问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%B9%E6%A1%88"><span class="nav-number">3.2.2.</span> <span class="nav-text">方案</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BE%E4%BE%8B"><span class="nav-number">3.2.3.</span> <span class="nav-text">举例</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8D%95%E4%B8%AA-%E7%9B%AE%E5%BD%95%E9%A1%B9%E8%AE%B0%E5%BD%95%E9%A1%B5"><span class="nav-number">3.2.3.1.</span> <span class="nav-text">单个 目录项记录页</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A4%9A%E4%B8%AA-%E7%9B%AE%E5%BD%95%E9%A1%B9%E8%AE%B0%E5%BD%95%E7%9A%84%E9%A1%B5"><span class="nav-number">3.2.3.2.</span> <span class="nav-text">多个 目录项记录的页</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%A4%9A%E4%B8%AA%E7%9B%AE%E5%BD%95%E9%A1%B9%E8%AE%B0%E5%BD%95%E9%A1%B5"><span class="nav-number">4.</span> <span class="nav-text">多个目录项记录页</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%81%9A%E7%B0%87%E7%B4%A2%E5%BC%95"><span class="nav-number">4.1.</span> <span class="nav-text">聚簇索引</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -570,7 +634,7 @@ Directory</strong>（页目录）从而在<strong>按照主键值进行查找</s
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">43:28</span>
+    <span title="站点阅读时长">43:31</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
