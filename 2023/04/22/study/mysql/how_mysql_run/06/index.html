@@ -237,14 +237,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>3.8k</span>
+              <span>4.9k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>7 分钟</span>
+              <span>9 分钟</span>
             </span>
             <div class="post-description">06B+树索引</div>
 
@@ -472,6 +472,48 @@ alt="image-20230423142809455" /></p>
 <p>PageHeader中，有一个名为<strong>PAGE_LEVEL</strong>的属性，代表着<strong>这个数据页</strong>作为<strong>节点</strong>在B+树中的层级</p>
 </blockquote>
 <h2 id="聚簇索引">聚簇索引</h2>
+<p>前面介绍的B+树<strong>本身就是一个记录</strong>，或者说<strong>本身就是一个索引</strong>，有以下两个特点</p>
+<ul>
+<li>使用<strong>记录主键值</strong>的大小进行<strong>记录</strong>和<strong>页</strong>的排序
+<ol type="1">
+<li>页（包括<strong>叶子节点</strong>和<strong>内节点</strong>）内的记录，按照<strong>主键大小</strong>顺序排成一个单向链表，<strong>页内的记录</strong>被划分成<strong>若干个组</strong>，每个组中<strong>主键值最大</strong>的记录在<strong>页内的偏移量</strong>会被当作<strong>槽</strong>一次存放在<strong>页目录中</strong>（Supremum记录比任何用户记录都大）之后可以在<strong>页目录</strong>中通过<strong>二分法</strong>快速定位到<strong>主键列</strong>等于<strong>某个值</strong>的记录</li>
+<li>各个<strong>存放用户记录</strong>的<strong>页</strong>也是根据<strong>页中用户记录</strong>的<strong>主键大小</strong>顺序排成一个<strong>双向链表</strong></li>
+<li>存放<strong>目录项记录</strong>的页分为不同的<strong>层级</strong>，在<strong>同一层级中</strong>也是根据<strong>页目录项记录</strong>的<strong>主键大小</strong>顺序排成一个<strong>双向链表</strong></li>
+</ol></li>
+<li>B+树的<strong>叶子节点</strong>存储的是<strong>完整的用户记录</strong>（指的是<strong>这个记录中存储了所有列的值（包括隐藏列）</strong>）</li>
+</ul>
+<p>具有上面两个特点的<strong>B+树</strong>称为<strong>聚簇索引</strong>。所有<strong>完整的用户记录</strong>都存放在这个<strong>聚簇索引</strong>的<strong>叶子节点</strong>处。这种聚簇索引，不需要我们在MySQL语句中显示使用<strong>INDEX语句</strong>去创建，InnoDB会自动为我们<strong>创建聚簇索引</strong><br />
+<strong>InnoDB存储引擎</strong>中，<strong>聚簇索引</strong>就是<strong>数据的存储方式</strong>（所有的<strong>用户记录</strong>都存储在了<strong>叶子节点</strong>）。<strong>索引即数据，数据即索引</strong></p>
+<h2 id="二级索引">二级索引</h2>
+<p>聚簇索引只能在搜索条件是<strong>主键值</strong>时才发挥作用，如果要以别的列作为搜索条件，可以<strong>多建几颗B+树</strong>，而且不同<strong>B+树</strong>中的数据，采用<strong>不同的排序规则</strong></p>
+<blockquote>
+<p>比如用c2列的大小作为<strong>数据页</strong>、<strong>页中记录</strong>的排序规则，再建一颗B+树</p>
+</blockquote>
+<blockquote>
+<p>"前言：c1已经是主键了"</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">例子</span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">CREATE TABLE index_demo(</span></span><br><span class="line">    -&gt; c1 INT,</span><br><span class="line">    -&gt; c2 INT,</span><br><span class="line">    -&gt; c3 CHAR(1),</span><br><span class="line">    -&gt; PRIMARY KEY(c1)</span><br><span class="line">    -&gt; ) ROW_FORMAT=COMPACT;</span><br></pre></td></tr></table></figure>
+</blockquote>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230423164159110.png"
+alt="image-20230423164159110" />
+<figcaption aria-hidden="true">image-20230423164159110</figcaption>
+</figure>
+<p>下面是聚簇索引特点：<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230423164247987.png"
+alt="image-20230423164247987" /></p>
+<p>二级索引说明：</p>
+<ul>
+<li>使用<strong>记录c2列</strong>的大小进行<strong>记录</strong>和<strong>页</strong>的排序
+<ol type="1">
+<li>页（包括<strong>叶子节点</strong>和<strong>内节点</strong>）内的记录，按照<strong>c2列大小</strong>顺序排成一个单向链表，<strong>页内的记录</strong>被划分成<strong>若干个组</strong>，每个组中<strong>c2列值最大</strong>的记录在<strong>页内的偏移量</strong>会被当作<strong>槽</strong>一次存放在<strong>页目录中</strong>（Supremum记录比任何用户记录都大）之后可以在<strong>页目录</strong>中通过<strong>二分法</strong>快速定位到<strong>c2列值</strong>等于<strong>某个值</strong>的记录</li>
+<li>各个<strong>存放用户记录</strong>的<strong>页</strong>也是根据<strong>页中用户记录</strong>的<strong>c2列大小</strong>顺序排成一个<strong>双向链表</strong></li>
+<li>存放<strong>目录项记录</strong>的页分为不同的<strong>层级</strong>，在<strong>同一层级中</strong>也是根据<strong>页目录项记录</strong>的<strong>c2列大小</strong>顺序排成一个<strong>双向链表</strong></li>
+</ol></li>
+<li>B+树的<strong>叶子节点</strong>存储的是<strong>并不是完整的用户记录</strong>，而只是<strong>c2列+主键</strong>这两个列的值</li>
+<li>目录项记录中不再是<strong>主键+页号</strong>的匹配，而变成了<strong>c2列+页号</strong>的搭配</li>
+</ul>
 
     </div>
 
@@ -559,7 +601,7 @@ alt="image-20230423142809455" /></p>
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A6%82%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%B2%A1%E6%9C%89%E7%B4%A2%E5%BC%95%E6%97%B6%E8%BF%9B%E8%A1%8C%E6%9F%A5%E6%89%BE"><span class="nav-number">2.</span> <span class="nav-text">没有索引时进行查找</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9C%A8%E4%B8%80%E4%B8%AA%E9%A1%B5%E4%B8%AD%E6%9F%A5%E6%89%BE"><span class="nav-number">2.1.</span> <span class="nav-text">在一个页中查找</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9C%A8%E5%BE%88%E5%A4%9A%E9%A1%B5%E4%B8%AD%E6%9F%A5%E6%89%BE"><span class="nav-number">2.2.</span> <span class="nav-text">在很多页中查找</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%B4%A2%E5%BC%95"><span class="nav-number">3.</span> <span class="nav-text">索引</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84%E7%B4%A2%E5%BC%95%E6%96%B9%E6%A1%88"><span class="nav-number">3.1.</span> <span class="nav-text">一个简单的索引方案</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%89%E5%BA%8F"><span class="nav-number">3.1.1.</span> <span class="nav-text">有序</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%99%E6%89%80%E6%9C%89%E7%9A%84%E9%A1%B5%E5%BB%BA%E7%AB%8B%E4%B8%80%E4%B8%AA%E7%9B%AE%E5%BD%95%E9%A1%B9"><span class="nav-number">3.1.2.</span> <span class="nav-text">给所有的页建立一个目录项</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#innodb%E4%B8%AD%E7%9A%84%E7%B4%A2%E5%BC%95%E6%96%B9%E6%A1%88"><span class="nav-number">3.2.</span> <span class="nav-text">InnoDB中的索引方案</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%8A%E8%BF%B0%E6%96%B9%E6%A1%88%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-number">3.2.1.</span> <span class="nav-text">上述方案的问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%B9%E6%A1%88"><span class="nav-number">3.2.2.</span> <span class="nav-text">方案</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BE%E4%BE%8B"><span class="nav-number">3.2.3.</span> <span class="nav-text">举例</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8D%95%E4%B8%AA-%E7%9B%AE%E5%BD%95%E9%A1%B9%E8%AE%B0%E5%BD%95%E9%A1%B5"><span class="nav-number">3.2.3.1.</span> <span class="nav-text">单个 目录项记录页</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A4%9A%E4%B8%AA-%E7%9B%AE%E5%BD%95%E9%A1%B9%E8%AE%B0%E5%BD%95%E7%9A%84%E9%A1%B5"><span class="nav-number">3.2.3.2.</span> <span class="nav-text">多个 目录项记录的页</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%A4%9A%E4%B8%AA%E7%9B%AE%E5%BD%95%E9%A1%B9%E8%AE%B0%E5%BD%95%E9%A1%B5"><span class="nav-number">4.</span> <span class="nav-text">多个目录项记录页</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%81%9A%E7%B0%87%E7%B4%A2%E5%BC%95"><span class="nav-number">4.1.</span> <span class="nav-text">聚簇索引</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A6%82%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%B2%A1%E6%9C%89%E7%B4%A2%E5%BC%95%E6%97%B6%E8%BF%9B%E8%A1%8C%E6%9F%A5%E6%89%BE"><span class="nav-number">2.</span> <span class="nav-text">没有索引时进行查找</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9C%A8%E4%B8%80%E4%B8%AA%E9%A1%B5%E4%B8%AD%E6%9F%A5%E6%89%BE"><span class="nav-number">2.1.</span> <span class="nav-text">在一个页中查找</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9C%A8%E5%BE%88%E5%A4%9A%E9%A1%B5%E4%B8%AD%E6%9F%A5%E6%89%BE"><span class="nav-number">2.2.</span> <span class="nav-text">在很多页中查找</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%B4%A2%E5%BC%95"><span class="nav-number">3.</span> <span class="nav-text">索引</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84%E7%B4%A2%E5%BC%95%E6%96%B9%E6%A1%88"><span class="nav-number">3.1.</span> <span class="nav-text">一个简单的索引方案</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%89%E5%BA%8F"><span class="nav-number">3.1.1.</span> <span class="nav-text">有序</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%99%E6%89%80%E6%9C%89%E7%9A%84%E9%A1%B5%E5%BB%BA%E7%AB%8B%E4%B8%80%E4%B8%AA%E7%9B%AE%E5%BD%95%E9%A1%B9"><span class="nav-number">3.1.2.</span> <span class="nav-text">给所有的页建立一个目录项</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#innodb%E4%B8%AD%E7%9A%84%E7%B4%A2%E5%BC%95%E6%96%B9%E6%A1%88"><span class="nav-number">3.2.</span> <span class="nav-text">InnoDB中的索引方案</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%8A%E8%BF%B0%E6%96%B9%E6%A1%88%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-number">3.2.1.</span> <span class="nav-text">上述方案的问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%B9%E6%A1%88"><span class="nav-number">3.2.2.</span> <span class="nav-text">方案</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BE%E4%BE%8B"><span class="nav-number">3.2.3.</span> <span class="nav-text">举例</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8D%95%E4%B8%AA-%E7%9B%AE%E5%BD%95%E9%A1%B9%E8%AE%B0%E5%BD%95%E9%A1%B5"><span class="nav-number">3.2.3.1.</span> <span class="nav-text">单个 目录项记录页</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A4%9A%E4%B8%AA-%E7%9B%AE%E5%BD%95%E9%A1%B9%E8%AE%B0%E5%BD%95%E7%9A%84%E9%A1%B5"><span class="nav-number">3.2.3.2.</span> <span class="nav-text">多个 目录项记录的页</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%A4%9A%E4%B8%AA%E7%9B%AE%E5%BD%95%E9%A1%B9%E8%AE%B0%E5%BD%95%E9%A1%B5"><span class="nav-number">4.</span> <span class="nav-text">多个目录项记录页</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%81%9A%E7%B0%87%E7%B4%A2%E5%BC%95"><span class="nav-number">4.1.</span> <span class="nav-text">聚簇索引</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E7%BA%A7%E7%B4%A2%E5%BC%95"><span class="nav-number">4.2.</span> <span class="nav-text">二级索引</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -634,7 +676,7 @@ alt="image-20230423142809455" /></p>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">43:31</span>
+    <span title="站点阅读时长">43:33</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
