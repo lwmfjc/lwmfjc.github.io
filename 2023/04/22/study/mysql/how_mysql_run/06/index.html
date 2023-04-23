@@ -237,14 +237,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>677</span>
+              <span>2k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
+              <span>4 分钟</span>
             </span>
             <div class="post-description">06B+树索引</div>
 
@@ -291,6 +291,92 @@ alt="image-20230422205909858" />
 不过由于要<strong>遍历所有页</strong>，所以超级<strong>耗时</strong></p>
 <h1 id="索引">索引</h1>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">例子</span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">CREATE TABLE index_demo(</span></span><br><span class="line">    -&gt; c1 INT,</span><br><span class="line">    -&gt; c2 INT,</span><br><span class="line">    -&gt; c3 CHAR(1),</span><br><span class="line">    -&gt; PRIMARY KEY(c1)</span><br><span class="line">    -&gt; ) ROW_FORMAT=COMPACT;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>完整的行格式</p>
+</blockquote>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230423113811933.png"
+alt="image-20230423113811933" />
+<figcaption aria-hidden="true">image-20230423113811933</figcaption>
+</figure>
+<p>简化的行格式<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230423111720338.png"
+alt="image-20230423111720338" /></p>
+<ul>
+<li>record_type：<strong>记录头信息</strong>的一项属性，表示<strong>记录的类型</strong>。0：普通记录，2：Infimum记录，3：Supremum记录，1还没用过等会再说</li>
+<li>next_record：<strong>记录头信息</strong>的一项属性，表示从当前记录的<strong>真实数据</strong>到<strong>下一条记录真实数据</strong>的距离</li>
+<li>各个列的值：这里只展示在index_demo表中的<strong>3个列</strong>，分别是c1、c2、c3</li>
+<li>其他信息：包括<strong>隐藏列</strong>及<strong>记录的额外信息</strong></li>
+</ul>
+<p>改为竖着查看：<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230423114517255.png"
+alt="image-20230423114517255" /></p>
+<blockquote>
+<p>上面图6-4的箭头其实有一点点出入，应该是指向z真实数据第1列那个位置，如下
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230423114716300.png"
+alt="image-20230423114716300" /></p>
+</blockquote>
+<h2 id="一个简单的索引方案">一个简单的索引方案</h2>
+<p>思考：在<strong>根据某个条件</strong>查找一些记录，为什么要<strong>遍历所有</strong>的<strong>数据页</strong>呢？因为各个<strong>页</strong>中的记录没有规律，不知道<strong>搜索条件会匹配哪些页</strong><br />
+思路：为<strong>快速定位</strong>记录所在的<strong>数据页</strong>而建立一个别的目录</p>
+<h3 id="有序">有序</h3>
+<p>下一个数据页中<strong>用户记录</strong>的<strong>主键值</strong>必须大于上一页<strong>用户记录</strong>的<strong>主键值</strong><br />
+假设一页只能存放3条记录</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">插入3条记录</span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">INSERT INTO index_demo VALUES(1,4,<span class="string">&#x27;u&#x27;</span>),(3,9,<span class="string">&#x27;d&#x27;</span>),(5,3,<span class="string">&#x27;y&#x27;</span>);</span></span><br><span class="line">Query OK, 3 rows affected (0.02 sec)</span><br><span class="line">Records: 3  Duplicates: 0  Warnings: 0</span><br></pre></td></tr></table></figure>
+<p>此时页的情况<br />
+<strong>记录组成了单链表</strong><br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230423120232629.png"
+alt="image-20230423120232629" /></p>
+<p>再<strong>插入一条记录</strong></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">INSERT INTO index_demo VALUES(4,4,<span class="string">&#x27;a&#x27;</span>);</span></span><br><span class="line">Query OK, 1 row affected (0.01 sec)</span><br></pre></td></tr></table></figure>
+<p>(注意，页之间可能<strong>不是连续</strong>的)</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230423120335929.png"
+alt="image-20230423120335929" />
+<figcaption aria-hidden="true">image-20230423120335929</figcaption>
+</figure>
+<p>由于页10中<strong>最大记录</strong>是<strong>5</strong>，而页28中有一条记录是<strong>4</strong>，因为5&gt;4，不符合<strong>下一个数据页中用户记录的主键值</strong>必须<strong>大于上一页中用户记录的主键值</strong>，所以在<strong>插入主键值为4的记录时需要伴随着一次记录移动</strong>，也就是把5的记录移动到<strong>页28</strong>中，再把<strong>主键值4</strong>的记录<strong>插入到页10中</strong><br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230423122233694.png"
+alt="image-20230423122233694" /></p>
+<p>这个过程表明，在对页中的记录进行<strong>增删改</strong>操作的过程中，我们必须通过一些诸如<strong>记录移动</strong>的操作来始终保证这个状态一直成立：<strong>下一个数据页中用户记录的主键值必须大于上一个页中用户记录的主键值</strong>。这个过程也可以称为<strong>页分裂</strong>。</p>
+<h3 id="给所有的页建立一个目录项">给所有的页建立一个目录项</h3>
+<p>前提：index_demo表中有多条记录的效果<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230423122443198.png"
+alt="image-20230423122443198" /></p>
+<p>1页有16KB，这些页在磁盘上可能并不连续，<strong>要想从这么多页中</strong>根据<strong>主键值</strong>快速定位<strong>某些记录所在的页</strong>，需要给他们编制一个<strong>目录</strong>，每个页对应一个<strong>目录项</strong>，每个目录项包括<strong>两部分</strong>：</p>
+<ul>
+<li>页的<strong>用户记录</strong>中<strong>最小的主键值</strong>，用<strong>key</strong>表示</li>
+<li>页号，<strong>page_no</strong>表示</li>
+</ul>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230423122846720.png"
+alt="image-20230423122846720" />
+<figcaption aria-hidden="true">image-20230423122846720</figcaption>
+</figure>
+<p>假设我们此时把<strong>目录项</strong>在<strong>物理存储器上连续存储</strong>，比如放到数组中，此时就可以<strong>根据主键值</strong>快速查找<strong>某条记录</strong></p>
+<ol type="1">
+<li><p>先用二分法快速定位主键20的记录在<strong>目录项3中</strong>（因为<strong>12&lt;20&lt;209</strong>)，对应页是9</p></li>
+<li><p>根据前面说的方式在<strong>页9中</strong>定位具体记录</p>
+<blockquote>
+<p>先在<strong>页目录</strong>中二分查找，找到对应的组后<strong>沿链表遍历</strong></p>
+</blockquote></li>
+</ol>
+<p>这个目录项的别名：<strong>索引</strong></p>
+<h2 id="innodb中的索引方案">InnoDB中的索引方案</h2>
+<h3 id="上述方案的问题">上述方案的问题</h3>
+<ul>
+<li>InnoDB使用页作为<strong>管理存储空间</strong>的基本单位，即<strong>只能保证16KB</strong>的<strong>连续存储空间</strong>，如果记录非常多，则需要的<strong>连续存储空间</strong>就<strong>非常大</strong></li>
+<li><strong>增删改</strong>是</li>
+</ul>
 
     </div>
 
@@ -378,7 +464,7 @@ alt="image-20230422205909858" />
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A6%82%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%B2%A1%E6%9C%89%E7%B4%A2%E5%BC%95%E6%97%B6%E8%BF%9B%E8%A1%8C%E6%9F%A5%E6%89%BE"><span class="nav-number">2.</span> <span class="nav-text">没有索引时进行查找</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9C%A8%E4%B8%80%E4%B8%AA%E9%A1%B5%E4%B8%AD%E6%9F%A5%E6%89%BE"><span class="nav-number">2.1.</span> <span class="nav-text">在一个页中查找</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9C%A8%E5%BE%88%E5%A4%9A%E9%A1%B5%E4%B8%AD%E6%9F%A5%E6%89%BE"><span class="nav-number">2.2.</span> <span class="nav-text">在很多页中查找</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%B4%A2%E5%BC%95"><span class="nav-number">3.</span> <span class="nav-text">索引</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A6%82%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%B2%A1%E6%9C%89%E7%B4%A2%E5%BC%95%E6%97%B6%E8%BF%9B%E8%A1%8C%E6%9F%A5%E6%89%BE"><span class="nav-number">2.</span> <span class="nav-text">没有索引时进行查找</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9C%A8%E4%B8%80%E4%B8%AA%E9%A1%B5%E4%B8%AD%E6%9F%A5%E6%89%BE"><span class="nav-number">2.1.</span> <span class="nav-text">在一个页中查找</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9C%A8%E5%BE%88%E5%A4%9A%E9%A1%B5%E4%B8%AD%E6%9F%A5%E6%89%BE"><span class="nav-number">2.2.</span> <span class="nav-text">在很多页中查找</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%B4%A2%E5%BC%95"><span class="nav-number">3.</span> <span class="nav-text">索引</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84%E7%B4%A2%E5%BC%95%E6%96%B9%E6%A1%88"><span class="nav-number">3.1.</span> <span class="nav-text">一个简单的索引方案</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%89%E5%BA%8F"><span class="nav-number">3.1.1.</span> <span class="nav-text">有序</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%99%E6%89%80%E6%9C%89%E7%9A%84%E9%A1%B5%E5%BB%BA%E7%AB%8B%E4%B8%80%E4%B8%AA%E7%9B%AE%E5%BD%95%E9%A1%B9"><span class="nav-number">3.1.2.</span> <span class="nav-text">给所有的页建立一个目录项</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#innodb%E4%B8%AD%E7%9A%84%E7%B4%A2%E5%BC%95%E6%96%B9%E6%A1%88"><span class="nav-number">3.2.</span> <span class="nav-text">InnoDB中的索引方案</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%8A%E8%BF%B0%E6%96%B9%E6%A1%88%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-number">3.2.1.</span> <span class="nav-text">上述方案的问题</span></a></li></ol></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -453,7 +539,7 @@ alt="image-20230422205909858" />
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">43:25</span>
+    <span title="站点阅读时长">43:27</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
