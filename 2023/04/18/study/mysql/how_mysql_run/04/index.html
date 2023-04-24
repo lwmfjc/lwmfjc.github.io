@@ -237,7 +237,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>4.9k</span>
+              <span>4.8k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -287,7 +287,7 @@ compressed [kəmˈprest] 压缩的</p>
 <p>CREATE TABLE 表名(列的信息) ROW_FORMAT=行格式名称<br />
 ALTER TABLE 表名 ROW_FORMATE=行格式名称<br />
 如下，在数据库xiaohaizi下创建一个表</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">CREATE TABLE record_format_demo(</span><br><span class="line">    -&gt; c1 VARCHAR(10),</span><br><span class="line">    -&gt; c2 VARCHAR(10) NOT NULL,</span><br><span class="line">    -&gt; c3 CHAR(10),</span><br><span class="line">    -&gt; c4 VARCHAR(10)</span><br><span class="line">    -&gt; ) CHARSET=ascii ROW_FORMAT=COMPACT;  </span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">回顾：ascii每个字符1字节即可表示，且只有空格标点数字字母不可见字符</span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">插入两条数据</span></span><br><span class="line">INSERT INTO record_format_demo(c1,c2,c3,c4) VALUES(&#x27;aaaa&#x27;,&#x27;bbb&#x27;,&#x27;cc&#x27;,&#x27;d&#x27;),(&#x27;eeee&#x27;,&#x27;fff&#x27;,NULL,NULL);</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">CREATE TABLE record_format_demo(</span><br><span class="line">      c1 VARCHAR(10),</span><br><span class="line">      c2 VARCHAR(10) NOT NULL,</span><br><span class="line">      c3 CHAR(10),</span><br><span class="line">      c4 VARCHAR(10)</span><br><span class="line">      ) CHARSET=ascii ROW_FORMAT=COMPACT;  </span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">回顾：ascii每个字符1字节即可表示，且只有空格标点数字字母不可见字符</span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">插入两条数据</span></span><br><span class="line">INSERT INTO record_format_demo(c1,c2,c3,c4) VALUES(&#x27;aaaa&#x27;,&#x27;bbb&#x27;,&#x27;cc&#x27;,&#x27;d&#x27;),(&#x27;eeee&#x27;,&#x27;fff&#x27;,NULL,NULL);</span><br></pre></td></tr></table></figure>
 <p>查询</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">查询</span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">SELECT * FROM record_format_demo;</span></span><br><span class="line">+------+-----+------+------+</span><br><span class="line">| c1   | c2  | c3   | c4   |</span><br><span class="line">+------+-----+------+------+</span><br><span class="line">| aaaa | bbb | cc   | d    |</span><br><span class="line">| eeee | fff | NULL | NULL |</span><br><span class="line">+------+-----+------+------+</span><br><span class="line">2 rows in set (0.01 sec)</span><br></pre></td></tr></table></figure>
 <h2 id="compact行格式">COMPACT行格式</h2>
@@ -393,7 +393,7 @@ c2偏移量为0x1A，则c2字节数为0x24-0x1A=36-26=10<br />
 <p>COMPACT中，当定长类型CHAR(M)的字符集的每个字符占用字节不固定时，才会记录CHAR列的长度；而REDUNDANT行格式中，该列<strong>真实数据</strong>占用的存储空间大小，就是该字符集<strong>表示一个字符最多需要的字节数</strong>和<strong>M</strong>的乘积：utf8的CHAR(10)类型的列，<strong>真实数据占用存储空间大小</strong>始终为30字节；使用gbk字符集的CHAR(10)，始终20字节</p>
 <h2 id="溢出列">溢出列</h2>
 <h3 id="溢出列-1">溢出列</h3>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">举例</span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">CREATE TABLE off_page_demo(</span></span><br><span class="line">    -&gt; c VARCHAR(65532)</span><br><span class="line">    -&gt; ) CHARSET=ascii ROW_FORMAT=COMPACT;</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">插入一条数据</span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">INSERT INTO off_page_demo(c) VALUES(REPEAT(<span class="string">&#x27;a&#x27;</span>,65532));</span></span><br><span class="line">Query OK, 1 row affected (0.06 sec)</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">举例</span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">CREATE TABLE off_page_demo(</span></span><br><span class="line">      c VARCHAR(65532)</span><br><span class="line">      ) CHARSET=ascii ROW_FORMAT=COMPACT;</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">插入一条数据</span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">INSERT INTO off_page_demo(c) VALUES(REPEAT(<span class="string">&#x27;a&#x27;</span>,65532));</span></span><br><span class="line">Query OK, 1 row affected (0.06 sec)</span><br></pre></td></tr></table></figure>
 <blockquote>
 <p>ascii字符集中1字符占用1字节，REPEAT('a',65532)生成一个把字符'a'重复65532次数的字符串</p>
 </blockquote>
@@ -423,8 +423,8 @@ alt="image-20230421100649877" /><br />
 每个记录需要<strong>27字节</strong>，包括</p>
 <blockquote>
 <p>针对下面的表<br />
-mysql&gt; CREATE TABLE off_page_demo( -&gt; c VARCHAR(65532) -&gt; )
-CHARSET=ascii ROW_FORMAT=COMPACT;</p>
+mysql&gt; CREATE TABLE off_page_demo( c VARCHAR(65532) ) CHARSET=ascii
+ROW_FORMAT=COMPACT;</p>
 <p><strong>注意，是COMPACT行格式</strong></p>
 </blockquote>
 <p><strong>对于每一行记录</strong><br />

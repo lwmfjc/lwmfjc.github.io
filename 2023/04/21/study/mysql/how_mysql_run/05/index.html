@@ -347,7 +347,7 @@ alt="image-20230421105227745" />
 <figcaption aria-hidden="true">image-20230421105227745</figcaption>
 </figure>
 <h2 id="记录头信息的秘密">记录头信息的秘密</h2>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">CREATE TABLE page_demo(</span></span><br><span class="line">    -&gt; c1 INT,</span><br><span class="line">    -&gt; c2 INT,</span><br><span class="line">    -&gt; c3 VARCHAR(10000),</span><br><span class="line">    -&gt; PRIMARY KEY(c1)</span><br><span class="line">    -&gt; ) CHARSET=ascii ROW_FORMAT=COMPACT;</span><br><span class="line">Query OK, 0 rows affected (0.03 sec)</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">CREATE TABLE page_demo(</span></span><br><span class="line">      c1 INT,</span><br><span class="line">      c2 INT,</span><br><span class="line">      c3 VARCHAR(10000),</span><br><span class="line">      PRIMARY KEY(c1)</span><br><span class="line">      ) CHARSET=ascii ROW_FORMAT=COMPACT;</span><br><span class="line">Query OK, 0 rows affected (0.03 sec)</span><br></pre></td></tr></table></figure>
 <figure>
 <img
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230421105707019.png"
@@ -550,7 +550,8 @@ alt="image-20230422135251596" /></p></li>
 <li>(0+4)/2=2，槽2代表的主键值8&gt;6，所以high=2,low不变=0</li>
 <li>(0+2)/2=1，槽1代表的主键值4&lt;6，所以low=1,high不变=2</li>
 <li>high-low=1，又因为槽记录的是最大值，所以不在槽1中，而是在槽2中<br />
-沿着单项列表遍历槽2中的记录：如何遍历，先找到槽1的地址，然后它的下一条记录就是槽2中的最小记录-&gt;值为5，从值5的记录出发遍历即可（<strong>由于一个组中包含的记录条数最多是8，所以代价极小</strong></li>
+沿着单项列表遍历槽2中的记录：如何遍历，先找到槽1的地址，然后它的下一条记录就是槽2中的最小记录
+值为5，从值5的记录出发遍历即可（<strong>由于一个组中包含的记录条数最多是8，所以代价极小</strong></li>
 </ol>
 </blockquote></li>
 <li><p>总结<br />
@@ -651,7 +652,7 @@ FREE 表示该<strong>链表头节点</strong>对应记录在页面中的偏移�
 </tr>
 </tbody>
 </table>
-<p>PAGE_N_DlR SLOTS --&gt;PAGE_N_RECS
+<p>PAGE_N_DlR SLOTS - PAGE_N_RECS
 的作用应该是清除的，这里有两个解释一下：<br />
 PAGE_DIRECTION：加入<strong>新插入</strong>的一条记录的主键值比<strong>上一条</strong>记录的主键值大，我们说<strong>这条记录的插入方向是右边，反之则是左边</strong>。用来表示<strong>最后一条记录插入方向</strong>的状态就是PAGE_DIRECTION<br />
 PAGE_N_DIRECTION：假设连续插入新记录的方向都是一致，InnoDB会把沿着<strong>同一个方向插入记录的条数记下来</strong>，用PAGE_N_DIRECTION表示。如果<strong>最后一条记录</strong>的插入方向发生了改变，这个状态的值<strong>会被清零后重新统计</strong></p>
