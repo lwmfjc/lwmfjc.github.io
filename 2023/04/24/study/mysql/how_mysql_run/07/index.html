@@ -237,14 +237,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>1.1k</span>
+              <span>1.8k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>2 分钟</span>
+              <span>3 分钟</span>
             </span>
             <div class="post-description">07B+数索引的使用</div>
 
@@ -290,6 +290,57 @@ c3)</strong>，那么该索引中的页面和记录就<strong>先按照c2
 </blockquote>
 <h1 id="b树索引示意图的简化">B+树索引示意图的简化</h1>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">创建新表</span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">CREATE TABLE single_table(</span></span><br><span class="line">      id INT NOT NULL AUTO_INCREMENT,</span><br><span class="line">      key1 VARCHAR(100),</span><br><span class="line">      key2 INT,</span><br><span class="line">      key3 VARCHAR(100),</span><br><span class="line">      key_part1 VARCHAR(100),</span><br><span class="line">      key_part2 VARCHAR(100),</span><br><span class="line">      key_part3 VARCHAR(100),</span><br><span class="line">      common_field VARCHAR(100),</span><br><span class="line">      PRIMARY KEY (id),</span><br><span class="line">      KEY idx_key1(key1),</span><br><span class="line">      UNIQUE KEY uk_key2(key2),</span><br><span class="line">      KEY idx_key3(key3),</span><br><span class="line">      KEY idx_key_part(key_part1,key_part2,key_part3)</span><br><span class="line">      ) Engine=InnoDB CHARSET = utf8;</span><br></pre></td></tr></table></figure>
+<p>如上，建立了<strong>1个聚簇索引</strong>，<strong>4个二级索引</strong></p>
+<ul>
+<li>为id列建立的聚簇索引</li>
+<li>为key1列建立的idx_key1二级索引</li>
+<li>为key2列建立的uk_key2二级索引，而且该索引是<strong>唯一二级索引</strong></li>
+<li>为key3列建立的idx_key3二级索引</li>
+<li>为key_part1、key_part2、key_part3列建立的<strong>idx_key_part二级索引</strong>，是一个<strong>联合索引</strong></li>
+</ul>
+<p>接下来为这个表<strong>插入10,000行记录</strong><br />
+<strong>除了id，其余的列取随机值</strong>：该表后面会频繁用到</p>
+<blockquote>
+<p>需要用程序写，这里暂时跳过（不会...，书上也没写）</p>
+</blockquote>
+<p>回顾：B+树包括<strong>内节点</strong>和<strong>叶子节点</strong>，以及<strong>各个节点中的记录</strong>。B+树其实是一个<strong>矮矮的大胖子</strong>，能够<strong>利用B+树快速地定位记录</strong>，下面简化一下B+树的示意图：</p>
+<ul>
+<li>忽略<strong>页结构</strong>，直接把所有<strong>叶子节点中的记录</strong>放一起</li>
+<li><strong>为了方便</strong>，把<strong>聚簇索引叶子节点</strong>的记录称为<strong>聚簇索引记录</strong>，把<strong>二级索引叶子节点</strong>称为<strong>二级索引记录</strong></li>
+</ul>
+<blockquote>
+<p><strong>回顾一下</strong>：</p>
+<p>核心要点：把<strong>下一层</strong>每一页的<strong>最小值</strong>，放到<strong>上一级</strong>的<strong>目录项记录</strong>，以<strong>key值+页号</strong>这样的组合存在</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230423142254862.png"
+alt="image-20230423142254862" />
+<figcaption aria-hidden="true">image-20230423142254862</figcaption>
+</figure>
+</blockquote>
+<p><strong>精简</strong>：</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230424224802689.png"
+alt="image-20230424224802689" />
+<figcaption aria-hidden="true">image-20230424224802689</figcaption>
+</figure>
+<p>如上，<strong>聚簇索引</strong>记录是按照<strong>主键值</strong>由小到大的<strong>顺序排列</strong>的<br />
+如下图，通过B+树<strong>定位到id值为1438</strong>的记录<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230424231409778.png"
+alt="image-20230424231409778" /></p>
+<p><strong>二级索引idx_key1</strong>对应的B+树中<strong>保留了叶子结点的记录</strong>。以key1排序，如果key1相同，则按照id列排序<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230424231612980.png"
+alt="image-20230424231612980" /></p>
+<blockquote>
+<p><strong>为了方便</strong>，把<strong>聚簇索引叶子节点</strong>的记录称为<strong>聚簇索引记录</strong>，把<strong>二级索引叶子节点</strong>称为<strong>二级索引记录</strong></p>
+</blockquote>
+<p>如果要查找<strong>key1值</strong>等于<strong>某个值</strong>的<strong>二级索引</strong>记录，通过<strong>idx_key1</strong>对应的B+树，可以很容易定位到第一条<strong>key1列的值</strong>等于<strong>某个值</strong>的二级索引记录，然后<strong>沿着单向链表</strong>向后扫描即可。<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230424234609722.png"
+alt="image-20230424234609722" /></p>
 <h1 id="索引的代价">索引的代价</h1>
 <h1 id="应用b树索引">应用B+树索引</h1>
 <h1 id="回表的代价">回表的代价</h1>
@@ -456,7 +507,7 @@ c3)</strong>，那么该索引中的页面和记录就<strong>先按照c2
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">43:44</span>
+    <span title="站点阅读时长">43:46</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
