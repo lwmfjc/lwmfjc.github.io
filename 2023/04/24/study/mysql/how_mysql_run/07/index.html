@@ -237,14 +237,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>1.8k</span>
+              <span>2.2k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>3 分钟</span>
+              <span>4 分钟</span>
             </span>
             <div class="post-description">07B+数索引的使用</div>
 
@@ -342,8 +342,22 @@ alt="image-20230424231612980" /></p>
 src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230424234609722.png"
 alt="image-20230424234609722" /></p>
 <h1 id="索引的代价">索引的代价</h1>
+<h2 id="空间上的代价">空间上的代价</h2>
+<p>每建立<strong>一个索引</strong>，都要为他建立<strong>一颗</strong>B+树。每<strong>一颗B+树</strong>的每一个节点都是<strong>一个数据页</strong>（一个数据页默认占用16KB），而一颗<strong>很大</strong>的B+树由许多数据页组成，这将占用很大的片存储空间</p>
+<h2 id="时间上的代价">时间上的代价</h2>
+<ul>
+<li>每当对表中数据进行<strong>增上改查</strong>时，都要<strong>修改各个B+树</strong>索引</li>
+<li>执行<strong>查询语句</strong>前，都要生成一个<strong>执行计划</strong>。一般情况下，<strong>一条查询语句</strong>在执行过程中<strong>最多用到一个二级索引</strong>（有例外，10章），在生成执行计划时需要<strong>计算</strong>使用<strong>不同索引</strong>执行查询时所需要的<strong>成本</strong>，最后选取<strong>成本最低</strong>的那个索引执行查询（12章：<strong>如何计算查询成本</strong>）==&gt;
+索引太多导致<strong>分析时间过长</strong></li>
+</ul>
+<h2 id="总结">总结</h2>
+<p>索引越多，存储空间越多，<strong>增删改</strong>记录或者<strong>生成执行计划时</strong>性能越差<br />
+为了建立<strong>又好又少</strong>的索引，得先了解<strong>索引</strong>在<strong>查询执行期间</strong>到底是如何发挥作用的</p>
 <h1 id="应用b树索引">应用B+树索引</h1>
-<h1 id="回表的代价">回表的代价</h1>
+<h2 id="扫描区间和边界条件">扫描区间和边界条件</h2>
+<h2 id="索引用于排序">索引用于排序</h2>
+<h2 id="索引用于分组">索引用于分组</h2>
+<h2 id="回表的代价">回表的代价</h2>
 <h1 id="更好地创建和使用索引">更好地创建和使用索引</h1>
 
     </div>
@@ -435,7 +449,7 @@ alt="image-20230424234609722" /></p>
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#innodb%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E%E7%9A%84b%E6%A0%91%E7%B4%A2%E5%BC%95%E7%BB%93%E8%AE%BA"><span class="nav-number">1.</span> <span class="nav-text">InnoDB存储引擎的B+树索引：结论</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#b%E6%A0%91%E7%B4%A2%E5%BC%95%E7%A4%BA%E6%84%8F%E5%9B%BE%E7%9A%84%E7%AE%80%E5%8C%96"><span class="nav-number">2.</span> <span class="nav-text">B+树索引示意图的简化</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%B4%A2%E5%BC%95%E7%9A%84%E4%BB%A3%E4%BB%B7"><span class="nav-number">3.</span> <span class="nav-text">索引的代价</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%BA%94%E7%94%A8b%E6%A0%91%E7%B4%A2%E5%BC%95"><span class="nav-number">4.</span> <span class="nav-text">应用B+树索引</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9B%9E%E8%A1%A8%E7%9A%84%E4%BB%A3%E4%BB%B7"><span class="nav-number">5.</span> <span class="nav-text">回表的代价</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%9B%B4%E5%A5%BD%E5%9C%B0%E5%88%9B%E5%BB%BA%E5%92%8C%E4%BD%BF%E7%94%A8%E7%B4%A2%E5%BC%95"><span class="nav-number">6.</span> <span class="nav-text">更好地创建和使用索引</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#innodb%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E%E7%9A%84b%E6%A0%91%E7%B4%A2%E5%BC%95%E7%BB%93%E8%AE%BA"><span class="nav-number">1.</span> <span class="nav-text">InnoDB存储引擎的B+树索引：结论</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#b%E6%A0%91%E7%B4%A2%E5%BC%95%E7%A4%BA%E6%84%8F%E5%9B%BE%E7%9A%84%E7%AE%80%E5%8C%96"><span class="nav-number">2.</span> <span class="nav-text">B+树索引示意图的简化</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%B4%A2%E5%BC%95%E7%9A%84%E4%BB%A3%E4%BB%B7"><span class="nav-number">3.</span> <span class="nav-text">索引的代价</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A9%BA%E9%97%B4%E4%B8%8A%E7%9A%84%E4%BB%A3%E4%BB%B7"><span class="nav-number">3.1.</span> <span class="nav-text">空间上的代价</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%97%B6%E9%97%B4%E4%B8%8A%E7%9A%84%E4%BB%A3%E4%BB%B7"><span class="nav-number">3.2.</span> <span class="nav-text">时间上的代价</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">3.3.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%BA%94%E7%94%A8b%E6%A0%91%E7%B4%A2%E5%BC%95"><span class="nav-number">4.</span> <span class="nav-text">应用B+树索引</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%89%AB%E6%8F%8F%E5%8C%BA%E9%97%B4%E5%92%8C%E8%BE%B9%E7%95%8C%E6%9D%A1%E4%BB%B6"><span class="nav-number">4.1.</span> <span class="nav-text">扫描区间和边界条件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B4%A2%E5%BC%95%E7%94%A8%E4%BA%8E%E6%8E%92%E5%BA%8F"><span class="nav-number">4.2.</span> <span class="nav-text">索引用于排序</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B4%A2%E5%BC%95%E7%94%A8%E4%BA%8E%E5%88%86%E7%BB%84"><span class="nav-number">4.3.</span> <span class="nav-text">索引用于分组</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9E%E8%A1%A8%E7%9A%84%E4%BB%A3%E4%BB%B7"><span class="nav-number">4.4.</span> <span class="nav-text">回表的代价</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%9B%B4%E5%A5%BD%E5%9C%B0%E5%88%9B%E5%BB%BA%E5%92%8C%E4%BD%BF%E7%94%A8%E7%B4%A2%E5%BC%95"><span class="nav-number">5.</span> <span class="nav-text">更好地创建和使用索引</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -510,7 +524,7 @@ alt="image-20230424234609722" /></p>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">43:48</span>
+    <span title="站点阅读时长">43:49</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
