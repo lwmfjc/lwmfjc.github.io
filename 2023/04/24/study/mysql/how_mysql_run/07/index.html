@@ -237,14 +237,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>3.9k</span>
+              <span>6k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>7 分钟</span>
+              <span>11 分钟</span>
             </span>
             <div class="post-description">07B+数索引的使用</div>
 
@@ -362,7 +362,8 @@ alt="image-20230424234609722" /></p>
 </blockquote>
 <h2 id="扫描区间和边界条件">扫描区间和边界条件</h2>
 <p>可以利用<strong>B+树</strong>查找<strong>索引值</strong>等于某个值的记录=&gt;<strong>减少</strong>需要扫描的记录<strong>数量</strong>。由于*B+树叶子节点中的记录是按照<strong>索引列值由小到大</strong>的顺序排序的，所以<strong>只</strong>扫描<strong>某个区间</strong>或者<strong>某些区间</strong>中的记录也可以明显<strong>减少</strong>需要扫描的记录数量。</p>
-<h3 id="例子1聚簇索引">例子1（聚簇索引）</h3>
+<h3 id="简单例子">简单例子</h3>
+<h4 id="例子1聚簇索引">例子1（聚簇索引）</h4>
 <p>例子：<code>SELECT * FROM single_table WHERE id&gt;=2 AND id &lt;=100</code><br />
 这个语句其实是要找id值在<strong>[2,100]</strong>区间中的所有<strong>聚簇索引</strong>记录。</p>
 <ul>
@@ -378,7 +379,7 @@ alt="image-20230424234609722" /></p>
 </ul>
 <p>对于<strong>全表扫描</strong>来说，相当于扫描id在<strong>(-∞,+∞)</strong>
 区间中的记录，也就是说<strong>全表扫描</strong>对应的<strong>扫描区间</strong>是<strong>(-∞,+∞)</strong></p>
-<h3 id="例子2二级索引">例子2（二级索引）</h3>
+<h4 id="例子2二级索引">例子2（二级索引）</h4>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">SELECT * FROM single_table WHERE key2 IN (1438,6328 ) OR (key2 &gt;=38 AND key2 &lt;=79)</span><br></pre></td></tr></table></figure>
 <p>可以直接使用<strong>全表扫描</strong>的方式执行该查询。<br />
 但是我们发现该查询的<strong>搜索条件</strong>涉及<strong>key2列</strong>，而我们又正好为<strong>key2列</strong>建立了<strong>uk_key2索引</strong>。如果使用<strong>uk_key2索引</strong>执行这个查询，则相当于从下面的3个<strong>扫描区间</strong>中<strong>获取二级索引记录</strong>：</p>
@@ -420,9 +421,97 @@ alt="image-20230427224703784" /></p>
 则<strong>不考虑使用这个索引</strong>执行查询</li>
 </ul>
 </blockquote>
-<h3 id="例3-不是索引的搜索条件都可以称为边界条件">例3
-不是索引的搜索条件都可以称为边界条件</h3>
+<h4 id="例3-不是索引的搜索条件都可以成为边界条件">例3
+不是索引的搜索条件都可以成为边界条件</h4>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">SELECT * FROM single_table WHERE key1 &lt; &#x27;a&#x27; AND key3 &gt; &#x27;z&#x27; AND common_field = &#x27;abc&#x27;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>如果使用<strong>idx_key1</strong>
+执行查询，那么相应的<strong>扫描区间</strong>就是(-∞,'a')，形成该<strong>扫描区间</strong>的<strong>边界条件</strong>就是key1
+&lt; 'a'。而 key3 &gt; 'z' AND common_field =
+'abc'就是普通的搜索条件，这些普通的搜索条件需要在获取到<strong>idx_key1</strong>的<strong>二级索引记录</strong>后，再执行<strong>回表操作</strong>，在获取到<strong>完整的用户记录</strong>后才能去判断它们是否成立</li>
+<li>而如果使用idx_key3
+执行查询，那么相应的<strong>扫描区间</strong>就是'z'，形成该<strong>扫描区间</strong>的<strong>边界条件</strong>就是key3&gt;'z'。而key1&lt;'a'
+AND
+common_field='abc'就是<strong>普通</strong>的搜索条件，这些普通的搜索条件需要在获取到<strong>idx_key3</strong>的二级索引记录后，再<strong>执行回表操作</strong>，在获取到完整的<strong>用户记录</strong>后才能去判断它们是否成立</li>
+</ul>
+<h4 id="总结-1">总结</h4>
+<p>在使用某个索引执行查询时，<strong>关键</strong>的问题就是通过<strong>搜索条件</strong>找出合适的扫描区间，然后再到对应的<strong>B+
+树</strong>中<strong>扫描索引列值在这些扫描区间</strong>的记录。对于每个扫描区间来说，仅需要<strong>通过B+
+树</strong>定位到该<strong>扫描区间中的第一条记录</strong>，然后就可以<strong>沿着记录所在的单向链表向后扫描</strong>，<strong>直到某条记录不符合形成该扫描区间的边界条件</strong>为止。其实对于B+
+树索引来说，只要<strong>索引列</strong>和<strong>常数</strong>使用<strong>=、&lt;=&gt;、lN、NOT
+IN、IS NULL、IS NOT NULL、&gt; 、&lt;、=、&lt;=、BETWEEN 、! =
+(也可以写成&lt; &gt;)或者LIKE
+操作符</strong>连接起来，就可以产生所谓的<strong>扫描区间</strong>。不过有下面几点需要注意：</p>
+<ul>
+<li><p><strong>lN</strong>操作符的语义与<strong>若干个等值匹配操作符(
+=)之间用OR
+连接</strong>起来的语义是一样的，都会产生<strong>多个单点扫描区间</strong>。比如下面这两个语句的语义效果是一样的：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">SELECT * FROM single_table WHERE key2 IN (1438,6328);</span><br><span class="line">#与上面的语义效果一样</span><br><span class="line">SELECT * FROM single_table WHERE key2 = 1438 OR key2 = 6328</span><br></pre></td></tr></table></figure></li>
+<li><p>!= 产生的扫描区间比较有趣，如：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">SELECT * FROM single_table key1 != &#x27;a&#x27;;</span><br></pre></td></tr></table></figure>
+<p>此时idx_key1执行查询时对应的<strong>扫描区间</strong>就是(-∞,'a')
+和('a',+∞)</p></li>
+<li><p>LIKE操作符比较特殊，只有在<strong>匹配完整的字符串</strong>或者<strong>匹配字符串前缀</strong>时才产生合适的扫描区间<br />
+比较<strong>字符串</strong>的大小，其实就相当于<strong>一次比较每个字符的大小</strong>。<strong>字符串的比较过程</strong>如下所示：</p>
+<ol type="1">
+<li>先比较字符串的<strong>第一个</strong>字符：第一个字符小的那个字符串就比较小</li>
+<li>如果两个字符串的<strong>第一个字符相同</strong>，再比较<strong>第二个字符</strong>；第二个字符比较小的那个字符串就比较小</li>
+<li>如果两个字符串的<strong>前两个字符</strong>都相同，那么就接着比较<strong>第三个字符</strong>：依此类推</li>
+</ol>
+<p>对于<strong>某个索引列</strong>来说，<strong>字符串前缀相同的记录</strong>在<strong>由记录组成的单向链表中</strong>肯定是<strong>相邻的</strong>。</p>
+<blockquote>
+<p>比如我们有一个搜索条件是key1 LIKE 'a%'。 对于二级索引
+<strong>idx_key1</strong>
+来说，<strong>所有字符串前缀为'a'的二级索引记录肯定是相邻的</strong>。这也就意味着我们只要定位
+<strong>key1</strong> 值的字符串<strong>前缀为'a'</strong>
+的<strong>第一条</strong>记录，就可以沿着记录所在的单向链表向后扫描，
+<strong>直到</strong>某条二级索引记录的<strong>字符串前缀不为'a'</strong>
+为止，如图7-7 所示。很显然 <strong>key1 LIKE 'a%'</strong>
+形成的扫描区间相当于<strong>['a','b')</strong><br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230428211918975.png"
+alt="image-20230428211918975" /></p>
+</blockquote></li>
+</ul>
+<h3 id="稍复杂例子">稍复杂例子</h3>
+<p>日常工作中，一个查询语句中的<strong>WHERE子句</strong>可能有<strong>多个小的搜索条件</strong>，这些搜索条件使用<strong>AND
+或者OR</strong>
+操作符连接起来。虽然大家都知道这两个操作符的作用，但这里还是要再强调一遍：</p>
+<ul>
+<li><strong>cond1 AND cond</strong>2
+只有当<strong>cond1和cond2都为TRUE</strong> 时，整个表达式才为TRUE</li>
+<li><strong>cond1 OR cond2</strong> ， 只要<strong>cond1
+或者cond2</strong> 中<strong>有一个为TRUE</strong>，
+整个表达式就为TRUE</li>
+</ul>
+<p>在我们执行一个查询语句时，首先需要找出<strong>所有可用的索引</strong>以及<strong>使用它们时对应的扫描区间</strong>。下面我们来看一下怎么从包含<strong>若干个AND
+或OR</strong>
+的复杂搜索条件中<strong>提取出正确的扫描区间</strong>：</p>
+<h4
+id="所有搜索条件都可以生成合适的扫描区间的情况">所有搜索条件都可以生成合适的扫描区间的情况</h4>
+<h5 id="and结合">AND结合</h5>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">SELECT * FROM single_table WHERE key2 &gt; 100 AND key2 &gt; 200;</span><br></pre></td></tr></table></figure>
+<p>其中，<strong>每个小的搜索条件</strong>都可以生成一个合适的扫描区间来<strong>减少需要扫描的记录数量</strong>，最终的扫描区间就是对<strong>这两个小的搜索条件</strong>形成的<strong>扫描区间取交集</strong>后的结果，取交集的过程：<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230428214210971.png"
+alt="image-20230428214210971" /></p>
+<p>上面查询语句使用<strong>uk_key2</strong>索引执行查询时对应的扫描区间就是<strong>(200,+∞)</strong>，形成该扫描区间的<strong>边界条件</strong>就是<strong>key2
+&gt; 200</strong></p>
+<h5 id="or结合">OR结合</h5>
+<p>使用<strong>OR</strong>操作符将<strong>多个搜索条件连接在一起</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">SELECT * FROM single_table WHERE key2 &gt; 100 OR key2 &gt; 200</span><br></pre></td></tr></table></figure>
+<p>OR意味着需要取<strong>各个扫描区间的并集</strong>，取并集的过程如图所示：<br />
+<img
+src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230428214539243.png"
+alt="image-20230428214539243" /></p>
+<p>即，上面的查询语句在使用<strong>uk_key2</strong>索引执行查询时，对应的扫描区间就是<strong>(100,+∞)，</strong>形成扫描区间的<strong>边界条件</strong>就是<strong>key2
+&gt; 100</strong></p>
+<h4
+id="有的搜索条件不能生成合适的扫描区间的情况">有的搜索条件不能生成合适的扫描区间的情况</h4>
+<h4
+id="从复杂的搜索条件中找出扫描区间">从复杂的搜索条件中找出扫描区间</h4>
+<h4
+id="使用联合索引执行查询时对应的扫描区间">使用联合索引执行查询时对应的扫描区间</h4>
 <h2 id="索引用于排序">索引用于排序</h2>
 <h2 id="索引用于分组">索引用于分组</h2>
 <h2 id="回表的代价">回表的代价</h2>
@@ -517,8 +606,8 @@ alt="image-20230427224703784" /></p>
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#innodb%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E%E7%9A%84b%E6%A0%91%E7%B4%A2%E5%BC%95%E7%BB%93%E8%AE%BA"><span class="nav-number">1.</span> <span class="nav-text">InnoDB存储引擎的B+树索引：结论</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#b%E6%A0%91%E7%B4%A2%E5%BC%95%E7%A4%BA%E6%84%8F%E5%9B%BE%E7%9A%84%E7%AE%80%E5%8C%96"><span class="nav-number">2.</span> <span class="nav-text">B+树索引示意图的简化</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%B4%A2%E5%BC%95%E7%9A%84%E4%BB%A3%E4%BB%B7"><span class="nav-number">3.</span> <span class="nav-text">索引的代价</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A9%BA%E9%97%B4%E4%B8%8A%E7%9A%84%E4%BB%A3%E4%BB%B7"><span class="nav-number">3.1.</span> <span class="nav-text">空间上的代价</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%97%B6%E9%97%B4%E4%B8%8A%E7%9A%84%E4%BB%A3%E4%BB%B7"><span class="nav-number">3.2.</span> <span class="nav-text">时间上的代价</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">3.3.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%BA%94%E7%94%A8b%E6%A0%91%E7%B4%A2%E5%BC%95"><span class="nav-number">4.</span> <span class="nav-text">应用B+树索引</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%89%AB%E6%8F%8F%E5%8C%BA%E9%97%B4%E5%92%8C%E8%BE%B9%E7%95%8C%E6%9D%A1%E4%BB%B6"><span class="nav-number">4.1.</span> <span class="nav-text">扫描区间和边界条件</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BE%8B%E5%AD%901%E8%81%9A%E7%B0%87%E7%B4%A2%E5%BC%95"><span class="nav-number">4.1.1.</span> <span class="nav-text">例子1（聚簇索引）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BE%8B%E5%AD%902%E4%BA%8C%E7%BA%A7%E7%B4%A2%E5%BC%95"><span class="nav-number">4.1.2.</span> <span class="nav-text">例子2（二级索引）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BE%8B3-%E4%B8%8D%E6%98%AF%E7%B4%A2%E5%BC%95%E7%9A%84%E6%90%9C%E7%B4%A2%E6%9D%A1%E4%BB%B6%E9%83%BD%E5%8F%AF%E4%BB%A5%E7%A7%B0%E4%B8%BA%E8%BE%B9%E7%95%8C%E6%9D%A1%E4%BB%B6"><span class="nav-number">4.1.3.</span> <span class="nav-text">例3
-不是索引的搜索条件都可以称为边界条件</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B4%A2%E5%BC%95%E7%94%A8%E4%BA%8E%E6%8E%92%E5%BA%8F"><span class="nav-number">4.2.</span> <span class="nav-text">索引用于排序</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B4%A2%E5%BC%95%E7%94%A8%E4%BA%8E%E5%88%86%E7%BB%84"><span class="nav-number">4.3.</span> <span class="nav-text">索引用于分组</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9E%E8%A1%A8%E7%9A%84%E4%BB%A3%E4%BB%B7"><span class="nav-number">4.4.</span> <span class="nav-text">回表的代价</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%9B%B4%E5%A5%BD%E5%9C%B0%E5%88%9B%E5%BB%BA%E5%92%8C%E4%BD%BF%E7%94%A8%E7%B4%A2%E5%BC%95"><span class="nav-number">5.</span> <span class="nav-text">更好地创建和使用索引</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#innodb%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E%E7%9A%84b%E6%A0%91%E7%B4%A2%E5%BC%95%E7%BB%93%E8%AE%BA"><span class="nav-number">1.</span> <span class="nav-text">InnoDB存储引擎的B+树索引：结论</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#b%E6%A0%91%E7%B4%A2%E5%BC%95%E7%A4%BA%E6%84%8F%E5%9B%BE%E7%9A%84%E7%AE%80%E5%8C%96"><span class="nav-number">2.</span> <span class="nav-text">B+树索引示意图的简化</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%B4%A2%E5%BC%95%E7%9A%84%E4%BB%A3%E4%BB%B7"><span class="nav-number">3.</span> <span class="nav-text">索引的代价</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A9%BA%E9%97%B4%E4%B8%8A%E7%9A%84%E4%BB%A3%E4%BB%B7"><span class="nav-number">3.1.</span> <span class="nav-text">空间上的代价</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%97%B6%E9%97%B4%E4%B8%8A%E7%9A%84%E4%BB%A3%E4%BB%B7"><span class="nav-number">3.2.</span> <span class="nav-text">时间上的代价</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">3.3.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%BA%94%E7%94%A8b%E6%A0%91%E7%B4%A2%E5%BC%95"><span class="nav-number">4.</span> <span class="nav-text">应用B+树索引</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%89%AB%E6%8F%8F%E5%8C%BA%E9%97%B4%E5%92%8C%E8%BE%B9%E7%95%8C%E6%9D%A1%E4%BB%B6"><span class="nav-number">4.1.</span> <span class="nav-text">扫描区间和边界条件</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AE%80%E5%8D%95%E4%BE%8B%E5%AD%90"><span class="nav-number">4.1.1.</span> <span class="nav-text">简单例子</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BE%8B%E5%AD%901%E8%81%9A%E7%B0%87%E7%B4%A2%E5%BC%95"><span class="nav-number">4.1.1.1.</span> <span class="nav-text">例子1（聚簇索引）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BE%8B%E5%AD%902%E4%BA%8C%E7%BA%A7%E7%B4%A2%E5%BC%95"><span class="nav-number">4.1.1.2.</span> <span class="nav-text">例子2（二级索引）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BE%8B3-%E4%B8%8D%E6%98%AF%E7%B4%A2%E5%BC%95%E7%9A%84%E6%90%9C%E7%B4%A2%E6%9D%A1%E4%BB%B6%E9%83%BD%E5%8F%AF%E4%BB%A5%E6%88%90%E4%B8%BA%E8%BE%B9%E7%95%8C%E6%9D%A1%E4%BB%B6"><span class="nav-number">4.1.1.3.</span> <span class="nav-text">例3
+不是索引的搜索条件都可以成为边界条件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%80%BB%E7%BB%93-1"><span class="nav-number">4.1.1.4.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A8%8D%E5%A4%8D%E6%9D%82%E4%BE%8B%E5%AD%90"><span class="nav-number">4.1.2.</span> <span class="nav-text">稍复杂例子</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%89%80%E6%9C%89%E6%90%9C%E7%B4%A2%E6%9D%A1%E4%BB%B6%E9%83%BD%E5%8F%AF%E4%BB%A5%E7%94%9F%E6%88%90%E5%90%88%E9%80%82%E7%9A%84%E6%89%AB%E6%8F%8F%E5%8C%BA%E9%97%B4%E7%9A%84%E6%83%85%E5%86%B5"><span class="nav-number">4.1.2.1.</span> <span class="nav-text">所有搜索条件都可以生成合适的扫描区间的情况</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#and%E7%BB%93%E5%90%88"><span class="nav-number">4.1.2.1.1.</span> <span class="nav-text">AND结合</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#or%E7%BB%93%E5%90%88"><span class="nav-number">4.1.2.1.2.</span> <span class="nav-text">OR结合</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9C%89%E7%9A%84%E6%90%9C%E7%B4%A2%E6%9D%A1%E4%BB%B6%E4%B8%8D%E8%83%BD%E7%94%9F%E6%88%90%E5%90%88%E9%80%82%E7%9A%84%E6%89%AB%E6%8F%8F%E5%8C%BA%E9%97%B4%E7%9A%84%E6%83%85%E5%86%B5"><span class="nav-number">4.1.2.2.</span> <span class="nav-text">有的搜索条件不能生成合适的扫描区间的情况</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BB%8E%E5%A4%8D%E6%9D%82%E7%9A%84%E6%90%9C%E7%B4%A2%E6%9D%A1%E4%BB%B6%E4%B8%AD%E6%89%BE%E5%87%BA%E6%89%AB%E6%8F%8F%E5%8C%BA%E9%97%B4"><span class="nav-number">4.1.2.3.</span> <span class="nav-text">从复杂的搜索条件中找出扫描区间</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E8%81%94%E5%90%88%E7%B4%A2%E5%BC%95%E6%89%A7%E8%A1%8C%E6%9F%A5%E8%AF%A2%E6%97%B6%E5%AF%B9%E5%BA%94%E7%9A%84%E6%89%AB%E6%8F%8F%E5%8C%BA%E9%97%B4"><span class="nav-number">4.1.2.4.</span> <span class="nav-text">使用联合索引执行查询时对应的扫描区间</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B4%A2%E5%BC%95%E7%94%A8%E4%BA%8E%E6%8E%92%E5%BA%8F"><span class="nav-number">4.2.</span> <span class="nav-text">索引用于排序</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B4%A2%E5%BC%95%E7%94%A8%E4%BA%8E%E5%88%86%E7%BB%84"><span class="nav-number">4.3.</span> <span class="nav-text">索引用于分组</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9E%E8%A1%A8%E7%9A%84%E4%BB%A3%E4%BB%B7"><span class="nav-number">4.4.</span> <span class="nav-text">回表的代价</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%9B%B4%E5%A5%BD%E5%9C%B0%E5%88%9B%E5%BB%BA%E5%92%8C%E4%BD%BF%E7%94%A8%E7%B4%A2%E5%BC%95"><span class="nav-number">5.</span> <span class="nav-text">更好地创建和使用索引</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -593,7 +682,7 @@ alt="image-20230427224703784" /></p>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">43:52</span>
+    <span title="站点阅读时长">43:56</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
