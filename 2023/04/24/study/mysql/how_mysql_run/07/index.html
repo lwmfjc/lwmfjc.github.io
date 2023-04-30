@@ -237,14 +237,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>20k</span>
+              <span>22k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>36 分钟</span>
+              <span>40 分钟</span>
             </span>
             <div class="post-description">07B+数索引的使用</div>
 
@@ -917,13 +917,69 @@ id="只为用于搜索排序或分组的列创建索引">只为用于搜索、�
 可以将更多的记录加载到内存中</strong>) 读写效率也就越高
 这个建议对于表的主键来说更加适用，因为<strong>不仅聚簇索引会存储主键</strong>值，<strong>其他所有的二级索引的节点</strong>都会存储一份记录的主键值。如果主键使用更小的数据类型，也就意味着能<strong>节省更多的存储空间</strong></p>
 <h2 id="为列前缀建立索引">为列前缀建立索引</h2>
+<p>我们知道，一个字符串其实是由若干个字符组成的。如果在MySQL 中使用utf8
+字符集存储字符串，则需要1 - 3
+字节来编码一个字符。假如字符串很长，那么在<strong>存储这个字符串时就需要占用很大的存储空间</strong>。在需要为这个字符串所在的列建立索引时，就意味着在对应的B+
+树中的记录中，
+需要把<strong>该列的完整字符串存储起来</strong>。<strong>字符串越长，在索引中占用的存储空间越大</strong>。
+前文说过，
+<strong>索引列的字符串前缀其实也是排好序的</strong>，所以索引的设计人员提出了一个方案。
+<strong>只将字符串的前几个字符存放到索引</strong>中，也就是说在二级索引的记录中<strong>只保留字符串的前几个</strong>字符。比如我们可以这样修改idx_key1索引，让索引中只保留字符串的前10个字符:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ALTER TABLE single_table DROP INDEX idx_key1;</span><br><span class="line">ALTER TABLE single_table ADD INDEX idx_key1(key1(10));</span><br></pre></td></tr></table></figure>
+<p>再执行下面的语句</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">SELECT * FROM single_table WHERE key1= &#x27;abcdefghijklmn&#x27;</span><br></pre></td></tr></table></figure>
+<p>由于在idx_key1 的二级索引记录中<strong>只保留字符串的前10
+个字符</strong>，所以我们<strong>只能定位到前缀为'abcdefghij'
+的二级索引</strong>记录，在扫描<strong>这些</strong>二级索引记录时再判断它们是否满足key1='abcdefghijklmn'
+条件。当<strong>列中存储的字符串包含的字符较多</strong>时，这种为列前缀建立索引的方式可以明显减少索引大小。</p>
+<blockquote>
+<ol type="1">
+<li>注意，上面说的是<strong>扫描这些二级索引记录</strong>，是“些”。</li>
+<li>可以减少索引大小，但<strong>不一样减少索引数量</strong>。如果有重复的照样会在索引中出现，因为不是UNIQUE约束。二级索引值大小相同时，会按照<strong>聚簇索引</strong>大小排列</li>
+</ol>
+</blockquote>
+<p>不过，在只对列前缀建立索引的情况下，
+下面这个查询语句就不能使用索引来完成排序需求了：
+<code>SELECT  * FROM single_table ORDER BY key1 LIMIT 10;</code></p>
+<blockquote>
+<p>因为二级索引idx_key1中不包含完整的key1列信息，所以在仅使用idx_key1索引执行查询时，<strong>无法对key1
+列前10
+个字符相同但其余字符不同的记录进行排序</strong>。也就是说，<strong>只为列前缀建立索引的方式无法支持使用索引进行排序</strong>的需求。上述查询语句只好乖乖地使用<strong>全表扫描+文件排序</strong>的方式来执行了。</p>
+</blockquote>
+<p>只为列前缀创建索引的过程我们就介绍完了，还是<strong>将idx_key1
+改回原来的样式</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ALTER TABLE single_table DROP INDEX idx_key1;</span><br><span class="line">ALTER TABLE single_table ADD INDEX idx_key1(key1);</span><br></pre></td></tr></table></figure>
 <h2 id="覆盖索引">覆盖索引</h2>
-<p><strong>省去回表操作带来的性能损耗</strong><br />
-<code>SELECT key1,id FROM single_table WHERE key1 &gt; 'a' AND key1 &lt; 'c'</code></p>
-<p>这里使用<strong>idx_key1</strong>索引来扫描('a','c')区间的二级索引记录，不需要通过id值到<strong>聚簇索引</strong>执行回表。<br />
+<p>为了彻底<strong>告别回表操作带来的性能损耗</strong>，建议最好在查询列表中<strong>只包含索引列</strong>，比如这个查询语句:</p>
+<p><code>SELECT key1,id FROM single_table WHERE key1 &gt; 'a' AND key1 &lt; 'c'</code></p>
+<p>由于<strong>只查询key1列和id列的值</strong>，这里使用<strong>idx_key1</strong>索引来扫描('a','c')区间的二级索引记录时，可以<strong>直接</strong>从获取到的<strong>二级索引记录中读出key1列和id列的值</strong>，不需要通过id值到<strong>聚簇索引</strong>执行回表，<strong>省去回表操作</strong>带来的性能损耗。<br />
 把这种已经<strong>包含所有需要读取的列</strong>的<strong>查询方式</strong>称为<strong>覆盖索引</strong><br />
 排序操作也<strong>优先使用覆盖索引</strong>进行查询：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">SELECT * FROM single_table ORDER BY key1</span><br></pre></td></tr></table></figure>
+<p>虽然这个查询语句中没有LIMIT子旬，但是由于可以采用<strong>覆盖索引</strong>，所以查询优化器会<strong>直接使用idx_key1索引进行排序
+而不需要执行回表操作</strong>。
+当然，如果<strong>业务</strong>需要查询索引列以外的列，那还是<strong>以保证业务需求为重</strong>。如无必要，
+最好<strong>仅把业务中需要的列放在查询</strong>列表中，**而不是简单地以*替代**</p>
+<h2
+id="让索引列以列名的形式在搜索条件中单独出现">让索引列以列名的形式在搜索条件中<strong>单独</strong>出现</h2>
+<p>注意，是<strong>单独</strong><br />
+如下面两个语义一样的搜索条件</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">SELECT * FROM single_table WHERE key2 * 2 &lt; 4;</span><br><span class="line">SELECT * FROM single_table WHERE key2 &lt; 4/2;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>在第一个查询语句的搜索条件中，
+key2列并不是以单独列名的形式出现的，而是以<strong>key2 *
+2</strong>这样的表达式的形式出现的。 **MySQL 并不会尝试简化key2*2&lt;4
+表达式<strong>，而是</strong>直接认为这个搜索条件不能形成合适的扫描区间<strong>来减少需要扫描的记录数量，所以</strong>该查询语句只能以全表扫锚的方式来执行**。</li>
+<li>在第二个查询语句的搜索条件中， key2
+列是以<strong>单独列名</strong>的形式出现的， MySQL
+可以分析出<strong>如果使用uk_key2
+执行查询，对应的扫描区间就是（-∞，2）</strong>
+，这可以<strong>减少需要扫描的记录数量</strong>。 所以MySQL
+可能使用<strong>uk_key2</strong> 来执行查询。
+所以，如果想让某个查询使用索引来执行，请让<strong>索引列以列名的形式单独</strong>出现在搜索条件中</li>
+</ul>
+<h3
+id="新插入记录时主键大小对效率的影响">新插入记录时主键大小对效率的影响</h3>
 
     </div>
 
@@ -1016,7 +1072,7 @@ id="只为用于搜索排序或分组的列创建索引">只为用于搜索、�
       <div class="post-toc-wrap sidebar-panel">
           <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#innodb%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E%E7%9A%84b%E6%A0%91%E7%B4%A2%E5%BC%95%E7%BB%93%E8%AE%BA"><span class="nav-number">1.</span> <span class="nav-text">InnoDB存储引擎的B+树索引：结论</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#b%E6%A0%91%E7%B4%A2%E5%BC%95%E7%A4%BA%E6%84%8F%E5%9B%BE%E7%9A%84%E7%AE%80%E5%8C%96"><span class="nav-number">2.</span> <span class="nav-text">B+树索引示意图的简化</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%B4%A2%E5%BC%95%E7%9A%84%E4%BB%A3%E4%BB%B7"><span class="nav-number">3.</span> <span class="nav-text">索引的代价</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A9%BA%E9%97%B4%E4%B8%8A%E7%9A%84%E4%BB%A3%E4%BB%B7"><span class="nav-number">3.1.</span> <span class="nav-text">空间上的代价</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%97%B6%E9%97%B4%E4%B8%8A%E7%9A%84%E4%BB%A3%E4%BB%B7"><span class="nav-number">3.2.</span> <span class="nav-text">时间上的代价</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">3.3.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%BA%94%E7%94%A8b%E6%A0%91%E7%B4%A2%E5%BC%95"><span class="nav-number">4.</span> <span class="nav-text">应用B+树索引</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%89%AB%E6%8F%8F%E5%8C%BA%E9%97%B4%E5%92%8C%E8%BE%B9%E7%95%8C%E6%9D%A1%E4%BB%B6"><span class="nav-number">4.1.</span> <span class="nav-text">扫描区间和边界条件</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AE%80%E5%8D%95%E4%BE%8B%E5%AD%90"><span class="nav-number">4.1.1.</span> <span class="nav-text">简单例子</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BE%8B%E5%AD%901%E8%81%9A%E7%B0%87%E7%B4%A2%E5%BC%95"><span class="nav-number">4.1.1.1.</span> <span class="nav-text">例子1（聚簇索引）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BE%8B%E5%AD%902%E4%BA%8C%E7%BA%A7%E7%B4%A2%E5%BC%95"><span class="nav-number">4.1.1.2.</span> <span class="nav-text">例子2（二级索引）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BE%8B3-%E4%B8%8D%E6%98%AF%E7%B4%A2%E5%BC%95%E7%9A%84%E6%90%9C%E7%B4%A2%E6%9D%A1%E4%BB%B6%E9%83%BD%E5%8F%AF%E4%BB%A5%E6%88%90%E4%B8%BA%E8%BE%B9%E7%95%8C%E6%9D%A1%E4%BB%B6"><span class="nav-number">4.1.1.3.</span> <span class="nav-text">例3
 不是索引的搜索条件都可以成为边界条件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%80%BB%E7%BB%93-1"><span class="nav-number">4.1.1.4.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A8%8D%E5%A4%8D%E6%9D%82%E4%BE%8B%E5%AD%90"><span class="nav-number">4.1.2.</span> <span class="nav-text">稍复杂例子</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%89%80%E6%9C%89%E6%90%9C%E7%B4%A2%E6%9D%A1%E4%BB%B6%E9%83%BD%E5%8F%AF%E4%BB%A5%E7%94%9F%E6%88%90%E5%90%88%E9%80%82%E7%9A%84%E6%89%AB%E6%8F%8F%E5%8C%BA%E9%97%B4%E7%9A%84%E6%83%85%E5%86%B5"><span class="nav-number">4.1.2.1.</span> <span class="nav-text">所有搜索条件都可以生成合适的扫描区间的情况</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#and%E7%BB%93%E5%90%88"><span class="nav-number">4.1.2.1.1.</span> <span class="nav-text">AND结合</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#or%E7%BB%93%E5%90%88"><span class="nav-number">4.1.2.1.2.</span> <span class="nav-text">OR结合</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9C%89%E7%9A%84%E6%90%9C%E7%B4%A2%E6%9D%A1%E4%BB%B6%E4%B8%8D%E8%83%BD%E7%94%9F%E6%88%90%E5%90%88%E9%80%82%E7%9A%84%E6%89%AB%E6%8F%8F%E5%8C%BA%E9%97%B4%E7%9A%84%E6%83%85%E5%86%B5"><span class="nav-number">4.1.2.2.</span> <span class="nav-text">有的搜索条件不能生成合适的扫描区间的情况</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#and%E6%83%85%E5%86%B5"><span class="nav-number">4.1.2.2.1.</span> <span class="nav-text">AND情况</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#or%E6%83%85%E5%86%B5"><span class="nav-number">4.1.2.2.2.</span> <span class="nav-text">OR情况</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BB%8E%E5%A4%8D%E6%9D%82%E7%9A%84%E6%90%9C%E7%B4%A2%E6%9D%A1%E4%BB%B6%E4%B8%AD%E6%89%BE%E5%87%BA%E6%89%AB%E6%8F%8F%E5%8C%BA%E9%97%B4"><span class="nav-number">4.1.2.3.</span> <span class="nav-text">从复杂的搜索条件中找出扫描区间</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%81%87%E8%AE%BE%E4%BD%BF%E7%94%A8idx_key1%E6%89%A7%E8%A1%8C%E6%9F%A5%E8%AF%A2"><span class="nav-number">4.1.2.3.1.</span> <span class="nav-text">假设使用idx_key1执行查询</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%81%87%E8%AE%BE%E4%BD%BF%E7%94%A8idx_key2%E6%89%A7%E8%A1%8C%E6%9F%A5%E8%AF%A2"><span class="nav-number">4.1.2.3.2.</span> <span class="nav-text">假设使用idx_key2执行查询</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E8%81%94%E5%90%88%E7%B4%A2%E5%BC%95%E6%89%A7%E8%A1%8C%E6%9F%A5%E8%AF%A2%E6%97%B6%E5%AF%B9%E5%BA%94%E7%9A%84%E6%89%AB%E6%8F%8F%E5%8C%BA%E9%97%B4"><span class="nav-number">4.1.2.4.</span> <span class="nav-text">使用联合索引执行查询时对应的扫描区间</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%AF%B9%E4%BA%8E%E6%9F%A5%E8%AF%A2%E8%AF%AD%E5%8F%A5q1%E5%8D%95%E6%9D%A1%E4%BB%B6"><span class="nav-number">4.1.2.4.1.</span> <span class="nav-text">对于查询语句Q1(单条件)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%AF%B9%E4%BA%8E%E6%9F%A5%E8%AF%A2%E6%9D%A1%E4%BB%B6q2%E9%A1%BA%E5%BA%8F2%E6%9D%A1%E4%BB%B6"><span class="nav-number">4.1.2.4.2.</span> <span class="nav-text">对于查询条件Q2(顺序2条件)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%AF%B9%E4%BA%8E%E6%9F%A5%E8%AF%A2%E6%9D%A1%E4%BB%B6q3%E9%A1%BA%E5%BA%8F3%E6%9D%A1%E4%BB%B6"><span class="nav-number">4.1.2.4.3.</span> <span class="nav-text">对于查询条件Q3(顺序3条件)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%AF%B9%E4%BA%8E%E6%9F%A5%E8%AF%A2%E8%AF%AD%E5%8F%A5q4%E5%8D%95%E6%9D%A1%E4%BB%B6%E8%8C%83%E5%9B%B4"><span class="nav-number">4.1.2.4.4.</span> <span class="nav-text">对于查询语句Q4(单条件范围)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%9F%A5%E8%AF%A2%E8%AF%AD%E5%8F%A5q5%E6%9D%A1%E4%BB%B61%E7%AD%89%E5%80%BC%E6%9D%A1%E4%BB%B62%E8%8C%83%E5%9B%B4"><span class="nav-number">4.1.2.4.5.</span> <span class="nav-text">查询语句Q5（条件1等值，条件2范围）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%9F%A5%E8%AF%A2%E8%AF%AD%E5%8F%A5q6%E6%9D%A1%E4%BB%B62%E7%AD%89%E5%80%BC%E7%94%A8%E4%B8%8D%E4%B8%8A%E7%B4%A2%E5%BC%95"><span class="nav-number">4.1.2.4.6.</span> <span class="nav-text">查询语句Q6（条件2等值&#x3D;&gt;用不上索引）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%9F%A5%E8%AF%A2%E8%AF%AD%E5%8F%A5q7%E6%9D%A1%E4%BB%B61%E7%AD%89%E5%80%BC%E6%9D%A1%E4%BB%B63%E7%AD%89%E5%80%BC%E5%8F%AA%E6%9C%89%E5%89%8D%E9%9D%A2%E7%9A%84%E6%9D%A1%E4%BB%B6%E6%98%AF%E8%BE%B9%E7%95%8C%E6%9D%A1%E4%BB%B6"><span class="nav-number">4.1.2.4.7.</span> <span class="nav-text">查询语句Q7（条件1等值，条件3等值&#x3D;&gt;只有前面的条件是边界条件）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%9F%A5%E8%AF%A2%E8%AF%AD%E5%8F%A5q8%E6%9D%A1%E4%BB%B61%E8%8C%83%E5%9B%B4%E6%9D%A1%E4%BB%B62%E7%AD%89%E5%80%BC%E5%8F%AA%E6%9C%89%E5%89%8D%E9%9D%A2%E7%9A%84%E6%9D%A1%E4%BB%B6%E6%98%AF%E8%BE%B9%E7%95%8C%E6%9D%A1%E4%BB%B6"><span class="nav-number">4.1.2.4.8.</span> <span class="nav-text">查询语句Q8（条件1范围，条件2等值&#x3D;&gt;只有前面的条件是边界条件）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%9F%A5%E8%AF%A2%E8%AF%AD%E5%8F%A5q9%E6%9D%A1%E4%BB%B61%E8%8C%83%E5%9B%B4%E5%8C%85%E6%8B%AC%E7%AD%89%E5%8F%B7%E6%9D%A1%E4%BB%B62%E7%AD%89%E5%80%BC"><span class="nav-number">4.1.2.4.9.</span> <span class="nav-text">查询语句Q9（条件1范围(包括等号)，条件2等值）</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B4%A2%E5%BC%95%E7%94%A8%E4%BA%8E%E6%8E%92%E5%BA%8F"><span class="nav-number">4.2.</span> <span class="nav-text">索引用于排序</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E8%81%94%E5%90%88%E7%B4%A2%E5%BC%95%E8%BF%9B%E8%A1%8C%E6%8E%92%E5%BA%8F%E6%97%B6%E7%9A%84%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="nav-number">4.2.1.</span> <span class="nav-text">使用联合索引进行排序时的注意事项</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%8D%E8%83%BD%E4%BD%BF%E7%94%A8%E7%B4%A2%E5%BC%95%E8%BF%9B%E8%A1%8C%E6%8E%92%E5%BA%8F%E7%9A%84%E5%87%A0%E7%A7%8D%E6%83%85%E5%86%B5"><span class="nav-number">4.2.2.</span> <span class="nav-text">不能使用索引进行排序的几种情况</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#ascdesc%E6%B7%B7%E7%94%A8"><span class="nav-number">4.2.2.1.</span> <span class="nav-text">ASC、DESC混用</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8E%92%E5%BA%8F%E5%88%97%E5%8C%85%E5%90%AB%E9%9D%9E%E5%90%8C%E4%B8%80%E4%B8%AA%E7%B4%A2%E5%BC%95%E7%9A%84%E5%88%97%E8%BF%99%E7%A7%8D%E6%83%85%E5%86%B5%E4%B9%9F%E4%B8%8D%E8%83%BD%E4%BD%BF%E7%94%A8%E7%B4%A2%E5%BC%95%E8%BF%9B%E8%A1%8C%E6%8E%92%E5%BA%8F"><span class="nav-number">4.2.2.2.</span> <span class="nav-text">排序列包含非同一个索引的列，这种情况也不能使用索引进行排序</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8E%92%E5%BA%8F%E5%88%97%E6%98%AF%E6%9F%90%E4%B8%AA%E8%81%94%E5%90%88%E7%B4%A2%E5%BC%95%E7%9A%84%E7%B4%A2%E5%BC%95%E5%88%97%E4%BD%86%E6%98%AF%E8%BF%99%E4%BA%9B%E6%8E%92%E5%BA%8F%E5%88%97%E5%86%8D%E8%81%94%E5%90%88%E7%B4%A2%E5%BC%95%E4%B8%AD%E5%B9%B6%E4%B8%8D%E8%BF%9E%E7%BB%AD"><span class="nav-number">4.2.2.3.</span> <span class="nav-text">排序列是某个联合索引的索引列，但是这些排序列再联合索引中并不连续</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%94%A8%E6%9D%A5%E5%BD%A2%E6%88%90%E6%89%AB%E6%8F%8F%E5%8C%BA%E9%97%B4%E7%9A%84%E7%B4%A2%E5%BC%95%E5%88%97%E4%B8%8E%E6%8E%92%E5%BA%8F%E5%88%97%E4%B8%8D%E5%90%8C"><span class="nav-number">4.2.2.4.</span> <span class="nav-text">用来形成扫描区间的索引列与排序列不同</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B4%A2%E5%BC%95%E7%94%A8%E4%BA%8E%E5%88%86%E7%BB%84"><span class="nav-number">4.3.</span> <span class="nav-text">索引用于分组</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9E%E8%A1%A8%E7%9A%84%E4%BB%A3%E4%BB%B7"><span class="nav-number">4.4.</span> <span class="nav-text">回表的代价</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%A5%E5%85%A8%E8%A1%A8%E6%89%AB%E6%8F%8F%E7%9A%84%E6%96%B9%E5%BC%8F"><span class="nav-number">4.4.1.</span> <span class="nav-text">以全表扫描的方式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8idx_key1%E6%89%A7%E8%A1%8C%E8%AF%A5%E6%9F%A5%E8%AF%A2"><span class="nav-number">4.4.2.</span> <span class="nav-text">使用idx_key1执行该查询</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%86%E6%9E%90"><span class="nav-number">4.4.3.</span> <span class="nav-text">分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E9%87%87%E7%94%A8%E5%85%A8%E8%A1%A8%E6%89%AB%E6%8F%8F-%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E4%BD%BF%E7%94%A8%E4%BA%8C%E7%BA%A7%E7%B4%A2%E5%BC%95%E5%9B%9E%E8%A1%A8%E7%9A%84%E6%96%B9%E5%BC%8F"><span class="nav-number">4.4.4.</span> <span class="nav-text">什么时候采用全表扫描，
-什么时候使用二级索引+回表的方式</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%9B%B4%E5%A5%BD%E5%9C%B0%E5%88%9B%E5%BB%BA%E5%92%8C%E4%BD%BF%E7%94%A8%E7%B4%A2%E5%BC%95"><span class="nav-number">5.</span> <span class="nav-text">更好地创建和使用索引</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%AA%E4%B8%BA%E7%94%A8%E4%BA%8E%E6%90%9C%E7%B4%A2%E6%8E%92%E5%BA%8F%E6%88%96%E5%88%86%E7%BB%84%E7%9A%84%E5%88%97%E5%88%9B%E5%BB%BA%E7%B4%A2%E5%BC%95"><span class="nav-number">5.1.</span> <span class="nav-text">只为用于搜索、排序或分组的列创建索引</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%80%83%E8%99%91%E7%B4%A2%E5%BC%95%E5%88%97%E4%B8%AD%E4%B8%8D%E9%87%8D%E5%A4%8D%E5%80%BC%E7%9A%84%E4%B8%AA%E6%95%B0"><span class="nav-number">5.2.</span> <span class="nav-text">考虑索引列中不重复值的个数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B4%A2%E5%BC%95%E5%88%97%E7%9A%84%E7%B1%BB%E5%9E%8B%E5%B0%BD%E9%87%8F%E5%B0%8F"><span class="nav-number">5.3.</span> <span class="nav-text">索引列的类型尽量小</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BA%E5%88%97%E5%89%8D%E7%BC%80%E5%BB%BA%E7%AB%8B%E7%B4%A2%E5%BC%95"><span class="nav-number">5.4.</span> <span class="nav-text">为列前缀建立索引</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A6%86%E7%9B%96%E7%B4%A2%E5%BC%95"><span class="nav-number">5.5.</span> <span class="nav-text">覆盖索引</span></a></li></ol></li></ol></div>
+什么时候使用二级索引+回表的方式</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%9B%B4%E5%A5%BD%E5%9C%B0%E5%88%9B%E5%BB%BA%E5%92%8C%E4%BD%BF%E7%94%A8%E7%B4%A2%E5%BC%95"><span class="nav-number">5.</span> <span class="nav-text">更好地创建和使用索引</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%AA%E4%B8%BA%E7%94%A8%E4%BA%8E%E6%90%9C%E7%B4%A2%E6%8E%92%E5%BA%8F%E6%88%96%E5%88%86%E7%BB%84%E7%9A%84%E5%88%97%E5%88%9B%E5%BB%BA%E7%B4%A2%E5%BC%95"><span class="nav-number">5.1.</span> <span class="nav-text">只为用于搜索、排序或分组的列创建索引</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%80%83%E8%99%91%E7%B4%A2%E5%BC%95%E5%88%97%E4%B8%AD%E4%B8%8D%E9%87%8D%E5%A4%8D%E5%80%BC%E7%9A%84%E4%B8%AA%E6%95%B0"><span class="nav-number">5.2.</span> <span class="nav-text">考虑索引列中不重复值的个数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B4%A2%E5%BC%95%E5%88%97%E7%9A%84%E7%B1%BB%E5%9E%8B%E5%B0%BD%E9%87%8F%E5%B0%8F"><span class="nav-number">5.3.</span> <span class="nav-text">索引列的类型尽量小</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BA%E5%88%97%E5%89%8D%E7%BC%80%E5%BB%BA%E7%AB%8B%E7%B4%A2%E5%BC%95"><span class="nav-number">5.4.</span> <span class="nav-text">为列前缀建立索引</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A6%86%E7%9B%96%E7%B4%A2%E5%BC%95"><span class="nav-number">5.5.</span> <span class="nav-text">覆盖索引</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%A9%E7%B4%A2%E5%BC%95%E5%88%97%E4%BB%A5%E5%88%97%E5%90%8D%E7%9A%84%E5%BD%A2%E5%BC%8F%E5%9C%A8%E6%90%9C%E7%B4%A2%E6%9D%A1%E4%BB%B6%E4%B8%AD%E5%8D%95%E7%8B%AC%E5%87%BA%E7%8E%B0"><span class="nav-number">5.6.</span> <span class="nav-text">让索引列以列名的形式在搜索条件中单独出现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%B0%E6%8F%92%E5%85%A5%E8%AE%B0%E5%BD%95%E6%97%B6%E4%B8%BB%E9%94%AE%E5%A4%A7%E5%B0%8F%E5%AF%B9%E6%95%88%E7%8E%87%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="nav-number">5.6.1.</span> <span class="nav-text">新插入记录时主键大小对效率的影响</span></a></li></ol></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -1091,7 +1147,7 @@ id="只为用于搜索排序或分组的列创建索引">只为用于搜索、�
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">44:22</span>
+    <span title="站点阅读时长">44:25</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
