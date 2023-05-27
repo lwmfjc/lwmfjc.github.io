@@ -237,7 +237,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>1.4k</span>
+              <span>1.9k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -401,7 +401,7 @@
 <tbody>
 <tr class="odd">
 <td>初始</td>
-<td>allocation1[0.25M]，<br />allocation2[[0.25M]，allocation3[[4M]</td>
+<td>allocation1[0.25M]，<br />allocation2[[0.25M]，allocation3[4M]</td>
 <td></td>
 <td></td>
 <td></td>
@@ -430,6 +430,72 @@
 <tr class="odd">
 <td>6执行后</td>
 <td>+allocation4[4MB]</td>
+<td></td>
+<td></td>
+<td>allocation3[4MB]，<br />+allocation1[0.25M]，<br />+allocation2[[0.25M]，</td>
+</tr>
+</tbody>
+</table>
+<h3 id="代码清单3-11-说明">代码清单3-11 说明</h3>
+<h4 id="xx-handlepromotionfailure-关">-XX:-HandlePromotionFailure
+关</h4>
+<table>
+<colgroup>
+<col style="width: 12%" />
+<col style="width: 36%" />
+<col style="width: 7%" />
+<col style="width: 7%" />
+<col style="width: 36%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th>Eden[8M]</th>
+<th>Survivor1[1M]</th>
+<th>Survivor2[1M]</th>
+<th>Old {10M}</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>初始</td>
+<td>allocation1[2M]，<br />allocation2[2M]，<br />allocation3[2M]<br />allocation1[null]，allocation4[2M]</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>5执行时gc导致的变化</td>
+<td></td>
+<td></td>
+<td></td>
+<td>+allocation2[2M]，+allocation3[2M] //总共4M</td>
+</tr>
+<tr class="odd">
+<td>5执行后</td>
+<td>+allocation4[2M]</td>
+<td></td>
+<td></td>
+<td>+allocation2[2M]，+allocation3[2M] //总共4M</td>
+</tr>
+<tr class="even">
+<td>6-&gt;11</td>
+<td>allocation4[2M]<br />+allocation5[2M]，<br />+allocation6[2M]</td>
+<td></td>
+<td></td>
+<td>allocation2[2M]，<br />allocation3[2M]
+//总共4M，<br />此时老年代连续可用空间在6M（或者说小于6M）</td>
+</tr>
+<tr class="odd">
+<td>11执行时gc导致的变化</td>
+<td></td>
+<td></td>
+<td></td>
+<td>allocation3[4MB]，<br />+allocation1[0.25M]，<br />+allocation2[[0.25M]，</td>
+</tr>
+<tr class="even">
+<td>11执行后</td>
+<td>+allocation7[2MB]</td>
 <td></td>
 <td></td>
 <td>allocation3[4MB]，<br />+allocation1[0.25M]，<br />+allocation2[[0.25M]，</td>
@@ -540,7 +606,8 @@
       <div class="post-toc-wrap sidebar-panel">
           <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9C%A8%E7%BA%BF%E5%9C%B0%E5%9D%80"><span class="nav-number">1.</span> <span class="nav-text">在线地址</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%86%85%E5%AE%B9"><span class="nav-number">2.</span> <span class="nav-text">内容</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%E6%B8%85%E5%8D%953-9--xxmaxtenuringthreshod1%E8%AF%B4%E6%98%8E"><span class="nav-number">2.0.1.</span> <span class="nav-text">代码清单3-9
 -XX:MaxTenuringThreshod&#x3D;1说明</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%E6%B8%85%E5%8D%953-9--xxmaxtenuringthreshod15%E8%AF%B4%E6%98%8E"><span class="nav-number">2.0.2.</span> <span class="nav-text">代码清单3-9
--XX:MaxTenuringThreshod&#x3D;15说明</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%E6%B8%85%E5%8D%953-10-%E8%AF%B4%E6%98%8E"><span class="nav-number">2.0.3.</span> <span class="nav-text">代码清单3-10 说明</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%AF%B4%E6%98%8E"><span class="nav-number">3.</span> <span class="nav-text">说明</span></a></li></ol></div>
+-XX:MaxTenuringThreshod&#x3D;15说明</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%E6%B8%85%E5%8D%953-10-%E8%AF%B4%E6%98%8E"><span class="nav-number">2.0.3.</span> <span class="nav-text">代码清单3-10 说明</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%E6%B8%85%E5%8D%953-11-%E8%AF%B4%E6%98%8E"><span class="nav-number">2.0.4.</span> <span class="nav-text">代码清单3-11 说明</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#xx-handlepromotionfailure-%E5%85%B3"><span class="nav-number">2.0.4.1.</span> <span class="nav-text">-XX:-HandlePromotionFailure
+关</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%AF%B4%E6%98%8E"><span class="nav-number">3.</span> <span class="nav-text">说明</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -556,7 +623,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">228</span>
+          <span class="site-state-item-count">230</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -615,7 +682,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">45:09</span>
+    <span title="站点阅读时长">45:11</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
