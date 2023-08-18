@@ -237,14 +237,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>869</span>
+              <span>2k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>2 分钟</span>
+              <span>4 分钟</span>
             </span>
             <div class="post-description">vmware上linux主机的安装和克隆</div>
 
@@ -282,11 +282,23 @@
 <li><p>完成---过程中配置密码 默认用户root+其他用户ly</p></li>
 </ol>
 <h2 id="安装完成后修改ip及网关">安装完成后修改ip及网关</h2>
+<h3 id="centos">Centos</h3>
 <ol type="1">
 <li><p><code>vi /etc/sysconfig/network-scripts/ifcfg-ens**</code></p></li>
 <li><p>修改部分键值对</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">BOOTPROTO=&quot;static&quot;</span><br><span class="line">IPADDR=192.168.1.100</span><br><span class="line">NETMASK=255.255.255.0</span><br><span class="line">GATEWAY=192.168.1.1</span><br><span class="line">DNS1=223.5.5.5</span><br><span class="line">DNS2=223.6.6.6</span><br></pre></td></tr></table></figure></li>
 <li><p><code>systemctl restart network</code></p></li>
+</ol>
+<h3 id="debian">Debian</h3>
+<ol type="1">
+<li><p>查看当前网卡 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ip link</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">   <span class="built_in">link</span>/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00</span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">2: ens33: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">   <span class="built_in">link</span>/ether 00:0c:29:ed:95:f5 brd ff:ff:ff:ff:ff:ff</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">   altname enp2s1</span></span><br></pre></td></tr></table></figure></p>
+<p>得知网卡名为ens33</p></li>
+<li><p><code>vim /etc/network/interfaces</code>
+添加内容，为网卡（ens33）设置静态ip</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">ly-update</span></span><br><span class="line">auto ens33</span><br><span class="line">iface ens33 inet static</span><br><span class="line">address 192.168.1.206</span><br><span class="line">netmask 255.255.255.0</span><br><span class="line">gateway 192.168.1.1</span><br><span class="line">dns-nameservers 223.5.5.5 223.6.6.6</span><br></pre></td></tr></table></figure></li>
+<li><p>重启网络<br />
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo service networking restart</span><br></pre></td></tr></table></figure></p></li>
+<li><p>查看ip <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ip a</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">---------------------结果显示</span></span><br><span class="line">1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000</span><br><span class="line">    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00</span><br><span class="line">    inet 127.0.0.1/8 scope host lo</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">    inet6 ::1/128 scope host noprefixroute </span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">2: ens33: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc fq_codel state UP group default qlen 1000</span><br><span class="line">    link/ether 00:0c:xx:xx:23:f5 brd ff:ff:ff:ff:ff:ff</span><br><span class="line">    altname enp2s1</span><br><span class="line">    inet 192.168.1.206/24 brd 192.168.1.255 scope global ens33</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">    inet6 xxxx::20c:29ff:feed:xxxx/64 scope link </span><br><span class="line">       valid_lft forever preferred_lft forever</span><br></pre></td></tr></table></figure></p></li>
 </ol>
 <h1 id="克隆虚拟机">克隆虚拟机</h1>
 <ol type="1">
@@ -412,7 +424,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AE%89%E8%A3%85"><span class="nav-number">1.</span> <span class="nav-text">安装</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%90%91%E5%AF%BC"><span class="nav-number">1.1.</span> <span class="nav-text">虚拟机向导</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85%E7%95%8C%E9%9D%A2"><span class="nav-number">1.2.</span> <span class="nav-text">安装界面</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85%E5%AE%8C%E6%88%90%E5%90%8E%E4%BF%AE%E6%94%B9ip%E5%8F%8A%E7%BD%91%E5%85%B3"><span class="nav-number">1.3.</span> <span class="nav-text">安装完成后修改ip及网关</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%8B%E9%9A%86%E8%99%9A%E6%8B%9F%E6%9C%BA"><span class="nav-number">2.</span> <span class="nav-text">克隆虚拟机</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C"><span class="nav-number">3.</span> <span class="nav-text">常用操作</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AE%89%E8%A3%85"><span class="nav-number">1.</span> <span class="nav-text">安装</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%90%91%E5%AF%BC"><span class="nav-number">1.1.</span> <span class="nav-text">虚拟机向导</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85%E7%95%8C%E9%9D%A2"><span class="nav-number">1.2.</span> <span class="nav-text">安装界面</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85%E5%AE%8C%E6%88%90%E5%90%8E%E4%BF%AE%E6%94%B9ip%E5%8F%8A%E7%BD%91%E5%85%B3"><span class="nav-number">1.3.</span> <span class="nav-text">安装完成后修改ip及网关</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#centos"><span class="nav-number">1.3.1.</span> <span class="nav-text">Centos</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#debian"><span class="nav-number">1.3.2.</span> <span class="nav-text">Debian</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%8B%E9%9A%86%E8%99%9A%E6%8B%9F%E6%9C%BA"><span class="nav-number">2.</span> <span class="nav-text">克隆虚拟机</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C"><span class="nav-number">3.</span> <span class="nav-text">常用操作</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -487,7 +499,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">45:27</span>
+    <span title="站点阅读时长">45:29</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
