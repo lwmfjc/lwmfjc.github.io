@@ -237,14 +237,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>204</span>
+              <span>1.3k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
+              <span>2 分钟</span>
             </span>
             <div class="post-description">Debian问题处理3</div>
 
@@ -258,11 +258,43 @@
 
       
         <h1 id="fcitx配合各种软件出现的问题">fcitx配合各种软件出现的问题</h1>
+<blockquote>
+<p>本文章中出现的引号都是英文状态下的引号，切记！</p>
+</blockquote>
+<h2 id="安装完毕后环境变量设置">安装完毕后环境变量设置</h2>
+<p>/etc/profile 和/etc/enviroment
+均可，profile针对用户，environment真的系统。一般都是放profile里面<br />
+不过fcitx放profile不生效，放/etc/enviroment才有效果</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">/etc/enviroment 末尾添加</span></span><br><span class="line">export XIM_PROGRAM=fcitx</span><br><span class="line">export XIM=fcitx</span><br><span class="line">export GTK_IM_MODULE=fcitx</span><br><span class="line">export QT_IM_MODULE=fcitx</span><br><span class="line">export XMODIFIERS=&quot;@im=fcitx&quot;</span><br><span class="line">export LANG=zh_CN.UTF-8</span><br></pre></td></tr></table></figure>
+<p>source后再重启一下哦</p>
 <h2
-id="装了zsh后idea等各种软件不出现fcitx输入法的问题">装了zsh后idea等各种软件不出现fcitx输入法的问题</h2>
+id="装了zsh后从终端打开idea等各种软件不出现fcitx输入法的问题">装了zsh后(从终端打开)idea等各种软件不出现fcitx输入法的问题</h2>
 <p>在<code>/.zshrc</code>最后添加</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">export XIM_PROGRAM=fcitx</span><br><span class="line">export XIM=fcitx</span><br><span class="line">export GTK_IM_MODULE=fcitx</span><br><span class="line">export QT_IM_MODULE=fcitx</span><br><span class="line">export XMODIFIERS=&quot;@im=fcitx&quot;</span><br><span class="line">export LANG=zh_CN.UTF-8</span><br></pre></td></tr></table></figure>
-<h2 id="section"></h2>
+<p>如果还有问题，就要在idea的配置文件<code>idea.vmoptions</code>添加</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">-Drecreate.x11.input.method=true</span><br></pre></td></tr></table></figure>
+<h3
+id="如果使用系统默认终端的情况下出的问题">如果使用系统默认终端的情况下出的问题</h3>
+<p>可以在 ~/.bashrc最后添加这段话，重启试试</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">export XIM_PROGRAM=fcitx</span><br><span class="line">export XIM=fcitx</span><br><span class="line">export GTK_IM_MODULE=fcitx</span><br><span class="line">export QT_IM_MODULE=fcitx</span><br><span class="line">export XMODIFIERS=&quot;@im=fcitx&quot;</span><br><span class="line">export LANG=zh_CN.UTF-8</span><br></pre></td></tr></table></figure>
+<h1 id="各个文件的解释">各个文件的解释</h1>
+<p>/etc/profile //用户级，所有用户登陆时才会执行
+对于fcitx没效果(firefox无效)<br />
+/etc/enviroment //系统级，一般不修改 这里有效果<br />
+~/.bashrc //系统默认终端打开时执行 ~/.zshrc //zsh使用前执行</p>
+<blockquote>
+<p>source命令是一个内置的shell命令，用于从当前shell会话中的文件读取和执行命令。source命令通常用于保留、更改当前shell中的环境变量。简而言之，source一个脚本，将会在当前shell中运行execute命令。
+source命令可用于：</p>
+<p>刷新当前的shell环境 在当前环境使用source执行Shell脚本
+从脚本中导入环境中一个Shell函数 从另一个Shell脚本中读取变量</p>
+</blockquote>
+<h1 id="zsh卸载后账号无法登录">zsh卸载后账号无法登录</h1>
+<p>参考https://lwmfjc.github.io/2023/05/23/problem/linux/20230523/
+这篇文章<br />
+如果不是root用户就简单多了，直接</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">vim /etc/passwd</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">xx(账户名)......zsh，中/bin/zsh，改为/bin/bash 即可</span></span><br></pre></td></tr></table></figure>
+<h1 id="备份">备份</h1>
+<p>如果是vm下学习linux，要多利用vmware，养成习惯，每进行一次大操作之前，都要进行vmware的快照备份。避免大操作导致出问题</p>
 
     </div>
 
@@ -350,7 +382,7 @@ id="装了zsh后idea等各种软件不出现fcitx输入法的问题">装了zsh�
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#fcitx%E9%85%8D%E5%90%88%E5%90%84%E7%A7%8D%E8%BD%AF%E4%BB%B6%E5%87%BA%E7%8E%B0%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-number">1.</span> <span class="nav-text">fcitx配合各种软件出现的问题</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A3%85%E4%BA%86zsh%E5%90%8Eidea%E7%AD%89%E5%90%84%E7%A7%8D%E8%BD%AF%E4%BB%B6%E4%B8%8D%E5%87%BA%E7%8E%B0fcitx%E8%BE%93%E5%85%A5%E6%B3%95%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-number">1.1.</span> <span class="nav-text">装了zsh后idea等各种软件不出现fcitx输入法的问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#section"><span class="nav-number">1.2.</span> <span class="nav-text"></span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#fcitx%E9%85%8D%E5%90%88%E5%90%84%E7%A7%8D%E8%BD%AF%E4%BB%B6%E5%87%BA%E7%8E%B0%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-number">1.</span> <span class="nav-text">fcitx配合各种软件出现的问题</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85%E5%AE%8C%E6%AF%95%E5%90%8E%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E8%AE%BE%E7%BD%AE"><span class="nav-number">1.1.</span> <span class="nav-text">安装完毕后环境变量设置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A3%85%E4%BA%86zsh%E5%90%8E%E4%BB%8E%E7%BB%88%E7%AB%AF%E6%89%93%E5%BC%80idea%E7%AD%89%E5%90%84%E7%A7%8D%E8%BD%AF%E4%BB%B6%E4%B8%8D%E5%87%BA%E7%8E%B0fcitx%E8%BE%93%E5%85%A5%E6%B3%95%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-number">1.2.</span> <span class="nav-text">装了zsh后(从终端打开)idea等各种软件不出现fcitx输入法的问题</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E6%9E%9C%E4%BD%BF%E7%94%A8%E7%B3%BB%E7%BB%9F%E9%BB%98%E8%AE%A4%E7%BB%88%E7%AB%AF%E7%9A%84%E6%83%85%E5%86%B5%E4%B8%8B%E5%87%BA%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-number">1.2.1.</span> <span class="nav-text">如果使用系统默认终端的情况下出的问题</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%90%84%E4%B8%AA%E6%96%87%E4%BB%B6%E7%9A%84%E8%A7%A3%E9%87%8A"><span class="nav-number">2.</span> <span class="nav-text">各个文件的解释</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#zsh%E5%8D%B8%E8%BD%BD%E5%90%8E%E8%B4%A6%E5%8F%B7%E6%97%A0%E6%B3%95%E7%99%BB%E5%BD%95"><span class="nav-number">3.</span> <span class="nav-text">zsh卸载后账号无法登录</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%A4%87%E4%BB%BD"><span class="nav-number">4.</span> <span class="nav-text">备份</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -425,7 +457,7 @@ id="装了zsh后idea等各种软件不出现fcitx输入法的问题">装了zsh�
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">45:30</span>
+    <span title="站点阅读时长">45:32</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
