@@ -2,9 +2,9 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
-<meta name="theme-color" content="#222">
-<meta name="generator" content="Hexo 6.3.0">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
   <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
@@ -12,42 +12,46 @@
 
 <link rel="stylesheet" href="/css/main.css">
 
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap&subset=latin,latin-ext">
 
-<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
-  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha256-5eIC48iZUHmSlSUz9XtjRyK2mzQkHScZY1WdMaoz74E=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancyapps-ui/5.0.31/fancybox/fancybox.css" integrity="sha256-gkQVf8UKZgQ0HyuxL/VnacadJ+D2Kox2TCEBuNQg5+w=" crossorigin="anonymous">
 
-<script id="hexo-configurations">
-    var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"lwmfjc.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","width":300,"display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
-  </script>
+<script class="next-config" data-name="main" type="application/json">{"hostname":"lwmfjc.github.io","root":"/","images":"/images","scheme":"Pisces","darkmode":false,"version":"8.21.1","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":true,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":true,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
 
-  <meta name="description" content="04InnoDB记录存储结构">
+    <meta name="description" content="04InnoDB记录存储结构">
 <meta property="og:type" content="article">
 <meta property="og:title" content="04InnoDB记录存储结构">
 <meta property="og:url" content="https://lwmfjc.github.io/2023/04/18/study/mysql/how_mysql_run/04/index.html">
 <meta property="og:site_name" content="随记">
 <meta property="og:description" content="04InnoDB记录存储结构">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230419143303256.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230419185811554.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230419173856310.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230419174348286.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230419183041824.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230419212005826.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230420232026832.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230421100332722.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230421100649877.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230421102458108.png">
 <meta property="article:published_time" content="2023-04-18T20:00:03.000Z">
 <meta property="article:modified_time" content="2023-04-18T20:00:03.000Z">
 <meta property="article:author" content="刘易">
 <meta property="article:tag" content="MySQL是怎样运行的">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230419143303256.png">
+
 
 <link rel="canonical" href="https://lwmfjc.github.io/2023/04/18/study/mysql/how_mysql_run/04/">
 
 
-<script id="page-configurations">
-  // https://hexo.io/docs/variables.html
-  CONFIG.page = {
-    sidebar: "",
-    isHome : false,
-    isPost : true,
-    lang   : 'zh-CN'
-  };
-</script>
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://lwmfjc.github.io/2023/04/18/study/mysql/how_mysql_run/04/","path":"2023/04/18/study/mysql/how_mysql_run/04/","title":"04InnoDB记录存储结构"}</script>
 
-  <title>04InnoDB记录存储结构 | 随记</title>
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>04InnoDB记录存储结构 | 随记</title>
   
 
 
@@ -55,56 +59,35 @@
 
 
 
+
+
   <noscript>
-  <style>
-  .use-motion .brand,
-  .use-motion .menu-item,
-  .sidebar-inner,
-  .use-motion .post-block,
-  .use-motion .pagination,
-  .use-motion .comments,
-  .use-motion .post-header,
-  .use-motion .post-body,
-  .use-motion .collection-header { opacity: initial; }
-
-  .use-motion .site-title,
-  .use-motion .site-subtitle {
-    opacity: initial;
-    top: initial;
-  }
-
-  .use-motion .logo-line-before i { left: initial; }
-  .use-motion .logo-line-after i { right: initial; }
-  </style>
-</noscript>
-
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
 </head>
 
-<body itemscope itemtype="http://schema.org/WebPage">
-  <div class="container use-motion">
-    <div class="headband"></div>
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
 
-    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
-      <div class="header-inner"><div class="site-brand-container">
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
   <div class="site-nav-toggle">
-    <div class="toggle" aria-label="切换导航栏">
-      <span class="toggle-line toggle-line-first"></span>
-      <span class="toggle-line toggle-line-middle"></span>
-      <span class="toggle-line toggle-line-last"></span>
+    <div class="toggle" aria-label="切换导航栏" role="button">
     </div>
   </div>
 
   <div class="site-meta">
 
     <a href="/" class="brand" rel="start">
-      <span class="logo-line-before"><i></i></span>
-      <h1 class="site-title">随记</h1>
-      <span class="logo-line-after"><i></i></span>
+      <i class="logo-line"></i>
+      <p class="site-title">随记</p>
+      <i class="logo-line"></i>
     </a>
   </div>
 
   <div class="site-nav-right">
-    <div class="toggle popup-trigger">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
         <i class="fa fa-search fa-fw fa-lg"></i>
     </div>
   </div>
@@ -112,29 +95,8 @@
 
 
 
-
 <nav class="site-nav">
-  <ul id="menu" class="main-menu menu">
-        <li class="menu-item menu-item-home">
-
-    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
-
-  </li>
-        <li class="menu-item menu-item-tags">
-
-    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
-
-  </li>
-        <li class="menu-item menu-item-categories">
-
-    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
-
-  </li>
-        <li class="menu-item menu-item-archives">
-
-    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
-
-  </li>
+  <ul class="main-menu menu">
       <li class="menu-item menu-item-search">
         <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
         </a>
@@ -146,398 +108,34 @@
 
   <div class="search-pop-overlay">
     <div class="popup search-popup">
-        <div class="search-header">
-  <span class="search-icon">
-    <i class="fa fa-search"></i>
-  </span>
-  <div class="search-input-container">
-    <input autocomplete="off" autocapitalize="off"
-           placeholder="搜索..." spellcheck="false"
-           type="search" class="search-input">
-  </div>
-  <span class="popup-btn-close">
-    <i class="fa fa-times-circle"></i>
-  </span>
-</div>
-<div id="search-result">
-  <div id="no-result">
-    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
-  </div>
-</div>
-
-    </div>
-  </div>
-
-</div>
-    </header>
-
-    
-  <div class="back-to-top">
-    <i class="fa fa-arrow-up"></i>
-    <span>0%</span>
-  </div>
-
-
-    <main class="main">
-      <div class="main-inner">
-        <div class="content-wrap">
-          
-
-          <div class="content post posts-expand">
-            
-
-    
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://lwmfjc.github.io/2023/04/18/study/mysql/how_mysql_run/04/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/avatar.png">
-      <meta itemprop="name" content="刘易">
-      <meta itemprop="description" content="知命不惧 日日自新">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="随记">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          04InnoDB记录存储结构
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2023-04-18 20:00:03" itemprop="dateCreated datePublished" datetime="2023-04-18T20:00:03+00:00">2023-04-18</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E5%AD%A6%E4%B9%A0/" itemprop="url" rel="index"><span itemprop="name">学习</span></a>
-                </span>
-            </span>
-
-          
-            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-eye"></i>
-              </span>
-              <span class="post-meta-item-text">阅读次数：</span>
-              <span id="busuanzi_value_page_pv"></span>
-            </span><br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>4.8k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>9 分钟</span>
-            </span>
-            <div class="post-description">04InnoDB记录存储结构</div>
-
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
         </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-        <blockquote>
-<p>学习《MySQL是怎样运行的》，感谢作者！</p>
-</blockquote>
-<h1 id="问题">问题</h1>
-<p>表数据存在哪，以什么格式存放，MySQL以什么方式来访问<br />
-存储引擎：对表中数据进行<strong>存储</strong>和<strong>写入</strong><br />
-InnoDB是MySQL默认的存储引擎，这章主要讲<strong>InnoDB存储引擎的记录存储结构</strong></p>
-<h1 id="innodb页简介">InnoDB页简介</h1>
-<p><strong>注意，是简介</strong><br />
-InnoDB：将表中的数据<strong>存储到磁盘上</strong><br />
-真正处理数据的过程：内存中。所以需要<strong>把磁盘中数据加载到内存中</strong>，如果是<strong>写入</strong>或<strong>修改</strong>请求，还需要把<strong>内存</strong>中的内容<strong>刷新到磁盘</strong>上<br />
-获取记录：不是一条条从磁盘读，InnoDB将数据划分为若干个页，以<strong>页</strong>作为<strong>磁盘</strong>和<strong>内存</strong>之间交互的基本单位。页大小-&gt;
-一般是16KB<br />
-一般情况：一次最少从磁盘读取16KB的内容<strong>到内存中</strong>，一次最少把内存中的16KB内容<strong>刷新到磁盘</strong>中</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash"> SHOW VARIABLES LIKE <span class="string">&#x27;innodb_page_size&#x27;</span>;</span></span><br><span class="line">+------------------+-------+</span><br><span class="line">| Variable_name    | Value |</span><br><span class="line">+------------------+-------+</span><br><span class="line">| innodb_page_size | 16384 |</span><br><span class="line">+------------------+-------+</span><br><span class="line">1 row in set (0.00 sec)</span><br></pre></td></tr></table></figure>
-<p>只能在第一次初始化MySQL数据目录时指定，之后<strong>再也不能更改</strong>（通过mysqld
---initialize初始化数据目录[旧版本]）</p>
-<h1 id="innodb行格式">InnoDB行格式</h1>
-<p>以记录为单位向表中插入数据，而这些记录在<strong>磁盘上的存放形式</strong>也被称为<strong>行格式</strong>或者<strong>记录格式</strong><br />
-目前有4中<strong>不同类型的行格式</strong>：COMPACT、REDUNDANT、DYNAMIC和COMPRESSED</p>
-<blockquote>
-<p>compact [kəmˈpækt]契约<br />
-redundant[rɪˈdʌndənt] 冗余的<br />
-dynamic[daɪˈnæmɪk]动态的<br />
-compressed [kəmˈprest] 压缩的</p>
-</blockquote>
-<h2 id="指定行格式的语法">指定行格式的语法</h2>
-<p>CREATE TABLE 表名(列的信息) ROW_FORMAT=行格式名称<br />
-ALTER TABLE 表名 ROW_FORMATE=行格式名称<br />
-如下，在数据库xiaohaizi下创建一个表</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">CREATE TABLE record_format_demo(</span><br><span class="line">      c1 VARCHAR(10),</span><br><span class="line">      c2 VARCHAR(10) NOT NULL,</span><br><span class="line">      c3 CHAR(10),</span><br><span class="line">      c4 VARCHAR(10)</span><br><span class="line">      ) CHARSET=ascii ROW_FORMAT=COMPACT;  </span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">回顾：ascii每个字符1字节即可表示，且只有空格标点数字字母不可见字符</span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">插入两条数据</span></span><br><span class="line">INSERT INTO record_format_demo(c1,c2,c3,c4) VALUES(&#x27;aaaa&#x27;,&#x27;bbb&#x27;,&#x27;cc&#x27;,&#x27;d&#x27;),(&#x27;eeee&#x27;,&#x27;fff&#x27;,NULL,NULL);</span><br></pre></td></tr></table></figure>
-<p>查询</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">查询</span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">SELECT * FROM record_format_demo;</span></span><br><span class="line">+------+-----+------+------+</span><br><span class="line">| c1   | c2  | c3   | c4   |</span><br><span class="line">+------+-----+------+------+</span><br><span class="line">| aaaa | bbb | cc   | d    |</span><br><span class="line">| eeee | fff | NULL | NULL |</span><br><span class="line">+------+-----+------+------+</span><br><span class="line">2 rows in set (0.01 sec)</span><br></pre></td></tr></table></figure>
-<h2 id="compact行格式">COMPACT行格式</h2>
-<p><code>[kəmˈpækt]契约</code></p>
-<h3 id="额外信息">额外信息</h3>
-<p>包括<strong>变长字段长度列表、NULL值列表、记录头信息</strong><br />
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230419143303256.png"
-alt="image-20230419143303256" /></p>
-<h3 id="记录的真实数据">记录的真实数据</h3>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230419185811554.png"
-alt="image-20230419185811554" />
-<figcaption aria-hidden="true">image-20230419185811554</figcaption>
-</figure>
-<h2 id="redundant行格式">REDUNDANT行格式</h2>
-<p><code>[rɪˈdʌndənt] 冗余的</code><br />
-MySQL5.0之前使用的一种行格式（古老）<br />
-如图<br />
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230419173856310.png"
-alt="image-20230419173856310" /></p>
-<p>下面主要和COMPACT行格式做比较</p>
-<h3 id="字段长度偏移列表">字段长度偏移列表</h3>
-<ol type="1">
-<li>记录了所有列</li>
-<li>偏移，即不是直接记录，而是通过加减</li>
-</ol>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230419174348286.png"
-alt="image-20230419174348286" />
-<figcaption aria-hidden="true">image-20230419174348286</figcaption>
-</figure>
-<p>同样是逆序，如第一条记录<br />
-06 0C 13 17 1A 24 25，则<br />
-第1列(RD_ROW_ID)：6字节<br />
-第2列(DB_TRX_ID)：6字节 0C-06=6 第3列(DB_ROLL_POINTER)：7字节 13-0C=7
-第4列(c1)：4字节<br />
-第5列(c2)：3字节<br />
-第6列(c3)：10字节<br />
-第7列(c4)：1字节</p>
-<h3 id="记录头信息">记录头信息</h3>
-<p>相比COMPACT行格式，多出了2个，少了一个</p>
-<p>没有了record_type这个属性<br />
-多了n_field和1byte_offs_flag这两个属性：<br />
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230419183041824.png"
-alt="image-20230419183041824" /></p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">查询</span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">SELECT * FROM record_format_demo;</span></span><br><span class="line">+------+-----+------+------+</span><br><span class="line">| c1   | c2  | c3   | c4   |</span><br><span class="line">+------+-----+------+------+</span><br><span class="line">| aaaa | bbb | cc   | d    |</span><br><span class="line">| eeee | fff | NULL | NULL |</span><br><span class="line">+------+-----+------+------+</span><br><span class="line">2 rows in set (0.01 sec)</span><br></pre></td></tr></table></figure>
-<p>第一条记录的头信息为：00 00 10 0F 00 BC</p>
-<p>即：00000000 00000000 00010000 00001111 00000000 1011 1100</p>
-<p>前面2字节都是0，即预留位1，预留位2，deleted_flag，min_rec_flag，n_owned都是0<br />
-heap_no前面8位是0，再取5位：即 00000000 0001 0，即0x02<br />
-n_field：000 0000111，即0x07<br />
-1byte_offs_flag：0x01<br />
-next_record：00000000 1011 1100，即0xBC</p>
-<h3
-id="记录头信息中的1byte_offs_flag的值是怎么选择的">记录头信息中的1byte_offs_flag的值是怎么选择的</h3>
-<p>字段长度偏移列表存储的<strong>偏移量</strong>指的是<strong>每个列的值占用的空间</strong>在<strong>记录的真</strong>
-<strong>实数据处结束</strong>的位置<br />
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230419212005826.png"
-alt="image-20230419212005826" /></p>
-<blockquote>
-<p>如上，0x06代表第一列(DB_ROW_ID)在真实数据的第6字节处结束；0x0C
-代表第二列(DB_TRX_ID)在真实数据的第12字节处结束....</p>
-</blockquote>
-<p>讨论：每个列对应的偏移量可以使用1字节或2字节来存储，那么什么时候1什么时候2<br />
-<strong>根据REDUNDANT行格式记录的真实数据占用的总大小</strong>来判断<br />
-如果真实数据占用的字节数不大于127时，每个列对应的偏移量占用1字节<strong>[注意，这里只用到了1字节的7位，即max=01111111]</strong><br />
-如果大于127但不大于32767
-（2^15-1，也就是15位的最大表示）时，使用2字节。</p>
-<blockquote>
-<p>如果超过32767，则本页中只保留前768字节和20字节的<strong>溢出页面地址</strong>（20字节还有别的信息）。这种情况下只是用2字节存储每个列对应的偏移量即可（127&lt;768&lt;=32767)</p>
-</blockquote>
-<p>在<strong>头信息</strong>中放置了一个1byte_offs_flag属性，值为1时表明使用1字节存储偏移量；值为0时表明使用2字节存储偏移量</p>
-<h3
-id="redundant行格式中null值的处理">REDUNDANT行格式中NULL值的处理</h3>
-<blockquote>
-<p>REDUNDANT行格式并没有NULL值列表</p>
-</blockquote>
-<p>将<strong>列对应的偏移量值</strong>的<strong>第一个比特位</strong>，作为是否为NULL的依据，也称之为<strong>NULL比特位</strong><br />
-不论是1字节还是2字节，都要使用第1个比特位来标记该列值是否为NULL<br />
-对于<strong>NULL列</strong>来说，该列的类型<strong>是否为变长类型</strong>决定了该列在记录的<strong>真实数据处</strong>的存储方式。</p>
-<p>分析第2条数据<br />
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230420232026832.png"
-alt="image-20230420232026832" /></p>
-<p>字段长度偏移列表-&gt;按照列的顺序排放：06 0C 13 17 1A A4 A4<br />
-c3=NULL，且c3类型-&gt;CHAR(10) ==&gt;真实数据部分占用10字节,0x00<br />
-c3 原偏移量为36=32+4 =
-00100100-&gt;0x24，由于为NULL，所以首位(比特)为1，所以（真实）偏移量为10100100，0xA4<br />
-c2偏移量为0x1A，则c2字节数为0x24-0x1A=36-26=10<br />
-如果<strong>存储NULL值的字段为变长数据类型</strong>，则不在记录的真实数据部分占用任何存储空间<br />
-所以c4的偏移量应该和c3相同，都是00100100，且由于是NULL，所以首位为1-&gt;10100100,0xA4</p>
-<blockquote>
-<p>从结果往回推理，c4也是0xA4，和c3相同，说明c4和c3一样都是NULL</p>
-</blockquote>
-<p>COMPACT行格式的记录占用的空间更少</p>
-<h3 id="charm列的存储格式">CHAR(m)列的存储格式</h3>
-<p>COMPACT中，当定长类型CHAR(M)的字符集的每个字符占用字节不固定时，才会记录CHAR列的长度；而REDUNDANT行格式中，该列<strong>真实数据</strong>占用的存储空间大小，就是该字符集<strong>表示一个字符最多需要的字节数</strong>和<strong>M</strong>的乘积：utf8的CHAR(10)类型的列，<strong>真实数据占用存储空间大小</strong>始终为30字节；使用gbk字符集的CHAR(10)，始终20字节</p>
-<h2 id="溢出列">溢出列</h2>
-<h3 id="溢出列-1">溢出列</h3>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">举例</span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">CREATE TABLE off_page_demo(</span></span><br><span class="line">      c VARCHAR(65532)</span><br><span class="line">      ) CHARSET=ascii ROW_FORMAT=COMPACT;</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">插入一条数据</span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">INSERT INTO off_page_demo(c) VALUES(REPEAT(<span class="string">&#x27;a&#x27;</span>,65532));</span></span><br><span class="line">Query OK, 1 row affected (0.06 sec)</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>ascii字符集中1字符占用1字节，REPEAT('a',65532)生成一个把字符'a'重复65532次数的字符串</p>
-</blockquote>
-<p>**1页有16kb=1024*16=16384字节，65532字节远超1页大小<strong><br />
-</strong>COMPACT和REDUNDANT行格式<strong>中，对于存储空间占用特别多的列，真实数据处只会存储该列一部分数据，剩余数据存储在</strong>几个其他的页<strong>中，在记录的真实数据处用</strong>20字节<strong>存储指向这些页的地址（当然，这20字节还包括</strong>分散在其他页面中的数据所占用的字节数**）</p>
-<blockquote>
-<p>原书加了括号里的话，不是很理解，我的理解是：这20字节指向的页中，包括了溢出的那部分数据</p>
-</blockquote>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230421100332722.png"
-alt="image-20230421100332722" />
-<figcaption aria-hidden="true">image-20230421100332722</figcaption>
-</figure>
-<p>如上，如果列数据非常大，只会存储该列前768字节的数据以及一个指向其他页的地址（存疑，应该不止一个，有时候1个是放不下所有溢出页数据的吧？）<br />
-简化：<br />
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230421100649877.png"
-alt="image-20230421100649877" /><br />
-例子中列c的数据<strong>需要使用溢出页</strong>来存储，我们把这个列称为<strong>溢出列</strong>，不止VARCHAR(M)，TEXT和BLOB也可能成为溢出列</p>
-<h3 id="产生溢出列的临界点">产生溢出列的临界点</h3>
-<p>MySQL中规定一个页<strong>至少存放2条记录</strong></p>
-<blockquote>
-<p>16KB=16384字节</p>
-</blockquote>
-<p>每个页除了记录，还有额外信息，这些额外信息需要<strong>132字节</strong>。<br />
-每个记录需要<strong>27字节</strong>，包括</p>
-<blockquote>
-<p>针对下面的表<br />
-mysql&gt; CREATE TABLE off_page_demo( c VARCHAR(65532) ) CHARSET=ascii
-ROW_FORMAT=COMPACT;</p>
-<p><strong>注意，是COMPACT行格式</strong></p>
-</blockquote>
-<p><strong>对于每一行记录</strong><br />
-存储真实数据长度（2字节）<br />
-存储列是否为NULL值（1字节）<br />
-5字节大小的头信息<br />
-6字节的row_id列<br />
-6字节的row_id列<br />
-7字节的roll_pointer列</p>
-<p>132+2*(27+n) &lt;16384</p>
-<blockquote>
-<p>至于为社么不能等于，这是MySQL设计时规定的，未知。<br />
-正常记录的页和溢出页是两种不同的页，没有规定一个<strong>溢出页页面</strong>中至少存放两条记录</p>
-</blockquote>
-<p><strong>对于该表</strong>，得出的解是n&lt;8099，也就是如果一个列存储的数据小于8099，就不会成为溢出页</p>
-<h3 id="结论">结论</h3>
-<p>如果一条记录的某个列中存储的数据<strong>占用字节数非常多</strong>，导致一个页<strong>没有办法</strong>存储<strong>两条记录</strong>，该列就可能会成为溢出列</p>
-<h2
-id="dynamic行格式和compressed行格式">DYNAMIC行格式和COMPRESSED行格式</h2>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230421102458108.png"
-alt="image-20230421102458108" />
-<figcaption aria-hidden="true">image-20230421102458108</figcaption>
-</figure>
-<p>这两个与COMPACT行记录挺像，对于处理溢出列的数据有分歧：<br />
-<strong>他们</strong>不会在记录真实处存储真实数据的前768字节，而是把该列所有真实数据都存储到溢出页，只在真实记录处存储20字节（指向溢出页的地址）。COMPRESSED行格式不同于DYNAMIC行格式的一点：COMPRESSED行格式会采用压缩算法对页面进行压缩</p>
-<blockquote>
-<p>MySQL5.7默认使用DYNAMIC行记录</p>
-</blockquote>
-<h2 id="总结">总结</h2>
-<p>REDUNDANT是一个比较原始的行格式，较为紧凑；而COMPACT、DYNAMIC以及COMPRESSED行格式是较新的行格式，它们是紧凑的（占用存储空间更少）</p>
-
-    </div>
-
-    
-    
-    
-
-      <footer class="post-footer">
-          <div class="post-tags">
-              <a href="/tags/MySQL%E6%98%AF%E6%80%8E%E6%A0%B7%E8%BF%90%E8%A1%8C%E7%9A%84/" rel="tag"># MySQL是怎样运行的</a>
-          </div>
-
-        
-
-
-        
-    <div class="post-nav">
-      <div class="post-nav-item">
-    <a href="/2023/04/17/study/mysql/how_mysql_run/03/" rel="prev" title="03字符集和比较规则">
-      <i class="fa fa-chevron-left"></i> 03字符集和比较规则
-    </a></div>
-      <div class="post-nav-item">
-    <a href="/2023/04/21/study/mysql/how_mysql_run/05/" rel="next" title="05InnoDB数据页结构">
-      05InnoDB数据页结构 <i class="fa fa-chevron-right"></i>
-    </a></div>
-    </div>
-      </footer>
-    
-  </article>
-  
-  
-  
-
-
-
-          </div>
-          
-    
-  
-  <div class="comments">
-  <script src="https://utteranc.es/client.js" repo="lwmfjc/lwmfjc.github.io.comment" issue-term="pathname" theme="github-light" crossorigin="anonymous" async></script>
-  </div>
-  
-  
-
-<script>
-  window.addEventListener('tabs:register', () => {
-    let { activeClass } = CONFIG.comments;
-    if (CONFIG.comments.storage) {
-      activeClass = localStorage.getItem('comments_active') || activeClass;
-    }
-    if (activeClass) {
-      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
-      if (activeTab) {
-        activeTab.click();
-      }
-    }
-  });
-  if (CONFIG.comments.storage) {
-    window.addEventListener('tabs:click', event => {
-      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
-      let commentClass = event.target.classList[1];
-      localStorage.setItem('comments_active', commentClass);
-    });
-  }
-</script>
-
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
         </div>
-          
-  
-  <div class="toggle sidebar-toggle">
-    <span class="toggle-line toggle-line-first"></span>
-    <span class="toggle-line toggle-line-middle"></span>
-    <span class="toggle-line toggle-line-last"></span>
+      </div>
+    </div>
   </div>
 
+</header>
+        
+  
   <aside class="sidebar">
-    <div class="sidebar-inner">
 
-      <ul class="sidebar-nav motion-element">
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
         <li class="sidebar-nav-toc">
           文章目录
         </li>
@@ -546,281 +144,339 @@ alt="image-20230421102458108" />
         </li>
       </ul>
 
-      <!--noindex-->
-      <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%97%AE%E9%A2%98"><span class="nav-number">1.</span> <span class="nav-text">问题</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#innodb%E9%A1%B5%E7%AE%80%E4%BB%8B"><span class="nav-number">2.</span> <span class="nav-text">InnoDB页简介</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#innodb%E8%A1%8C%E6%A0%BC%E5%BC%8F"><span class="nav-number">3.</span> <span class="nav-text">InnoDB行格式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8C%87%E5%AE%9A%E8%A1%8C%E6%A0%BC%E5%BC%8F%E7%9A%84%E8%AF%AD%E6%B3%95"><span class="nav-number">3.1.</span> <span class="nav-text">指定行格式的语法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#compact%E8%A1%8C%E6%A0%BC%E5%BC%8F"><span class="nav-number">3.2.</span> <span class="nav-text">COMPACT行格式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%A2%9D%E5%A4%96%E4%BF%A1%E6%81%AF"><span class="nav-number">3.2.1.</span> <span class="nav-text">额外信息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%B0%E5%BD%95%E7%9A%84%E7%9C%9F%E5%AE%9E%E6%95%B0%E6%8D%AE"><span class="nav-number">3.2.2.</span> <span class="nav-text">记录的真实数据</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#redundant%E8%A1%8C%E6%A0%BC%E5%BC%8F"><span class="nav-number">3.3.</span> <span class="nav-text">REDUNDANT行格式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AD%97%E6%AE%B5%E9%95%BF%E5%BA%A6%E5%81%8F%E7%A7%BB%E5%88%97%E8%A1%A8"><span class="nav-number">3.3.1.</span> <span class="nav-text">字段长度偏移列表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%B0%E5%BD%95%E5%A4%B4%E4%BF%A1%E6%81%AF"><span class="nav-number">3.3.2.</span> <span class="nav-text">记录头信息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%B0%E5%BD%95%E5%A4%B4%E4%BF%A1%E6%81%AF%E4%B8%AD%E7%9A%841byte_offs_flag%E7%9A%84%E5%80%BC%E6%98%AF%E6%80%8E%E4%B9%88%E9%80%89%E6%8B%A9%E7%9A%84"><span class="nav-number">3.3.3.</span> <span class="nav-text">记录头信息中的1byte_offs_flag的值是怎么选择的</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#redundant%E8%A1%8C%E6%A0%BC%E5%BC%8F%E4%B8%ADnull%E5%80%BC%E7%9A%84%E5%A4%84%E7%90%86"><span class="nav-number">3.3.4.</span> <span class="nav-text">REDUNDANT行格式中NULL值的处理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#charm%E5%88%97%E7%9A%84%E5%AD%98%E5%82%A8%E6%A0%BC%E5%BC%8F"><span class="nav-number">3.3.5.</span> <span class="nav-text">CHAR(m)列的存储格式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%BA%A2%E5%87%BA%E5%88%97"><span class="nav-number">3.4.</span> <span class="nav-text">溢出列</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%BA%A2%E5%87%BA%E5%88%97-1"><span class="nav-number">3.4.1.</span> <span class="nav-text">溢出列</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%A7%E7%94%9F%E6%BA%A2%E5%87%BA%E5%88%97%E7%9A%84%E4%B8%B4%E7%95%8C%E7%82%B9"><span class="nav-number">3.4.2.</span> <span class="nav-text">产生溢出列的临界点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%93%E8%AE%BA"><span class="nav-number">3.4.3.</span> <span class="nav-text">结论</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#dynamic%E8%A1%8C%E6%A0%BC%E5%BC%8F%E5%92%8Ccompressed%E8%A1%8C%E6%A0%BC%E5%BC%8F"><span class="nav-number">3.5.</span> <span class="nav-text">DYNAMIC行格式和COMPRESSED行格式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">3.6.</span> <span class="nav-text">总结</span></a></li></ol></li></ol></div>
-      </div>
-      <!--/noindex-->
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%97%AE%E9%A2%98"><span class="nav-number">1.</span> <span class="nav-text">问题</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#InnoDB%E9%A1%B5%E7%AE%80%E4%BB%8B"><span class="nav-number">2.</span> <span class="nav-text">InnoDB页简介</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#InnoDB%E8%A1%8C%E6%A0%BC%E5%BC%8F"><span class="nav-number">3.</span> <span class="nav-text">InnoDB行格式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8C%87%E5%AE%9A%E8%A1%8C%E6%A0%BC%E5%BC%8F%E7%9A%84%E8%AF%AD%E6%B3%95"><span class="nav-number">3.1.</span> <span class="nav-text">指定行格式的语法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#COMPACT%E8%A1%8C%E6%A0%BC%E5%BC%8F"><span class="nav-number">3.2.</span> <span class="nav-text">COMPACT行格式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%A2%9D%E5%A4%96%E4%BF%A1%E6%81%AF"><span class="nav-number">3.2.1.</span> <span class="nav-text">额外信息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%B0%E5%BD%95%E7%9A%84%E7%9C%9F%E5%AE%9E%E6%95%B0%E6%8D%AE"><span class="nav-number">3.2.2.</span> <span class="nav-text">记录的真实数据</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#REDUNDANT%E8%A1%8C%E6%A0%BC%E5%BC%8F"><span class="nav-number">3.3.</span> <span class="nav-text">REDUNDANT行格式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AD%97%E6%AE%B5%E9%95%BF%E5%BA%A6%E5%81%8F%E7%A7%BB%E5%88%97%E8%A1%A8"><span class="nav-number">3.3.1.</span> <span class="nav-text">字段长度偏移列表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%B0%E5%BD%95%E5%A4%B4%E4%BF%A1%E6%81%AF"><span class="nav-number">3.3.2.</span> <span class="nav-text">记录头信息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%B0%E5%BD%95%E5%A4%B4%E4%BF%A1%E6%81%AF%E4%B8%AD%E7%9A%841byte-offs-flag%E7%9A%84%E5%80%BC%E6%98%AF%E6%80%8E%E4%B9%88%E9%80%89%E6%8B%A9%E7%9A%84"><span class="nav-number">3.3.3.</span> <span class="nav-text">记录头信息中的1byte_offs_flag的值是怎么选择的</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#REDUNDANT%E8%A1%8C%E6%A0%BC%E5%BC%8F%E4%B8%ADNULL%E5%80%BC%E7%9A%84%E5%A4%84%E7%90%86"><span class="nav-number">3.3.4.</span> <span class="nav-text">REDUNDANT行格式中NULL值的处理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CHAR-m-%E5%88%97%E7%9A%84%E5%AD%98%E5%82%A8%E6%A0%BC%E5%BC%8F"><span class="nav-number">3.3.5.</span> <span class="nav-text">CHAR(m)列的存储格式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%BA%A2%E5%87%BA%E5%88%97"><span class="nav-number">3.4.</span> <span class="nav-text">溢出列</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%BA%A2%E5%87%BA%E5%88%97-1"><span class="nav-number">3.4.1.</span> <span class="nav-text">溢出列</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%A7%E7%94%9F%E6%BA%A2%E5%87%BA%E5%88%97%E7%9A%84%E4%B8%B4%E7%95%8C%E7%82%B9"><span class="nav-number">3.4.2.</span> <span class="nav-text">产生溢出列的临界点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%93%E8%AE%BA"><span class="nav-number">3.4.3.</span> <span class="nav-text">结论</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DYNAMIC%E8%A1%8C%E6%A0%BC%E5%BC%8F%E5%92%8CCOMPRESSED%E8%A1%8C%E6%A0%BC%E5%BC%8F"><span class="nav-number">3.5.</span> <span class="nav-text">DYNAMIC行格式和COMPRESSED行格式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">3.6.</span> <span class="nav-text">总结</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
 
-      <div class="site-overview-wrap sidebar-panel">
-        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image" alt="刘易"
-      src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/avatar.png">
+      src="/images/avatar.png">
   <p class="site-author-name" itemprop="name">刘易</p>
   <div class="site-description" itemprop="description">知命不惧 日日自新</div>
 </div>
-<div class="site-state-wrap motion-element">
+<div class="site-state-wrap animated">
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
-          <a href="/archives/">
-        
-          <span class="site-state-item-count">252</span>
+        <a href="/archives/">
+          <span class="site-state-item-count">255</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
-            <a href="/categories/">
-          
+          <a href="/categories/">
         <span class="site-state-item-count">6</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
-            <a href="/tags/">
-          
-        <span class="site-state-item-count">43</span>
+          <a href="/tags/">
+        <span class="site-state-item-count">44</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
 </div>
-  <div class="links-of-author motion-element">
+  <div class="links-of-author animated">
       <span class="links-of-author-item">
-        <a href="https://github.com/lwmfjc" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;lwmfjc" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i></a>
+        <a href="https://github.com/lwmfjc" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;lwmfjc" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
       </span>
   </div>
 
-
-
+        </div>
       </div>
-    <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=370 height=500 src="//music.163.com/outchain/player?type=0&id=33517178&auto=1&height=500"></iframe>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
     </div>
+
+    
+  <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=450 src="//music.163.com/outchain/player?type=0&id=33517178&auto=1&height=430"></iframe>
   </aside>
-  <div id="sidebar-dimmer"></div> 
 
 
-      </div>
-    </main>
+    </div>
 
-    <footer class="footer">
-      <div class="footer-inner">
-        
+    <div class="main-inner post posts-expand">
 
-        
 
-<div class="copyright">
   
-  &copy; 
-  <span itemprop="copyrightYear">2024</span>
-  <span class="with-love">
-    <i class="fa fa-heart"></i>
-  </span>
-  <span class="author" itemprop="copyrightHolder">刘易</span>
-    <span class="post-meta-divider">|</span>
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://lwmfjc.github.io/2023/04/18/study/mysql/how_mysql_run/04/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="刘易">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="随记">
+      <meta itemprop="description" content="知命不惧 日日自新">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="04InnoDB记录存储结构 | 随记">
+      <meta itemprop="description" content="04InnoDB记录存储结构">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          04InnoDB记录存储结构
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-04-18 20:00:03" itemprop="dateCreated datePublished" datetime="2023-04-18T20:00:03+00:00">2023-04-18</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%AD%A6%E4%B9%A0/" itemprop="url" rel="index"><span itemprop="name">学习</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>4.7k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>9 分钟</span>
+    </span>
+</div>
+
+            <div class="post-description">04InnoDB记录存储结构</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><blockquote>
+<p>学习《MySQL是怎样运行的》，感谢作者！</p>
+</blockquote>
+<h1 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h1><p>表数据存在哪，以什么格式存放，MySQL以什么方式来访问<br>存储引擎：对表中数据进行<strong>存储</strong>和<strong>写入</strong><br>InnoDB是MySQL默认的存储引擎，这章主要讲<strong>InnoDB存储引擎的记录存储结构</strong></p>
+<h1 id="InnoDB页简介"><a href="#InnoDB页简介" class="headerlink" title="InnoDB页简介"></a>InnoDB页简介</h1><p><strong>注意，是简介</strong><br>InnoDB：将表中的数据<strong>存储到磁盘上</strong><br>真正处理数据的过程：内存中。所以需要<strong>把磁盘中数据加载到内存中</strong>，如果是<strong>写入</strong>或<strong>修改</strong>请求，还需要把<strong>内存</strong>中的内容<strong>刷新到磁盘</strong>上<br>获取记录：不是一条条从磁盘读，InnoDB将数据划分为若干个页，以<strong>页</strong>作为<strong>磁盘</strong>和<strong>内存</strong>之间交互的基本单位。页大小-&gt; 一般是16KB<br>一般情况：一次最少从磁盘读取16KB的内容<strong>到内存中</strong>，一次最少把内存中的16KB内容<strong>刷新到磁盘</strong>中  </p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash"> SHOW VARIABLES LIKE <span class="string">&#x27;innodb_page_size&#x27;</span>;</span></span><br><span class="line">+------------------+-------+</span><br><span class="line">| Variable_name    | Value |</span><br><span class="line">+------------------+-------+</span><br><span class="line">| innodb_page_size | 16384 |</span><br><span class="line">+------------------+-------+</span><br><span class="line">1 row in set (0.00 sec)</span><br></pre></td></tr></table></figure>
+<p>只能在第一次初始化MySQL数据目录时指定，之后<strong>再也不能更改</strong>（通过mysqld —initialize初始化数据目录[旧版本]）</p>
+<h1 id="InnoDB行格式"><a href="#InnoDB行格式" class="headerlink" title="InnoDB行格式"></a>InnoDB行格式</h1><p>以记录为单位向表中插入数据，而这些记录在<strong>磁盘上的存放形式</strong>也被称为<strong>行格式</strong>或者<strong>记录格式</strong><br>目前有4中<strong>不同类型的行格式</strong>：COMPACT、REDUNDANT、DYNAMIC和COMPRESSED  </p>
+<blockquote>
+<p>compact [kəmˈpækt]契约<br>redundant[rɪˈdʌndənt] 冗余的<br>dynamic[daɪˈnæmɪk]动态的<br>compressed [kəmˈprest] 压缩的</p>
+</blockquote>
+<h2 id="指定行格式的语法"><a href="#指定行格式的语法" class="headerlink" title="指定行格式的语法"></a>指定行格式的语法</h2><p>CREATE TABLE 表名(列的信息) ROW_FORMAT=行格式名称<br>ALTER TABLE 表名 ROW_FORMATE=行格式名称<br>如下，在数据库xiaohaizi下创建一个表  </p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">CREATE TABLE record_format_demo(</span><br><span class="line">      c1 VARCHAR(10),</span><br><span class="line">      c2 VARCHAR(10) NOT NULL,</span><br><span class="line">      c3 CHAR(10),</span><br><span class="line">      c4 VARCHAR(10)</span><br><span class="line">      ) CHARSET=ascii ROW_FORMAT=COMPACT;  </span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">回顾：ascii每个字符1字节即可表示，且只有空格标点数字字母不可见字符</span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">插入两条数据</span></span><br><span class="line">INSERT INTO record_format_demo(c1,c2,c3,c4) VALUES(&#x27;aaaa&#x27;,&#x27;bbb&#x27;,&#x27;cc&#x27;,&#x27;d&#x27;),(&#x27;eeee&#x27;,&#x27;fff&#x27;,NULL,NULL);</span><br></pre></td></tr></table></figure>
+<p>查询  </p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">查询</span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">SELECT * FROM record_format_demo;</span></span><br><span class="line">+------+-----+------+------+</span><br><span class="line">| c1   | c2  | c3   | c4   |</span><br><span class="line">+------+-----+------+------+</span><br><span class="line">| aaaa | bbb | cc   | d    |</span><br><span class="line">| eeee | fff | NULL | NULL |</span><br><span class="line">+------+-----+------+------+</span><br><span class="line">2 rows in set (0.01 sec)</span><br></pre></td></tr></table></figure>
+<h2 id="COMPACT行格式"><a href="#COMPACT行格式" class="headerlink" title="COMPACT行格式"></a>COMPACT行格式</h2><p><code>[kəmˈpækt]契约</code></p>
+<h3 id="额外信息"><a href="#额外信息" class="headerlink" title="额外信息"></a>额外信息</h3><p>包括<strong>变长字段长度列表、NULL值列表、记录头信息</strong><br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230419143303256.png" alt="image-20230419143303256"></p>
+<h3 id="记录的真实数据"><a href="#记录的真实数据" class="headerlink" title="记录的真实数据"></a>记录的真实数据</h3><p><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230419185811554.png" alt="image-20230419185811554"></p>
+<h2 id="REDUNDANT行格式"><a href="#REDUNDANT行格式" class="headerlink" title="REDUNDANT行格式"></a>REDUNDANT行格式</h2><p><code>[rɪˈdʌndənt] 冗余的</code><br>MySQL5.0之前使用的一种行格式（古老）<br>如图<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230419173856310.png" alt="image-20230419173856310"></p>
+<p>下面主要和COMPACT行格式做比较  </p>
+<h3 id="字段长度偏移列表"><a href="#字段长度偏移列表" class="headerlink" title="字段长度偏移列表"></a>字段长度偏移列表</h3><ol>
+<li>记录了所有列</li>
+<li>偏移，即不是直接记录，而是通过加减  </li>
+</ol>
+<p><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230419174348286.png" alt="image-20230419174348286"></p>
+<p>同样是逆序，如第一条记录<br>06 0C 13 17 1A 24 25，则<br>第1列(RD_ROW_ID)：6字节<br>第2列(DB_TRX_ID)：6字节  0C-06=6<br>第3列(DB_ROLL_POINTER)：7字节    13-0C=7<br>第4列(c1)：4字节<br>第5列(c2)：3字节<br>第6列(c3)：10字节<br>第7列(c4)：1字节</p>
+<h3 id="记录头信息"><a href="#记录头信息" class="headerlink" title="记录头信息"></a>记录头信息</h3><p>相比COMPACT行格式，多出了2个，少了一个    </p>
+<p>没有了record_type这个属性<br>多了n_field和1byte_offs_flag这两个属性：<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230419183041824.png" alt="image-20230419183041824"></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">查询</span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">SELECT * FROM record_format_demo;</span></span><br><span class="line">+------+-----+------+------+</span><br><span class="line">| c1   | c2  | c3   | c4   |</span><br><span class="line">+------+-----+------+------+</span><br><span class="line">| aaaa | bbb | cc   | d    |</span><br><span class="line">| eeee | fff | NULL | NULL |</span><br><span class="line">+------+-----+------+------+</span><br><span class="line">2 rows in set (0.01 sec)</span><br></pre></td></tr></table></figure>
+<p>第一条记录的头信息为：00 00 10 0F 00 BC</p>
+<p>即：00000000 00000000 00010000 00001111 00000000 1011 1100</p>
+<p>前面2字节都是0，即预留位1，预留位2，deleted_flag，min_rec_flag，n_owned都是0<br>heap_no前面8位是0，再取5位：即 00000000 0001 0，即0x02<br>n_field：000 0000111，即0x07<br>1byte_offs_flag：0x01<br>next_record：00000000 1011 1100，即0xBC </p>
+<h3 id="记录头信息中的1byte-offs-flag的值是怎么选择的"><a href="#记录头信息中的1byte-offs-flag的值是怎么选择的" class="headerlink" title="记录头信息中的1byte_offs_flag的值是怎么选择的"></a>记录头信息中的1byte_offs_flag的值是怎么选择的</h3><p>字段长度偏移列表存储的<strong>偏移量</strong>指的是<strong>每个列的值占用的空间</strong>在<strong>记录的真</strong><br><strong>实数据处结束</strong>的位置<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230419212005826.png" alt="image-20230419212005826"></p>
+<blockquote>
+<p>如上，0x06代表第一列(DB_ROW_ID)在真实数据的第6字节处结束；0x0C 代表第二列(DB_TRX_ID)在真实数据的第12字节处结束…. </p>
+</blockquote>
+<p>讨论：每个列对应的偏移量可以使用1字节或2字节来存储，那么什么时候1什么时候2<br><strong>根据REDUNDANT行格式记录的真实数据占用的总大小</strong>来判断<br>如果真实数据占用的字节数不大于127时，每个列对应的偏移量占用1字节<strong>[注意，这里只用到了1字节的7位，即max=01111111]</strong><br>如果大于127但不大于32767 （2^15-1，也就是15位的最大表示）时，使用2字节。  </p>
+<blockquote>
+<p>如果超过32767，则本页中只保留前768字节和20字节的<strong>溢出页面地址</strong>（20字节还有别的信息）。这种情况下只是用2字节存储每个列对应的偏移量即可（127&lt;768&lt;=32767)</p>
+</blockquote>
+<p>在<strong>头信息</strong>中放置了一个1byte_offs_flag属性，值为1时表明使用1字节存储偏移量；值为0时表明使用2字节存储偏移量  </p>
+<h3 id="REDUNDANT行格式中NULL值的处理"><a href="#REDUNDANT行格式中NULL值的处理" class="headerlink" title="REDUNDANT行格式中NULL值的处理"></a>REDUNDANT行格式中NULL值的处理</h3><blockquote>
+<p>REDUNDANT行格式并没有NULL值列表</p>
+</blockquote>
+<p>将<strong>列对应的偏移量值</strong>的<strong>第一个比特位</strong>，作为是否为NULL的依据，也称之为<strong>NULL比特位</strong><br>不论是1字节还是2字节，都要使用第1个比特位来标记该列值是否为NULL<br>对于<strong>NULL列</strong>来说，该列的类型<strong>是否为变长类型</strong>决定了该列在记录的<strong>真实数据处</strong>的存储方式。</p>
+<p>分析第2条数据<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230420232026832.png" alt="image-20230420232026832"></p>
+<p>字段长度偏移列表-&gt;按照列的顺序排放：06 0C 13 17 1A A4 A4<br>c3=NULL，且c3类型-&gt;CHAR(10) ==&gt;真实数据部分占用10字节,0x00<br>c3 原偏移量为36=32+4 = 00100100-&gt;0x24，由于为NULL，所以首位(比特)为1，所以（真实）偏移量为10100100，0xA4<br>c2偏移量为0x1A，则c2字节数为0x24-0x1A=36-26=10<br>如果<strong>存储NULL值的字段为变长数据类型</strong>，则不在记录的真实数据部分占用任何存储空间<br>所以c4的偏移量应该和c3相同，都是00100100，且由于是NULL，所以首位为1-&gt;10100100,0xA4  </p>
+<blockquote>
+<p>从结果往回推理，c4也是0xA4，和c3相同，说明c4和c3一样都是NULL</p>
+</blockquote>
+<p>COMPACT行格式的记录占用的空间更少  </p>
+<h3 id="CHAR-m-列的存储格式"><a href="#CHAR-m-列的存储格式" class="headerlink" title="CHAR(m)列的存储格式"></a>CHAR(m)列的存储格式</h3><p>COMPACT中，当定长类型CHAR(M)的字符集的每个字符占用字节不固定时，才会记录CHAR列的长度；而REDUNDANT行格式中，该列<strong>真实数据</strong>占用的存储空间大小，就是该字符集<strong>表示一个字符最多需要的字节数</strong>和<strong>M</strong>的乘积：utf8的CHAR(10)类型的列，<strong>真实数据占用存储空间大小</strong>始终为30字节；使用gbk字符集的CHAR(10)，始终20字节  </p>
+<h2 id="溢出列"><a href="#溢出列" class="headerlink" title="溢出列"></a>溢出列</h2><h3 id="溢出列-1"><a href="#溢出列-1" class="headerlink" title="溢出列"></a>溢出列</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">举例</span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">CREATE TABLE off_page_demo(</span></span><br><span class="line">      c VARCHAR(65532)</span><br><span class="line">      ) CHARSET=ascii ROW_FORMAT=COMPACT;</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">插入一条数据</span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">INSERT INTO off_page_demo(c) VALUES(REPEAT(<span class="string">&#x27;a&#x27;</span>,65532));</span></span><br><span class="line">Query OK, 1 row affected (0.06 sec)</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>ascii字符集中1字符占用1字节，REPEAT(‘a’,65532)生成一个把字符’a’重复65532次数的字符串</p>
+</blockquote>
+<p><strong>1页有16kb=1024*16=16384字节，65532字节远超1页大小</strong><br><strong>COMPACT和REDUNDANT行格式</strong>中，对于存储空间占用特别多的列，真实数据处只会存储该列一部分数据，剩余数据存储在<strong>几个其他的页</strong>中，在记录的真实数据处用<strong>20字节</strong>存储指向这些页的地址（当然，这20字节还包括<strong>分散在其他页面中的数据所占用的字节数</strong>）  </p>
+<blockquote>
+<p>原书加了括号里的话，不是很理解，我的理解是：这20字节指向的页中，包括了溢出的那部分数据  </p>
+</blockquote>
+<p><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230421100332722.png" alt="image-20230421100332722"></p>
+<p>如上，如果列数据非常大，只会存储该列前768字节的数据以及一个指向其他页的地址（存疑，应该不止一个，有时候1个是放不下所有溢出页数据的吧？）<br>简化：<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230421100649877.png" alt="image-20230421100649877"><br>例子中列c的数据<strong>需要使用溢出页</strong>来存储，我们把这个列称为<strong>溢出列</strong>，不止VARCHAR(M)，TEXT和BLOB也可能成为溢出列  </p>
+<h3 id="产生溢出列的临界点"><a href="#产生溢出列的临界点" class="headerlink" title="产生溢出列的临界点"></a>产生溢出列的临界点</h3><p>MySQL中规定一个页<strong>至少存放2条记录</strong>  </p>
+<blockquote>
+<p>16KB=16384字节</p>
+</blockquote>
+<p>每个页除了记录，还有额外信息，这些额外信息需要<strong>132字节</strong>。<br>每个记录需要<strong>27字节</strong>，包括  </p>
+<blockquote>
+<p>针对下面的表<br>mysql&gt; CREATE TABLE off_page_demo(<br>      c VARCHAR(65532)<br>      ) CHARSET=ascii ROW_FORMAT=COMPACT;</p>
+<p><strong>注意，是COMPACT行格式</strong></p>
+</blockquote>
+<p><strong>对于每一行记录</strong><br>存储真实数据长度（2字节）<br>存储列是否为NULL值（1字节）<br>5字节大小的头信息<br>6字节的row_id列<br>6字节的row_id列<br>7字节的roll_pointer列  </p>
+<p>132+2*(27+n) &lt;16384  </p>
+<blockquote>
+<p>至于为社么不能等于，这是MySQL设计时规定的，未知。<br>正常记录的页和溢出页是两种不同的页，没有规定一个<strong>溢出页页面</strong>中至少存放两条记录  </p>
+</blockquote>
+<p><strong>对于该表</strong>，得出的解是n&lt;8099，也就是如果一个列存储的数据小于8099，就不会成为溢出页  </p>
+<h3 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h3><p>如果一条记录的某个列中存储的数据<strong>占用字节数非常多</strong>，导致一个页<strong>没有办法</strong>存储<strong>两条记录</strong>，该列就可能会成为溢出列  </p>
+<h2 id="DYNAMIC行格式和COMPRESSED行格式"><a href="#DYNAMIC行格式和COMPRESSED行格式" class="headerlink" title="DYNAMIC行格式和COMPRESSED行格式"></a>DYNAMIC行格式和COMPRESSED行格式</h2><p><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230421102458108.png" alt="image-20230421102458108"></p>
+<p>这两个与COMPACT行记录挺像，对于处理溢出列的数据有分歧：<br><strong>他们</strong>不会在记录真实处存储真实数据的前768字节，而是把该列所有真实数据都存储到溢出页，只在真实记录处存储20字节（指向溢出页的地址）。COMPRESSED行格式不同于DYNAMIC行格式的一点：COMPRESSED行格式会采用压缩算法对页面进行压缩  </p>
+<blockquote>
+<p>MySQL5.7默认使用DYNAMIC行记录</p>
+</blockquote>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>REDUNDANT是一个比较原始的行格式，较为紧凑；而COMPACT、DYNAMIC以及COMPRESSED行格式是较新的行格式，它们是紧凑的（占用存储空间更少） </p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/MySQL%E6%98%AF%E6%80%8E%E6%A0%B7%E8%BF%90%E8%A1%8C%E7%9A%84/" rel="tag"># MySQL是怎样运行的</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2023/04/17/study/mysql/how_mysql_run/03/" rel="prev" title="03字符集和比较规则">
+                  <i class="fa fa-angle-left"></i> 03字符集和比较规则
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2023/04/21/study/mysql/how_mysql_run/05/" rel="next" title="05InnoDB数据页结构">
+                  05InnoDB数据页结构 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments utterances-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2024</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">刘易</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
     <span class="post-meta-item-icon">
-      <i class="fa fa-chart-area"></i>
+      <i class="fa fa-chart-line"></i>
     </span>
     <span title="站点总字数">1.5m</span>
-    <span class="post-meta-divider">|</span>
+  </span>
+  <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">45:41</span>
+    <span title="站点阅读时长">45:25</span>
+  </span>
 </div>
-  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
-
-        
-<div class="busuanzi-count">
-  <script data-pjax async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-user"></i>
-      </span>
-      <span class="site-uv" title="总访客量">
-        <span id="busuanzi_value_site_uv"></span>
-      </span>
-    </span>
-    <span class="post-meta-divider">|</span>
-    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-eye"></i>
-      </span>
-      <span class="site-pv" title="总访问量">
-        <span id="busuanzi_value_site_pv"></span>
-      </span>
-    </span>
-</div>
-
-
-
-
-
-
-
-
-      </div>
-    </footer>
-  </div>
-
-  
-  <script src="/lib/anime.min.js"></script>
-  <script src="/lib/pjax/pjax.min.js"></script>
-  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
-  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
-  <script src="/lib/velocity/velocity.min.js"></script>
-  <script src="/lib/velocity/velocity.ui.min.js"></script>
-
-<script src="/js/utils.js"></script>
-
-<script src="/js/motion.js"></script>
-
-
-<script src="/js/schemes/pisces.js"></script>
-
-
-<script src="/js/next-boot.js"></script>
-
-  <script>
-var pjax = new Pjax({
-  selectors: [
-    'head title',
-    '#page-configurations',
-    '.content-wrap',
-    '.post-toc-wrap',
-    '.languages',
-    '#pjax'
-  ],
-  switches: {
-    '.post-toc-wrap': Pjax.switches.innerHTML
-  },
-  analytics: false,
-  cacheBust: false,
-  scrollTo : !CONFIG.bookmark.enable
-});
-
-window.addEventListener('pjax:success', () => {
-  document.querySelectorAll('script[data-pjax], script#page-configurations, #pjax script').forEach(element => {
-    var code = element.text || element.textContent || element.innerHTML || '';
-    var parent = element.parentNode;
-    parent.removeChild(element);
-    var script = document.createElement('script');
-    if (element.id) {
-      script.id = element.id;
-    }
-    if (element.className) {
-      script.className = element.className;
-    }
-    if (element.type) {
-      script.type = element.type;
-    }
-    if (element.src) {
-      script.src = element.src;
-      // Force synchronous loading of peripheral JS.
-      script.async = false;
-    }
-    if (element.dataset.pjax !== undefined) {
-      script.dataset.pjax = '';
-    }
-    if (code !== '') {
-      script.appendChild(document.createTextNode(code));
-    }
-    parent.appendChild(script);
-  });
-  NexT.boot.refresh();
-  // Define Motion Sequence & Bootstrap Motion.
-  if (CONFIG.motion.enable) {
-    NexT.motion.integrator
-      .init()
-      .add(NexT.motion.middleWares.subMenu)
-      .add(NexT.motion.middleWares.postList)
-      .bootstrap();
-  }
-  NexT.utils.updateSidebarPosition();
-});
-</script>
-
-
-
-
-  
-
-
-
-
-  
-<script src="/js/local-search.js"></script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <div id="pjax">
-  
-
-  
-      
-
-<script>
-  if (typeof MathJax === 'undefined') {
-    window.MathJax = {
-      loader: {
-        source: {
-          '[tex]/amsCd': '[tex]/amscd',
-          '[tex]/AMScd': '[tex]/amscd'
-        }
-      },
-      tex: {
-        inlineMath: {'[+]': [['$', '$']]},
-        tags: 'ams'
-      },
-      options: {
-        renderActions: {
-          findScript: [10, doc => {
-            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
-              const display = !!node.type.match(/; *mode=display/);
-              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
-              const text = document.createTextNode('');
-              node.parentNode.replaceChild(text, node);
-              math.start = {node: text, delim: '', n: 0};
-              math.end = {node: text, delim: '', n: 0};
-              doc.math.push(math);
-            });
-          }, '', false],
-          insertedScript: [200, () => {
-            document.querySelectorAll('mjx-container').forEach(node => {
-              let target = node.parentNode;
-              if (target.nodeName.toLowerCase() === 'li') {
-                target.parentNode.classList.add('has-jax');
-              }
-            });
-          }, '', false]
-        }
-      }
-    };
-    (function () {
-      var script = document.createElement('script');
-      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
-      script.defer = true;
-      document.head.appendChild(script);
-    })();
-  } else {
-    MathJax.startup.document.state(0);
-    MathJax.texReset();
-    MathJax.typeset();
-  }
-</script>
-
-    
-
-  
 
     </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/next-theme-pjax/0.6.0/pjax.min.js" integrity="sha256-vxLn1tSKWD4dqbMRyv940UYw4sXgMtYcK6reefzZrao=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fancyapps-ui/5.0.31/fancybox/fancybox.umd.js" integrity="sha256-a+H7FYzJv6oU2hfsfDGM2Ohw/cR9v+hPfxHCLdmCrE8=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/medium-zoom/1.1.0/medium-zoom.min.js" integrity="sha256-ZgMyDAIYDYGxbcpJcfUnYwNevG/xi9OHKaR/8GK+jWc=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script><script src="/js/pjax.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+  <script class="next-config" data-name="pdf" type="application/json">{"object_url":{"url":"https://cdnjs.cloudflare.com/ajax/libs/pdfobject/2.3.0/pdfobject.min.js","integrity":"sha256-JJZNsid68vnh3/zyj0lY9BN5ynxVX/12XgOa1TlaYN0="},"url":"/lib/pdf/web/viewer.html"}</script>
+  <script src="/js/third-party/tags/pdf.js"></script>
+
+
+
+  <script src="/js/third-party/fancybox.js"></script>
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<script class="next-config" data-name="utterances" type="application/json">{"enable":true,"repo":"lwmfjc/lwmfjc.github.io.comment","issue_term":"pathname","theme":"github-light"}</script>
+<script src="/js/third-party/comments/utterances.js"></script>
+
 </body>
 </html>

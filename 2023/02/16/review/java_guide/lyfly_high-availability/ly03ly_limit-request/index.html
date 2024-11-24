@@ -2,9 +2,9 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
-<meta name="theme-color" content="#222">
-<meta name="generator" content="Hexo 6.3.0">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
   <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
@@ -12,22 +12,27 @@
 
 <link rel="stylesheet" href="/css/main.css">
 
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap&subset=latin,latin-ext">
 
-<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
-  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha256-5eIC48iZUHmSlSUz9XtjRyK2mzQkHScZY1WdMaoz74E=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancyapps-ui/5.0.31/fancybox/fancybox.css" integrity="sha256-gkQVf8UKZgQ0HyuxL/VnacadJ+D2Kox2TCEBuNQg5+w=" crossorigin="anonymous">
 
-<script id="hexo-configurations">
-    var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"lwmfjc.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","width":300,"display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
-  </script>
+<script class="next-config" data-name="main" type="application/json">{"hostname":"lwmfjc.github.io","root":"/","images":"/images","scheme":"Pisces","darkmode":false,"version":"8.21.1","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":true,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":true,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
 
-  <meta name="description" content="服务限流详解">
+    <meta name="description" content="服务限流详解">
 <meta property="og:type" content="article">
 <meta property="og:title" content="服务限流详解">
 <meta property="og:url" content="https://lwmfjc.github.io/2023/02/16/review/java_guide/lyfly_high-availability/ly03ly_limit-request/index.html">
 <meta property="og:site_name" content="随记">
 <meta property="og:description" content="服务限流详解">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f696d672d626c6f672e6373646e696d672e636e2f66396631373037316663346434383964383564326132333466623239386466312e706e67">
+<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f7374617469633030312e696e666f712e636e2f7265736f757263652f696d6167652f38642f31352f38646564376132623930653134383230393366393266666635353562333631352e706e67">
+<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f7374617469633030312e696e666f712e636e2f7265736f757263652f696d6167652f61652f31352f61653464336364313465666238646337303436643639316339303236343731352e706e67">
+<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f7374617469633030312e696e666f712e636e2f7265736f757263652f696d6167652f37352f30332f37353933386431303130313338636536366533386336656430333932663130332e706e67">
+<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230216170703458.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f696d672d626c6f672e6373646e696d672e636e2f65316532613735663438396534383534393930646162653362366365633532322e706e67">
 <meta property="article:published_time" content="2023-02-16T17:06:11.000Z">
 <meta property="article:modified_time" content="2023-02-16T17:06:11.000Z">
 <meta property="article:author" content="刘易">
@@ -35,21 +40,16 @@
 <meta property="article:tag" content="复习-javaGuide">
 <meta property="article:tag" content="复习-javaGuide-distributed_system">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f696d672d626c6f672e6373646e696d672e636e2f66396631373037316663346434383964383564326132333466623239386466312e706e67">
+
 
 <link rel="canonical" href="https://lwmfjc.github.io/2023/02/16/review/java_guide/lyfly_high-availability/ly03ly_limit-request/">
 
 
-<script id="page-configurations">
-  // https://hexo.io/docs/variables.html
-  CONFIG.page = {
-    sidebar: "",
-    isHome : false,
-    isPost : true,
-    lang   : 'zh-CN'
-  };
-</script>
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://lwmfjc.github.io/2023/02/16/review/java_guide/lyfly_high-availability/ly03ly_limit-request/","path":"2023/02/16/review/java_guide/lyfly_high-availability/ly03ly_limit-request/","title":"服务限流详解"}</script>
 
-  <title>服务限流详解 | 随记</title>
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>服务限流详解 | 随记</title>
   
 
 
@@ -57,56 +57,35 @@
 
 
 
+
+
   <noscript>
-  <style>
-  .use-motion .brand,
-  .use-motion .menu-item,
-  .sidebar-inner,
-  .use-motion .post-block,
-  .use-motion .pagination,
-  .use-motion .comments,
-  .use-motion .post-header,
-  .use-motion .post-body,
-  .use-motion .collection-header { opacity: initial; }
-
-  .use-motion .site-title,
-  .use-motion .site-subtitle {
-    opacity: initial;
-    top: initial;
-  }
-
-  .use-motion .logo-line-before i { left: initial; }
-  .use-motion .logo-line-after i { right: initial; }
-  </style>
-</noscript>
-
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
 </head>
 
-<body itemscope itemtype="http://schema.org/WebPage">
-  <div class="container use-motion">
-    <div class="headband"></div>
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
 
-    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
-      <div class="header-inner"><div class="site-brand-container">
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
   <div class="site-nav-toggle">
-    <div class="toggle" aria-label="切换导航栏">
-      <span class="toggle-line toggle-line-first"></span>
-      <span class="toggle-line toggle-line-middle"></span>
-      <span class="toggle-line toggle-line-last"></span>
+    <div class="toggle" aria-label="切换导航栏" role="button">
     </div>
   </div>
 
   <div class="site-meta">
 
     <a href="/" class="brand" rel="start">
-      <span class="logo-line-before"><i></i></span>
-      <h1 class="site-title">随记</h1>
-      <span class="logo-line-after"><i></i></span>
+      <i class="logo-line"></i>
+      <p class="site-title">随记</p>
+      <i class="logo-line"></i>
     </a>
   </div>
 
   <div class="site-nav-right">
-    <div class="toggle popup-trigger">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
         <i class="fa fa-search fa-fw fa-lg"></i>
     </div>
   </div>
@@ -114,29 +93,8 @@
 
 
 
-
 <nav class="site-nav">
-  <ul id="menu" class="main-menu menu">
-        <li class="menu-item menu-item-home">
-
-    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
-
-  </li>
-        <li class="menu-item menu-item-tags">
-
-    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
-
-  </li>
-        <li class="menu-item menu-item-categories">
-
-    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
-
-  </li>
-        <li class="menu-item menu-item-archives">
-
-    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
-
-  </li>
+  <ul class="main-menu menu">
       <li class="menu-item menu-item-search">
         <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
         </a>
@@ -148,213 +106,214 @@
 
   <div class="search-pop-overlay">
     <div class="popup search-popup">
-        <div class="search-header">
-  <span class="search-icon">
-    <i class="fa fa-search"></i>
-  </span>
-  <div class="search-input-container">
-    <input autocomplete="off" autocapitalize="off"
-           placeholder="搜索..." spellcheck="false"
-           type="search" class="search-input">
-  </div>
-  <span class="popup-btn-close">
-    <i class="fa fa-times-circle"></i>
-  </span>
-</div>
-<div id="search-result">
-  <div id="no-result">
-    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
-  </div>
-</div>
-
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
     </div>
   </div>
 
-</div>
-    </header>
+</header>
+        
+  
+  <aside class="sidebar">
 
-    
-  <div class="back-to-top">
-    <i class="fa fa-arrow-up"></i>
-    <span>0%</span>
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B8%B8%E8%A7%81%E9%99%90%E6%B5%81%E7%AE%97%E6%B3%95%E6%9C%89%E5%93%AA%E4%BA%9B%EF%BC%9F"><span class="nav-number">1.</span> <span class="nav-text">常见限流算法有哪些？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9B%BA%E5%AE%9A%E7%AA%97%E5%8F%A3%E8%AE%A1%E6%95%B0%E5%99%A8%E7%AE%97%E6%B3%95"><span class="nav-number">1.1.</span> <span class="nav-text">固定窗口计数器算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3%E8%AE%A1%E6%95%B0%E5%99%A8%E7%AE%97%E6%B3%95"><span class="nav-number">1.2.</span> <span class="nav-text">滑动窗口计数器算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%BC%8F%E6%A1%B6%E7%AE%97%E6%B3%95"><span class="nav-number">1.3.</span> <span class="nav-text">漏桶算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%A4%E7%89%8C%E6%A1%B6%E7%AE%97%E6%B3%95"><span class="nav-number">1.4.</span> <span class="nav-text">令牌桶算法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8D%95%E6%9C%BA%E9%99%90%E6%B5%81%E6%80%8E%E4%B9%88%E5%81%9A%EF%BC%9F"><span class="nav-number">2.</span> <span class="nav-text">单机限流怎么做？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E9%99%90%E6%B5%81%E6%80%8E%E4%B9%88%E5%81%9A%EF%BC%9F"><span class="nav-number">3.</span> <span class="nav-text">分布式限流怎么做？</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="刘易"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">刘易</p>
+  <div class="site-description" itemprop="description">知命不惧 日日自新</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">255</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">44</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/lwmfjc" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;lwmfjc" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
   </div>
 
-
-    <main class="main">
-      <div class="main-inner">
-        <div class="content-wrap">
-          
-
-          <div class="content post posts-expand">
-            
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
 
     
+  <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=450 src="//music.163.com/outchain/player?type=0&id=33517178&auto=1&height=430"></iframe>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
   
   
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://lwmfjc.github.io/2023/02/16/review/java_guide/lyfly_high-availability/ly03ly_limit-request/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/avatar.png">
+      <meta itemprop="image" content="/images/avatar.png">
       <meta itemprop="name" content="刘易">
-      <meta itemprop="description" content="知命不惧 日日自新">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="随记">
+      <meta itemprop="description" content="知命不惧 日日自新">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="服务限流详解 | 随记">
+      <meta itemprop="description" content="服务限流详解">
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
           服务限流详解
         </h1>
 
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2023-02-16 17:06:11" itemprop="dateCreated datePublished" datetime="2023-02-16T17:06:11+00:00">2023-02-16</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E5%AD%A6%E4%B9%A0/" itemprop="url" rel="index"><span itemprop="name">学习</span></a>
-                </span>
-            </span>
+      <time title="创建时间：2023-02-16 17:06:11" itemprop="dateCreated datePublished" datetime="2023-02-16T17:06:11+00:00">2023-02-16</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%AD%A6%E4%B9%A0/" itemprop="url" rel="index"><span itemprop="name">学习</span></a>
+        </span>
+    </span>
 
-          
-            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-eye"></i>
-              </span>
-              <span class="post-meta-item-text">阅读次数：</span>
-              <span id="busuanzi_value_page_pv"></span>
-            </span><br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>6.8k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>12 分钟</span>
-            </span>
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>6.7k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>12 分钟</span>
+    </span>
+</div>
+
             <div class="post-description">服务限流详解</div>
-
         </div>
       </header>
 
     
     
     
-    <div class="post-body" itemprop="articleBody">
-
-      
-        <blockquote>
-<p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!</p>
+    <div class="post-body" itemprop="articleBody"><blockquote>
+<p>转载自<a target="_blank" rel="noopener" href="https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!">https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!</a></p>
 </blockquote>
 <p>针对软件系统来说，限流就是<strong>对请求的速率进行限制</strong>，<strong>避免瞬时的大量请求击垮软件系统</strong>。毕竟，软件系统的处理能力是有限的。如果说超过了其处理能力的范围，软件系统可能直接就挂掉了。</p>
 <p>限流可能会<strong>导致用户的请求无法被正确处理</strong>，不过，这往往也是<strong>权衡了软件系统的稳定性之后得到的最优解</strong>。</p>
 <p>现实生活中，处处都有限流的实际应用，就比如<strong>排队买票</strong>是为了避免大量用户涌入购票而导致<strong>售票员无法处理</strong>。</p>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f696d672d626c6f672e6373646e696d672e636e2f66396631373037316663346434383964383564326132333466623239386466312e706e67"
-alt="排队示意图" />
-<figcaption aria-hidden="true">排队示意图</figcaption>
-</figure>
-<h2 id="常见限流算法有哪些">常见限流算法有哪些？</h2>
-<p>简单介绍 4 种非常好理解并且容易实现的限流算法！</p>
+<p> <img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f696d672d626c6f672e6373646e696d672e636e2f66396631373037316663346434383964383564326132333466623239386466312e706e67" alt="排队示意图"> </p>
+<h2 id="常见限流算法有哪些？"><a href="#常见限流算法有哪些？" class="headerlink" title="常见限流算法有哪些？"></a>常见限流算法有哪些？</h2><p>简单介绍 4 种非常好理解并且容易实现的限流算法！</p>
 <blockquote>
-<p>图片来源于 InfoQ 的一篇文章<a
-target="_blank" rel="noopener" href="https://www.infoq.cn/article/Qg2tX8fyw5Vt-f3HH673">《分布式服务限流实战，已经为你排好坑了》</a>。</p>
+<p>图片来源于 InfoQ 的一篇文章<a target="_blank" rel="noopener" href="https://www.infoq.cn/article/Qg2tX8fyw5Vt-f3HH673">《分布式服务限流实战，已经为你排好坑了》</a>。</p>
 </blockquote>
-<h3 id="固定窗口计数器算法">固定窗口计数器算法</h3>
-<p>固定窗口其实就是时间窗口。<strong>固定窗口计数器算法</strong>
-规定了我们<strong>单位时间处理的请求数量</strong>。</p>
-<p>假如我们规定系统中某个接口 1 分钟只能访问 33
-次的话，使用固定窗口计数器算法的实现思路如下：</p>
+<h3 id="固定窗口计数器算法"><a href="#固定窗口计数器算法" class="headerlink" title="固定窗口计数器算法"></a>固定窗口计数器算法</h3><p>固定窗口其实就是时间窗口。<strong>固定窗口计数器算法</strong> 规定了我们<strong>单位时间处理的请求数量</strong>。</p>
+<p>假如我们规定系统中某个接口 1 分钟只能访问 33 次的话，使用固定窗口计数器算法的实现思路如下：</p>
 <ul>
-<li>给定一个变量 <code>counter</code>
-来<strong>记录当前接口处理的请求数量</strong>，初始值为 0（代表接口当前
-1 分钟内还未处理请求）。</li>
-<li>1 分钟之内每处理一个请求之后就将 <code>counter+1</code> ，当
-<code>counter=33</code> 之后（也就是说在这 1 分钟内接口已经被访问 33
-次的话），后续的请求就会被全部拒绝。</li>
-<li>等到 1 分钟结束后，将 <code>counter</code> 重置
-0，重新开始计数。</li>
+<li>给定一个变量 <code>counter</code> 来<strong>记录当前接口处理的请求数量</strong>，初始值为 0（代表接口当前 1 分钟内还未处理请求）。</li>
+<li>1 分钟之内每处理一个请求之后就将 <code>counter+1</code> ，当 <code>counter=33</code> 之后（也就是说在这 1 分钟内接口已经被访问 33 次的话），后续的请求就会被全部拒绝。</li>
+<li>等到 1 分钟结束后，将 <code>counter</code> 重置 0，重新开始计数。</li>
 </ul>
 <p><strong>这种限流算法无法保证限流速率，因而无法保证突然激增的流量。</strong></p>
-<p>就比如说我们限制某个接口 1 分钟只能访问 1000 次，该接口的 QPS 为
-500，前 55s 这个接口 1 个请求没有接收，后 1s 突然接收了 1000
-个请求。然后，在当前场景下，这 1000 个请求在 1s
-内是没办法被处理的，系统直接就被瞬时的大量请求给击垮了。</p>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f7374617469633030312e696e666f712e636e2f7265736f757263652f696d6167652f38642f31352f38646564376132623930653134383230393366393266666635353562333631352e706e67"
-alt="固定窗口计数器算法" />
-<figcaption aria-hidden="true">固定窗口计数器算法</figcaption>
-</figure>
-<h3 id="滑动窗口计数器算法">滑动窗口计数器算法</h3>
-<p><strong>滑动窗口计数器算法</strong>
-算的上是固定窗口计数器算法的升级版。</p>
-<p>滑动窗口计数器算法相比于固定窗口计数器算法的优化在于：<strong>它把时间以一定比例分片(即分片后应用"固定窗口计数器"算法)</strong>
-。</p>
-<p>例如我们的接口限流每分钟处理 60 个请求，我们可以把 1 分钟分为
-<strong>60 个窗口(每个窗口时1秒)</strong>。每隔 1
-秒移动一次，每个窗口一秒只能处理 不大于
-<code>60(请求数)/60（窗口数）</code> 的请求，
-如果当前窗口的请求计数总和超过了限制的数量的话就不再处理其他请求。</p>
+<p>就比如说我们限制某个接口 1 分钟只能访问 1000 次，该接口的 QPS 为 500，前 55s 这个接口 1 个请求没有接收，后 1s 突然接收了 1000 个请求。然后，在当前场景下，这 1000 个请求在 1s 内是没办法被处理的，系统直接就被瞬时的大量请求给击垮了。</p>
+<p> <img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f7374617469633030312e696e666f712e636e2f7265736f757263652f696d6167652f38642f31352f38646564376132623930653134383230393366393266666635353562333631352e706e67" alt="固定窗口计数器算法"> </p>
+<h3 id="滑动窗口计数器算法"><a href="#滑动窗口计数器算法" class="headerlink" title="滑动窗口计数器算法"></a>滑动窗口计数器算法</h3><p><strong>滑动窗口计数器算法</strong> 算的上是固定窗口计数器算法的升级版。</p>
+<p>滑动窗口计数器算法相比于固定窗口计数器算法的优化在于：<strong>它把时间以一定比例分片(即分片后应用”固定窗口计数器”算法)</strong> 。</p>
+<p>例如我们的接口限流每分钟处理 60 个请求，我们可以把 1 分钟分为 <strong>60 个窗口(每个窗口时1秒)</strong>。每隔 1 秒移动一次，每个窗口一秒只能处理 不大于 <code>60(请求数)/60（窗口数）</code> 的请求， 如果当前窗口的请求计数总和超过了限制的数量的话就不再处理其他请求。  </p>
 <blockquote>
-<p>感觉上面的例子和图没匹配上，应该是<br />
-例如我们的接口限流每分钟处理 300 个请求，我们可以把 1 分钟分为
-<strong>60 个窗口(每个窗口时1秒)</strong>。每隔 1
-秒移动一次，每个窗口一秒只能处理 不大于
-<code>300(请求数)/60（窗口数）</code> 的请求，
-如果当前窗口的请求计数总和超过了限制的数量的话就不再处理其他请求。</p>
+<p>感觉上面的例子和图没匹配上，应该是<br>例如我们的接口限流每分钟处理 300 个请求，我们可以把 1 分钟分为 <strong>60 个窗口(每个窗口时1秒)</strong>。每隔 1 秒移动一次，每个窗口一秒只能处理 不大于 <code>300(请求数)/60（窗口数）</code> 的请求， 如果当前窗口的请求计数总和超过了限制的数量的话就不再处理其他请求。</p>
 </blockquote>
-<p>很显然，
-<strong>当滑动窗口的格子划分的越多，滑动窗口的滚动就越平滑，限流的统计就会越精确。</strong></p>
-<p><img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f7374617469633030312e696e666f712e636e2f7265736f757263652f696d6167652f61652f31352f61653464336364313465666238646337303436643639316339303236343731352e706e67"
-alt="滑动窗口计数器算法" />]</p>
-<h3 id="漏桶算法">漏桶算法</h3>
-<p>我们可以把发请求的动作比作成注水到桶中，我们处理请求的过程可以比喻为漏桶漏水。我们往桶中<strong>以任意速率流入水</strong>，以一定速率流出水。当<strong>水超过桶流量则丢弃</strong>，因为桶容量是不变的，保证了整体的速率。</p>
+<p>很显然， <strong>当滑动窗口的格子划分的越多，滑动窗口的滚动就越平滑，限流的统计就会越精确。</strong></p>
+<p><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f7374617469633030312e696e666f712e636e2f7265736f757263652f696d6167652f61652f31352f61653464336364313465666238646337303436643639316339303236343731352e706e67" alt="滑动窗口计数器算法">] </p>
+<h3 id="漏桶算法"><a href="#漏桶算法" class="headerlink" title="漏桶算法"></a>漏桶算法</h3><p>我们可以把发请求的动作比作成注水到桶中，我们处理请求的过程可以比喻为漏桶漏水。我们往桶中<strong>以任意速率流入水</strong>，以一定速率流出水。当<strong>水超过桶流量则丢弃</strong>，因为桶容量是不变的，保证了整体的速率。</p>
 <p>如果想要实现这个算法的话也很简单，<strong>准备一个队列用来保存请求</strong>，然后我们<strong>定期从队列中拿请求来执行</strong>就好了（和消息队列削峰/限流的思想是一样的）。</p>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f7374617469633030312e696e666f712e636e2f7265736f757263652f696d6167652f37352f30332f37353933386431303130313338636536366533386336656430333932663130332e706e67"
-alt="漏桶算法" />
-<figcaption aria-hidden="true">漏桶算法</figcaption>
-</figure>
-<h3 id="令牌桶算法">令牌桶算法</h3>
-<p>令牌桶算法也比较简单。和漏桶算法算法一样，我们的主角还是桶（这限流算法和桶过不去啊）。不过现在<strong>桶里装的是令牌</strong>了，请求在<strong>被处理之前需要拿到一个令牌</strong>，请求<strong>处理完毕之后将这个令牌丢弃（删除）</strong>。我们<strong>根据限流大小，按照一定的速率往桶里添加令牌</strong>。如果<strong>桶装满了，就不能继续往里面继续添加令牌</strong>了。</p>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230216170703458.png"
-alt="image-20230216170703458" />
-<figcaption aria-hidden="true">image-20230216170703458</figcaption>
-</figure>
-<h2 id="单机限流怎么做">单机限流怎么做？</h2>
-<p>单机限流针对的是单体架构应用。</p>
-<p>单机限流可以直接使用 Google Guava 自带的限流工具类
-<code>RateLimiter</code> 。 <strong><code>RateLimiter</code>
-基于令牌桶算法</strong>，可以应对突发流量。</p>
+<p> <img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f7374617469633030312e696e666f712e636e2f7265736f757263652f696d6167652f37352f30332f37353933386431303130313338636536366533386336656430333932663130332e706e67" alt="漏桶算法"> </p>
+<h3 id="令牌桶算法"><a href="#令牌桶算法" class="headerlink" title="令牌桶算法"></a>令牌桶算法</h3><p>令牌桶算法也比较简单。和漏桶算法算法一样，我们的主角还是桶（这限流算法和桶过不去啊）。不过现在<strong>桶里装的是令牌</strong>了，请求在<strong>被处理之前需要拿到一个令牌</strong>，请求<strong>处理完毕之后将这个令牌丢弃（删除）</strong>。我们<strong>根据限流大小，按照一定的速率往桶里添加令牌</strong>。如果<strong>桶装满了，就不能继续往里面继续添加令牌</strong>了。</p>
+<p> <img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230216170703458.png" alt="image-20230216170703458"></p>
+<h2 id="单机限流怎么做？"><a href="#单机限流怎么做？" class="headerlink" title="单机限流怎么做？"></a>单机限流怎么做？</h2><p>单机限流针对的是单体架构应用。</p>
+<p>单机限流可以直接使用 Google Guava 自带的限流工具类 <code>RateLimiter</code> 。 <strong><code>RateLimiter</code> 基于令牌桶算法</strong>，可以应对突发流量。</p>
 <blockquote>
-<p>Guava 地址：https://github.com/google/guava</p>
+<p>Guava 地址：<a target="_blank" rel="noopener" href="https://github.com/google/guava">https://github.com/google/guava</a></p>
 </blockquote>
-<p>除了最基本的令牌桶算法(平滑突发限流)实现之外，Guava
-的<code>RateLimiter</code>还提供了 <strong>平滑预热限流</strong>
-的算法实现。</p>
+<p>除了最基本的令牌桶算法(平滑突发限流)实现之外，Guava 的<code>RateLimiter</code>还提供了 <strong>平滑预热限流</strong> 的算法实现。</p>
 <p>平滑突发限流就是<strong>按照指定的速率放令牌到桶里</strong>，而平滑预热限流会有一段预热时间，预热时间之内，<strong>速率会逐渐提升到配置的速率</strong>。</p>
 <p>我们下面通过两个简单的小例子来详细了解吧！</p>
 <p>我们直接在项目中引入 Guava 相关的依赖即可使用。</p>
@@ -367,78 +326,41 @@ alt="image-20230216170703458" />
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> com.google.common.util.concurrent.RateLimiter;</span><br><span class="line"><span class="keyword">import</span> java.util.concurrent.TimeUnit;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 微信搜 JavaGuide 回复&quot;面试突击&quot;即可免费领取个人原创的 Java 面试手册</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> Guide哥</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2021/10/08 19:12</span></span><br><span class="line"><span class="comment"> **/</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">RateLimiterDemo</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="comment">// 1s 放 5 个令牌到桶里也就是 0.2s 放 1个令牌到桶里</span></span><br><span class="line">        <span class="comment">// 预热时间为3s,也就说刚开始的 3s 内发牌速率会逐渐提升到 0.2s 放 1 个令牌到桶里(所以前面的速率比较小，获取需要的时间比较长)</span></span><br><span class="line">        <span class="type">RateLimiter</span> <span class="variable">rateLimiter</span> <span class="operator">=</span> RateLimiter.create(<span class="number">5</span>, <span class="number">3</span>, TimeUnit.SECONDS);</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; <span class="number">20</span>; i++) &#123;</span><br><span class="line">            <span class="type">double</span> <span class="variable">sleepingTime</span> <span class="operator">=</span> rateLimiter.acquire(<span class="number">1</span>);</span><br><span class="line">            System.out.printf(<span class="string">&quot;get 1 tokens: %sds%n&quot;</span>, sleepingTime);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>输出：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">get 1 tokens: 0.0s</span><br><span class="line">get 1 tokens: 0.561919s</span><br><span class="line">get 1 tokens: 0.516931s</span><br><span class="line">get 1 tokens: 0.463798s</span><br><span class="line">get 1 tokens: 0.41286s</span><br><span class="line">get 1 tokens: 0.356172s</span><br><span class="line">get 1 tokens: 0.300489s</span><br><span class="line">get 1 tokens: 0.252545s</span><br><span class="line">get 1 tokens: 0.203996s</span><br><span class="line">get 1 tokens: 0.198359s</span><br></pre></td></tr></table></figure>
-<p>另外，<strong>Bucket4j</strong>
-是一个非常不错的基于令牌/漏桶算法的限流库。</p>
+<p>另外，<strong>Bucket4j</strong> 是一个非常不错的基于令牌/漏桶算法的限流库。</p>
 <blockquote>
-<p>Bucket4j 地址：https://github.com/vladimir-bukhtoyarov/bucket4j</p>
+<p>Bucket4j 地址：<a target="_blank" rel="noopener" href="https://github.com/vladimir-bukhtoyarov/bucket4j">https://github.com/vladimir-bukhtoyarov/bucket4j</a></p>
 </blockquote>
-<p>相对于，Guava 的限流工具类来说，Bucket4j
-提供的限流功能更加全面。不仅支持单机限流和分布式限流，还可以集成监控，搭配
-Prometheus 和 Grafana 使用。</p>
-<p>不过，毕竟 Guava
-也只是一个功能全面的工具类库，其提供的开箱即用的限流功能在很多单机场景下还是比较实用的。</p>
-<p>Spring Cloud Gateway 中自带的单机限流的早期版本就是基于 Bucket4j
-实现的。后来，替换成了 <strong>Resilience4j</strong>。</p>
-<p>Resilience4j 是一个轻量级的容错组件，其灵感来自于 Hystrix。自<a
-target="_blank" rel="noopener" href="https://github.com/Netflix/Hystrix/commit/a7df971cbaddd8c5e976b3cc5f14013fe6ad00e6">Netflix
-宣布不再积极开发 Hystrix</a> 之后，Spring 官方和 Netflix 都更推荐使用
-Resilience4j 来做限流熔断。</p>
+<p>相对于，Guava 的限流工具类来说，Bucket4j 提供的限流功能更加全面。不仅支持单机限流和分布式限流，还可以集成监控，搭配 Prometheus 和 Grafana 使用。</p>
+<p>不过，毕竟 Guava 也只是一个功能全面的工具类库，其提供的开箱即用的限流功能在很多单机场景下还是比较实用的。</p>
+<p>Spring Cloud Gateway 中自带的单机限流的早期版本就是基于 Bucket4j 实现的。后来，替换成了 <strong>Resilience4j</strong>。</p>
+<p>Resilience4j 是一个轻量级的容错组件，其灵感来自于 Hystrix。自<a target="_blank" rel="noopener" href="https://github.com/Netflix/Hystrix/commit/a7df971cbaddd8c5e976b3cc5f14013fe6ad00e6">Netflix 宣布不再积极开发 Hystrix</a> 之后，Spring 官方和 Netflix 都更推荐使用 Resilience4j 来做限流熔断。</p>
 <blockquote>
-<p>Resilience4j 地址: https://github.com/resilience4j/resilience4j</p>
+<p>Resilience4j 地址: <a target="_blank" rel="noopener" href="https://github.com/resilience4j/resilience4j">https://github.com/resilience4j/resilience4j</a></p>
 </blockquote>
 <p>一般情况下，为了保证系统的高可用，项目的限流和熔断都是要一起做的。</p>
-<p>Resilience4j
-不仅提供限流，还提供了<strong>熔断</strong>、<strong>负载保护</strong>、<strong>自动重试</strong>等保障系统高可用开箱即用的功能。并且，Resilience4j
-的生态也更好，很多网关都使用 Resilience4j 来做限流熔断的。</p>
-<p>因此，在绝大部分场景下 Resilience4j
-或许会是更好的选择。如果是一些<strong>比较简单的限流</strong>场景的话，Guava
-或者 Bucket4j 也是不错的选择。</p>
-<h2 id="分布式限流怎么做">分布式限流怎么做？</h2>
-<p><strong>分布式限流</strong>针对的分布式/微服务应用架构应用，在这种架构下，单机限流就不适用了，因为会存在多种服务，并且一种服务也可能会被部署多份。</p>
+<p>Resilience4j 不仅提供限流，还提供了<strong>熔断</strong>、<strong>负载保护</strong>、<strong>自动重试</strong>等保障系统高可用开箱即用的功能。并且，Resilience4j 的生态也更好，很多网关都使用 Resilience4j 来做限流熔断的。</p>
+<p>因此，在绝大部分场景下 Resilience4j 或许会是更好的选择。如果是一些<strong>比较简单的限流</strong>场景的话，Guava 或者 Bucket4j 也是不错的选择。</p>
+<h2 id="分布式限流怎么做？"><a href="#分布式限流怎么做？" class="headerlink" title="分布式限流怎么做？"></a>分布式限流怎么做？</h2><p><strong>分布式限流</strong>针对的分布式/微服务应用架构应用，在这种架构下，单机限流就不适用了，因为会存在多种服务，并且一种服务也可能会被部署多份。</p>
 <p>分布式限流常见的方案：</p>
 <ul>
-<li><strong>借助中间件架限流</strong> ：可以借助
-<strong>Sentinel</strong> 或者使用 <strong>Redis</strong>
-来自己实现对应的限流逻辑。</li>
-<li><strong>网关层限流</strong>
-：比较常用的一种方案，直接在网关层把限流给安排上了。不过，通常网关层限流通常也需要借助到中间件/框架。就比如
-Spring Cloud Gateway
-的分布式限流实现<strong><code>RedisRateLimiter</code></strong>就是基于
-<strong>Redis+Lua</strong> 来实现的，再比如 Spring Cloud Gateway
-还可以整合 <strong>Sentinel</strong> 来做限流。</li>
+<li><strong>借助中间件架限流</strong> ：可以借助 <strong>Sentinel</strong> 或者使用 <strong>Redis</strong> 来自己实现对应的限流逻辑。</li>
+<li><strong>网关层限流</strong> ：比较常用的一种方案，直接在网关层把限流给安排上了。不过，通常网关层限流通常也需要借助到中间件/框架。就比如 Spring Cloud Gateway 的分布式限流实现<strong><code>RedisRateLimiter</code></strong>就是基于 <strong>Redis+Lua</strong> 来实现的，再比如 Spring Cloud Gateway 还可以整合 <strong>Sentinel</strong> 来做限流。</li>
 </ul>
-<p>如果你要基于 Redis 来手动实现限流逻辑的话，建议配合 Lua
-脚本来做。</p>
+<p>如果你要基于 Redis 来手动实现限流逻辑的话，建议配合 Lua 脚本来做。</p>
 <p><strong>为什么建议 Redis+Lua 的方式？</strong> 主要有两点原因：</p>
 <ul>
-<li><strong>减少了网络开销</strong> ：我们可以利用 Lua
-脚本来<strong>批量执行多条</strong> Redis 命令，这些 Redis
-命令会被提交到 Redis
-服务器<strong>一次性执行</strong>完成，大幅<strong>减小了网络开销</strong>。</li>
-<li><strong>原子性</strong> ：<strong>一段 Lua
-脚本可以视作一条命令</strong>执行，一段 Lua
-脚本执行过程中不会有其他脚本或 Redis
-命令同时执行，保证了操作不会被其他指令插入或打扰。</li>
+<li><strong>减少了网络开销</strong> ：我们可以利用 Lua 脚本来<strong>批量执行多条</strong> Redis 命令，这些 Redis 命令会被提交到 Redis 服务器<strong>一次性执行</strong>完成，大幅<strong>减小了网络开销</strong>。</li>
+<li><strong>原子性</strong> ：<strong>一段 Lua 脚本可以视作一条命令</strong>执行，一段 Lua 脚本执行过程中不会有其他脚本或 Redis 命令同时执行，保证了操作不会被其他指令插入或打扰。</li>
 </ul>
-<p>我这里就不放具体的限流脚本代码了，网上也有很多现成的优秀的限流脚本供你参考，就比如
-Apache 网关项目 ShenYu 的 RateLimiter 限流插件就基于 Redis + Lua
-实现了令牌桶算法/并发令牌桶算法、漏桶算法、滑动窗口算法。</p>
+<p>我这里就不放具体的限流脚本代码了，网上也有很多现成的优秀的限流脚本供你参考，就比如 Apache 网关项目 ShenYu 的 RateLimiter 限流插件就基于 Redis + Lua 实现了令牌桶算法/并发令牌桶算法、漏桶算法、滑动窗口算法。</p>
 <blockquote>
-<p>ShenYu 地址: https://github.com/apache/incubator-shenyu</p>
+<p>ShenYu 地址: <a target="_blank" rel="noopener" href="https://github.com/apache/incubator-shenyu">https://github.com/apache/incubator-shenyu</a></p>
 </blockquote>
-<figure>
-<img
-src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f696d672d626c6f672e6373646e696d672e636e2f65316532613735663438396534383534393930646162653362366365633532322e706e67"
-alt="img" />
-<figcaption aria-hidden="true">img</figcaption>
-</figure>
+<p> <img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f696d672d626c6f672e6373646e696d672e636e2f65316532613735663438396534383534393930646162653362366365633532322e706e67" alt="img"></p>
 <ul>
-<li>服务治理之轻量级熔断框架 Resilience4j
-：https://xie.infoq.cn/article/14786e571c1a4143ad1ef8f19</li>
-<li>超详细的 Guava RateLimiter
-限流原理解析：https://cloud.tencent.com/developer/article/1408819</li>
-<li>实战 Spring Cloud Gateway 之限流篇
-👍：https://www.aneasystone.com/archives/2020/08/spring-cloud-gateway-current-limiting.html</li>
+<li>服务治理之轻量级熔断框架 Resilience4j ：<a target="_blank" rel="noopener" href="https://xie.infoq.cn/article/14786e571c1a4143ad1ef8f19">https://xie.infoq.cn/article/14786e571c1a4143ad1ef8f19</a></li>
+<li>超详细的 Guava RateLimiter 限流原理解析：<a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1408819">https://cloud.tencent.com/developer/article/1408819</a></li>
+<li>实战 Spring Cloud Gateway 之限流篇 👍：<a target="_blank" rel="noopener" href="https://www.aneasystone.com/archives/2020/08/spring-cloud-gateway-current-limiting.html">https://www.aneasystone.com/archives/2020/08/spring-cloud-gateway-current-limiting.html</a></li>
 </ul>
 
     </div>
@@ -447,7 +369,7 @@ alt="img" />
     
     
 
-      <footer class="post-footer">
+    <footer class="post-footer">
           <div class="post-tags">
               <a href="/tags/%E5%A4%8D%E4%B9%A0/" rel="tag"># 复习</a>
               <a href="/tags/%E5%A4%8D%E4%B9%A0-javaGuide/" rel="tag"># 复习-javaGuide</a>
@@ -456,355 +378,109 @@ alt="img" />
 
         
 
-
-        
-    <div class="post-nav">
-      <div class="post-nav-item">
-    <a href="/2023/02/16/review/java_guide/lyfly_high-availability/ly02ly_redundancy/" rel="prev" title="冗余设计">
-      <i class="fa fa-chevron-left"></i> 冗余设计
-    </a></div>
-      <div class="post-nav-item">
-    <a href="/2023/02/17/review/java_guide/lyfly_high-availability/ly04ly_timout-and-retry/" rel="next" title="超时&重试详解">
-      超时&重试详解 <i class="fa fa-chevron-right"></i>
-    </a></div>
-    </div>
-      </footer>
-    
-  </article>
-  
-  
-  
-
-
-
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2023/02/16/review/java_guide/lyfly_high-availability/ly02ly_redundancy/" rel="prev" title="冗余设计">
+                  <i class="fa fa-angle-left"></i> 冗余设计
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2023/02/17/review/java_guide/lyfly_high-availability/ly04ly_timout-and-retry/" rel="next" title="超时&重试详解">
+                  超时&重试详解 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
           </div>
-          
-    
-  
-  <div class="comments">
-  <script src="https://utteranc.es/client.js" repo="lwmfjc/lwmfjc.github.io.comment" issue-term="pathname" theme="github-light" crossorigin="anonymous" async></script>
-  </div>
-  
-  
-
-<script>
-  window.addEventListener('tabs:register', () => {
-    let { activeClass } = CONFIG.comments;
-    if (CONFIG.comments.storage) {
-      activeClass = localStorage.getItem('comments_active') || activeClass;
-    }
-    if (activeClass) {
-      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
-      if (activeTab) {
-        activeTab.click();
-      }
-    }
-  });
-  if (CONFIG.comments.storage) {
-    window.addEventListener('tabs:click', event => {
-      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
-      let commentClass = event.target.classList[1];
-      localStorage.setItem('comments_active', commentClass);
-    });
-  }
-</script>
-
-        </div>
-          
-  
-  <div class="toggle sidebar-toggle">
-    <span class="toggle-line toggle-line-first"></span>
-    <span class="toggle-line toggle-line-middle"></span>
-    <span class="toggle-line toggle-line-last"></span>
-  </div>
-
-  <aside class="sidebar">
-    <div class="sidebar-inner">
-
-      <ul class="sidebar-nav motion-element">
-        <li class="sidebar-nav-toc">
-          文章目录
-        </li>
-        <li class="sidebar-nav-overview">
-          站点概览
-        </li>
-      </ul>
-
-      <!--noindex-->
-      <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B8%B8%E8%A7%81%E9%99%90%E6%B5%81%E7%AE%97%E6%B3%95%E6%9C%89%E5%93%AA%E4%BA%9B"><span class="nav-number">1.</span> <span class="nav-text">常见限流算法有哪些？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9B%BA%E5%AE%9A%E7%AA%97%E5%8F%A3%E8%AE%A1%E6%95%B0%E5%99%A8%E7%AE%97%E6%B3%95"><span class="nav-number">1.1.</span> <span class="nav-text">固定窗口计数器算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3%E8%AE%A1%E6%95%B0%E5%99%A8%E7%AE%97%E6%B3%95"><span class="nav-number">1.2.</span> <span class="nav-text">滑动窗口计数器算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%BC%8F%E6%A1%B6%E7%AE%97%E6%B3%95"><span class="nav-number">1.3.</span> <span class="nav-text">漏桶算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%A4%E7%89%8C%E6%A1%B6%E7%AE%97%E6%B3%95"><span class="nav-number">1.4.</span> <span class="nav-text">令牌桶算法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8D%95%E6%9C%BA%E9%99%90%E6%B5%81%E6%80%8E%E4%B9%88%E5%81%9A"><span class="nav-number">2.</span> <span class="nav-text">单机限流怎么做？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E9%99%90%E6%B5%81%E6%80%8E%E4%B9%88%E5%81%9A"><span class="nav-number">3.</span> <span class="nav-text">分布式限流怎么做？</span></a></li></ol></div>
-      </div>
-      <!--/noindex-->
-
-      <div class="site-overview-wrap sidebar-panel">
-        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
-    <img class="site-author-image" itemprop="image" alt="刘易"
-      src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/avatar.png">
-  <p class="site-author-name" itemprop="name">刘易</p>
-  <div class="site-description" itemprop="description">知命不惧 日日自新</div>
+    </footer>
+  </article>
 </div>
-<div class="site-state-wrap motion-element">
-  <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-          <a href="/archives/">
-        
-          <span class="site-state-item-count">252</span>
-          <span class="site-state-item-name">日志</span>
-        </a>
-      </div>
-      <div class="site-state-item site-state-categories">
-            <a href="/categories/">
-          
-        <span class="site-state-item-count">6</span>
-        <span class="site-state-item-name">分类</span></a>
-      </div>
-      <div class="site-state-item site-state-tags">
-            <a href="/tags/">
-          
-        <span class="site-state-item-count">43</span>
-        <span class="site-state-item-name">标签</span></a>
-      </div>
-  </nav>
+
+
+
+
+
+
+    <div class="comments utterances-container"></div>
 </div>
-  <div class="links-of-author motion-element">
-      <span class="links-of-author-item">
-        <a href="https://github.com/lwmfjc" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;lwmfjc" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i></a>
-      </span>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2024</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">刘易</span>
   </div>
-
-
-
-      </div>
-    <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=370 height=500 src="//music.163.com/outchain/player?type=0&id=33517178&auto=1&height=500"></iframe>
-    </div>
-  </aside>
-  <div id="sidebar-dimmer"></div> 
-
-
-      </div>
-    </main>
-
-    <footer class="footer">
-      <div class="footer-inner">
-        
-
-        
-
-<div class="copyright">
-  
-  &copy; 
-  <span itemprop="copyrightYear">2024</span>
-  <span class="with-love">
-    <i class="fa fa-heart"></i>
-  </span>
-  <span class="author" itemprop="copyrightHolder">刘易</span>
-    <span class="post-meta-divider">|</span>
+<div class="wordcount">
+  <span class="post-meta-item">
     <span class="post-meta-item-icon">
-      <i class="fa fa-chart-area"></i>
+      <i class="fa fa-chart-line"></i>
     </span>
     <span title="站点总字数">1.5m</span>
-    <span class="post-meta-divider">|</span>
+  </span>
+  <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">45:41</span>
+    <span title="站点阅读时长">45:25</span>
+  </span>
 </div>
-  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
-
-        
-<div class="busuanzi-count">
-  <script data-pjax async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-user"></i>
-      </span>
-      <span class="site-uv" title="总访客量">
-        <span id="busuanzi_value_site_uv"></span>
-      </span>
-    </span>
-    <span class="post-meta-divider">|</span>
-    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-eye"></i>
-      </span>
-      <span class="site-pv" title="总访问量">
-        <span id="busuanzi_value_site_pv"></span>
-      </span>
-    </span>
-</div>
-
-
-
-
-
-
-
-
-      </div>
-    </footer>
-  </div>
-
-  
-  <script src="/lib/anime.min.js"></script>
-  <script src="/lib/pjax/pjax.min.js"></script>
-  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
-  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
-  <script src="/lib/velocity/velocity.min.js"></script>
-  <script src="/lib/velocity/velocity.ui.min.js"></script>
-
-<script src="/js/utils.js"></script>
-
-<script src="/js/motion.js"></script>
-
-
-<script src="/js/schemes/pisces.js"></script>
-
-
-<script src="/js/next-boot.js"></script>
-
-  <script>
-var pjax = new Pjax({
-  selectors: [
-    'head title',
-    '#page-configurations',
-    '.content-wrap',
-    '.post-toc-wrap',
-    '.languages',
-    '#pjax'
-  ],
-  switches: {
-    '.post-toc-wrap': Pjax.switches.innerHTML
-  },
-  analytics: false,
-  cacheBust: false,
-  scrollTo : !CONFIG.bookmark.enable
-});
-
-window.addEventListener('pjax:success', () => {
-  document.querySelectorAll('script[data-pjax], script#page-configurations, #pjax script').forEach(element => {
-    var code = element.text || element.textContent || element.innerHTML || '';
-    var parent = element.parentNode;
-    parent.removeChild(element);
-    var script = document.createElement('script');
-    if (element.id) {
-      script.id = element.id;
-    }
-    if (element.className) {
-      script.className = element.className;
-    }
-    if (element.type) {
-      script.type = element.type;
-    }
-    if (element.src) {
-      script.src = element.src;
-      // Force synchronous loading of peripheral JS.
-      script.async = false;
-    }
-    if (element.dataset.pjax !== undefined) {
-      script.dataset.pjax = '';
-    }
-    if (code !== '') {
-      script.appendChild(document.createTextNode(code));
-    }
-    parent.appendChild(script);
-  });
-  NexT.boot.refresh();
-  // Define Motion Sequence & Bootstrap Motion.
-  if (CONFIG.motion.enable) {
-    NexT.motion.integrator
-      .init()
-      .add(NexT.motion.middleWares.subMenu)
-      .add(NexT.motion.middleWares.postList)
-      .bootstrap();
-  }
-  NexT.utils.updateSidebarPosition();
-});
-</script>
-
-
-
-
-  
-
-
-
-
-  
-<script src="/js/local-search.js"></script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <div id="pjax">
-  
-
-  
-      
-
-<script>
-  if (typeof MathJax === 'undefined') {
-    window.MathJax = {
-      loader: {
-        source: {
-          '[tex]/amsCd': '[tex]/amscd',
-          '[tex]/AMScd': '[tex]/amscd'
-        }
-      },
-      tex: {
-        inlineMath: {'[+]': [['$', '$']]},
-        tags: 'ams'
-      },
-      options: {
-        renderActions: {
-          findScript: [10, doc => {
-            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
-              const display = !!node.type.match(/; *mode=display/);
-              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
-              const text = document.createTextNode('');
-              node.parentNode.replaceChild(text, node);
-              math.start = {node: text, delim: '', n: 0};
-              math.end = {node: text, delim: '', n: 0};
-              doc.math.push(math);
-            });
-          }, '', false],
-          insertedScript: [200, () => {
-            document.querySelectorAll('mjx-container').forEach(node => {
-              let target = node.parentNode;
-              if (target.nodeName.toLowerCase() === 'li') {
-                target.parentNode.classList.add('has-jax');
-              }
-            });
-          }, '', false]
-        }
-      }
-    };
-    (function () {
-      var script = document.createElement('script');
-      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
-      script.defer = true;
-      document.head.appendChild(script);
-    })();
-  } else {
-    MathJax.startup.document.state(0);
-    MathJax.texReset();
-    MathJax.typeset();
-  }
-</script>
-
-    
-
-  
 
     </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/next-theme-pjax/0.6.0/pjax.min.js" integrity="sha256-vxLn1tSKWD4dqbMRyv940UYw4sXgMtYcK6reefzZrao=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fancyapps-ui/5.0.31/fancybox/fancybox.umd.js" integrity="sha256-a+H7FYzJv6oU2hfsfDGM2Ohw/cR9v+hPfxHCLdmCrE8=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/medium-zoom/1.1.0/medium-zoom.min.js" integrity="sha256-ZgMyDAIYDYGxbcpJcfUnYwNevG/xi9OHKaR/8GK+jWc=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script><script src="/js/pjax.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+  <script class="next-config" data-name="pdf" type="application/json">{"object_url":{"url":"https://cdnjs.cloudflare.com/ajax/libs/pdfobject/2.3.0/pdfobject.min.js","integrity":"sha256-JJZNsid68vnh3/zyj0lY9BN5ynxVX/12XgOa1TlaYN0="},"url":"/lib/pdf/web/viewer.html"}</script>
+  <script src="/js/third-party/tags/pdf.js"></script>
+
+
+
+  <script src="/js/third-party/fancybox.js"></script>
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<script class="next-config" data-name="utterances" type="application/json">{"enable":true,"repo":"lwmfjc/lwmfjc.github.io.comment","issue_term":"pathname","theme":"github-light"}</script>
+<script src="/js/third-party/comments/utterances.js"></script>
+
 </body>
 </html>
