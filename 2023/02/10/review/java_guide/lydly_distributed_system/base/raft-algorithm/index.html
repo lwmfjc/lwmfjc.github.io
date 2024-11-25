@@ -27,9 +27,9 @@
 <meta property="og:site_name" content="随记">
 <meta property="og:description" content="raft算法">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f7061786f732d72736d2d6172636869746563747572652e706e67">
-<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f7061786f732d7365727665722d73746174652e706e67">
-<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f7061786f732d7465726d2e706e67">
+<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f7061786f732d72736d2d6172636869746563747572652e706e67">
+<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f7061786f732d7365727665722d73746174652e706e67">
+<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f7061786f732d7465726d2e706e67">
 <meta property="article:published_time" content="2023-02-10T17:10:36.000Z">
 <meta property="article:modified_time" content="2023-02-10T17:10:36.000Z">
 <meta property="article:author" content="刘易">
@@ -37,7 +37,7 @@
 <meta property="article:tag" content="复习-javaGuide">
 <meta property="article:tag" content="复习-javaGuide-distributed_system">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f7061786f732d72736d2d6172636869746563747572652e706e67">
+<meta name="twitter:image" content="https://lwmfjc.github.io/images/mypost/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f7061786f732d72736d2d6172636869746563747572652e706e67">
 
 
 <link rel="canonical" href="https://lwmfjc.github.io/2023/02/10/review/java_guide/lydly_distributed_system/base/raft-algorithm/">
@@ -285,7 +285,7 @@
 <p>举例如下：假如现在一共有 3 个将军 A，B 和 C，每个将军都有一个随机时间的倒计时器，<strong>倒计时一结束</strong>，这个将军就<strong>把自己当成大将军候选人</strong>，然后派信使<strong>传递选举投票的信息给将军 B 和 C</strong>，如果将军 B 和 C <strong>还没有把自己当作候选人</strong>（自己的倒计时还没有结束），并且<strong>没有把选举票投给其他人</strong>，它们就会把票投给将军 A，信使回到将军 A 时，将军 A 知道自己收到了足够的票数，成为大将军。在有了大将军之后，<strong>是否需要进攻就由大将军 A</strong> 决定，然后再去派信使通知另外两个将军，自己已经成为了大将军。如果一段时间还没收到将军 B 和 C 的回复（信使可能会被暗杀），那就再重派一个信使，直到收到回复。</p>
 <h3 id="1-2-共识算法"><a href="#1-2-共识算法" class="headerlink" title="1.2 共识算法"></a>1.2 共识算法</h3><p>共识是可容错系统中的一个基本问题：<strong>即使面对故障，服务器也可以在共享状态上达成一致</strong>。</p>
 <p>共识算法允许一组节点像一个整体一样一起工作，即使其中的一些节点出现故障也能够继续工作下去，其正确性主要是源于复制状态机的性质：一组<code>Server</code>的状态机计算相同状态的副本，即使有一部分的<code>Server</code>宕机了它们仍然能够继续运行。</p>
-<p><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f7061786f732d72736d2d6172636869746563747572652e706e67" alt="rsm-architecture.png"> </p>
+<p><img src="/images/mypost/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f7061786f732d72736d2d6172636869746563747572652e706e67" alt="rsm-architecture.png"> </p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">图-1 复制状态机架构</span><br></pre></td></tr></table></figure>
 
 <p>一般通过<strong>使用复制日志来实现复制状态机</strong>。<strong>每个<code>Server</code>存储着一份包括命令序列的日志文件</strong>，状态机会按顺序执行这些命令。因为每个日志包含相同的命令，并且顺序也相同，所以每个状态机处理相同的命令序列。由于状态机是确定性的，所以<strong>处理相同的状态，得到相同的输出</strong>。</p>
@@ -304,10 +304,10 @@
 <li><code>Follower</code>：接受 Leader 的心跳和日志同步数据，投票给 Candidate。</li>
 </ul>
 <p>在正常的情况下，只有一个服务器是 Leader，剩下的服务器是 Follower。Follower 是被动的，它们不会发送任何请求，只是响应来自 Leader 和 Candidate 的请求。</p>
-<p><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f7061786f732d7365727665722d73746174652e706e67" alt="img"></p>
+<p><img src="/images/mypost/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f7061786f732d7365727665722d73746174652e706e67" alt="img"></p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">图-2：服务器的状态</span><br></pre></td></tr></table></figure>
 
-<h3 id="2-2-任期"><a href="#2-2-任期" class="headerlink" title="2.2 任期"></a>2.2 任期</h3><p><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f7061786f732d7465726d2e706e67" alt="img"></p>
+<h3 id="2-2-任期"><a href="#2-2-任期" class="headerlink" title="2.2 任期"></a>2.2 任期</h3><p><img src="/images/mypost/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f7061786f732d7465726d2e706e67" alt="img"></p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">图-3：任期</span><br></pre></td></tr></table></figure>
 
 <p>如图 3 所示，raft 算法将时间划分为任意长度的任期（term），任期用连续的数字表示，看作当前 term 号。每一个任期的开始都是一次选举，在选举开始时，一个或多个 Candidate 会尝试成为 Leader。如果一个 Candidate 赢得了选举，它就会在该任期内担任 Leader。如果没有选出 Leader，将会开启另一个任期，并立刻开始下一次选举。raft 算法保证在给定的一个任期最少要有一个 Leader。</p>
@@ -432,7 +432,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">45:37</span>
+    <span title="站点阅读时长">45:36</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动

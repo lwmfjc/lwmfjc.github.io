@@ -27,8 +27,8 @@
 <meta property="og:site_name" content="随记">
 <meta property="og:description" content="ConcurrentHashMap源码">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221023124636646.png">
-<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221023124708670.png">
+<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/image-20221023124636646.png">
+<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/image-20221023124708670.png">
 <meta property="article:published_time" content="2022-10-22T18:26:52.000Z">
 <meta property="article:modified_time" content="2022-10-22T18:26:52.000Z">
 <meta property="article:author" content="刘易">
@@ -36,7 +36,7 @@
 <meta property="article:tag" content="复习-javaGuide">
 <meta property="article:tag" content="复习-javaGuide-集合">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221023124636646.png">
+<meta name="twitter:image" content="https://lwmfjc.github.io/images/mypost/image-20221023124636646.png">
 
 
 <link rel="canonical" href="https://lwmfjc.github.io/2022/10/22/review/java_guide/java/collection/ly0105lysource-code-concurrentHashMap/">
@@ -278,12 +278,12 @@
 <h2 id="源码-（略过）"><a href="#源码-（略过）" class="headerlink" title="源码 （略过）"></a>源码 （略过）</h2><h2 id="ConcurrentHashMap1-7"><a href="#ConcurrentHashMap1-7" class="headerlink" title="ConcurrentHashMap1.7"></a>ConcurrentHashMap1.7</h2><ul>
 <li>存储结构<ul>
 <li>Segment数组（该数组用来加锁，每个数组元素是一个HashEntry数组（该数组可能包含链表）</li>
-<li>如图，ConcurrentHashMap由多个Segment组合，每一个Segment是一个类似HashMap的结构，每一个HashMap内部可以扩容，但是Segment个数初始化后不能改变，默认16个（即默认支持16个线程并发）<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221023124636646.png" alt="image-20221023124636646"></li>
+<li>如图，ConcurrentHashMap由多个Segment组合，每一个Segment是一个类似HashMap的结构，每一个HashMap内部可以扩容，但是Segment个数初始化后不能改变，默认16个（即默认支持16个线程并发）<br><img src="/images/mypost/image-20221023124636646.png" alt="image-20221023124636646"></li>
 </ul>
 </li>
 </ul>
 <h2 id="ConcurrentHashMap1-8"><a href="#ConcurrentHashMap1-8" class="headerlink" title="ConcurrentHashMap1.8"></a>ConcurrentHashMap1.8</h2><ul>
-<li><p>存储结构<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221023124708670.png" alt="image-20221023124708670"><br>可以发现 Java8 的 ConcurrentHashMap 相对于 Java7 来说变化比较大，不再是之前的 <strong>Segment 数组 + HashEntry 数组 + 链表</strong>，而是 <strong>Node 数组 + 链表 &#x2F; 红黑树</strong>。当冲突链表达到一定长度时，链表会转换成红黑树。</p>
+<li><p>存储结构<br><img src="/images/mypost/image-20221023124708670.png" alt="image-20221023124708670"><br>可以发现 Java8 的 ConcurrentHashMap 相对于 Java7 来说变化比较大，不再是之前的 <strong>Segment 数组 + HashEntry 数组 + 链表</strong>，而是 <strong>Node 数组 + 链表 &#x2F; 红黑树</strong>。当冲突链表达到一定长度时，链表会转换成红黑树。</p>
 </li>
 <li><p>初始化 initTable</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Initializes table, using the size recorded in sizeCtl.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> Node&lt;K,V&gt;[] initTable() &#123;</span><br><span class="line">    Node&lt;K,V&gt;[] tab; <span class="type">int</span> sc;</span><br><span class="line">    <span class="keyword">while</span> ((tab = table) == <span class="literal">null</span> || tab.length == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="comment">//　如果 sizeCtl &lt; 0 ,说明另外的线程执行CAS 成功，正在进行初始化。</span></span><br><span class="line">        <span class="keyword">if</span> ((sc = sizeCtl) &lt; <span class="number">0</span>)</span><br><span class="line">            <span class="comment">// 让出 CPU 使用权</span></span><br><span class="line">            Thread.<span class="keyword">yield</span>(); <span class="comment">// lost initialization race; just spin</span></span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (U.compareAndSwapInt(<span class="built_in">this</span>, SIZECTL, sc, -<span class="number">1</span>)) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> ((tab = table) == <span class="literal">null</span> || tab.length == <span class="number">0</span>) &#123;</span><br><span class="line">                    <span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span> (sc &gt; <span class="number">0</span>) ? sc : DEFAULT_CAPACITY;</span><br><span class="line">                    <span class="meta">@SuppressWarnings(&quot;unchecked&quot;)</span></span><br><span class="line">                    Node&lt;K,V&gt;[] nt = (Node&lt;K,V&gt;[])<span class="keyword">new</span> <span class="title class_">Node</span>&lt;?,?&gt;[n];</span><br><span class="line">                    table = tab = nt;</span><br><span class="line">                    sc = n - (n &gt;&gt;&gt; <span class="number">2</span>);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                sizeCtl = sc;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> tab;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -383,7 +383,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">45:37</span>
+    <span title="站点阅读时长">45:36</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动

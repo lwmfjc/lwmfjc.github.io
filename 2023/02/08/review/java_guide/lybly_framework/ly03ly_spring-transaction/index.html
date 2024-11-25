@@ -27,8 +27,8 @@
 <meta property="og:site_name" content="随记">
 <meta property="og:description" content="Spring事务详情">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/PlatformTransactionManager.png">
-<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/roollbackFor.png">
+<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/PlatformTransactionManager.png">
+<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/roollbackFor.png">
 <meta property="article:published_time" content="2023-02-08T16:08:16.000Z">
 <meta property="article:modified_time" content="2023-02-08T16:08:16.000Z">
 <meta property="article:author" content="刘易">
@@ -36,7 +36,7 @@
 <meta property="article:tag" content="复习-javaGuide">
 <meta property="article:tag" content="复习-javaGuide-framework">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/PlatformTransactionManager.png">
+<meta name="twitter:image" content="https://lwmfjc.github.io/images/mypost/PlatformTransactionManager.png">
 
 
 <link rel="canonical" href="https://lwmfjc.github.io/2023/02/08/review/java_guide/lybly_framework/ly03ly_spring-transaction/">
@@ -325,7 +325,7 @@
 <h4 id="PlatformTransactionManager-事务管理接口"><a href="#PlatformTransactionManager-事务管理接口" class="headerlink" title="PlatformTransactionManager:事务管理接口"></a>PlatformTransactionManager:事务管理接口</h4><p><strong>Spring 并不直接管理事务，而是提供了多种事务管理器</strong> 。Spring 事务管理器的接口是： <strong><code>PlatformTransactionManager</code></strong> 。</p>
 <p><strong>通过这个接口</strong>，Spring 为各个平台如：JDBC(<code>DataSourceTransactionManager</code>)、Hibernate(<code>HibernateTransactionManager</code>)、JPA(<code>JpaTransactionManager</code>)等都提供了对应的事务管理器，但是<strong>具体的实现就是各个平台</strong>自己的事情了。</p>
 <p><strong><code>PlatformTransactionManager</code> 接口的具体实现如下:</strong></p>
-<p><a target="_blank" rel="noopener" href="https://github.com/Snailclimb/JavaGuide/blob/main/docs/system-design/framework/spring/images/spring-transaction/PlatformTransactionManager.png"><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/PlatformTransactionManager.png" alt="img"></a></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/Snailclimb/JavaGuide/blob/main/docs/system-design/framework/spring/images/spring-transaction/PlatformTransactionManager.png"><img src="/images/mypost/PlatformTransactionManager.png" alt="img"></a></p>
 <p><code>PlatformTransactionManager</code>接口中定义了三个方法：</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> org.springframework.transaction;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.springframework.lang.Nullable;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">PlatformTransactionManager</span> &#123;</span><br><span class="line">    <span class="comment">//获得事务</span></span><br><span class="line">    TransactionStatus <span class="title function_">getTransaction</span><span class="params">(<span class="meta">@Nullable</span> TransactionDefinition var1)</span> <span class="keyword">throws</span> TransactionException;</span><br><span class="line">    <span class="comment">//提交事务</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">commit</span><span class="params">(TransactionStatus var1)</span> <span class="keyword">throws</span> TransactionException;</span><br><span class="line">    <span class="comment">//回滚事务</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">rollback</span><span class="params">(TransactionStatus var1)</span> <span class="keyword">throws</span> TransactionException;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
@@ -439,7 +439,7 @@
 <li>如果你一次执行多条查询语句，例如统计查询，报表查询，在这种场景下，多条查询 SQL 必须保证整体的读一致性，否则，在前条 SQL 查询之后，后条 SQL 查询之前，数据被其他用户改变，则<strong>该次整体的统计查询将会出现读数据不一致</strong>的状态，此时，应该<strong>启用事务支持</strong>（<strong>避免多次查询结果不一致</strong>）</li>
 </ul>
 <h4 id="事务回滚规则"><a href="#事务回滚规则" class="headerlink" title="事务回滚规则"></a>事务回滚规则</h4><p>这些规则定义了<strong>哪些异常会导致事务回滚</strong>而<strong>哪些不会</strong>。默认情况下，事务只有遇到<strong>运行期异常（<code>RuntimeException</code> 的子类）</strong>时才会回滚，**<code>Error</code>** 也会导致事务回滚，但是，在遇到<strong>检查型（Checked）异常时不会回滚</strong>。[ **这里说的是默认情况下 **]</p>
-<p><a target="_blank" rel="noopener" href="https://github.com/Snailclimb/JavaGuide/blob/main/docs/system-design/framework/spring/images/spring-transaction/roollbackFor.png"><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/roollbackFor.png" alt="img"></a></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/Snailclimb/JavaGuide/blob/main/docs/system-design/framework/spring/images/spring-transaction/roollbackFor.png"><img src="/images/mypost/roollbackFor.png" alt="img"></a></p>
 <p>如果你想要回滚你定义的<strong>特定的异常</strong>类型的话，可以这样：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">@Transactional(rollbackFor= MyException.class)</span><br></pre></td></tr></table></figure>
 
@@ -578,7 +578,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">45:37</span>
+    <span title="站点阅读时长">45:36</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动

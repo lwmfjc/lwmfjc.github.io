@@ -27,15 +27,15 @@
 <meta property="og:site_name" content="随记">
 <meta property="og:description" content="其他">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220519172038904.png">
-<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220519171545786.png">
-<meta property="og:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220519171653406.png">
+<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/image-20220519172038904.png">
+<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/image-20220519171545786.png">
+<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/image-20220519171653406.png">
 <meta property="article:published_time" content="2022-05-19T16:13:44.000Z">
 <meta property="article:modified_time" content="2022-05-19T16:13:44.000Z">
 <meta property="article:author" content="刘易">
 <meta property="article:tag" content="flowable_波哥_b站">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220519172038904.png">
+<meta name="twitter:image" content="https://lwmfjc.github.io/images/mypost/image-20220519172038904.png">
 
 
 <link rel="canonical" href="https://lwmfjc.github.io/2022/05/19/study/flowable/boge_blbl/03-others/">
@@ -270,7 +270,7 @@
     
     
     <div class="post-body" itemprop="articleBody"><h2 id="会签"><a href="#会签" class="headerlink" title="会签"></a>会签</h2><ul>
-<li><p>流程图绘制<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220519172038904.png" alt="image-20220519172038904"></p>
+<li><p>流程图绘制<br><img src="/images/mypost/image-20220519172038904.png" alt="image-20220519172038904"></p>
 <ul>
 <li><p>注意上面几个参数</p>
 <ul>
@@ -281,7 +281,7 @@
 <li>完成条件–这里填的是 ${nrOfCompletedInstances &gt; 1 }</li>
 </ul>
 </li>
-<li><p>在任务监听器<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220519171545786.png" alt="image-20220519171545786"></p>
+<li><p>在任务监听器<br><img src="/images/mypost/image-20220519171545786.png" alt="image-20220519171545786"></p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> org.flowable.listener;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.flowable.engine.ProcessEngine;</span><br><span class="line"><span class="keyword">import</span> org.flowable.engine.ProcessEngines;</span><br><span class="line"><span class="keyword">import</span> org.flowable.engine.TaskService;</span><br><span class="line"><span class="keyword">import</span> org.flowable.engine.delegate.TaskListener;</span><br><span class="line"><span class="keyword">import</span> org.flowable.task.api.Task;</span><br><span class="line"><span class="keyword">import</span> org.flowable.task.service.delegate.DelegateTask;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MultiInstanceTaskListener</span> <span class="keyword">implements</span> <span class="title class_">TaskListener</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">notify</span><span class="params">(DelegateTask delegateTask)</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;处理aaaa&quot;</span>);</span><br><span class="line">        <span class="keyword">if</span>(delegateTask.getEventName().equals(<span class="string">&quot;create&quot;</span>)) &#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;任务id&quot;</span> + delegateTask.getId());</span><br><span class="line">            System.out.println(<span class="string">&quot;哪些人需要会签&quot;</span> + delegateTask.getVariable(<span class="string">&quot;persons&quot;</span>));</span><br><span class="line">            System.out.println(<span class="string">&quot;任务处理人&quot;</span> + delegateTask.getVariable(<span class="string">&quot;person&quot;</span>));</span><br><span class="line">            <span class="type">ProcessEngine</span> <span class="variable">engine</span> <span class="operator">=</span> ProcessEngines.getDefaultProcessEngine();</span><br><span class="line">            <span class="type">TaskService</span> <span class="variable">taskService</span> <span class="operator">=</span> engine.getTaskService();</span><br><span class="line">            <span class="type">Task</span> <span class="variable">task</span> <span class="operator">=</span> taskService.createTaskQuery().taskId(delegateTask.getId()).singleResult();</span><br><span class="line">            task.setAssignee(delegateTask.getVariable(<span class="string">&quot;person&quot;</span>).toString());</span><br><span class="line">            taskService.saveTask(task);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 </li>
 <li></li>
@@ -297,7 +297,7 @@
 <li><p>运行流程</p>
 <figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">  </span><br><span class="line">@Test</span><br><span class="line">public void run()&#123;</span><br><span class="line">    ProcessEngine defaultProcessEngine = ProcessEngines.getDefaultProcessEngine();</span><br><span class="line">    RuntimeService runtimeService = defaultProcessEngine.getRuntimeService();</span><br><span class="line">    HashMap&lt;String,Object&gt; map=new HashMap<span class="tag">&lt;&gt;</span>();</span><br><span class="line">    ArrayList<span class="tag">&lt;<span class="name">String</span>&gt;</span> persons=new ArrayList<span class="tag">&lt;&gt;</span>();</span><br><span class="line">    persons.add(&quot;张三&quot;);</span><br><span class="line">    persons.add(&quot;李四&quot;);</span><br><span class="line">    persons.add(&quot;王五&quot;);</span><br><span class="line">  </span><br><span class="line">    map.put(&quot;persons&quot;,persons);</span><br><span class="line">    ProcessInstance processInstance = runtimeService.startProcessInstanceById(&quot;join-key:1:17504&quot;,map);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 </li>
-<li><p>此时数据库会有三个任务<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220519171653406.png" alt="image-20220519171653406"></p>
+<li><p>此时数据库会有三个任务<br><img src="/images/mypost/image-20220519171653406.png" alt="image-20220519171653406"></p>
 </li>
 <li><p>完成第一个任务</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line">  </span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">completeTask</span><span class="params">()</span>&#123;</span><br><span class="line">    <span class="comment">//15020</span></span><br><span class="line">    ProcessEngine engine=ProcessEngines.getDefaultProcessEngine();</span><br><span class="line">    <span class="type">TaskService</span> <span class="variable">taskService</span> <span class="operator">=</span> engine.getTaskService();</span><br><span class="line">    taskService.complete(<span class="string">&quot;20020&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -370,7 +370,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">45:37</span>
+    <span title="站点阅读时长">45:36</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
