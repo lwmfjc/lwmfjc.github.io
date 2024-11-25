@@ -272,7 +272,7 @@
         <i class="far fa-clock"></i>
       </span>
       <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>8 分钟</span>
+      <span>9 分钟</span>
     </span>
 </div>
 
@@ -284,7 +284,7 @@
     
     
     <div class="post-body" itemprop="articleBody"><blockquote>
-<p>转载自<a target="_blank" rel="noopener" href="https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!">https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!</a></p>
+<p>转载自<a target="_blank" rel="noopener" href="https://github.com/Snailclimb/JavaGuide%EF%BC%88%E6%B7%BB%E5%8A%A0%E5%B0%8F%E9%83%A8%E5%88%86%E7%AC%94%E8%AE%B0%EF%BC%89%E6%84%9F%E8%B0%A2%E4%BD%9C%E8%80%85">https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者</a>!</p>
 </blockquote>
 <p><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/d337fef5815143bb80aef0013645ac06%7Etplv-k3u1fbpfcp-zoom-crop-mark%3A3024%3A3024%3A3024%3A1702.awebp" alt=" 既然有HTTP协议，为什么还要有RPC"></p>
 <p>我正在参与掘金技术社区创作者签约计划招募活动，<a target="_blank" rel="noopener" href="https://juejin.cn/post/7112770927082864653">点击链接报名投稿</a>。</p>
@@ -297,6 +297,7 @@
 <p>这时候，我们可选项一般也就<strong>TCP和UDP二选一。TCP可靠，UDP不可靠。</strong> 除非是马总这种神级程序员（早期QQ大量使用UDP），否则，只要稍微对可靠性有些要求，普通人一般无脑选TCP就对了。</p>
 <p>类似下面这样。</p>
 <figure class="highlight ini"><table><tr><td class="code"><pre><span class="line"><span class="attr">fd</span> = socket(AF_INET,SOCK_STREAM,<span class="number">0</span>)<span class="comment">;</span></span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+
 <p>其中<code>SOCK_STREAM</code>，是指使用<strong>字节流</strong>传输数据，说白了就是<strong>TCP协议</strong>。</p>
 <p>在定义了socket之后，我们就可以愉快的对这个socket进行操作，比如用<code>bind()</code>绑定IP端口，用<code>connect()</code>发起建连。</p>
 <p><img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/f410977cda814d32b0eff3645c385a8a~tplv-k3u1fbpfcp-zoom-in-crop-mark:4536:0:0:0.awebp" alt="握手建立连接流程"></p>
@@ -311,7 +312,7 @@
 <p><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/b82d4fcdd0c4491e979856c93c1750d7%7Etplv-k3u1fbpfcp-zoom-in-crop-mark%3A4536%3A0%3A0%3A0.awebp" alt="01二进制字节流"></p>
 <p>正因为这个没有<strong>任何边界</strong>的特点，所以当我们选择使用TCP发送 <strong>“夏洛”和”特烦恼”</strong> 的时候，接收端收到的就是 <strong>“夏洛特烦恼”</strong> ，这时候接收端没发区分你是想要表达 <strong>“夏洛”+”特烦恼”</strong> 还是 <strong>“夏洛特”+”烦恼”</strong> 。</p>
 <p><img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/4e120d0f1152419585565f693e744a3a~tplv-k3u1fbpfcp-zoom-in-crop-mark:4536:0:0:0.awebp" alt="消息对比"></p>
-<p>这就是所谓的<strong>粘包问题</strong>，之前也写过一篇专门的<a href="https://link.juejin.cn/?target=https%3A%2F%2Fmp.weixin.qq.com%2Fs%2F0-YBxU1cSbDdzcZEZjmQYA">文章</a>聊过这个问题。</p>
+<p>这就是所谓的<strong>粘包问题</strong>，之前也写过一篇专门的<a href="https://link.juejin.cn/?target=https://mp.weixin.qq.com/s/0-YBxU1cSbDdzcZEZjmQYA">文章</a>聊过这个问题。</p>
 <p>说这个的目的是为了告诉大家，纯裸TCP是不能直接拿来用的，你需要在这个基础上加入一些<strong>自定义的规则</strong>，用于区分<strong>消息边界</strong>。</p>
 <p>于是我们会把每条要发送的数据都包装一下，比如加入<strong>消息头</strong>，<strong>消息头里写清楚一个完整的包长度是多少</strong>，根据这个长度可以继续接收数据，截取出来后它们就是我们真正要传输的<strong>消息体</strong>。</p>
 <p><img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/cb29659d4907446e9f70551c44c6369f~tplv-k3u1fbpfcp-zoom-in-crop-mark:4536:0:0:0.awebp" alt="消息边界长度标志"></p>
@@ -326,8 +327,10 @@
 <p>而<strong>RPC</strong>（<strong>R</strong>emote <strong>P</strong>rocedure <strong>C</strong>all），又叫做<strong>远程过程调用</strong>。它本身并不是一个具体的协议，而是一种<strong>调用方式</strong>。</p>
 <p>举个例子，我们平时调用一个<strong>本地方法</strong>就像下面这样。</p>
 <figure class="highlight ini"><table><tr><td class="code"><pre><span class="line"> <span class="attr">res</span> = localFunc(req)</span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+
 <p>如果现在这不是个本地方法，而是个<strong>远端服务器</strong>暴露出来的一个方法<code>remoteFunc</code>，如果我们还能像调用本地方法那样去调用它，这样就可以<strong>屏蔽掉一些网络细节</strong>，用起来更方便，岂不美哉？</p>
 <figure class="highlight ini"><table><tr><td class="code"><pre><span class="line"> <span class="attr">res</span> = remoteFunc(req)</span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+
 <p><img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/761da6c30af244e19b1c44075d8b4254~tplv-k3u1fbpfcp-zoom-in-crop-mark:4536:0:0:0.awebp" alt="RPC可以像调用本地方法那样调用远端方法"></p>
 <p>基于这个思路，大佬们造出了非常多款式的RPC协议，比如比较有名的<code>gRPC</code>，<code>thrift</code>。</p>
 <p>值得注意的是，虽然大部分RPC协议底层使用TCP，但实际上<strong>它们不一定非得使用TCP，改用UDP或者HTTP，其实也可以做到类似的功能。</strong></p>
@@ -336,9 +339,9 @@
 <p><strong>既然有HTTP协议，为什么还要有RPC？</strong></p>
 <p>其实，<code>TCP</code>是<strong>70年</strong>代出来的协议，而<code>HTTP</code>是<strong>90年代</strong>才开始流行的。而直接使用裸TCP会有问题，可想而知，这中间这么多年有多少自定义的协议，而这里面就有<strong>80年代</strong>出来的<code>RPC</code>。</p>
 <p>所以我们该问的不是<strong>既然有HTTP协议为什么要有RPC</strong>，而是<strong>为什么有RPC还要有HTTP协议</strong>。</p>
-<h4 id="那既然有RPC了，为什么还要有HTTP呢？"><a href="#那既然有RPC了，为什么还要有HTTP呢？" class="headerlink" title="那既然有RPC了，为什么还要有HTTP呢？"></a>那既然有RPC了，为什么还要有HTTP呢？</h4><p>现在电脑上装的各种<strong>联网</strong>软件，比如xx管家，xx卫士，它们都作为<strong>客户端（client）</strong> 需要跟<strong>服务端（server）</strong> 建立连接收发消息，此时都会用到应用层协议，在这种<strong>client/server (c/s)</strong> 架构下，它们可以使用自家造的RPC协议，因为它只管连自己公司的服务器就ok了。</p>
-<p>但有个软件不同，<strong>浏览器（browser）</strong> ，不管是chrome还是IE，它们不仅要能访问自家公司的<strong>服务器（server）</strong> ，还需要访问其他公司的网站服务器，因此它们需要有个统一的标准，不然大家没法交流。于是，HTTP就是那个时代用于统一 <strong>browser/server (b/s)</strong> 的协议。</p>
-<p>也就是说在多年以前，<strong>HTTP主要用于b/s架构，而RPC更多用于c/s架构。但现在其实已经没分那么清了，b/s和c/s在慢慢融合。</strong> 很多软件同时支持多端，比如某度云盘，既要支持<strong>网页版</strong>，还要支持<strong>手机端和pc端</strong>，如果通信协议都用HTTP的话，那服务器只用同一套就够了。而RPC就开始退居幕后，一般用于公司内部集群里，各个微服务之间的通讯。</p>
+<h4 id="那既然有RPC了，为什么还要有HTTP呢？"><a href="#那既然有RPC了，为什么还要有HTTP呢？" class="headerlink" title="那既然有RPC了，为什么还要有HTTP呢？"></a>那既然有RPC了，为什么还要有HTTP呢？</h4><p>现在电脑上装的各种<strong>联网</strong>软件，比如xx管家，xx卫士，它们都作为<strong>客户端（client）</strong> 需要跟<strong>服务端（server）</strong> 建立连接收发消息，此时都会用到应用层协议，在这种<strong>client&#x2F;server (c&#x2F;s)</strong> 架构下，它们可以使用自家造的RPC协议，因为它只管连自己公司的服务器就ok了。</p>
+<p>但有个软件不同，<strong>浏览器（browser）</strong> ，不管是chrome还是IE，它们不仅要能访问自家公司的<strong>服务器（server）</strong> ，还需要访问其他公司的网站服务器，因此它们需要有个统一的标准，不然大家没法交流。于是，HTTP就是那个时代用于统一 <strong>browser&#x2F;server (b&#x2F;s)</strong> 的协议。</p>
+<p>也就是说在多年以前，<strong>HTTP主要用于b&#x2F;s架构，而RPC更多用于c&#x2F;s架构。但现在其实已经没分那么清了，b&#x2F;s和c&#x2F;s在慢慢融合。</strong> 很多软件同时支持多端，比如某度云盘，既要支持<strong>网页版</strong>，还要支持<strong>手机端和pc端</strong>，如果通信协议都用HTTP的话，那服务器只用同一套就够了。而RPC就开始退居幕后，一般用于公司内部集群里，各个微服务之间的通讯。</p>
 <p>那这么说的话，<strong>都用HTTP得了，还用什么RPC？</strong></p>
 <p>仿佛又回到了文章开头的样子，那这就要从它们之间的区别开始说起。</p>
 <h3 id="HTTP和RPC有什么区别"><a href="#HTTP和RPC有什么区别" class="headerlink" title="HTTP和RPC有什么区别"></a>HTTP和RPC有什么区别</h3><p>我们来看看RPC和HTTP区别比较明显的几个点。</p>
@@ -369,7 +372,7 @@
 <h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><ul>
 <li>纯裸TCP是能收发数据，但它是个<strong>无边界</strong>的数据流，上层需要定义<strong>消息格式</strong>用于定义<strong>消息边界</strong>。于是就有了各种协议，HTTP和各类RPC协议就是在TCP之上定义的应用层协议。</li>
 <li><strong>RPC本质上不算是协议，而是一种调用方式</strong>，而像gRPC和thrift这样的具体实现，才是协议，它们是实现了RPC调用的协议。目的是希望程序员能像调用本地方法那样去调用远端的服务方法。同时RPC有很多种实现方式，<strong>不一定非得基于TCP协议</strong>。</li>
-<li>从发展历史来说，<strong>HTTP主要用于b/s架构，而RPC更多用于c/s架构。但现在其实已经没分那么清了，b/s和c/s在慢慢融合。</strong> 很多软件同时支持多端，所以对外一般用HTTP协议，而内部集群的微服务之间则采用RPC协议进行通讯。</li>
+<li>从发展历史来说，<strong>HTTP主要用于b&#x2F;s架构，而RPC更多用于c&#x2F;s架构。但现在其实已经没分那么清了，b&#x2F;s和c&#x2F;s在慢慢融合。</strong> 很多软件同时支持多端，所以对外一般用HTTP协议，而内部集群的微服务之间则采用RPC协议进行通讯。</li>
 <li>RPC其实比HTTP出现的要早，且比目前主流的HTTP1.1<strong>性能</strong>要更好，所以大部分公司内部都还在使用RPC。</li>
 <li><strong>HTTP2.0</strong>在<strong>HTTP1.1</strong>的基础上做了优化，性能可能比很多RPC协议都要好，但由于是这几年才出来的，所以也不太可能取代掉RPC。</li>
 </ul>
@@ -447,7 +450,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">45:25</span>
+    <span title="站点阅读时长">45:37</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动

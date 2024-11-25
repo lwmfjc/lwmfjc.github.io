@@ -308,36 +308,39 @@
 <ul>
 <li><p>典型用例</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">N</span> <span class="operator">=</span> Integer.parseInt(args[<span class="number">0</span>]);</span><br><span class="line">        <span class="type">int</span>[] a = <span class="keyword">new</span> <span class="title class_">int</span>[N];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; N; i++)</span><br><span class="line">            a[i] = StdRandom.uniform(-<span class="number">1000000</span>, <span class="number">1000000</span>);</span><br><span class="line">        <span class="type">Stopwatch</span> <span class="variable">timer</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Stopwatch</span>();</span><br><span class="line">        <span class="type">int</span> <span class="variable">cnt</span> <span class="operator">=</span> ThreeSum.count(a);</span><br><span class="line">        <span class="type">double</span> <span class="variable">time</span> <span class="operator">=</span> timer.elapsedTime();</span><br><span class="line">        StdOut.println(cnt + <span class="string">&quot; triples &quot;</span> + time + <span class="string">&quot; seconds&quot;</span>);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+
 </li>
-</ul>
-</li>
-</ul>
-<ul>
 <li><p>使用方法<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220407113407342.png" alt="image-20220407113407342"></p>
 </li>
 <li><p>数据类型的实现</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Stopwatch</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">long</span> start;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Stopwatch</span><span class="params">()</span> &#123;</span><br><span class="line">        start = System.currentTimeMillis();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">double</span> <span class="title function_">elapsedTime</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">long</span> <span class="variable">now</span> <span class="operator">=</span> System.currentTimeMillis();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> (now - start) / <span class="number">1000.0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Stopwatch</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">long</span> start;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Stopwatch</span><span class="params">()</span> &#123;</span><br><span class="line">        start = System.currentTimeMillis();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">double</span> <span class="title function_">elapsedTime</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">long</span> <span class="variable">now</span> <span class="operator">=</span> System.currentTimeMillis();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> (now - start) / <span class="number">1000.0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+</ul>
 </li>
 </ul>
 <h3 id="数学模型"><a href="#数学模型" class="headerlink" title="数学模型"></a>数学模型</h3><ul>
 <li><p>程序运行的总时间主要和两点有关：执行每条语句的耗时；执行每条语句的频率</p>
 </li>
-<li><p>定义：我们用~f(N) 表示所有随着N 的增大除以f(N) 的结果趋近于1 的函数。我们用g(N) ~<br>f(N) 表示g(N)/f(N) 随着N 的增大趋近于1。<br>即使用曰等号忽略较小的项</p>
+<li><p>定义：我们用~f(N) 表示所有随着N 的增大除以f(N) 的结果趋近于1 的函数。我们用g(N) ~<br>f(N) 表示g(N)&#x2F;f(N) 随着N 的增大趋近于1。<br>即使用曰等号忽略较小的项</p>
 </li>
-<li><script type="math/tex; mode=display">
-f(N)=N^b(logN)^c</script><p>将f(N)称为g(N)的增长的数量级</p>
+<li><p>$$<br>f(N)&#x3D;N^b(logN)^c<br>$$</p>
+<p>将f(N)称为g(N)的增长的数量级</p>
 </li>
 <li><p>常见的增长数量级函数<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220407170444747.png" alt="image-20220407170444747"></p>
 </li>
 <li><p>本书用性质表示需要用实验验证的猜想</p>
 <ul>
-<li><p>ThreeSum分析<br>执行最频繁的指令决定了程序执行的总时间—我们将这些指令称为程序的<strong>内循环</strong></p>
+<li><p>ThreeSum分析<br>执行最频繁的指令决定了程序执行的总时间–我们将这些指令称为程序的<strong>内循环</strong></p>
 <p><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220407170842908.png" alt="image-20220407170842908"></p>
 </li>
-<li>程序运行时间的分析<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220407170938405.png" alt="image-20220407170938405"></li>
-<li>算法的分析<br>ThreeSum的运行时间增长数量级为N^3，与在哪台机器无关</li>
-<li>成本模型<br>3-sum的成本模型：数组的访问次数（访问数组元素的次数，无论读写）</li>
-<li>总结-得到运行时间的数学模型所需的步骤<ul>
+<li><p>程序运行时间的分析<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220407170938405.png" alt="image-20220407170938405"></p>
+</li>
+<li><p>算法的分析<br>ThreeSum的运行时间增长数量级为N^3，与在哪台机器无关</p>
+</li>
+<li><p>成本模型<br>3-sum的成本模型：数组的访问次数（访问数组元素的次数，无论读写）</p>
+</li>
+<li><p>总结-得到运行时间的数学模型所需的步骤</p>
+<ul>
 <li>确定输入模型，定义问题的规模</li>
 <li>识别内循环</li>
 <li>根据内循环中的操作确定成本模型</li>
@@ -361,7 +364,7 @@ f(N)=N^b(logN)^c</script><p>将f(N)称为g(N)的增长的数量级</p>
 <li>问题规模（图）<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220408092436213.png" alt="image-20220408092436213"></li>
 <li>典型的增长数量级函数（图）<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220408092500239.png" alt="image-20220408092500239"></li>
 <li>典型的增长数量级函数<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220408092659849.png" alt="image-20220408092659849"></li>
-<li>在某个成本模型下可以提出精确的命题<br>比如，归并排序所需的比较次数在$1/2NlgN$~$NlgN$之间 ，即归并排序所需的运行时间的增长数量级是线性对数的，也就是：归并排序是线性对数的</li>
+<li>在某个成本模型下可以提出精确的命题<br>比如，归并排序所需的比较次数在$1&#x2F;2NlgN$~$NlgN$之间 ，即归并排序所需的运行时间的增长数量级是线性对数的，也就是：归并排序是线性对数的</li>
 </ul>
 <h3 id="设计更快的算法"><a href="#设计更快的算法" class="headerlink" title="设计更快的算法"></a>设计更快的算法</h3><ul>
 <li><p>前提，目前已知归并排序是线性对数级别的，二分查找是对数级别的</p>
@@ -382,14 +385,9 @@ f(N)=N^b(logN)^c</script><p>将f(N)称为g(N)的增长的数量级</p>
 <li><p>总运行时间和$N^2logN$成正比</p>
 </li>
 <li><p>代码如下</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.Arrays;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ThreeSumFast</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="type">int</span> <span class="title function_">count</span><span class="params">(<span class="type">int</span>[] a)</span> &#123; <span class="comment">// 计算和为０的三元组的数目</span></span><br><span class="line">        Arrays.sort(a);</span><br><span class="line"></span><br><span class="line">        <span class="type">int</span> <span class="variable">N</span> <span class="operator">=</span> a.length;</span><br><span class="line">        <span class="type">int</span> <span class="variable">cnt</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; N; i++)</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> i + <span class="number">1</span>; j &lt; N; j++)</span><br><span class="line">                <span class="keyword">if</span> (BinarySearch.rank(-a[i] - a[j], a) &gt; j) &#123;</span><br><span class="line">                    cnt++;</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> cnt;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">int</span>[] a = In.readInts(args[<span class="number">0</span>]);</span><br><span class="line">        StdOut.println(count(a));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-</li>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.Arrays;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ThreeSumFast</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="type">int</span> <span class="title function_">count</span><span class="params">(<span class="type">int</span>[] a)</span> &#123; <span class="comment">// 计算和为０的三元组的数目</span></span><br><span class="line">        Arrays.sort(a);</span><br><span class="line"></span><br><span class="line">        <span class="type">int</span> <span class="variable">N</span> <span class="operator">=</span> a.length;</span><br><span class="line">        <span class="type">int</span> <span class="variable">cnt</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; N; i++)</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> i + <span class="number">1</span>; j &lt; N; j++)</span><br><span class="line">                <span class="keyword">if</span> (BinarySearch.rank(-a[i] - a[j], a) &gt; j) &#123;</span><br><span class="line">                    cnt++;</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> cnt;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">int</span>[] a = In.readInts(args[<span class="number">0</span>]);</span><br><span class="line">        StdOut.println(count(a));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
 </ul>
 </li>
-</ul>
-</li>
-</ul>
-<ul>
 <li><p>下界</p>
 <ul>
 <li><p>为算法在最坏情况下的运行时间给出一个下界的思<br>想是非常有意义的</p>
@@ -404,11 +402,14 @@ f(N)=N^b(logN)^c</script><p>将f(N)称为g(N)的增长的数量级</p>
 </ul>
 </li>
 </ul>
+</li>
+</ul>
 <h3 id="倍率实验"><a href="#倍率实验" class="headerlink" title="倍率实验"></a>倍率实验</h3><ul>
 <li><p>翻倍后运行时间，与没翻倍时的运行时间成正比</p>
 </li>
 <li><p>代码</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">DoublingRatio</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="type">double</span> <span class="title function_">timeTrial</span><span class="params">(<span class="type">int</span> N)</span></span><br><span class="line">		<span class="comment">// 参见DoublingTest（请见1.4.2.3 节实验程序）</span></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span></span><br><span class="line">		&#123;</span><br><span class="line">		<span class="type">double</span> <span class="variable">prev</span> <span class="operator">=</span> timeTrial(<span class="number">125</span>);</span><br><span class="line">		<span class="keyword">for</span> (<span class="type">int</span> <span class="variable">N</span> <span class="operator">=</span> <span class="number">250</span>; <span class="literal">true</span>; N += N)</span><br><span class="line">				&#123;</span><br><span class="line">			<span class="type">double</span> <span class="variable">time</span> <span class="operator">=</span> timeTrial(N);</span><br><span class="line">			StdOut.printf(<span class="string">&quot;%6d %7.1f &quot;</span>, N, time);</span><br><span class="line">			StdOut.printf(<span class="string">&quot;%5.1fn&quot;</span>, time/prev);</span><br><span class="line">			prev = time;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
 <ul>
 <li>试验结果<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220408112657967.png" alt="image-20220408112657967"></li>
 <li>预测<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220408112708320.png" alt="image-20220408112708320"></li>
@@ -421,7 +422,7 @@ f(N)=N^b(logN)^c</script><p>将f(N)称为g(N)的增长的数量级</p>
 </li>
 </ul>
 <h3 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h3><ul>
-<li>大常数，$c = 10^3或10^6$</li>
+<li>大常数，$c &#x3D; 10^3或10^6$</li>
 <li>非决定性的内循环</li>
 <li>指令时间</li>
 <li>系统因素</li>
@@ -443,15 +444,14 @@ f(N)=N^b(logN)^c</script><p>将f(N)称为g(N)的增长的数量级</p>
 <h3 id="内存"><a href="#内存" class="headerlink" title="内存"></a>内存</h3><ul>
 <li>Java的内存分配系统</li>
 <li>原始数据类型的常见内存、需求<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220408113805644.png" alt="image-20220408113805644"><br>这里漏了，short也是2字节。总结boolean、byte 1字节；char、short 2字节；int、float 4字节；long、double 8字节</li>
-<li><p>对象（跳过）</p>
-<ul>
+<li>对象（跳过）<ul>
 <li><p>要知道一个对象所使用的内存量，需要将所有实例变量使用的内存与内存本身的开销（一般是16字节）</p>
 </li>
 <li><p>一般内存的使用都会被填充为<strong>8字节的倍数</strong>（注意，说的是64位计算机中的机器字）</p>
 </li>
 <li><p><strong>引用</strong>存储需要8字节</p>
 </li>
-<li><p>典型对象的内存需求<br>例如第一个，16+4=20；20+4 = 24为8的倍数</p>
+<li><p>典型对象的内存需求<br>例如第一个，16+4&#x3D;20；20+4 &#x3D; 24为8的倍数</p>
 <p><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220408114020688.png" alt="image-20220408114020688"></p>
 </li>
 <li><p>链表，嵌套的非静态（内部）类，如<strong>上面的Node，需要额外的8字节</strong>（用于外部类的引用）</p>
@@ -540,7 +540,7 @@ f(N)=N^b(logN)^c</script><p>将f(N)称为g(N)的增长的数量级</p>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">45:25</span>
+    <span title="站点阅读时长">45:37</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动

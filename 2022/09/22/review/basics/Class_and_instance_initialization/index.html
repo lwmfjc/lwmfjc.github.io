@@ -272,13 +272,16 @@
     
     
     <div class="post-body" itemprop="articleBody"><h2 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h2><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"> <span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Son</span> <span class="keyword">extends</span> <span class="title class_">Father</span>&#123;</span><br><span class="line">	<span class="keyword">private</span> <span class="type">int</span> i=test();</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="type">int</span> j=method();</span><br><span class="line">	<span class="keyword">static</span> &#123;</span><br><span class="line">		System.out.print(<span class="string">&quot;(6)&quot;</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	Son()&#123;</span><br><span class="line">		System.out.print(<span class="string">&quot;(7)&quot;</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	&#123;</span><br><span class="line">		System.out.print(<span class="string">&quot;(8)&quot;</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">public</span> <span class="type">int</span> <span class="title function_">test</span><span class="params">()</span>&#123;</span><br><span class="line">		System.out.print(<span class="string">&quot;(9)&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="type">int</span> <span class="title function_">method</span><span class="params">()</span>&#123;</span><br><span class="line">		System.out.print(<span class="string">&quot;(10)&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">		Son s1=<span class="keyword">new</span> <span class="title class_">Son</span>();</span><br><span class="line">		System.out.println();</span><br><span class="line">		Son s2=<span class="keyword">new</span> <span class="title class_">Son</span>();</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"> <span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Father</span> &#123;</span><br><span class="line">	<span class="keyword">private</span> <span class="type">int</span> i=test();</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="type">int</span> j=method();</span><br><span class="line">	<span class="keyword">static</span> &#123;</span><br><span class="line">		System.out.print(<span class="string">&quot;(1)&quot;</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	Father()&#123;</span><br><span class="line">		System.out.print(<span class="string">&quot;(2)&quot;</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	&#123;</span><br><span class="line">		System.out.print(<span class="string">&quot;(3)&quot;</span>);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="type">int</span> <span class="title function_">test</span><span class="params">()</span> &#123;</span><br><span class="line">		System.out.print(<span class="string">&quot;(4)&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="type">int</span> <span class="title function_">method</span><span class="params">()</span> &#123;</span><br><span class="line">		System.out.print(<span class="string">&quot;(5)&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
 <p>输出：</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">(5)(1)(10)(6)(9)(3)(2)(9)(8)(7)</span><br><span class="line">(9)(3)(2)(9)(8)(7)</span><br></pre></td></tr></table></figure>
+
 <h2 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h2><ul>
 <li><p>类初始化过程</p>
 <ul>
-<li>当实例化了一个对象/或main所在类会导致类初始化</li>
+<li>当实例化了一个对象&#x2F;或main所在类会导致类初始化</li>
 <li>子类初始化前会先初始化父类</li>
 <li>类初始化执行的是<clinit >方法，编译查看字节码可得知<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220922091920061.png" alt="image-20220922091920061"></li>
 <li><clinit >由静态类变量显示赋值语句 以及 静态代码块组成(由上到下顺序)，且只执行一次<br>如下<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220922100207544.png" alt="image-20220922100207544"></li>
@@ -286,12 +289,16 @@
 </li>
 <li><p>实例初始化过程</p>
 <ul>
-<li>执行的是<init>方法<br>由非静态实例变量显示赋值语句 以及 非静态代码块  [从上到下顺序]<br>以及对应构造器代码[最后执行] 组成<br>其中，子类构造器一定会调用super() [最前面]<br>1） super() 【最前】 2）i = test() 3）子类的非静态代码块 【2，3按顺序】<br>4) 子类的无参构造(最后)<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220922100330126.png" alt="image-20220922100330126"></li>
+<li>执行的是<init>方法<br>由非静态实例变量显示赋值语句 以及 非静态代码块  [从上到下顺序]<br>以及对应构造器代码[最后执行] 组成<br>其中，子类构造器一定会调用super() [最前面]<br>1） super() 【最前】 2）i &#x3D; test() 3）子类的非静态代码块 【2，3按顺序】<ol start="4">
+<li>子类的无参构造(最后)<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220922100330126.png" alt="image-20220922100330126"></li>
+</ol>
+</li>
 </ul>
 </li>
 <li><p>重写的问题<br> 如上所示，初始化Son对象的时候，会先调用super()方法，即初始化父类，然后会先调用父类的 非静态变量赋值以及非静态代码块，最后才是父类的构造器代码块  </p>
 <p>调用父类非静态变量赋值的时候，如果调用了非静态方法，就会涉及到重写问题，比如这里的 </p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Father</span>&#123;</span><br><span class="line"> <span class="keyword">private</span> <span class="type">int</span> i= test();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>这里会调用子类(当前正在初始化的对象)的test()方法，而不是父类的test()</p>
 <ul>
 <li>哪些方法不可被重写<br>final方法、静态方法、父类中的private等修饰使得子类不可见的方法</li>
@@ -360,7 +367,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">45:25</span>
+    <span title="站点阅读时长">45:37</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动

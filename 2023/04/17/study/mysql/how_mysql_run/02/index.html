@@ -270,13 +270,15 @@
     <div class="post-body" itemprop="articleBody"><blockquote>
 <p>学习《MySQL是怎样运行的》，感谢作者！</p>
 </blockquote>
-<h1 id="启动选项和配置文件"><a href="#启动选项和配置文件" class="headerlink" title="启动选项和配置文件"></a>启动选项和配置文件</h1><p>在程序启动时指定的设置项，也称之为<strong>启动选项startup option</strong>（可以在命令行中/配置文件中 指定）<br><strong>由于在centos7中使用systemctl start mysqld启动mysql，所以好像没法用命令行指定启动选项了</strong></p>
+<h1 id="启动选项和配置文件"><a href="#启动选项和配置文件" class="headerlink" title="启动选项和配置文件"></a>启动选项和配置文件</h1><p>在程序启动时指定的设置项，也称之为<strong>启动选项startup option</strong>（可以在命令行中&#x2F;配置文件中 指定）<br><strong>由于在centos7中使用systemctl start mysqld启动mysql，所以好像没法用命令行指定启动选项了</strong></p>
 <p>程序(可能有些程序新版本已经没有了)的对应类别和能读取的组：<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230417212512710.png" alt="image-20230417212512710"></p>
 <p>这里讲配置文件的方式设置启动选项：  </p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">添加配置</span></span><br><span class="line">vim /etc/my.cnf</span><br><span class="line">[server]</span><br><span class="line">skip-networking #禁止tcp网络连接</span><br><span class="line">default-storage-engine=MyISAM #建表默认使用M有ISAM存储引擎</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">效果</span></span><br><span class="line">▶ mysql -h127.0.0.1 -uroot -p</span><br><span class="line">Enter password: </span><br><span class="line">ERROR 2003 (HY000): Can&#x27;t connect to MySQL server on &#x27;127.0.0.1&#x27; (111)</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">去除tcp网络连接限制后新建一个表</span></span><br><span class="line">▶ mysql -h127.0.0.1 -uroot -p #可以连接上</span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">create table default_storage_engine_demo(i int);</span></span><br><span class="line">Query OK, 0 rows affected (0.01 sec)</span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">show create table default_storage_engine_demo;</span></span><br><span class="line">+-----------------------------+----------------------------------------------------------------------------------------------------------------+</span><br><span class="line">| Table                       | Create Table                                                                                                   |</span><br><span class="line">+-----------------------------+----------------------------------------------------------------------------------------------------------------+</span><br><span class="line">| default_storage_engine_demo | CREATE TABLE `default_storage_engine_demo` (</span><br><span class="line">  `i` int(11) DEFAULT NULL</span><br><span class="line">) ENGINE=MyISAM DEFAULT CHARSET=latin1 |</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
 <p>如果多个配置文件都配置了某个选项，如<code>/etc/my.cnf /etc/mysql/my.cnf /usr/etc/my.cnf ~/.my.cnf</code>都配置了，则以最后一个配置的为主<br>如果同一个配置文件，比如[server]组和[mysqld]组都出现了default-storage-engine配置，则以后出现的组中的配置为准<br>如果一个启动选项既在命令行中出现，又在配置文件中配置，则以命令行中的为准  </p>
 <h1 id="系统变量"><a href="#系统变量" class="headerlink" title="系统变量"></a>系统变量</h1><p>查看系统变量  </p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">SHOW VARIABLES LIKE <span class="string">&#x27;default_storage_engine&#x27;</span>;</span></span><br><span class="line">+------------------------+--------+</span><br><span class="line">| Variable_name          | Value  |</span><br><span class="line">+------------------------+--------+</span><br><span class="line">| default_storage_engine | InnoDB |</span><br><span class="line">+------------------------+--------+</span><br><span class="line">1 row in set (0.00 sec)</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">SHOW VARIABLES LIKE <span class="string">&#x27;default%&#x27;</span>;</span></span><br><span class="line">+-------------------------------+-----------------------+</span><br><span class="line">| Variable_name                 | Value                 |</span><br><span class="line">+-------------------------------+-----------------------+</span><br><span class="line">| default_authentication_plugin | mysql_native_password |</span><br><span class="line">| default_password_lifetime     | 0                     |</span><br><span class="line">| default_storage_engine        | InnoDB                |</span><br><span class="line">| default_tmp_storage_engine    | InnoDB                |</span><br><span class="line">| default_week_format           | 0                     |</span><br><span class="line">+-------------------------------+-----------------------+</span><br><span class="line">5 rows in set (0.00 sec)</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">SHOW VARIABLES LIKE <span class="string">&#x27;max_connections&#x27;</span>;</span></span><br><span class="line">+-----------------+-------+</span><br><span class="line">| Variable_name   | Value |</span><br><span class="line">+-----------------+-------+</span><br><span class="line">| max_connections | 151   |</span><br><span class="line">+-----------------+-------+</span><br><span class="line">1 row in set (0.00 sec)</span><br></pre></td></tr></table></figure>
+
 <p>大部分系统变量，可以在服务器程序运行过程中<strong>动态修改</strong>而无须停止并重启服务器  </p>
 <ol>
 <li><p>不同作用范围的系统变量<br>GLOBAL（全局范围）：影响服务器的整体操作<br>SESSION（会话范围）：影响某个客户端连接的操作  </p>
@@ -285,14 +287,15 @@
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">不会对这之前已连接的客户端产生影响</span></span><br><span class="line">SET GLOBAL default_storage_engine=MyISAM; #systemctl restart mysqld时候，该配置就失效了</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>只对本客户端使用  </p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">SET SESSION default_storage_engine=MyISAM;#或</span><br><span class="line">SET default_storage_engine=MyISAM;</span><br></pre></td></tr></table></figure>
-</li>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">SET SESSION default_storage_engine=MyISAM;#或</span><br><span class="line">SET default_storage_engine=MyISAM;</span><br></pre></td></tr></table></figure></li>
 </ol>
 <p>查看系统变量  </p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">SHOW [GLOBAL|SESSION] VARIABLES [LIKE &#x27;匹配的模式&#x27;];</span><br></pre></td></tr></table></figure>
+
 <h1 id="状态变量"><a href="#状态变量" class="headerlink" title="状态变量"></a>状态变量</h1><p>状态变量用来显示服务器程序运行状态<br>状态变量也分GLOBAL|SESSION</p>
 <p>SHOW [GLOBAL|SESSION] STATUS [LIKE 匹配的模式];</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">SHOW STATUS LIKE <span class="string">&#x27;thread%&#x27;</span>;</span></span><br><span class="line">+-------------------+-------+</span><br><span class="line">| Variable_name     | Value |</span><br><span class="line">+-------------------+-------+</span><br><span class="line">| Threads_cached    | 0     |</span><br><span class="line">| Threads_connected | 2     |</span><br><span class="line">| Threads_created   | 2     |</span><br><span class="line">| Threads_running   | 1     |</span><br><span class="line">+-------------------+-------+</span><br></pre></td></tr></table></figure>
+
 
     </div>
 
@@ -354,7 +357,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">45:25</span>
+    <span title="站点阅读时长">45:37</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动

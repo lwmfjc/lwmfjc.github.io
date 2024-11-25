@@ -249,7 +249,7 @@
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>1.8k</span>
+      <span>1.9k</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
@@ -270,29 +270,37 @@
     <div class="post-body" itemprop="articleBody"><h1 id="fcitx配合各种软件出现的问题"><a href="#fcitx配合各种软件出现的问题" class="headerlink" title="fcitx配合各种软件出现的问题"></a>fcitx配合各种软件出现的问题</h1><blockquote>
 <p>本文章中出现的引号都是英文状态下的引号，切记！</p>
 </blockquote>
-<h2 id="安装完毕后环境变量设置"><a href="#安装完毕后环境变量设置" class="headerlink" title="安装完毕后环境变量设置"></a>安装完毕后环境变量设置</h2><p>/etc/profile 和/etc/enviroment 均可，profile针对用户，environment针对系统。一般都是放profile里面  </p>
-<h3 id="不行的话"><a href="#不行的话" class="headerlink" title="不行的话"></a>不行的话</h3><p>如果修改profile无效，则在/etc/enviroment添加修改</p>
+<h2 id="安装完毕后环境变量设置"><a href="#安装完毕后环境变量设置" class="headerlink" title="安装完毕后环境变量设置"></a>安装完毕后环境变量设置</h2><p>&#x2F;etc&#x2F;profile 和&#x2F;etc&#x2F;enviroment 均可，profile针对用户，environment针对系统。一般都是放profile里面  </p>
+<h3 id="不行的话"><a href="#不行的话" class="headerlink" title="不行的话"></a>不行的话</h3><p>如果修改profile无效，则在&#x2F;etc&#x2F;enviroment添加修改</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">/etc/enviroment 末尾添加</span></span><br><span class="line">fcitx &amp; #这行要添加</span><br><span class="line">export XIM_PROGRAM=fcitx</span><br><span class="line">export XIM=fcitx</span><br><span class="line">export GTK_IM_MODULE=fcitx</span><br><span class="line">export QT_IM_MODULE=fcitx</span><br><span class="line">export XMODIFIERS=&quot;@im=fcitx&quot;</span><br><span class="line">export LANG=zh_CN.UTF-8</span><br></pre></td></tr></table></figure>
+
 <p>source后再重启一下哦</p>
 <h2 id="装了zsh后-从终端打开-idea等各种软件不出现fcitx输入法的问题"><a href="#装了zsh后-从终端打开-idea等各种软件不出现fcitx输入法的问题" class="headerlink" title="装了zsh后(从终端打开)idea等各种软件不出现fcitx输入法的问题"></a>装了zsh后(从终端打开)idea等各种软件不出现fcitx输入法的问题</h2><p>在<code>/.zshrc</code>最后添加</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">export XIM_PROGRAM=fcitx</span><br><span class="line">export XIM=fcitx</span><br><span class="line">export GTK_IM_MODULE=fcitx</span><br><span class="line">export QT_IM_MODULE=fcitx</span><br><span class="line">export XMODIFIERS=&quot;@im=fcitx&quot;</span><br><span class="line">export LANG=zh_CN.UTF-8</span><br><span class="line">export LC_MESSAGES=en_US.UTF-8 #让终端报错时，显示英文 而不是中文</span><br></pre></td></tr></table></figure>
-<p>也可以不在/.zshrc中追加这些，而是直接追加 <code>source /etc/profile</code>或者<code>/etc/enviroment</code>即可</p>
+
+<p>也可以不在&#x2F;.zshrc中追加这些，而是直接追加 <code>source /etc/profile</code>或者<code>/etc/enviroment</code>即可</p>
 <p>如果还有问题，就要在idea的配置文件<code>idea.vmoptions</code>添加  </p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">-Drecreate.x11.input.method=true</span><br></pre></td></tr></table></figure>
-<h3 id="如果使用系统默认终端的情况下出的问题"><a href="#如果使用系统默认终端的情况下出的问题" class="headerlink" title="如果使用系统默认终端的情况下出的问题"></a>如果使用系统默认终端的情况下出的问题</h3><p>可以在 ~/.bashrc最后添加这段话，重启试试</p>
+
+<h3 id="如果使用系统默认终端的情况下出的问题"><a href="#如果使用系统默认终端的情况下出的问题" class="headerlink" title="如果使用系统默认终端的情况下出的问题"></a>如果使用系统默认终端的情况下出的问题</h3><p>可以在 ~&#x2F;.bashrc最后添加这段话，重启试试</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">export XIM_PROGRAM=fcitx</span><br><span class="line">export XIM=fcitx</span><br><span class="line">export GTK_IM_MODULE=fcitx</span><br><span class="line">export QT_IM_MODULE=fcitx</span><br><span class="line">export XMODIFIERS=&quot;@im=fcitx&quot;</span><br><span class="line">export LANG=zh_CN.UTF-8</span><br></pre></td></tr></table></figure>
-<h1 id="各个文件的解释"><a href="#各个文件的解释" class="headerlink" title="各个文件的解释"></a>各个文件的解释</h1><p>/etc/profile  //用户级，所有用户登陆时才会执行  对于fcitx没效果(firefox无效)<br>/etc/enviroment  //系统级，一般不修改  这里有效果<br>~/.bashrc  //系统默认终端打开时执行<br>~/.zshrc    //zsh使用前执行</p>
+
+<h1 id="各个文件的解释"><a href="#各个文件的解释" class="headerlink" title="各个文件的解释"></a>各个文件的解释</h1><p>&#x2F;etc&#x2F;profile  &#x2F;&#x2F;用户级，所有用户登陆时才会执行  对于fcitx没效果(firefox无效)<br>&#x2F;etc&#x2F;enviroment  &#x2F;&#x2F;系统级，一般不修改  这里有效果<br>~&#x2F;.bashrc  &#x2F;&#x2F;系统默认终端打开时执行<br>~&#x2F;.zshrc    &#x2F;&#x2F;zsh使用前执行</p>
 <blockquote>
 <p>source命令是一个内置的shell命令，用于从当前shell会话中的文件读取和执行命令。source命令通常用于保留、更改当前shell中的环境变量。简而言之，source一个脚本，将会在当前shell中运行execute命令。<br>source命令可用于：</p>
 <p>刷新当前的shell环境<br>在当前环境使用source执行Shell脚本<br>从脚本中导入环境中一个Shell函数<br>从另一个Shell脚本中读取变量</p>
 </blockquote>
 <h1 id="zsh卸载后账号无法登录"><a href="#zsh卸载后账号无法登录" class="headerlink" title="zsh卸载后账号无法登录"></a>zsh卸载后账号无法登录</h1><p>参考<a href="https://lwmfjc.github.io/2023/05/23/problem/linux/20230523/">https://lwmfjc.github.io/2023/05/23/problem/linux/20230523/</a> 这篇文章<br>如果不是root用户就简单多了，直接  </p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">vim /etc/passwd</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">xx(账户名)......zsh，中/bin/zsh，改为/bin/bash 即可</span></span><br></pre></td></tr></table></figure>
+
 <h1 id="xfce4的安装及gnome卸载"><a href="#xfce4的安装及gnome卸载" class="headerlink" title="xfce4的安装及gnome卸载"></a>xfce4的安装及gnome卸载</h1><p>gnome完全卸载  </p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">aptitude purge `dpkg --get-selections | grep gnome | cut -f 1`</span><br><span class="line">aptitude -f install</span><br><span class="line">aptitude purge `dpkg --get-selections | grep deinstall | cut -f 1`</span><br><span class="line">aptitude -f install</span><br></pre></td></tr></table></figure>
+
 <p>xfce4安装</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo apt install task-xfce-desktop</span><br></pre></td></tr></table></figure>
+
 <h1 id="蓝牙问题"><a href="#蓝牙问题" class="headerlink" title="蓝牙问题"></a>蓝牙问题</h1><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">最后是装了blueman</span><br></pre></td></tr></table></figure>
+
 <p>连接蓝牙耳机出现这个问题，为了连接装了这个。之后想用扬声器发现用不了，拔了耳机可以了却发现破音了….</p>
 <p><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/2023/11/19/20231119232721.png" alt="image-20231119232719613"></p>
 <p>最后解决方案是把这两个删了，而且此时蓝牙耳机也可以连上了…原因不明</p>
@@ -358,7 +366,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">45:25</span>
+    <span title="站点阅读时长">45:37</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动

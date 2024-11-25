@@ -256,7 +256,7 @@
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>1.5k</span>
+      <span>1.6k</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
@@ -276,14 +276,16 @@
     
     <div class="post-body" itemprop="articleBody"><blockquote>
 <p>转载自<a target="_blank" rel="noopener" href="https://github.com/Snailclimb/JavaGuide">https://github.com/Snailclimb/JavaGuide</a> （添加小部分笔记）感谢作者!</p>
+</blockquote>
+<blockquote>
 <p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/360878783">https://zhuanlan.zhihu.com/p/360878783</a> IO多路复用讲解，这是一个与系统底层有关的知识点，需要一些操作系统调用代码才知道IO多路复用省的时间。</p>
 </blockquote>
-<h2 id="I-O"><a href="#I-O" class="headerlink" title="I/O"></a>I/O</h2><h3 id="何为I-O"><a href="#何为I-O" class="headerlink" title="何为I/O"></a>何为I/O</h3><ul>
-<li>I/O(<strong>Input/Output</strong>)，即<strong>输入/输出</strong><br>从计算机结构的角度来解读一下I/O，根据冯诺依曼结构，计算机结构分为5大部分：<strong>运算器</strong>、<strong>控制器</strong>、<strong>存储器</strong>、<strong>输入设备</strong>、<strong>输出设备</strong><br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221026153939710.png" alt="image-20221026153939710"><br>其中，输入设备：键盘；输出设备：显示器<br>网卡、硬盘既属于输入设备也属于输出设备</li>
-<li>输入设备<strong>向计算机输入（内存）</strong>数据，输出设备<strong>接收计算机（内存）</strong>输出的数据，即I/O描述了<strong>计算机系统</strong>与<strong>外部设备</strong>之间<strong>通信</strong>的过程</li>
-<li>从应用程序的角度解读I/O<ul>
-<li>为了保证系统稳定性和安全性，一个进程的地址空间划分为<strong>用户空间User space</strong>和<strong>内核空间Kernel space</strong> <code>kernel    英[ˈkɜːnl]</code></li>
-<li>平常运行的应用程序都运行在用户空间，只有<strong>内核空间才能进行系统态级别</strong>的<strong>资源</strong>有关操作—-<strong>文件管理、进程通信、内存管理</strong></li>
+<h2 id="I-O"><a href="#I-O" class="headerlink" title="I&#x2F;O"></a>I&#x2F;O</h2><h3 id="何为I-O"><a href="#何为I-O" class="headerlink" title="何为I&#x2F;O"></a>何为I&#x2F;O</h3><ul>
+<li>I&#x2F;O(<strong>Input&#x2F;Output</strong>)，即<strong>输入&#x2F;输出</strong><br>从计算机结构的角度来解读一下I&#x2F;O，根据冯诺依曼结构，计算机结构分为5大部分：<strong>运算器</strong>、<strong>控制器</strong>、<strong>存储器</strong>、<strong>输入设备</strong>、<strong>输出设备</strong><br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221026153939710.png" alt="image-20221026153939710"><br>其中，输入设备：键盘；输出设备：显示器<br>网卡、硬盘既属于输入设备也属于输出设备</li>
+<li>输入设备<strong>向计算机输入（内存）</strong>数据，输出设备<strong>接收计算机（内存）</strong>输出的数据，即I&#x2F;O描述了<strong>计算机系统</strong>与<strong>外部设备</strong>之间<strong>通信</strong>的过程</li>
+<li>从应用程序的角度解读I&#x2F;O<ul>
+<li>为了保证系统稳定性和安全性，一个进程的地址空间划分为<strong>用户空间User space</strong>和<strong>内核空间Kernel space</strong> <code>kernel	英[ˈkɜːnl]</code></li>
+<li>平常运行的应用程序都运行在用户空间，只有<strong>内核空间才能进行系统态级别</strong>的<strong>资源</strong>有关操作—<strong>文件管理、进程通信、内存管理</strong></li>
 <li>如果要进行IO操作，就得依赖<strong>内核空间</strong>的能力，<strong>用户空间的程序</strong>不能直接访问<strong>内核空间</strong></li>
 <li>用户进程要想执行IO操作，必须通过<strong>系统调用</strong>来间接访问内核空间</li>
 </ul>
@@ -292,26 +294,25 @@
 <li><strong>应用程序只是发起了IO操作调用</strong>，而具体的IO执行则由<strong>操作系统内核</strong>完成</li>
 </ul>
 </li>
-<li>应用程序<strong>发起I/O后</strong>，经历两个步骤<ul>
-<li>内核<strong>等待I/O设备</strong>准备好数据</li>
+<li>应用程序<strong>发起I&#x2F;O后</strong>，经历两个步骤<ul>
+<li>内核<strong>等待I&#x2F;O设备</strong>准备好数据</li>
 <li>内核将数据<strong>从内核空间</strong>拷贝<strong>到用户空间</strong></li>
 </ul>
 </li>
 </ul>
-<h3 id="有哪些常见的IO模型"><a href="#有哪些常见的IO模型" class="headerlink" title="有哪些常见的IO模型"></a>有哪些常见的IO模型</h3><p>UNIX系统下，包括5种：<strong>同步阻塞I/O</strong>，<strong>同步非阻塞I/O</strong>，<strong>I/O多路复用</strong>、<strong>信号驱动I/O</strong>和<strong>异步I/O</strong></p>
-<h2 id="Java中3中常见I-O模型"><a href="#Java中3中常见I-O模型" class="headerlink" title="Java中3中常见I/O模型"></a>Java中3中常见I/O模型</h2><h3 id="BIO-Blocking-I-O"><a href="#BIO-Blocking-I-O" class="headerlink" title="BIO (Blocking I/O )"></a>BIO (Blocking I/O )</h3><ul>
+<h3 id="有哪些常见的IO模型"><a href="#有哪些常见的IO模型" class="headerlink" title="有哪些常见的IO模型"></a>有哪些常见的IO模型</h3><p>UNIX系统下，包括5种：<strong>同步阻塞I&#x2F;O</strong>，<strong>同步非阻塞I&#x2F;O</strong>，<strong>I&#x2F;O多路复用</strong>、<strong>信号驱动I&#x2F;O</strong>和<strong>异步I&#x2F;O</strong></p>
+<h2 id="Java中3中常见I-O模型"><a href="#Java中3中常见I-O模型" class="headerlink" title="Java中3中常见I&#x2F;O模型"></a>Java中3中常见I&#x2F;O模型</h2><h3 id="BIO-Blocking-I-O"><a href="#BIO-Blocking-I-O" class="headerlink" title="BIO (Blocking I&#x2F;O )"></a>BIO (Blocking I&#x2F;O )</h3><ul>
 <li>应用程序发起read调用后，会一直阻塞，<strong>直到内核把数据拷贝到用户空间</strong><br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221026162316247.png" alt="image-20221026162316247"></li>
 </ul>
-<h3 id="NIO-Non-blocking-New-I-O"><a href="#NIO-Non-blocking-New-I-O" class="headerlink" title="NIO (Non-blocking/New I/O)"></a>NIO (Non-blocking/New I/O)</h3><ul>
+<h3 id="NIO-Non-blocking-New-I-O"><a href="#NIO-Non-blocking-New-I-O" class="headerlink" title="NIO (Non-blocking&#x2F;New I&#x2F;O)"></a>NIO (Non-blocking&#x2F;New I&#x2F;O)</h3><ul>
 <li>对于java.nio包，提供了<strong>Channel</strong>、<strong>Selector</strong>、<strong>Buffer</strong>等抽象概念，对于<strong>高负载高并发</strong>，应使用NIO</li>
-<li><p>NIO是I/O多路复用模型，属于<strong>同步非阻塞IO</strong>模型</p>
-<ul>
+<li>NIO是I&#x2F;O多路复用模型，属于<strong>同步非阻塞IO</strong>模型<ul>
 <li><p><strong>一般的同步非阻塞 IO 模型</strong>中，应用程序会<strong>一直发起 read</strong> 调用。<br>等待<strong>数据从内核空间拷贝到用户空</strong>间的这段时间里，<strong>线程依然是阻塞</strong>的<strong>，</strong>直到在内核把数据拷贝到用户空间。</p>
 <p>相比于同步阻塞 IO 模型，同步非阻塞 IO 模型确实有了很大改进。通过轮询操作，避免了一直阻塞。</p>
-<p>但是，这种 IO 模型同样存在问题：<strong>应用程序不断进行 I/O 系统调用轮询数据是否已经准备好的过程是十分消耗 CPU 资源的。</strong>  </p>
+<p>但是，这种 IO 模型同样存在问题：<strong>应用程序不断进行 I&#x2F;O 系统调用轮询数据是否已经准备好的过程是十分消耗 CPU 资源的。</strong>  </p>
 <p>★★ 也就是说，【准备数据，数据就绪】是<strong>不阻塞</strong>的。而【拷贝数据】是<strong>阻塞</strong>的<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/bb174e22dbe04bb79fe3fc126aed0c61~tplv-k3u1fbpfcp-watermark.image" alt="图源：《深入拆解Tomcat &amp; Jetty》">  </p>
 </li>
-<li><p>I/O多路复用<br>线程首先<strong>发起select调用，询问内核数据是否准备就绪</strong>，等准备好了，<strong>用户线程再发起read调用</strong>，r<strong>ead调用的过程（数据从内核空间—&gt;用户空间）</strong>还是阻塞的  </p>
+<li><p>I&#x2F;O多路复用<br>线程首先<strong>发起select调用，询问内核数据是否准备就绪</strong>，等准备好了，<strong>用户线程再发起read调用</strong>，r<strong>ead调用的过程（数据从内核空间–&gt;用户空间）</strong>还是阻塞的  </p>
 <blockquote>
 <p>IO 多路复用模型，通过<strong>减少无效的系统调用</strong>，<strong>减少了对 CPU 资源的消耗</strong>。</p>
 <p>Java 中的 NIO ，有一个非常重要的<strong>选择器 ( Selector )</strong> 的概念，也可以被称为 <strong>多路复用器</strong>。通过它，只需要<strong>一个线程便可以管理多个客户端连接</strong>。当<strong>客户端数据到了</strong>之后，才会为其服务。</p>
@@ -322,7 +323,7 @@
 </ul>
 </li>
 </ul>
-<h3 id="AIO-Asynchronous-I-O"><a href="#AIO-Asynchronous-I-O" class="headerlink" title="AIO(Asynchronous I/O )"></a>AIO(Asynchronous I/O )</h3><ul>
+<h3 id="AIO-Asynchronous-I-O"><a href="#AIO-Asynchronous-I-O" class="headerlink" title="AIO(Asynchronous I&#x2F;O )"></a>AIO(Asynchronous I&#x2F;O )</h3><ul>
 <li>异步 IO 是基于<strong>事件和回调</strong>机制实现的，也就是<strong>应用操作之后会直接返回</strong>，不会堵塞在那里，当后台处理完成，操作系统会通知相应的线程进行后续的操作<br>如图<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221026164006797.png" alt="image-20221026164006797"></li>
 </ul>
 <h2 id="三者区别"><a href="#三者区别" class="headerlink" title="三者区别"></a>三者区别</h2><p><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221026164100906.png" alt="image-20221026164100906"></p>
@@ -389,7 +390,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">45:25</span>
+    <span title="站点阅读时长">45:37</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动

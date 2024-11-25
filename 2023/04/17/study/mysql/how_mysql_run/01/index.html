@@ -257,7 +257,7 @@
         <i class="far fa-clock"></i>
       </span>
       <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>5 分钟</span>
+      <span>6 分钟</span>
     </span>
 </div>
 
@@ -274,36 +274,49 @@
 <h1 id="原文"><a href="#原文" class="headerlink" title="原文"></a>原文</h1><h1 id="下载与安装"><a href="#下载与安装" class="headerlink" title="下载与安装"></a>下载与安装</h1><p>环境Centos7</p>
 <p>添加MySQL5.7仓库  </p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo rpm -ivh https://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm</span><br></pre></td></tr></table></figure>
+
 <p>解决证书问题  </p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">rpm --import https://repo.mysql.com/RPM-GPG-KEY-mysql-2022</span><br></pre></td></tr></table></figure>
+
 <p>查看是否添加成功  </p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo yum repolist all | grep mysql | grep 启用   </span><br><span class="line">mysql-connectors-community/x86_64   MySQL Connectors Community      启用:    213</span><br><span class="line">mysql-tools-community/x86_64        MySQL Tools Community           启用:     96</span><br><span class="line">mysql57-community/x86_64            MySQL 5.7 Community Server      启用:    642</span><br></pre></td></tr></table></figure>
+
 <p>MySQL安装  </p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo yum -y install mysql-community-server</span><br></pre></td></tr></table></figure>
-<h1 id="运行与密码修改"><a href="#运行与密码修改" class="headerlink" title="运行与密码修改"></a>运行与密码修改</h1><p>Centos7中安装目录查看，在/usr/bin中，与Max有所不同</p>
+
+<h1 id="运行与密码修改"><a href="#运行与密码修改" class="headerlink" title="运行与密码修改"></a>运行与密码修改</h1><p>Centos7中安装目录查看，在&#x2F;usr&#x2F;bin中，与Max有所不同</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">whereis mysql</span><br><span class="line">mysql: /usr/bin/mysql /usr/lib64/mysql /usr/share/mysql /usr/share/man/man1/mysql.1.gz</span><br><span class="line">ls /usr/bin |grep mysql</span><br><span class="line">mysql</span><br><span class="line">mysqladmin</span><br><span class="line">mysqlbinlog</span><br><span class="line">mysqlcheck</span><br><span class="line">mysql_config_editor</span><br><span class="line">mysqld_pre_systemd</span><br><span class="line">mysqldump</span><br><span class="line">mysqldumpslow</span><br><span class="line">mysqlimport</span><br><span class="line">mysql_install_db</span><br><span class="line">mysql_plugin</span><br><span class="line">mysqlpump</span><br><span class="line">mysql_secure_installation</span><br><span class="line">mysqlshow</span><br><span class="line">mysqlslap</span><br><span class="line">mysql_ssl_rsa_setup</span><br><span class="line">mysql_tzinfo_to_sql</span><br><span class="line">mysql_upgrade</span><br></pre></td></tr></table></figure>
-<p>添加mysqld目录到环境变量中（这里可省略，因为mysqld默认在/usr/bin中了</p>
+
+<p>添加mysqld目录到环境变量中（这里可省略，因为mysqld默认在&#x2F;usr&#x2F;bin中了</p>
 <p>启动MySQL(和书上说的启动方式有点不一样，查资料得知，从5.7.6起，不再支持mysql_safe的启动方式)</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">启动MySQL</span></span><br><span class="line">root@centos7101:~                                                                      </span><br><span class="line">▶ systemctl start mysqld</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">查看MySQL状态</span></span><br><span class="line">root@centos7101:~                                                                      </span><br><span class="line">▶ systemctl status mysqld</span><br><span class="line">● mysqld.service - MySQL Server</span><br><span class="line">   Loaded: loaded (/usr/lib/systemd/system/mysqld.service; enabled; vendor preset: disabled)</span><br><span class="line">   Active: active (running) since 一 2023-04-17 11:43:42 CST; 19s ago</span><br><span class="line">     Docs: man:mysqld(8)</span><br><span class="line">           http://dev.mysql.com/doc/refman/en/using-systemd.html</span><br><span class="line"> Main PID: 2182 (mysqld)</span><br><span class="line">   CGroup: /system.slice/mysqld.service</span><br><span class="line">           └─2182 /usr/sbin/mysqld --daemonize --pid-file=/var/run/mysqld/mysqld.pid</span><br><span class="line"></span><br><span class="line">4月 17 11:43:37 centos7101 systemd[1]: Starting MySQL Server...</span><br><span class="line">4月 17 11:43:42 centos7101 systemd[1]: Started MySQL Server.</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">设置为开机启动</span></span><br><span class="line">root@centos7101:~                                                                      </span><br><span class="line">▶ systemctl enable mysqld</span><br></pre></td></tr></table></figure>
+
 <p>查看MySQL默认密码  </p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cat /var/log/mysqld.log |grep -i &#x27;temporary password&#x27;</span><br><span class="line">2023-04-17T03:43:38.995935Z 1 [Note] A temporary password is generated for root@localhost: ampddi9+fpyQ</span><br></pre></td></tr></table></figure>
+
 <p>连接</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">mysql -uroot -p123456</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">或者</span></span><br><span class="line">mysql -uroot -p</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">或者</span></span><br><span class="line">mysql -hlocalhost -uroot -p123456</span><br></pre></td></tr></table></figure>
+
 <p>为了方便起见，修改密码为123456  </p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">修改密码强度</span></span><br><span class="line">set global validate_password_policy=LOW;</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">修改密码长度</span></span><br><span class="line">set global validate_password_length=6;</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">修改密码</span></span><br><span class="line">ALTER USER &#x27;root&#x27;@&#x27;localhost&#x27; IDENTIFIED BY &#x27;123456&#x27;;</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">刷新权限</span></span><br><span class="line">flush privileges;</span><br></pre></td></tr></table></figure>
+
 <p>退出</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">quit</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">或者</span></span><br><span class="line">exit</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">或者</span></span><br><span class="line">\q</span><br></pre></td></tr></table></figure>
+
 <h1 id="客户端与服务端连接过程"><a href="#客户端与服务端连接过程" class="headerlink" title="客户端与服务端连接过程"></a>客户端与服务端连接过程</h1><p><strong>采用TCP作为服务端和客户端之间的网络通信协议</strong></p>
 <p>远程连接前提</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">添加一个远程用户</span></span><br><span class="line">CREATE USER &#x27;root&#x27;@&#x27;%&#x27; IDENTIFIED BY &#x27;123456.&#x27;;</span><br><span class="line">grant all on *.* to &#x27;root&#x27;@&#x27;%&#x27; identified by &quot;123456.&quot; with grant option;</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">修改用户密码</span></span><br><span class="line">SET PASSWORD FOR &#x27;root&#x27;@&#x27;host&#x27; = password(&#x27;123456.&#x27;);</span><br></pre></td></tr></table></figure>
+
 <p>端口号修改与远程连接</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">修改MySQL启动的端口</span></span><br><span class="line">vim /etc/my.cnf</span><br><span class="line"></span><br><span class="line">[mysqld]</span><br><span class="line">port=33062 #新增该行即可</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">重启</span></span><br><span class="line">systemctl restart mysqld</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">查看状态</span></span><br><span class="line">systemctl status mysqld</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">查看服务是否启动</span></span><br><span class="line">netstat -lntup |grep mysql</span><br><span class="line">tcp6       0      0 :::33062                :::*                    LISTEN      4612/mysqld</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">远程连接</span></span><br><span class="line">mysql -hnode2 -uroot -P33062 -p</span><br></pre></td></tr></table></figure>
+
 <p>处理客户端请求<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230417143901124.png" alt="image-20230417143901124"></p>
 <p>常用存储引擎：Innodb和MyISAM</p>
 <p>查看当前服务器支持的存储引擎<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230417144144300.png" alt="image-20230417144144300"></p>
 <p>只有InnoDB是支持事务的且支持分布式事务、部分回滚</p>
 <p>存储引擎是负责对<strong>表</strong>中数据进行<strong>读取</strong>和<strong>写入</strong>的</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">-- 创建表时指定存储引擎</span><br><span class="line">CREATE TABLE engine_demo_table(i int) ENGINE = MyISAM</span><br><span class="line">-- 查看建表语句</span><br><span class="line">mysql&gt; SHOW CREATE TABLE engine_demo_table \G</span><br><span class="line">*************************** 1. row ***************************</span><br><span class="line">       Table: engine_demo_table</span><br><span class="line">Create Table: CREATE TABLE `engine_demo_table` (</span><br><span class="line">  `i` int(11) DEFAULT NULL</span><br><span class="line">) ENGINE=MyISAM DEFAULT CHARSET=latin1</span><br><span class="line">1 row in set (0.00 sec)</span><br><span class="line">-- 修改建表时指定的存储引擎</span><br><span class="line">ALTER TABLE engine_demo_table ENGINE=InnoDB</span><br><span class="line">-- 修改编码</span><br><span class="line">ALTER TABLE engine_demo_table CHARSET=UTF8</span><br></pre></td></tr></table></figure>
+
 
     </div>
 
@@ -365,7 +378,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">45:25</span>
+    <span title="站点阅读时长">45:37</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动

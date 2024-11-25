@@ -266,7 +266,7 @@
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>8k</span>
+      <span>8.1k</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
@@ -285,7 +285,7 @@
     
     
     <div class="post-body" itemprop="articleBody"><blockquote>
-<p>转载自<a target="_blank" rel="noopener" href="https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!">https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!</a></p>
+<p>转载自<a target="_blank" rel="noopener" href="https://github.com/Snailclimb/JavaGuide%EF%BC%88%E6%B7%BB%E5%8A%A0%E5%B0%8F%E9%83%A8%E5%88%86%E7%AC%94%E8%AE%B0%EF%BC%89%E6%84%9F%E8%B0%A2%E4%BD%9C%E8%80%85">https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者</a>!</p>
 </blockquote>
 <h2 id="为什么需要定时任务？"><a href="#为什么需要定时任务？" class="headerlink" title="为什么需要定时任务？"></a>为什么需要定时任务？</h2><p>我们来看一下几个非常常见的业务场景：</p>
 <ol>
@@ -301,14 +301,17 @@
 <p><code>Timer</code> 内部使用一个叫做 <code>TaskQueue</code> 的类存放定时任务，它是一个<strong>基于最小堆实现的优先级队列</strong>。<code>TaskQueue</code> 会按照<strong>任务距离下一次执行时间的大小</strong>将任务排序，保证在堆顶的任务最先执行。这样在需要执行任务时，每次<strong>只需要取出堆顶的任务</strong>运行即可！</p>
 <p><code>Timer</code> 使用起来比较简单，通过下面的方式我们就能创建一个 1s 之后执行的定时任务。</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 示例代码：</span></span><br><span class="line"><span class="type">TimerTask</span> <span class="variable">task</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">TimerTask</span>() &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;当前时间: &quot;</span> + <span class="keyword">new</span> <span class="title class_">Date</span>() + <span class="string">&quot;n&quot;</span> +</span><br><span class="line">                <span class="string">&quot;线程名称: &quot;</span> + Thread.currentThread().getName());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line">System.out.println(<span class="string">&quot;当前时间: &quot;</span> + <span class="keyword">new</span> <span class="title class_">Date</span>() + <span class="string">&quot;n&quot;</span> +</span><br><span class="line">        <span class="string">&quot;线程名称: &quot;</span> + Thread.currentThread().getName());</span><br><span class="line"><span class="type">Timer</span> <span class="variable">timer</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Timer</span>(<span class="string">&quot;Timer&quot;</span>);</span><br><span class="line"><span class="type">long</span> <span class="variable">delay</span> <span class="operator">=</span> <span class="number">1000L</span>;</span><br><span class="line">timer.schedule(task, delay);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">//输出：</span></span><br><span class="line">当前时间: Fri May <span class="number">28</span> <span class="number">15</span>:<span class="number">18</span>:<span class="number">47</span> CST 2021n线程名称: main</span><br><span class="line">当前时间: Fri May <span class="number">28</span> <span class="number">15</span>:<span class="number">18</span>:<span class="number">48</span> CST 2021n线程名称: Timer</span><br></pre></td></tr></table></figure>
+
 <p>不过其缺陷较多，比如一个 <code>Timer</code> 一个线程，这就导致 <code>Timer</code> 的任务的执行<strong>只能串行执行，一个任务执行时间过长的话会影响其他任务（性能非常差），再比如发生异常时任务直接停止（<code>Timer</code> 只捕获了 <code>InterruptedException</code> ）</strong>。</p>
 <p><code>Timer</code> 类上的有一段注释是这样写的：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">* This class does not offer real-time guarantees: it schedules</span><br><span class="line">* tasks using the &lt;tt&gt;Object.wait(long)&lt;/tt&gt; method.</span><br><span class="line">*Java 5.0 introduced the &#123;@code java.util.concurrent&#125; package and</span><br><span class="line">* one of the concurrency utilities therein is the &#123;@link</span><br><span class="line">* java.util.concurrent.ScheduledThreadPoolExecutor</span><br><span class="line">* ScheduledThreadPoolExecutor&#125; which is a thread pool for repeatedly</span><br><span class="line">* executing tasks at a given rate or delay.  It is effectively a more</span><br><span class="line">* versatile replacement for the &#123;@code Timer&#125;/&#123;@code TimerTask&#125;</span><br><span class="line">* combination, as it allows multiple service threads, accepts various</span><br><span class="line">* time units, and doesn&#x27;t require subclassing &#123;@code TimerTask&#125; (just</span><br><span class="line">* implement &#123;@code Runnable&#125;).  Configuring &#123;@code</span><br><span class="line">* ScheduledThreadPoolExecutor&#125; with one thread makes it equivalent to</span><br><span class="line">* &#123;@code Timer&#125;.</span><br></pre></td></tr></table></figure>
+
 <p>大概的意思就是： <strong><code>ScheduledThreadPoolExecutor</code> 支持多线程执行定时任务</strong>并且功能更强大，是 <code>Timer</code> 的替代品。</p>
 <h3 id="ScheduledExecutorService"><a href="#ScheduledExecutorService" class="headerlink" title="ScheduledExecutorService"></a>ScheduledExecutorService</h3><p><code>ScheduledExecutorService</code> 是一个接口，有多个实现类，比较常用的是 <code>ScheduledThreadPoolExecutor</code> 。</p>
 <p><a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/8e9ea475f79f93c6d5f5fec2014e3c5c175723dec106891e21e9ef21a9a942ce/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6a61766167756964652f32303231303630373135343332343731322e706e67"> <img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230221092054567.png" alt="image-20230221092054567"></a></p>
 <p><code>ScheduledThreadPoolExecutor</code> 本身就是一个线程池，支持<strong>任务并发执行</strong>。并且，其内部使用 <strong><code>DelayedWorkQueue</code></strong> 作为任务队列。</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 示例代码：</span></span><br><span class="line"><span class="type">TimerTask</span> <span class="variable">repeatedTask</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">TimerTask</span>() &#123;</span><br><span class="line">    <span class="meta">@SneakyThrows</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;当前时间: &quot;</span> + <span class="keyword">new</span> <span class="title class_">Date</span>() + <span class="string">&quot;n&quot;</span> +</span><br><span class="line">                <span class="string">&quot;线程名称: &quot;</span> + Thread.currentThread().getName());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line">System.out.println(<span class="string">&quot;当前时间: &quot;</span> + <span class="keyword">new</span> <span class="title class_">Date</span>() + <span class="string">&quot;n&quot;</span> +</span><br><span class="line">        <span class="string">&quot;线程名称: &quot;</span> + Thread.currentThread().getName());</span><br><span class="line"><span class="type">ScheduledExecutorService</span> <span class="variable">executor</span> <span class="operator">=</span> Executors.newScheduledThreadPool(<span class="number">3</span>);</span><br><span class="line"><span class="type">long</span> <span class="variable">delay</span>  <span class="operator">=</span> <span class="number">1000L</span>;</span><br><span class="line"><span class="type">long</span> <span class="variable">period</span> <span class="operator">=</span> <span class="number">1000L</span>;</span><br><span class="line">executor.scheduleAtFixedRate(repeatedTask, delay, period, TimeUnit.MILLISECONDS);</span><br><span class="line">Thread.sleep(delay + period * <span class="number">5</span>);</span><br><span class="line">executor.shutdown();</span><br><span class="line"><span class="comment">//输出：</span></span><br><span class="line">当前时间: Fri May <span class="number">28</span> <span class="number">15</span>:<span class="number">40</span>:<span class="number">46</span> CST 2021n线程名称: main</span><br><span class="line">当前时间: Fri May <span class="number">28</span> <span class="number">15</span>:<span class="number">40</span>:<span class="number">47</span> CST 2021n线程名称: pool-<span class="number">1</span>-thread-<span class="number">1</span></span><br><span class="line">当前时间: Fri May <span class="number">28</span> <span class="number">15</span>:<span class="number">40</span>:<span class="number">48</span> CST 2021n线程名称: pool-<span class="number">1</span>-thread-<span class="number">1</span></span><br><span class="line">当前时间: Fri May <span class="number">28</span> <span class="number">15</span>:<span class="number">40</span>:<span class="number">49</span> CST 2021n线程名称: pool-<span class="number">1</span>-thread-<span class="number">2</span></span><br><span class="line">当前时间: Fri May <span class="number">28</span> <span class="number">15</span>:<span class="number">40</span>:<span class="number">50</span> CST 2021n线程名称: pool-<span class="number">1</span>-thread-<span class="number">2</span></span><br><span class="line">当前时间: Fri May <span class="number">28</span> <span class="number">15</span>:<span class="number">40</span>:<span class="number">51</span> CST 2021n线程名称: pool-<span class="number">1</span>-thread-<span class="number">2</span></span><br><span class="line">当前时间: Fri May <span class="number">28</span> <span class="number">15</span>:<span class="number">40</span>:<span class="number">52</span> CST 2021n线程名称: pool-<span class="number">1</span>-thread-<span class="number">2</span></span><br></pre></td></tr></table></figure>
+
 <p>不论是使用 <code>Timer</code> 还是 <code>ScheduledExecutorService</code> 都无法使用 Cron 表达式指定任务执行的具体时间。</p>
 <h3 id="Spring-Task"><a href="#Spring-Task" class="headerlink" title="Spring Task"></a>Spring Task</h3><blockquote>
 <p><code>[krɑn] cron</code></p>
@@ -316,9 +319,10 @@
 <p><a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/a8cb6ddda53ca8db2fc78715cda20f4380b4076adf7500bf57a9b17bbb7dec09/68747470733a2f2f696d672d626c6f672e6373646e696d672e636e2f32303231303532383134353035363838302e706e67"><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f696d672d626c6f672e6373646e696d672e636e2f32303231303532383134353035363838302e706e67" alt="img"></a></p>
 <p>我们直接通过 Spring 提供的 <code>@Scheduled</code> 注解即可定义定时任务，非常方便！</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * cron：使用Cron表达式。　每分钟的1，2秒运行</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Scheduled(cron = &quot;1-2 * * * * ? &quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">reportCurrentTimeWithCronExpression</span><span class="params">()</span> &#123;</span><br><span class="line">  log.info(<span class="string">&quot;Cron Expression: The time is now &#123;&#125;&quot;</span>, dateFormat.format(<span class="keyword">new</span> <span class="title class_">Date</span>()));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>我在大学那会做的一个 SSM 的企业级项目，就是用的 Spring Task 来做的定时任务。</p>
 <p>并且，Spring Task 还是支持 <strong>Cron 表达式</strong> 的。Cron 表达式主要用于定时作业(定时任务)系统定义执行时间或执行频率的表达式，非常厉害，你可以通过 Cron 表达式进行设置定时任务每天或者每个月什么时候执行等等操作。咱们要学习定时任务的话，Cron 表达式是一定是要重点关注的。推荐一个在线 Cron 表达式生成器：<a target="_blank" rel="noopener" href="http://cron.qqe2.com/">http://cron.qqe2.com/</a> 。</p>
-<p>但是，Spring 自带的定时调度只支持单机，并且提供的功能比较单一。之前写过一篇文章:<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s?__biz=Mzg2OTA0Njk0OA==&amp;mid=2247485563&amp;idx=1&amp;sn=7419341f04036a10b141b74624a3f8c9&amp;chksm=cea247b0f9d5cea6440759e6d49b4e77d06f4c99470243a10c1463834e873ca90266413fbc92&amp;token=2133161636&amp;lang=zh_CN#rd">《5 分钟搞懂如何在 Spring Boot 中 Schedule Tasks》</a> ，不了解的小伙伴可以参考一下。</p>
+<p>但是，Spring 自带的定时调度只支持单机，并且提供的功能比较单一。之前写过一篇文章:<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s?__biz=Mzg2OTA0Njk0OA==&mid=2247485563&idx=1&sn=7419341f04036a10b141b74624a3f8c9&chksm=cea247b0f9d5cea6440759e6d49b4e77d06f4c99470243a10c1463834e873ca90266413fbc92&token=2133161636&lang=zh_CN#rd">《5 分钟搞懂如何在 Spring Boot 中 Schedule Tasks》</a> ，不了解的小伙伴可以参考一下。</p>
 <p>Spring Task 底层是基于 JDK 的 <code>ScheduledThreadPoolExecutor</code> 线程池来实现的。</p>
 <p><strong>优缺点总结：</strong></p>
 <ul>
@@ -330,11 +334,11 @@
 <p>时间轮中的每个时间格代表了时间轮的基本时间跨度或者说时间精度，加入时间一秒走一个时间格的话，那么这个时间轮的最高精度就是 1 秒（也就是说 3 s 和 3.9s 会在同一个时间格中）。</p>
 <p>下图是一个有 12 个时间格的时间轮，转完一圈需要 12 s。当我们需要新建一个 3s 后执行的定时任务，只需要将定时任务放在下标为 3 的时间格中即可。当我们需要新建一个 9s 后执行的定时任务，只需要将定时任务放在下标为 9 的时间格中即可。</p>
 <p> <img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6a61766167756964652f32303231303630373137313333343836312e706e67" alt="img"> </p>
-<p>那当我们需要创建一个 13s 后执行的定时任务怎么办呢？这个时候可以引入一叫做 <strong>圈数/轮数</strong> 的概念，也就是说这个任务还是放在下标为 3 的时间格中， 不过它的圈数为 2 。</p>
+<p>那当我们需要创建一个 13s 后执行的定时任务怎么办呢？这个时候可以引入一叫做 <strong>圈数&#x2F;轮数</strong> 的概念，也就是说这个任务还是放在下标为 3 的时间格中， 不过它的圈数为 2 。</p>
 <p>除了增加圈数这种方法之外，还有一种 <strong>多层次时间轮</strong> （类似手表），Kafka 采用的就是这种方案。</p>
 <p>针对下图的时间轮，我来举一个例子便于大家理解。</p>
 <p> <img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6a61766167756964652f32303231303630373139333034323135312e706e67" alt="img"> </p>
-<p>上图的时间轮，第 1 层的时间精度为 1 ，第 2 层的时间精度为 20 ，第 3 层的时间精度为 400。假如我们需要添加一个 350s 后执行的任务 A 的话（当前时间是 0s），这个任务会被放在第 2 层（因为第二层的时间跨度为 20*20=400&gt;350）的第 350/20=17 个时间格子。</p>
+<p>上图的时间轮，第 1 层的时间精度为 1 ，第 2 层的时间精度为 20 ，第 3 层的时间精度为 400。假如我们需要添加一个 350s 后执行的任务 A 的话（当前时间是 0s），这个任务会被放在第 2 层（因为第二层的时间跨度为 20*20&#x3D;400&gt;350）的第 350&#x2F;20&#x3D;17 个时间格子。</p>
 <p>当第一层转了 17 圈之后，时间过去了 340s ，第 2 层的指针此时来到第 17 个时间格子。此时，第 2 层第 17 个格子的任务会被移动到第 1 层。</p>
 <p>任务 A 当前是 10s 之后执行，因此它会被移动到第 1 层的第 10 个时间格子。</p>
 <p>这里在层与层之间的移动也叫做时间轮的升降级。参考手表来理解就好！</p>
@@ -367,9 +371,10 @@
 <p>从上图可以看出，<code>Elastic-Job</code> 没有调度中心这一概念，而是使用 <code>ZooKeeper</code> 作为注册中心，注册中心负责协调分配任务到不同的节点上。</p>
 <p>Elastic-Job 中的定时调度都是由执行器自行触发，这种设计也被称为去中心化设计（调度和处理都是执行器单独完成）。</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="meta">@ElasticJobConf(name = &quot;dayJob&quot;, cron = &quot;0/10 * * * * ?&quot;, shardingTotalCount = 2,</span></span><br><span class="line"><span class="meta">        shardingItemParameters = &quot;0=AAAA,1=BBBB&quot;, description = &quot;简单任务&quot;, failover = true)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">TestJob</span> <span class="keyword">implements</span> <span class="title class_">SimpleJob</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">execute</span><span class="params">(ShardingContext shardingContext)</span> &#123;</span><br><span class="line">        log.info(<span class="string">&quot;TestJob任务名：【&#123;&#125;】, 片数：【&#123;&#125;】, param=【&#123;&#125;】&quot;</span>, shardingContext.getJobName(), shardingContext.getShardingTotalCount(),</span><br><span class="line">                shardingContext.getShardingParameter());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p><strong>相关地址：</strong></p>
 <ul>
-<li>Github 地址：<a target="_blank" rel="noopener" href="https://github.com/apache/shardingsphere-elasticjob。">https://github.com/apache/shardingsphere-elasticjob。</a></li>
+<li>Github 地址：<a target="_blank" rel="noopener" href="https://github.com/apache/shardingsphere-elasticjob%E3%80%82">https://github.com/apache/shardingsphere-elasticjob。</a></li>
 <li>官方网站：<a target="_blank" rel="noopener" href="https://shardingsphere.apache.org/elasticjob/index_zh.html">https://shardingsphere.apache.org/elasticjob/index_zh.html</a> 。</li>
 </ul>
 <p><strong>优缺点总结：</strong></p>
@@ -389,12 +394,14 @@
 <p>和 <code>Quzrtz</code> 类似 <code>XXL-JOB</code> 也是基于数据库锁调度任务，存在性能瓶颈。不过，一般在任务量不是特别大的情况下，没有什么影响的，可以满足绝大部分公司的要求。</p>
 <p>不要被 <code>XXL-JOB</code> 的架构图给吓着了，实际上，我们要用 <code>XXL-JOB</code> 的话，只需要重写 <code>IJobHandler</code> 自定义任务执行逻辑就可以了，非常易用！</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@JobHandler(value=&quot;myApiJobHandler&quot;)</span></span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyApiJobHandler</span> <span class="keyword">extends</span> <span class="title class_">IJobHandler</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> ReturnT&lt;String&gt; <span class="title function_">execute</span><span class="params">(String param)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="comment">//......</span></span><br><span class="line">        <span class="keyword">return</span> ReturnT.SUCCESS;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>还可以直接基于注解定义任务。</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@XxlJob(&quot;myAnnotationJobHandler&quot;)</span></span><br><span class="line"><span class="keyword">public</span> ReturnT&lt;String&gt; <span class="title function_">myAnnotationJobHandler</span><span class="params">(String param)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">  <span class="comment">//......</span></span><br><span class="line">  <span class="keyword">return</span> ReturnT.SUCCESS;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p> <img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f696d672d626c6f672e6373646e696d672e636e2f32303231303630373230303732383231322e706e67" alt="img"> </p>
 <p><strong>相关地址：</strong></p>
 <ul>
-<li>Github 地址：<a target="_blank" rel="noopener" href="https://github.com/xuxueli/xxl-job/。">https://github.com/xuxueli/xxl-job/。</a></li>
+<li>Github 地址：<a target="_blank" rel="noopener" href="https://github.com/xuxueli/xxl-job/%E3%80%82">https://github.com/xuxueli/xxl-job/。</a></li>
 <li>官方介绍：<a target="_blank" rel="noopener" href="https://www.xuxueli.com/xxl-job/">https://www.xuxueli.com/xxl-job/</a> 。</li>
 </ul>
 <p><strong>优缺点总结：</strong></p>
@@ -414,7 +421,7 @@
 <li><strong>定时任务的技术选型</strong> ： XXL-JOB 2015 年推出，已经经过了很多年的考验。XXL-JOB 轻量级，并且使用起来非常简单。虽然存在性能瓶颈，但是，在绝大多数情况下，对于企业的基本需求来说是没有影响的。PowerJob 属于分布式任务调度领域里的新星，其稳定性还有待继续考察。ElasticJob 由于在架构设计上是基于 Zookeeper ，而 XXL-JOB 是基于数据库，性能方面的话，ElasticJob 略胜一筹。</li>
 </ul>
 <p>这篇文章并没有介绍到实际使用，但是，并不代表实际使用不重要。我在写这篇文章之前，已经动手写过相应的 Demo。像 Quartz，我在大学那会就用过。不过，当时用的是 Spring 。为了能够更好地体验，我自己又在 Spring Boot 上实际体验了一下。如果你并没有实际使用某个框架，就直接说它并不好用的话，是站不住脚的。</p>
-<p>最后，这篇文章要感谢艿艿的帮助，写这篇文章的时候向艿艿询问过一些问题。推荐一篇艿艿写的偏实战类型的硬核文章：<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s?__biz=MzUzMTA2NTU2Ng==&amp;mid=2247490679&amp;idx=1&amp;sn=25374dbdcca95311d41be5d7b7db454d&amp;chksm=fa4963c6cd3eead055bb9cd10cca13224bb35d0f7373a27aa22a55495f71e24b8273a7603314&amp;scene=27#wechat_redirect">《Spring Job？Quartz？XXL-Job？年轻人才做选择，艿艿全莽~》</a> 。</p>
+<p>最后，这篇文章要感谢艿艿的帮助，写这篇文章的时候向艿艿询问过一些问题。推荐一篇艿艿写的偏实战类型的硬核文章：<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s?__biz=MzUzMTA2NTU2Ng==&mid=2247490679&idx=1&sn=25374dbdcca95311d41be5d7b7db454d&chksm=fa4963c6cd3eead055bb9cd10cca13224bb35d0f7373a27aa22a55495f71e24b8273a7603314&scene=27#wechat_redirect">《Spring Job？Quartz？XXL-Job？年轻人才做选择，艿艿全莽~》</a> 。</p>
 
     </div>
 
@@ -478,7 +485,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">45:25</span>
+    <span title="站点阅读时长">45:37</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动

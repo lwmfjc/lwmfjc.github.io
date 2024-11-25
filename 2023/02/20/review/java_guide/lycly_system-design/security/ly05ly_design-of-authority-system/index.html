@@ -258,7 +258,7 @@
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>4.6k</span>
+      <span>4.7k</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
@@ -277,9 +277,13 @@
     
     
     <div class="post-body" itemprop="articleBody"><blockquote>
-<p>转载自<a target="_blank" rel="noopener" href="https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!">https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!</a></p>
+<p>转载自<a target="_blank" rel="noopener" href="https://github.com/Snailclimb/JavaGuide%EF%BC%88%E6%B7%BB%E5%8A%A0%E5%B0%8F%E9%83%A8%E5%88%86%E7%AC%94%E8%AE%B0%EF%BC%89%E6%84%9F%E8%B0%A2%E4%BD%9C%E8%80%85">https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者</a>!</p>
+</blockquote>
+<blockquote>
 <p>作者：转转技术团队</p>
 <p>原文：<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/ONMuELjdHYa0yQceTj01Iw">https://mp.weixin.qq.com/s/ONMuELjdHYa0yQceTj01Iw</a></p>
+</blockquote>
+<blockquote>
 <p>ly：比较繁琐，大概看了前面的部分</p>
 </blockquote>
 <h2 id="老权限系统的问题与现状"><a href="#老权限系统的问题与现状" class="headerlink" title="老权限系统的问题与现状"></a>老权限系统的问题与现状</h2><p>转转公司在过去并没有一个统一的权限管理系统，权限管理由各业务自行研发或是使用其他业务的权限系统，权限管理的不统一带来了不少问题：</p>
@@ -322,7 +326,7 @@
 <p>在 <code>ABAC模型</code> 的决策语句的执行过程中，决策引擎会<strong>根据定义好的决策语句</strong>，结合对象、资源、操作、环境等因素<strong>动态计算出决策结果</strong>。每当发生访问请求时，<code>ABAC模型</code> 决策系统都会<strong>分析属性值是否与已建立的策略匹配</strong>。如果有匹配的策略，访问<strong>请求就会被通过</strong>。</p>
 <h2 id="新权限系统的设计思想"><a href="#新权限系统的设计思想" class="headerlink" title="新权限系统的设计思想"></a>新权限系统的设计思想</h2><p>结合转转的业务现状，<code>RBAC模型</code> 满足了转转绝大部分业务场景，并且<strong>开发成本远低于 <code>ABAC模型</code></strong> 的权限系统，所以新权限系统选择了<strong>基于 <code>RBAC模型</code></strong> 来实现。对于实在无法满足的业务系统，我们选择了暂时性不支持，这样可以保障新权限系统的快速落地，更快的让业务使用起来。</p>
 <p>标准的 <code>RBAC模型</code> 是完全遵守 <strong><code>用户 -&gt; 角色 -&gt; 权限</code></strong> 这个链路的，也就是用户的权限完全由他所拥有的角色来控制，但是这样会有一个缺点，就是给用户加权限必须新增一个角色，导致实际操作起来效率比较低。所以我们在 <code>RBAC模型</code> 的基础上，新增了<strong>给用户直接增加权限</strong>的能力，也就是说既可以给用户添加角色，也可以给用户直接添加权限。最终用户的权限是由<strong>拥有的角色和权限点组合</strong>而成。</p>
-<p><strong>新权限系统的权限模型</strong>：用户最终权限 = 用户拥有的角色带来的权限 + 用户独立配置的权限，两者取并集。</p>
+<p><strong>新权限系统的权限模型</strong>：用户最终权限 &#x3D; 用户拥有的角色带来的权限 + 用户独立配置的权限，两者取并集。</p>
 <p>新权限系统方案如下图 ：</p>
 <p><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/20230328162539.png" alt="image.png"></p>
 <ul>
@@ -332,8 +336,8 @@
 </ul>
 <p>完成上述配置后，就可以进行<strong>用户的权限管理</strong>了。有两种方式可以给用户加权限：</p>
 <ol>
-<li>先选用户，然后添加权限。该方式可以给用户<strong>添加任意角色</strong>或是<strong>菜单/数据权限</strong>点。</li>
-<li>先选择角色，然后关联用户。该方式只可给用户添加角色，不能单独添加菜单/数据权限点。</li>
+<li>先选用户，然后添加权限。该方式可以给用户<strong>添加任意角色</strong>或是<strong>菜单&#x2F;数据权限</strong>点。</li>
+<li>先选择角色，然后关联用户。该方式只可给用户添加角色，不能单独添加菜单&#x2F;数据权限点。</li>
 </ol>
 <p>这两种方式的具体设计方案，后文会详细说明。</p>
 <h3 id="权限系统自身的权限管理"><a href="#权限系统自身的权限管理" class="headerlink" title="权限系统自身的权限管理"></a>权限系统自身的权限管理</h3><p>对于权限系统来说，首先需要设计好系统自身的权限管理，也就是需要管理好 ”<strong>谁可以进入权限系统，谁可以管理其他系统的权限</strong>“，对于权限系统自身的用户，会分为三类：</p>
@@ -358,7 +362,7 @@
 </blockquote>
 <p>经过这么区分，把 <strong>拥有权限</strong> 和 <strong>拥有授权能力</strong> ，这两部分给分隔开来，可以满足所有的权限控制的场景。</p>
 <h2 id="新权限系统的核心模块设计"><a href="#新权限系统的核心模块设计" class="headerlink" title="新权限系统的核心模块设计"></a>新权限系统的核心模块设计</h2><p>上面介绍了新权限系统的整体设计思想，接下来分别介绍下核心模块的设计</p>
-<h3 id="系统-菜单-数据权限管理"><a href="#系统-菜单-数据权限管理" class="headerlink" title="系统/菜单/数据权限管理"></a>系统/菜单/数据权限管理</h3><p>把一个新系统接入权限系统有下列步骤：</p>
+<h3 id="系统-菜单-数据权限管理"><a href="#系统-菜单-数据权限管理" class="headerlink" title="系统&#x2F;菜单&#x2F;数据权限管理"></a>系统&#x2F;菜单&#x2F;数据权限管理</h3><p>把一个新系统接入权限系统有下列步骤：</p>
 <ol>
 <li>创建系统</li>
 <li>配置菜单功能权限</li>
@@ -387,8 +391,8 @@
 </ul>
 <h3 id="角色与用户管理"><a href="#角色与用户管理" class="headerlink" title="角色与用户管理"></a>角色与用户管理</h3><p>角色与用户管理都是可以直接改变用户权限的核心模块，整个设计思路如下图：</p>
 <p><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/20230328162952.png" alt="image.png"></p>
-<p>这个模块设计重点是需要考虑到批量操作。无论是通过角色关联用户，还是给用户批量增加/删除/重置权限，批量操作的场景都是系统需要设计好的。</p>
-<h3 id="权限申请"><a href="#权限申请" class="headerlink" title="权限申请"></a>权限申请</h3><p>除了给其他用户添加权限外，新权限系统同时支持了用户自主申请权限。这个模块除了常规的审批流（申请、审批、查看）等，有一个比较特别的功能，就是如何让用户能选对自己要的权限。所以在该模块的设计上，除了直接选择角色外，还支持通过菜单/数据权限点，反向选择角色，如下图：</p>
+<p>这个模块设计重点是需要考虑到批量操作。无论是通过角色关联用户，还是给用户批量增加&#x2F;删除&#x2F;重置权限，批量操作的场景都是系统需要设计好的。</p>
+<h3 id="权限申请"><a href="#权限申请" class="headerlink" title="权限申请"></a>权限申请</h3><p>除了给其他用户添加权限外，新权限系统同时支持了用户自主申请权限。这个模块除了常规的审批流（申请、审批、查看）等，有一个比较特别的功能，就是如何让用户能选对自己要的权限。所以在该模块的设计上，除了直接选择角色外，还支持通过菜单&#x2F;数据权限点，反向选择角色，如下图：</p>
 <p> <img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/20230328162745.png" alt="image.png"></p>
 <h3 id="操作日志"><a href="#操作日志" class="headerlink" title="操作日志"></a>操作日志</h3><p>系统操作日志会分为两大类：</p>
 <ol>
@@ -468,7 +472,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">45:25</span>
+    <span title="站点阅读时长">45:37</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动

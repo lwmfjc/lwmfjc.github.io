@@ -296,7 +296,9 @@
     
     
     <div class="post-body" itemprop="articleBody"><blockquote>
-<p>转载自<a target="_blank" rel="noopener" href="https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!">https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!</a></p>
+<p>转载自<a target="_blank" rel="noopener" href="https://github.com/Snailclimb/JavaGuide%EF%BC%88%E6%B7%BB%E5%8A%A0%E5%B0%8F%E9%83%A8%E5%88%86%E7%AC%94%E8%AE%B0%EF%BC%89%E6%84%9F%E8%B0%A2%E4%BD%9C%E8%80%85">https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者</a>!</p>
+</blockquote>
+<blockquote>
 <p><a target="_blank" rel="noopener" href="https://juejin.im/user/5c33853851882525ea106810">FrancisQ</a> 投稿。</p>
 </blockquote>
 <h2 id="1-好久不见"><a href="#1-好久不见" class="headerlink" title="1. 好久不见"></a>1. 好久不见</h2><p>离上一篇文章的发布也快一个月了，想想已经快一个月没写东西了，其中可能有期末考试、课程设计和驾照考试，但这都不是借口！</p>
@@ -317,9 +319,9 @@
 <p>比如各个分布式组件<strong>如何协调</strong>起来，如何<strong>减少</strong>各个系统之间的<strong>耦合度</strong>，<strong>分布式事务</strong>的处理，如何去<strong>配置整个分布式系统</strong>等等。<code>ZooKeeper</code> 主要就是解决这些问题的。</p>
 <h2 id="3-一致性问题"><a href="#3-一致性问题" class="headerlink" title="3. 一致性问题"></a>3. 一致性问题</h2><p><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/20230323213318.png" alt="image.png"></p>
 <p>设计一个分布式系统必定会遇到一个问题—— <strong>因为分区容忍性（partition tolerance）的存在，就必定要求我们需要在系统可用性（availability）和数据一致性（consistency）中做出权衡</strong> 。这就是著名的 <code>CAP</code> 定理。</p>
-<p>理解起来其实很简单，比如说把一个班级作为整个系统，而学生是系统中的一个个独立的子系统。这个时候班里的小红小明偷偷谈恋爱被班里的大嘴巴小花发现了，小花欣喜若狂告诉了周围的人，然后小红小明谈恋爱的消息在班级里传播起来了。当在消息的传播（散布）过程中，你抓到一个同学问他们的情况，如果回答你<strong>不知道（或者说的是他们的前男/女朋友，也就是消息不一致）</strong>，那么说明整个班级系统出现了<strong>数据不一致</strong>的问题（因为小花已经知道这个消息了）。而如果他直接<strong>不回答</strong>你，因为整个班级有消息在进行传播（为了保证一致性，需要所有人都知道才可提供服务），这个时候就出现了系统的<strong>可用性</strong>问题。</p>
+<p>理解起来其实很简单，比如说把一个班级作为整个系统，而学生是系统中的一个个独立的子系统。这个时候班里的小红小明偷偷谈恋爱被班里的大嘴巴小花发现了，小花欣喜若狂告诉了周围的人，然后小红小明谈恋爱的消息在班级里传播起来了。当在消息的传播（散布）过程中，你抓到一个同学问他们的情况，如果回答你<strong>不知道（或者说的是他们的前男&#x2F;女朋友，也就是消息不一致）</strong>，那么说明整个班级系统出现了<strong>数据不一致</strong>的问题（因为小花已经知道这个消息了）。而如果他直接<strong>不回答</strong>你，因为整个班级有消息在进行传播（为了保证一致性，需要所有人都知道才可提供服务），这个时候就出现了系统的<strong>可用性</strong>问题。</p>
 <p> <img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f696d672d626c6f672e6373646e696d672e636e2f696d675f636f6e766572742f33346666666634316636636134663232316361396439616436663062353437302e706e67" alt="img"> </p>
-<p>而上述前者就是 <code>Eureka</code> 的处理方式，它保证了AP（<strong>可用性</strong>），后者就是我们今天所要讲的 <code>ZooKeeper</code> 的处理方式，它保证了CP（<strong>数据一致性(即同步期间不可用)</strong>）。  </p>
+<p>而上述前者就是 <code>Eureka</code> 的处理方式，它保证了AP（<strong>可用性</strong>），后者就是我们今天所要讲的 <code>ZooKeeper</code> 的处理方式，它保证了CP（**数据一致性(即同步期间不可用)**）。  </p>
 <blockquote>
 <p>【ly总结】也就是说两台机器同步期间，如果要保证可用性，那么必然会出现一致性问题；而如果要保证一致性，那必然要等到完全同步完（也就是期间会让请求不可用）</p>
 </blockquote>
@@ -356,12 +358,11 @@
 <ol>
 <li><strong>CanCommit阶段</strong>：协调者向所有参与者发送 <code>CanCommit</code> 请求，参与者收到请求后会<strong>根据自身情况查看是否能执行事务</strong>，如果可以则<strong>返回 YES 响应并进入预备</strong>状态，否则返回 <strong>NO</strong> 。</li>
 <li><strong>PreCommit阶段</strong>：协调者根据参与者返回的响应来决定是否可以进行下面的 <code>PreCommit</code> 操作。如果上面参与者返回的都是 YES，那么协调者将向所有参与者发送 <code>PreCommit</code> 预提交请求，<strong>参与者收到预提交请求后，会进行事务的执行操作，并将 <code>Undo</code> 和 <code>Redo</code> 信息写入事务日志中</strong> ，最后<strong>如果参与者顺利执行了事务则给协调者返回成功</strong>的响应。如果在第一阶段协调者收到了 <strong>任何一个 NO</strong> 的信息，或者 <strong>在一定时间内</strong> 并没有收到全部的参与者的响应，那么就会中断事务，它会向所有参与者发送中断请求（abort），参与者<strong>收到中断请求之后会立即中断事务</strong>，或者在一定时间内没有收到协调者的请求，它也会中断事务。</li>
-<li><p><strong>DoCommit阶段</strong>：这个阶段其实和 <code>2PC</code> 的第二阶段差不多，如果协调者收到了<strong>所有</strong>参与者在 <code>PreCommit</code> 阶段的 <strong>YES 响应</strong>，那么协调者将会给所有参与者发送 <code>DoCommit</code> 请求，<strong>参与者收到 <code>DoCommit</code> 请求后则会进行事务的提交工作</strong>，完成后则会给协调者返回响应，协调者收到所有参与者返回的事务提交成功的响应之后则<strong>完成事务</strong>。若协调者在 <code>PreCommit</code> 阶段 <strong>收到了任何一个 NO 或者在一定时间内没有收到所有参与者的响应</strong> ，那么就会进行中断请求的发送，参与者收到中断请求后则会 <strong>通过上面记录的回滚日志</strong> 来进行事务的回滚操作，并向协调者反馈回滚状况，协调者收到参与者返回的消息后，中断事务。</p>
-<p><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f696d672d626c6f672e6373646e696d672e636e2f696d675f636f6e766572742f64306234343336316337343635393366373061366534326332393862343133612e706e67" alt="3PC流程"> </p>
-</li>
+<li><strong>DoCommit阶段</strong>：这个阶段其实和 <code>2PC</code> 的第二阶段差不多，如果协调者收到了<strong>所有</strong>参与者在 <code>PreCommit</code> 阶段的 <strong>YES 响应</strong>，那么协调者将会给所有参与者发送 <code>DoCommit</code> 请求，<strong>参与者收到 <code>DoCommit</code> 请求后则会进行事务的提交工作</strong>，完成后则会给协调者返回响应，协调者收到所有参与者返回的事务提交成功的响应之后则<strong>完成事务</strong>。若协调者在 <code>PreCommit</code> 阶段 <strong>收到了任何一个 NO 或者在一定时间内没有收到所有参与者的响应</strong> ，那么就会进行中断请求的发送，参与者收到中断请求后则会 <strong>通过上面记录的回滚日志</strong> 来进行事务的回滚操作，并向协调者反馈回滚状况，协调者收到参与者返回的消息后，中断事务。</li>
 </ol>
+<p> <img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f696d672d626c6f672e6373646e696d672e636e2f696d675f636f6e766572742f64306234343336316337343635393366373061366534326332393862343133612e706e67" alt="3PC流程"> </p>
 <blockquote>
-<p>这里是 <code>3PC</code> 在成功的环境下的流程图，你可以看到 <code>3PC</code> 在很多地方进行了超时中断的处理，比如协调者在<strong>指定时间内</strong>为收到全部的确认消息则进行事务中断的处理，这样能 <strong>减少同步阻塞的时间</strong> 。还有需要注意的是，<strong><code>3PC</code> 在 <code>DoCommit</code> 阶段参与者如未收到协调者发送的提交事务的请求，它会在一定时间内进行事务的提交</strong>。为什么这么做呢？是因为这个时候我们肯定<strong>保证了在第一阶段所有的协调者全部返回了可以执行事务的响应</strong>，这个时候我们有理由<strong>相信其他系统都能进行事务的执行和提交</strong>，所以<strong>不管</strong>协调者有没有发消息给参与者，进入第三阶段参与者都会进行事务的提交操作。</p>
+<p>这里是 <code>3PC</code> 在成功的环境下的流程图，你可以看到 <code>3PC</code> 在很多地方进行了超时中断的处理，比如协调者在<strong>指定时间内</strong>为收到全部的确认消息则进行事务中断的处理，这样能 <strong>减少同步阻塞的时间</strong> 。还有需要注意的是，**<code>3PC</code> 在 <code>DoCommit</code> 阶段参与者如未收到协调者发送的提交事务的请求，它会在一定时间内进行事务的提交<strong>。为什么这么做呢？是因为这个时候我们肯定</strong>保证了在第一阶段所有的协调者全部返回了可以执行事务的响应<strong>，这个时候我们有理由</strong>相信其他系统都能进行事务的执行和提交<strong>，所以</strong>不管**协调者有没有发消息给参与者，进入第三阶段参与者都会进行事务的提交操作。</p>
 </blockquote>
 <p>总之，<code>3PC</code> 通过一系列的超时机制很好的<strong>缓解了阻塞问题</strong>，但是最重要的一致性并没有得到根本的解决，比如在 <code>PreCommit</code> 阶段，当<strong>一个参与者收到了请求之后其他参与者和协调者挂了或者出现了网络分区</strong>，这个时候收到消息的参与者都会进行事务提交，这就会出现数据不一致性问题。</p>
 <p>所以，要解决一致性问题还需要靠 <code>Paxos</code> 算法⭐️ ⭐️ ⭐️ 。</p>
@@ -415,7 +416,7 @@
 <h3 id="5-4-崩溃恢复模式"><a href="#5-4-崩溃恢复模式" class="headerlink" title="5.4. 崩溃恢复模式"></a>5.4. 崩溃恢复模式</h3><p>说到崩溃恢复我们首先要提到 <code>ZAB</code> 中的 <code>Leader</code> 选举算法，当系统出现崩溃影响最大应该是 <code>Leader</code> 的崩溃，因为我们只有一个 <code>Leader</code> ，所以当 <code>Leader</code> 出现问题的时候我们势必需要重新选举 <code>Leader</code> 。</p>
 <p><code>Leader</code> 选举可以分为两个不同的阶段，第一个是我们提到的 <code>Leader</code> 宕机需要重新选举，第二则是当 <code>Zookeeper</code> 启动时需要进行系统的 <code>Leader</code> 初始化选举。下面我先来介绍一下 <code>ZAB</code> 是如何进行初始化选举的。</p>
 <p>假设我们集群中有3台机器，那也就意味着我们需要<strong>两台以上同意（超过半数）</strong>。比如这个时候我们启动了 <code>server1</code> ，它会首先 <strong>投票给自己</strong> ，投票内容为服务器的 <code>myid</code> 和 <code>ZXID</code> ，因为初始化所以 <code>ZXID</code> 都为0，此时 <code>server1</code> 发出的投票为 (1,0)。但此时 <code>server1</code> 的投票仅为1，所以不能作为 <code>Leader</code> ，此时还在选举阶段所以整个集群处于 <strong><code>Looking</code> 状态</strong>。</p>
-<p>接着 <code>server2</code> 启动了，它首先也会将投票选给自己(2,0)，并将投票信息广播出去（<code>server1</code>也会，只是它那时没有其他的服务器了），<code>server1</code> 在收到 <code>server2</code> 的投票信息后会将投票信息与自己的作比较。<strong>首先它会比较 <code>ZXID</code> ，<code>ZXID</code> 大的优先为 <code>Leader</code>，如果相同则比较 <code>myid</code>，<code>myid</code> 大的优先作为 <code>Leader</code></strong>。所以此时<code>server1</code> 发现 <code>server2</code> 更适合做 <code>Leader</code>，它就会将自己的投票信息更改为(2,0)然后再广播出去，之后<code>server2</code> 收到之后发现和自己的一样无需做更改，并且自己的 <strong>投票已经超过半数</strong> ，则 <strong>确定 <code>server2</code> 为 <code>Leader</code></strong>，<code>server1</code> 也会将自己服务器设置为 <code>Following</code> 变为 <code>Follower</code>。整个服务器就从 <code>Looking</code> 变为了正常状态。</p>
+<p>接着 <code>server2</code> 启动了，它首先也会将投票选给自己(2,0)，并将投票信息广播出去（<code>server1</code>也会，只是它那时没有其他的服务器了），<code>server1</code> 在收到 <code>server2</code> 的投票信息后会将投票信息与自己的作比较。**首先它会比较 <code>ZXID</code> ，<code>ZXID</code> 大的优先为 <code>Leader</code>，如果相同则比较 <code>myid</code>，<code>myid</code> 大的优先作为 <code>Leader</code>**。所以此时<code>server1</code> 发现 <code>server2</code> 更适合做 <code>Leader</code>，它就会将自己的投票信息更改为(2,0)然后再广播出去，之后<code>server2</code> 收到之后发现和自己的一样无需做更改，并且自己的 <strong>投票已经超过半数</strong> ，则 **确定 <code>server2</code> 为 <code>Leader</code>**，<code>server1</code> 也会将自己服务器设置为 <code>Following</code> 变为 <code>Follower</code>。整个服务器就从 <code>Looking</code> 变为了正常状态。</p>
 <p>当 <code>server3</code> 启动发现集群没有处于 <code>Looking</code> 状态时，它会直接以 <code>Follower</code> 的身份加入集群。</p>
 <p>还是前面三个 <code>server</code> 的例子，如果在整个集群运行的过程中 <code>server2</code> 挂了，那么整个集群会如何重新选举 <code>Leader</code> 呢？其实和初始化选举差不多。</p>
 <p>首先毫无疑问的是剩下的两个 <code>Follower</code> 会将自己的状态 <strong>从 <code>Following</code> 变为 <code>Looking</code> 状态</strong> ，然后每个 <code>server</code> 会向初始化投票一样首先给自己投票（这不过这里的 <code>zxid</code> 可能不是0了，这里为了方便随便取个数字）。</p>
@@ -435,9 +436,9 @@
 <p>那么跳过那些已经被丢弃的提案又是什么意思呢？</p>
 <p>假设 <code>Leader (server2)</code> 此时同意了提案N1，自身提交了这个事务并且要发送给所有 <code>Follower</code> 要 <code>commit</code> 的请求，却在这个时候挂了，此时肯定要重新进行 <code>Leader</code> 的选举，比如说此时选 <code>server1</code> 为 <code>Leader</code> （这无所谓）。但是过了一会，这个 <strong>挂掉的 <code>Leader</code> 又重新恢复了</strong> ，此时它肯定会作为 <code>Follower</code> 的身份进入集群中，需要注意的是刚刚 <code>server2</code> 已经同意提交了提案N1，但其他 <code>server</code> 并没有收到它的 <code>commit</code> 信息，所以其他 <code>server</code> 不可能再提交这个提案N1了，这样就会出现数据不一致性问题了，所以 <strong>该提案N1最终需要被抛弃掉</strong> 。</p>
 <p> <img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f696d672d626c6f672e6373646e696d672e636e2f696d675f636f6e766572742f61626236656663376434646639633832623136326362656362313239613665332e706e67" alt="崩溃恢复"> </p>
-<h2 id="6-Zookeeper的几个理论知识"><a href="#6-Zookeeper的几个理论知识" class="headerlink" title="6. Zookeeper的几个理论知识"></a>6. Zookeeper的几个理论知识</h2><p>了解了 <code>ZAB</code> 协议还不够，它仅仅是 <code>Zookeeper</code> 内部实现的一种方式，而我们如何通过 <code>Zookeeper</code> 去做一些典型的应用场景呢？比如说<strong>集群管理</strong>，<strong>分布式锁</strong>，<strong><code>Master</code> 选举</strong>等等。</p>
+<h2 id="6-Zookeeper的几个理论知识"><a href="#6-Zookeeper的几个理论知识" class="headerlink" title="6. Zookeeper的几个理论知识"></a>6. Zookeeper的几个理论知识</h2><p>了解了 <code>ZAB</code> 协议还不够，它仅仅是 <code>Zookeeper</code> 内部实现的一种方式，而我们如何通过 <code>Zookeeper</code> 去做一些典型的应用场景呢？比如说<strong>集群管理</strong>，<strong>分布式锁</strong>，**<code>Master</code> 选举**等等。</p>
 <p>这就涉及到如何使用 <code>Zookeeper</code> 了，但在使用之前我们还需要掌握几个概念。比如 <code>Zookeeper</code> 的 <strong>数据模型</strong> 、<strong>会话机制</strong>、<strong>ACL</strong>、<strong>Watcher机制</strong> 等等。</p>
-<h3 id="6-1-数据模型"><a href="#6-1-数据模型" class="headerlink" title="6.1. 数据模型"></a>6.1. 数据模型</h3><p><code>zookeeper</code> 数据存储结构与标准的 <code>Unix</code> 文件系统非常相似，都是在根节点下<strong>挂很多子节点(树型)</strong>。但是 <code>zookeeper</code> 中没有文件系统中目录与文件的概念，而是 <strong>使用了 <code>znode</code> 作为数据节点</strong> 。<code>znode</code> 是 <code>zookeeper</code> 中的最小数据单元，每个 <code>znode</code> 上都可以保存数据，同时还可以挂载子节点，形成一个<strong>树形化命名空间</strong>。</p>
+<h3 id="6-1-数据模型"><a href="#6-1-数据模型" class="headerlink" title="6.1. 数据模型"></a>6.1. 数据模型</h3><p><code>zookeeper</code> 数据存储结构与标准的 <code>Unix</code> 文件系统非常相似，都是在根节点下<strong>挂很多子节点(树型)<strong>。但是 <code>zookeeper</code> 中没有文件系统中目录与文件的概念，而是 <strong>使用了 <code>znode</code> 作为数据节点</strong> 。<code>znode</code> 是 <code>zookeeper</code> 中的最小数据单元，每个 <code>znode</code> 上都可以保存数据，同时还可以挂载子节点，形成一个</strong>树形化命名空间</strong>。</p>
 <p> <img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f696d672d626c6f672e6373646e696d672e636e2f696d675f636f6e766572742f38663335646261386334346334613130643831653333393564663937316365372e706e67" alt="zk数据模型"> </p>
 <p>每个 <code>znode</code> 都有自己所属的 <strong>节点类型</strong> 和 <strong>节点状态</strong>。</p>
 <p>其中节点类型可以分为 <strong>持久节点</strong>、<strong>持久顺序节点</strong>、<strong>临时节点</strong> 和 <strong>临时顺序节点</strong>。</p>
@@ -481,8 +482,8 @@
 <p>但是，如果这个 <code>master</code> 挂了怎么办？？？</p>
 <p>你想想为什么我们要创建临时节点？还记得临时节点的生命周期吗？<code>master</code> 挂了是不是代表会话断了？会话断了是不是意味着这个节点没了？还记得 <code>watcher</code> 吗？我们是不是可以 <strong>让其他不是 <code>master</code> 的节点监听节点的状态</strong> ，比如说我们监听这个临时节点的父节点，如果<strong>子节点个数变了就代表 <code>master</code> 挂了</strong>，这个时候我们 <strong>触发回调函数进行重新选举</strong> ，或者我们<strong>直接监听节点的状态</strong>，我们可以通过节点是否已经失去连接来判断 <code>master</code> 是否挂了等等。</p>
 <p> <img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f696d672d626c6f672e6373646e696d672e636e2f696d675f636f6e766572742f61393437303730323863353538316338313566373266626130663530663433612e706e67" alt="选主"> </p>
-<p>总的来说，我们可以完全 <strong>利用 临时节点、节点状态 和 <code>watcher</code> 来实现选主的功能</strong>，临时节点主要用来选举，<strong>节点状态</strong>和<strong><code>watcher</code></strong> 可以用来<strong>判断 <code>master</code> 的活性</strong>和进行<strong>重新选举</strong>。</p>
-<h3 id="7-2-分布式锁"><a href="#7-2-分布式锁" class="headerlink" title="7.2. 分布式锁"></a>7.2. 分布式锁</h3><p>分布式锁的实现方式有很多种，比如 <strong><code>Redis</code></strong> 、<strong>数据库</strong> 、<strong><code>zookeeper</code></strong> 等。个人认为 <code>zookeeper</code> 在实现分布式锁这方面是非常非常简单的。</p>
+<p>总的来说，我们可以完全 <strong>利用 临时节点、节点状态 和 <code>watcher</code> 来实现选主的功能</strong>，临时节点主要用来选举，<strong>节点状态</strong>和**<code>watcher</code>** 可以用来<strong>判断 <code>master</code> 的活性</strong>和进行<strong>重新选举</strong>。</p>
+<h3 id="7-2-分布式锁"><a href="#7-2-分布式锁" class="headerlink" title="7.2. 分布式锁"></a>7.2. 分布式锁</h3><p>分布式锁的实现方式有很多种，比如 <strong><code>Redis</code></strong> 、<strong>数据库</strong> 、**<code>zookeeper</code>** 等。个人认为 <code>zookeeper</code> 在实现分布式锁这方面是非常非常简单的。</p>
 <p>上面我们已经提到过了 <strong>zk在高并发的情况下保证节点创建的全局唯一性</strong>，这玩意一看就知道能干啥了。实现<strong>互斥锁</strong>呗，又因为能在分布式的情况下，所以能实现<strong>分布式锁</strong>呗。</p>
 <p>如何实现呢？这玩意其实跟选主基本一样，我们也可以利用临时节点的创建来实现。</p>
 <p>首先肯定是如何获取锁，因为创建节点的唯一性，我们可以让<strong>多个客户端同时创建一个临时节点</strong>，<strong>创建成功的就说明获取到了锁</strong> 。然后没有获取到锁的客户端也像上面选主的非主节点创建一个 <code>watcher</code> 进行节点状态的监听，如果这个互斥锁被释放了（可能获取锁的客户端宕机了，或者那个客户端主动释放了锁）可以调用回调函数<strong>重新获得锁</strong>。</p>
@@ -584,7 +585,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">45:25</span>
+    <span title="站点阅读时长">45:37</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动

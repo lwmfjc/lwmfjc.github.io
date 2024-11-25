@@ -270,7 +270,7 @@
     
     
     <div class="post-body" itemprop="articleBody"><blockquote>
-<p>转载自<a target="_blank" rel="noopener" href="https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!">https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!</a></p>
+<p>转载自<a target="_blank" rel="noopener" href="https://github.com/Snailclimb/JavaGuide%EF%BC%88%E6%B7%BB%E5%8A%A0%E5%B0%8F%E9%83%A8%E5%88%86%E7%AC%94%E8%AE%B0%EF%BC%89%E6%84%9F%E8%B0%A2%E4%BD%9C%E8%80%85">https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者</a>!</p>
 </blockquote>
 <p>在 <a target="_blank" rel="noopener" href="https://javaguide.cn/system-design/security/jwt-intro.html">JWT 基本概念详解</a>这篇文章中，我介绍了：</p>
 <ul>
@@ -290,9 +290,11 @@
 <p><strong>那么究竟什么是跨站请求伪造呢？</strong> 简单来说就是<strong>用你的身份去做一些不好的事情</strong>（发送一些对你不友好的请求比如恶意转账）。</p>
 <p>举个简单的例子：小壮登录了某网上银行，他来到了网上银行的帖子区，看到一个帖子下面有一个链接写着“科学理财，年盈利率过万”，小壮好奇的点开了这个链接，结果发现自己的账户少了 10000 元。这是这么回事呢？原来黑客在链接中藏了一个请求，这个请求直接利用小壮的身份给银行发送了一个转账请求，也就是通过你的 Cookie 向银行发出请求。</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&lt;a src=&quot;http://www.mybank.com/Transfer?bankId=11&amp;money=10000&quot;&gt;科学理财，年盈利率过万&lt;/a&gt;</span><br></pre></td></tr></table></figure>
+
 <p>CSRF 攻击需要依赖 Cookie ，Session 认证中 Cookie 中的 <code>SessionID</code> 是由浏览器发送到服务端的，只要发出请求，Cookie 就会被携带。借助这个特性，即使黑客无法获取你的 <code>SessionID</code>，只要让你误点攻击链接，就可以达到攻击效果。</p>
 <p>另外，并不是必须点击链接才可以达到攻击效果，很多时候，<strong>只要你打开了某个页面</strong>，CSRF 攻击就会发生。</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&lt;img src=&quot;http://www.mybank.com/Transfer?bankId=11&amp;money=10000&quot; /&gt;</span><br></pre></td></tr></table></figure>
+
 <p><strong>那为什么 JWT 不会存在这种问题呢？</strong></p>
 <p>一般情况下我们使用 JWT 的话，在我们登录成功获得 JWT 之后，<strong>一般会选择存放在 localStorage 中</strong>。前端的每一个请求后续都会附带上这个 JWT，整个过程压根不会涉及到 Cookie。因此，即使你<strong>点击了非法链接发送了请求到服务端</strong>，<strong>这个非法请求也是不会携带 JWT</strong> 的，所以这个请求将是非法的。</p>
 <p>总结来说就一句话：<strong>使用 JWT 进行身份验证不需要依赖 Cookie ，因此可以避免 CSRF 攻击。</strong></p>
@@ -303,6 +305,7 @@
 <p>常见的<strong>避免 XSS</strong> 攻击的方式是<strong>过滤掉请求中存在 XSS 攻击风险的可疑字符串</strong>。</p>
 <p>在 Spring 项目中，我们一般是通过创建 XSS 过滤器来实现的。</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">@Component</span><br><span class="line">@Order(Ordered.HIGHEST_PRECEDENCE)</span><br><span class="line">public class XSSFilter implements Filter &#123;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void doFilter(ServletRequest request, ServletResponse response,</span><br><span class="line">      FilterChain chain) throws IOException, ServletException &#123;</span><br><span class="line">        XSSRequestWrapper wrappedRequest =</span><br><span class="line">          new XSSRequestWrapper((HttpServletRequest) request);</span><br><span class="line">        chain.doFilter(wrappedRequest, response);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // other methods</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <h3 id="适合移动端应用"><a href="#适合移动端应用" class="headerlink" title="适合移动端应用"></a>适合移动端应用</h3><p>使用 Session 进行身份认证的话，需要<strong>保存一份信息在服务器端</strong>，而且这种方式会依赖到 <strong>Cookie</strong>（需要 Cookie 保存 <code>SessionId</code>），所以不适合移动端。</p>
 <p>但是，使用 JWT 进行身份认证就不会存在这种问题，因为<strong>只要 JWT 可以被客户端存储</strong>就能够使用，而且 JWT 还可以跨语言使用。</p>
 <h3 id="单点登录友好"><a href="#单点登录友好" class="headerlink" title="单点登录友好"></a>单点登录友好</h3><p>使用 Session 进行身份认证的话，实现<strong>单点</strong>登录，需要我们把用户的 Session 信息保存在一台电脑上，并且还会遇到常见的 Cookie 跨域的问题。但是，<strong>使用 JWT 进行认证</strong>的话， JWT <strong>被保存在客户端</strong>，不会存在这些问题。</p>
@@ -311,7 +314,7 @@
 <li>退出登录;</li>
 <li>修改密码;</li>
 <li>服务端修改了某个用户具有的权限或者角色；</li>
-<li>用户的帐户被封禁/删除；</li>
+<li>用户的帐户被封禁&#x2F;删除；</li>
 <li>用户被服务端强制注销；</li>
 <li>用户被踢下线；</li>
 <li>……</li>
@@ -431,7 +434,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">45:25</span>
+    <span title="站点阅读时长">45:37</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动

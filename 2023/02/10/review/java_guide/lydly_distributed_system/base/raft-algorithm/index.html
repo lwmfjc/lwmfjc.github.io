@@ -272,7 +272,7 @@
     
     
     <div class="post-body" itemprop="articleBody"><blockquote>
-<p>转载自<a target="_blank" rel="noopener" href="https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!">https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!</a></p>
+<p>转载自<a target="_blank" rel="noopener" href="https://github.com/Snailclimb/JavaGuide%EF%BC%88%E6%B7%BB%E5%8A%A0%E5%B0%8F%E9%83%A8%E5%88%86%E7%AC%94%E8%AE%B0%EF%BC%89%E6%84%9F%E8%B0%A2%E4%BD%9C%E8%80%85">https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者</a>!</p>
 </blockquote>
 <h2 id="1-背景"><a href="#1-背景" class="headerlink" title="1 背景"></a>1 背景</h2><p>当今的数据中心和应用程序在高度动态的环境中运行，为了应对<strong>高度动态</strong>的环境，它们<strong>通过额外的服务器进行横向扩展</strong>，并且<strong>根据需求进行扩展和收</strong>缩。同时，服务器和网络故障也很常见。</p>
 <p>因此，系统必须在正常操作期间处理服务器的上下线。它们必须对变故<strong>做出反应并在几秒钟内自动适应</strong>；对客户来说的话，明显的中断通常是不可接受的。</p>
@@ -287,6 +287,7 @@
 <p>共识算法允许一组节点像一个整体一样一起工作，即使其中的一些节点出现故障也能够继续工作下去，其正确性主要是源于复制状态机的性质：一组<code>Server</code>的状态机计算相同状态的副本，即使有一部分的<code>Server</code>宕机了它们仍然能够继续运行。</p>
 <p><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f7061786f732d72736d2d6172636869746563747572652e706e67" alt="rsm-architecture.png"> </p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">图-1 复制状态机架构</span><br></pre></td></tr></table></figure>
+
 <p>一般通过<strong>使用复制日志来实现复制状态机</strong>。<strong>每个<code>Server</code>存储着一份包括命令序列的日志文件</strong>，状态机会按顺序执行这些命令。因为每个日志包含相同的命令，并且顺序也相同，所以每个状态机处理相同的命令序列。由于状态机是确定性的，所以<strong>处理相同的状态，得到相同的输出</strong>。</p>
 <p>因此共识算法的工作就是<strong>保持复制日志的一致性</strong>。服务器上的共识模块从客户端接收命令并将它们添加到日志中。它与其他服务器上的共识模块通信，以确保即使某些服务器发生故障。每个日志最终包含相同顺序的请求。一旦命令被正确地复制，它们就被称为已提交。每个服务器的状态机按照日志顺序处理已提交的命令，并将输出返回给客户端，因此，这些服务器形成了一个单一的、高度可靠的状态机。</p>
 <p>适用于实际系统的共识算法通常具有以下特性：</p>
@@ -305,8 +306,10 @@
 <p>在正常的情况下，只有一个服务器是 Leader，剩下的服务器是 Follower。Follower 是被动的，它们不会发送任何请求，只是响应来自 Leader 和 Candidate 的请求。</p>
 <p><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f7061786f732d7365727665722d73746174652e706e67" alt="img"></p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">图-2：服务器的状态</span><br></pre></td></tr></table></figure>
+
 <h3 id="2-2-任期"><a href="#2-2-任期" class="headerlink" title="2.2 任期"></a>2.2 任期</h3><p><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f7061786f732d7465726d2e706e67" alt="img"></p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">图-3：任期</span><br></pre></td></tr></table></figure>
+
 <p>如图 3 所示，raft 算法将时间划分为任意长度的任期（term），任期用连续的数字表示，看作当前 term 号。每一个任期的开始都是一次选举，在选举开始时，一个或多个 Candidate 会尝试成为 Leader。如果一个 Candidate 赢得了选举，它就会在该任期内担任 Leader。如果没有选出 Leader，将会开启另一个任期，并立刻开始下一次选举。raft 算法保证在给定的一个任期最少要有一个 Leader。</p>
 <p>每个节点都会存储当前的 term 号，当服务器之间进行通信时会交换当前的 term 号；如果有服务器发现自己的 term 号比其他人小，那么他会更新到较大的 term 值。如果一个 Candidate 或者 Leader 发现自己的 term 过期了，他会立即退回成 Follower。如果一台服务器收到的请求的 term 号是过期的，那么它会拒绝此次请求。</p>
 <h3 id="2-3-日志"><a href="#2-3-日志" class="headerlink" title="2.3 日志"></a>2.3 日志</h3><ul>
@@ -350,6 +353,7 @@
 <p>如果 Follower 和 Candidate 崩溃，处理方式会简单很多。之后发送给它的 RequestVoteRPC 和 AppendEntriesRPC 会失败。由于 raft 的所有请求都是幂等的，所以失败的话会无限的重试。如果崩溃恢复后，就可以收到新的请求，然后选择追加或者拒绝 entry。</p>
 <h3 id="5-3-时间与可用性"><a href="#5-3-时间与可用性" class="headerlink" title="5.3 时间与可用性"></a>5.3 时间与可用性</h3><p>raft 的要求之一就是安全性不依赖于时间：系统不能仅仅因为一些事件发生的比预想的快一些或者慢一些就产生错误。为了保证上述要求，最好能满足以下的时间条件：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">broadcastTime &lt;&lt; electionTimeout &lt;&lt; MTBF</span><br></pre></td></tr></table></figure>
+
 <ul>
 <li><code>broadcastTime</code>：向其他节点并发发送消息的平均响应时间；</li>
 <li><code>electionTimeout</code>：选举超时时间；</li>
@@ -428,7 +432,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">45:25</span>
+    <span title="站点阅读时长">45:37</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动

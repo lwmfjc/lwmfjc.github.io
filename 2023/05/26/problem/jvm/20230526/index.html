@@ -294,6 +294,7 @@
 <h3 id="InvocationHandler"><a href="#InvocationHandler" class="headerlink" title="InvocationHandler"></a>InvocationHandler</h3><p>每一个动态代理类都必须要实现InvocationHandler这个接口，并且每个代理类的实例都关联了一个handler，当我们通过代理对象调用一个方法的时候，这个方法的调用就会被转发为由InvocationHandler这个接口的 invoke 方法来进行调用。</p>
 <p>InvocationHandler这个接口的唯一一个方法 invoke 方法：</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line">java</span><br><span class="line">复制代码Object <span class="title function_">invoke</span><span class="params">(Object proxy, Method method, Object[] args)</span> <span class="keyword">throws</span> Throwable</span><br></pre></td></tr></table></figure>
+
 <p>这个方法一共接受三个参数，那么这三个参数分别代表如下：</p>
 <ul>
 <li><strong>proxy</strong>:指代JDK动态生成的最终代理对象</li>
@@ -302,6 +303,7 @@
 </ul>
 <h3 id="Proxy"><a href="#Proxy" class="headerlink" title="Proxy"></a>Proxy</h3><p>Proxy这个类的作用就是用来动态创建一个代理对象的类，它提供了许多的方法，但是我们用的最多的就是newProxyInstance 这个方法：</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line">java</span><br><span class="line">复制代码<span class="keyword">public</span> <span class="keyword">static</span> Object <span class="title function_">newProxyInstance</span><span class="params">(ClassLoader loader, Class&lt;?&gt;[] interfaces,  InvocationHandler handler)</span>  <span class="keyword">throws</span> IllegalArgumentException</span><br></pre></td></tr></table></figure>
+
 <p>这个方法的作用就是得到一个动态的代理对象，其接收三个参数，我们来看看这三个参数所代表的含义：</p>
 <ul>
 <li><strong>loader</strong>：ClassLoader对象，定义了由哪个ClassLoader来对生成的代理对象进行加载，即代理类的类加载器。</li>
@@ -311,14 +313,19 @@
 <p>所以我们所说的DynamicProxy（动态代理类）是这样一种class：它是在运行时生成的class，在生成它时你必须提供一组interface给它，然后该class就宣称它实现了这些 interface。这个DynamicProxy其实就是一个Proxy，它不会做实质性的工作，在生成它的实例时你必须提供一个handler，由它接管实际的工作。</p>
 <h4 id="JDK动态代理实例"><a href="#JDK动态代理实例" class="headerlink" title="JDK动态代理实例"></a>JDK动态代理实例</h4><p><strong>创建接口类</strong></p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line">java复制代码<span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">HelloInterface</span> &#123;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">sayHello</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p><strong>创建被代理类，实现接口</strong></p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line">java复制代码<span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 被代理类</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">HelloImpl</span> <span class="keyword">implements</span> <span class="title class_">HelloInterface</span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">sayHello</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;hello&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p><strong>创建InvocationHandler实现类</strong></p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line">java复制代码<span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 每次生成动态代理类对象时都需要指定一个实现了InvocationHandler接口的调用处理器对象</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ProxyHandler</span> <span class="keyword">implements</span> <span class="title class_">InvocationHandler</span>&#123;</span><br><span class="line">    <span class="keyword">private</span> Object subject; <span class="comment">// 这个就是我们要代理的真实对象，也就是真正执行业务逻辑的类</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">ProxyHandler</span><span class="params">(Object subject)</span> &#123;<span class="comment">// 通过构造方法传入这个被代理对象</span></span><br><span class="line">        <span class="built_in">this</span>.subject = subject;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     *当代理对象调用真实对象的方法时，其会自动的跳转到代理对象关联的handler对象的invoke方法来进行调用</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Object <span class="title function_">invoke</span><span class="params">(Object obj, Method method, Object[] objs)</span></span><br><span class="line">            <span class="keyword">throws</span> Throwable &#123;</span><br><span class="line">        <span class="type">Object</span> <span class="variable">result</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">        System.out.println(<span class="string">&quot;可以在调用实际方法前做一些事情&quot;</span>);</span><br><span class="line">        System.out.println(<span class="string">&quot;当前调用的方法是&quot;</span> + method.getName());</span><br><span class="line">        result = method.invoke(subject, objs);<span class="comment">// 需要指定被代理对象和传入参数</span></span><br><span class="line">        System.out.println(method.getName() + <span class="string">&quot;方法的返回值是&quot;</span> + result);</span><br><span class="line">        System.out.println(<span class="string">&quot;可以在调用实际方法后做一些事情&quot;</span>);</span><br><span class="line">        System.out.println(<span class="string">&quot;------------------------&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> result;<span class="comment">// 返回method方法执行后的返回值</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p><strong>测试</strong></p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line">java复制代码<span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Mytest</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="comment">//第一步：创建被代理对象</span></span><br><span class="line">        <span class="type">HelloImpl</span> <span class="variable">hello</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HelloImpl</span>();</span><br><span class="line">        <span class="comment">//第二步：创建handler,传入真实对象</span></span><br><span class="line">        <span class="type">ProxyHandler</span> <span class="variable">handler</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ProxyHandler</span>(hello);</span><br><span class="line">        <span class="comment">//第三步：创建代理对象，传入类加载器、接口、handler</span></span><br><span class="line">        <span class="type">HelloInterface</span> <span class="variable">helloProxy</span> <span class="operator">=</span> (HelloInterface) Proxy.newProxyInstance(</span><br><span class="line">                HelloInterface.class.getClassLoader(), </span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;HelloInterface.class&#125;, handler);</span><br><span class="line">        <span class="comment">//第四步：调用方法</span></span><br><span class="line">        helloProxy.sayHello();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p><strong>结果</strong></p>
 <figure class="highlight markdown"><table><tr><td class="code"><pre><span class="line">markdown复制代码可以在调用实际方法前做一些事情</span><br><span class="line">当前调用的方法是sayHello</span><br><span class="line">hello</span><br><span class="line">sayHello方法的返回值是null</span><br><span class="line"><span class="section">可以在调用实际方法后做一些事情</span></span><br><span class="line"><span class="section">------------------------</span></span><br></pre></td></tr></table></figure>
+
 <h3 id="JDK动态代理步骤"><a href="#JDK动态代理步骤" class="headerlink" title="JDK动态代理步骤"></a>JDK动态代理步骤</h3><p>JDK动态代理分为以下几步：</p>
 <ol>
 <li>拿到被代理对象的引用，并且通过反射获取到它的所有的接口。</li>
@@ -332,10 +339,12 @@
 <p>CGLib采用了非常底层的字节码技术，其原理是通过字节码技术为一个类创建子类，并在子类中采用方法拦截的技术拦截所有父类方法的调用，顺势织入横切逻辑。（利用ASM开源包，对代理对象类的class文件加载进来，通过修改其字节码生成子类来处理）</p>
 <p><strong>注意</strong>：因为CGLIB是通过继承目标类来重写其方法来实现的，故而如果是final和private方法则无法被重写，也就是无法被代理。</p>
 <figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">xml复制代码<span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>cglib<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>cglib-nodep<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">version</span>&gt;</span>2.2<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
 <h3 id="CGLib核心类"><a href="#CGLib核心类" class="headerlink" title="CGLib核心类"></a>CGLib核心类</h3><p><strong>1、 net.sf.cglib.proxy.Enhancer</strong>：主要增强类，通过字节码技术动态创建委托类的子类实例；</p>
 <p><code>Enhancer</code>可能是CGLIB中最常用的一个类，和Java1.3动态代理中引入的Proxy类差不多。和Proxy不同的是，Enhancer既能够代理普通的class，也能够代理接口。Enhancer创建一个被代理对象的子类并且拦截所有的方法调用（包括从Object中继承的toString和hashCode方法）。Enhancer不能够拦截final方法，例如Object.getClass()方法，这是由于Java final方法语义决定的。基于同样的道理，Enhancer也不能对fianl类进行代理操作。这也是Hibernate为什么不能持久化final class的原因。</p>
 <p><strong>2、net.sf.cglib.proxy.MethodInterceptor</strong>：常用的方法拦截器接口，需要实现intercept方法，实现具体拦截处理；</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line">java复制代码 <span class="keyword">public</span> java.lang.Object <span class="title function_">intercept</span><span class="params">(java.lang.Object obj,</span></span><br><span class="line"><span class="params">                                   java.lang.reflect.Method method,</span></span><br><span class="line"><span class="params">                                   java.lang.Object[] args,</span></span><br><span class="line"><span class="params">                                   MethodProxy proxy)</span> <span class="keyword">throws</span> java.lang.Throwable&#123;&#125;</span><br></pre></td></tr></table></figure>
+
 <ul>
 <li><strong>obj</strong>：动态生成的代理对象</li>
 <li><strong>method</strong>:实际调用的方法</li>
@@ -344,12 +353,16 @@
 </ul>
 <h4 id="CGLib代理实例"><a href="#CGLib代理实例" class="headerlink" title="CGLib代理实例"></a>CGLib代理实例</h4><p><strong>创建被代理类</strong></p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line">java复制代码<span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SayHello</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">say</span><span class="params">()</span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;hello&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p><strong>创建代理类</strong></p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line">java复制代码<span class="comment">/**</span></span><br><span class="line"><span class="comment"> *代理类 </span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ProxyCglib</span> <span class="keyword">implements</span> <span class="title class_">MethodInterceptor</span>&#123;</span><br><span class="line">     <span class="keyword">private</span> <span class="type">Enhancer</span> <span class="variable">enhancer</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Enhancer</span>();  </span><br><span class="line">     <span class="keyword">public</span> Object <span class="title function_">getProxy</span><span class="params">(Class clazz)</span>&#123;  </span><br><span class="line">          <span class="comment">//设置需要创建子类的类  </span></span><br><span class="line">          enhancer.setSuperclass(clazz);  </span><br><span class="line">          enhancer.setCallback(<span class="built_in">this</span>);  </span><br><span class="line">          <span class="comment">//通过字节码技术动态创建子类实例  </span></span><br><span class="line">          <span class="keyword">return</span> enhancer.create();  </span><br><span class="line">     &#125;  </span><br><span class="line"></span><br><span class="line">     <span class="comment">//实现MethodInterceptor接口方法  </span></span><br><span class="line">     <span class="keyword">public</span> Object <span class="title function_">intercept</span><span class="params">(Object obj, Method method, Object[] args, MethodProxy proxy)</span> <span class="keyword">throws</span> Throwable &#123;  </span><br><span class="line">          System.out.println(<span class="string">&quot;可以在调用实际方法前做一些事情&quot;</span>);  </span><br><span class="line">          <span class="comment">//通过代理类调用父类中的方法  </span></span><br><span class="line">          <span class="type">Object</span> <span class="variable">result</span> <span class="operator">=</span> proxy.invokeSuper(obj, args);  </span><br><span class="line">          System.out.println(<span class="string">&quot;可以在调用实际方法后做一些事情&quot;</span>);  </span><br><span class="line">          <span class="keyword">return</span> result;  </span><br><span class="line">     &#125; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p><strong>测试</strong></p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line">java复制代码<span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Mytest</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">          <span class="type">ProxyCglib</span> <span class="variable">proxy</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ProxyCglib</span>();  </span><br><span class="line">          <span class="comment">//通过生成子类的方式创建代理类  </span></span><br><span class="line">          <span class="type">SayHello</span> <span class="variable">proxyImp</span> <span class="operator">=</span> (SayHello)proxy.getProxy(SayHello.class);  </span><br><span class="line">          proxyImp.say();  </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p><strong>结果</strong></p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">复制代码可以在调用实际方法前做一些事情</span><br><span class="line">hello</span><br><span class="line">可以在调用实际方法后做一些事情</span><br></pre></td></tr></table></figure>
+
 <h3 id="CGLIB动态代理实现分析"><a href="#CGLIB动态代理实现分析" class="headerlink" title="CGLIB动态代理实现分析"></a>CGLIB动态代理实现分析</h3><p>CGLib动态代理采用了FastClass机制，其分别为代理类和被代理类各生成一个FastClass，这个FastClass类会为代理类或被代理类的方法分配一个 index(int类型)。这个index当做一个入参，FastClass 就可以直接定位要调用的方法直接进行调用，这样省去了反射调用，所以调用效率比 JDK 动态代理通过反射调用更高。</p>
 <p>但是我们看上面的源码也可以明显看到，JDK动态代理只生成一个文件，而CGLIB生成了三个文件，所以生成代理对象的过程会更复杂。</p>
 <h2 id="四、JDK和CGLib动态代理对比"><a href="#四、JDK和CGLib动态代理对比" class="headerlink" title="四、JDK和CGLib动态代理对比"></a>四、JDK和CGLib动态代理对比</h2><p>JDK 动态代理是实现了被代理对象所实现的接口，CGLib是继承了被代理对象。 JDK和CGLib 都是在运行期生成字节码,JDK是直接写Class字节码，CGLib 使用 ASM 框架写Class字节码，Cglib代理实现更复杂，生成代理类的效率比JDK代理低。</p>
@@ -363,7 +376,6 @@
 <p>2、在jdk6、jdk7、jdk8逐步对JDK动态代理优化之后，在调用次数较少的情况下，JDK代理效率高于CGLIB代理效率，只有当进行大量调用的时候，jdk6和jdk7比CGLIB代理效率低一点，但是到jdk8的时候，jdk代理效率高于CGLIB代理。</p>
 <h3 id="各自局限："><a href="#各自局限：" class="headerlink" title="各自局限："></a>各自局限：</h3><p>1、JDK的动态代理机制只能代理实现了接口的类，而不能实现接口的类就不能实现JDK的动态代理。</p>
 <p>2、cglib是针对类来实现代理的，他的原理是对指定的目标类生成一个子类，并覆盖其中方法实现增强，但因为采用的是继承，所以不能对final修饰的类进行代理。</p>
-<div class="table-container">
 <table>
 <thead>
 <tr>
@@ -374,8 +386,7 @@
 <th>效率</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>JDK动态代理</td>
 <td>委托机制，代理类和目标类都实现了同样的接口，InvocationHandler持有目标类，代理类委托InvocationHandler去调用目标类的原始方法</td>
 <td>反射</td>
@@ -389,9 +400,7 @@
 <td>非接口类、非final类，非final方法</td>
 <td>第一次调用因为要生成多个Class对象，比JDK方式慢。多次调用因为有方法索引比反射快，如果方法过多，switch case过多其效率还需测试</td>
 </tr>
-</tbody>
-</table>
-</div>
+</tbody></table>
 <h2 id="五、静态代理和动态的本质区别"><a href="#五、静态代理和动态的本质区别" class="headerlink" title="五、静态代理和动态的本质区别"></a>五、静态代理和动态的本质区别</h2><ul>
 <li>静态代理只能通过手动完成代理操作，如果被代理类增加新的方法，代理类需要同步新增，违背开闭原则。</li>
 <li>动态代理采用在运行时动态生成代码的方式，取消了对被代理类的扩展限制，遵循开闭原则。</li>
@@ -459,7 +468,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">45:25</span>
+    <span title="站点阅读时长">45:37</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动

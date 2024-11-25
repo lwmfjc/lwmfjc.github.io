@@ -280,12 +280,11 @@
     
     
     <div class="post-body" itemprop="articleBody"><blockquote>
-<p>转载自<a target="_blank" rel="noopener" href="https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!">https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!</a></p>
+<p>转载自<a target="_blank" rel="noopener" href="https://github.com/Snailclimb/JavaGuide%EF%BC%88%E6%B7%BB%E5%8A%A0%E5%B0%8F%E9%83%A8%E5%88%86%E7%AC%94%E8%AE%B0%EF%BC%89%E6%84%9F%E8%B0%A2%E4%BD%9C%E8%80%85">https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者</a>!</p>
 </blockquote>
 <p>Redis 共有 5 种基本数据结构：<strong>String</strong>（字符串）、<strong>List</strong>（列表）、<strong>Set</strong>（集合）、<strong>Hash</strong>（散列）、<strong>Zset</strong>（有序集合）。</p>
 <p>这 5 种数据结构是直接提供给用户使用的，是数据的保存形式，其底层实现主要依赖这 8 种数据结构：简单动态字符串（<strong>SDS</strong>）、<strong>LinkedList</strong>（双向链表）、<strong>Hash Table</strong>（哈希表）、<strong>SkipList</strong>（跳跃表）、<strong>Intset</strong>（整数集合）、<strong>ZipList</strong>（压缩列表）、<strong>QuickList</strong>（快速列表）。</p>
 <p>Redis 基本数据结构的底层数据结构实现如下：</p>
-<div class="table-container">
 <table>
 <thead>
 <tr>
@@ -296,17 +295,14 @@
 <th>Zset</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>SDS</td>
-<td>LinkedList/ZipList/QuickList</td>
+<td>LinkedList&#x2F;ZipList&#x2F;QuickList</td>
 <td>Hash Table、ZipList</td>
 <td>ZipList、Intset</td>
 <td>ZipList、SkipList</td>
 </tr>
-</tbody>
-</table>
-</div>
+</tbody></table>
 <p>Redis 3.2 之前，List 底层实现是 LinkedList 或者 ZipList。 Redis 3.2 之后，引入了 LinkedList 和 ZipList 的结合 QuickList，List 的底层实现变为 QuickList。</p>
 <p>你可以在 Redis 官网上找到 Redis 数据结构非常详细的介绍：</p>
 <ul>
@@ -319,16 +315,14 @@
 <p>String 是一种<strong>二进制安全</strong>的数据结构，可以用来<strong>存储任何类型的数据</strong>比如<strong>字符串</strong>、<strong>整数</strong>、<strong>浮点数</strong>、<strong>图片</strong>（图片的 base64 编码或者解码或者图片的路径）、<strong>序列化后的对象</strong>。</p>
 <p> <img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230223150105377.png" alt="image-20230223150105377"></p>
 <p>虽然 Redis 是用 C 语言写的，但是 Redis 并没有使用 C 的字符串表示，而是自己构建了一种 <strong>简单动态字符串</strong>（Simple Dynamic String，<strong>SDS</strong>）。相比于 C 的原生字符串，Redis 的 SDS 不光可以保存文本数据还可以保存二进制数据，并且获取字符串长度复杂度为 O(1)（C 字符串为 O(N)）,除此之外，Redis 的 SDS API 是安全的，不会造成缓冲区溢出。</p>
-<h3 id="常用命令"><a href="#常用命令" class="headerlink" title="常用命令"></a>常用命令</h3><div class="table-container">
-<table>
+<h3 id="常用命令"><a href="#常用命令" class="headerlink" title="常用命令"></a>常用命令</h3><table>
 <thead>
 <tr>
 <th>命令</th>
 <th>介绍</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>SET key value</td>
 <td>设置指定 key 的值</td>
 </tr>
@@ -372,18 +366,20 @@
 <td>EXPIRE key seconds（通用）</td>
 <td>给指定 key 设置过期时间</td>
 </tr>
-</tbody>
-</table>
-</div>
+</tbody></table>
 <p>更多 Redis String 命令以及详细使用指南，请查看 Redis 官网对应的介绍：<a target="_blank" rel="noopener" href="https://redis.io/commands/?group=string">https://redis.io/commands/?group=string</a> 。</p>
 <p><strong>基本操作</strong> ：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&gt; SET key value</span><br><span class="line">OK</span><br><span class="line">&gt; GET key</span><br><span class="line">&quot;value&quot;</span><br><span class="line">&gt; EXISTS key</span><br><span class="line">(integer) 1</span><br><span class="line">&gt; STRLEN key</span><br><span class="line">(integer) 5</span><br><span class="line">&gt; DEL key</span><br><span class="line">(integer) 1</span><br><span class="line">&gt; GET key</span><br><span class="line">(nil)</span><br></pre></td></tr></table></figure>
+
 <p><strong>批量设置</strong> ：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&gt; MSET key1 value1 key2 value2</span><br><span class="line">OK</span><br><span class="line">&gt; MGET key1 key2 # 批量获取多个 key 对应的 value</span><br><span class="line">1) &quot;value1&quot;</span><br><span class="line">2) &quot;value2&quot;</span><br></pre></td></tr></table></figure>
+
 <p><strong>计数器（字符串的内容为整数的时候可以使用）：</strong></p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&gt; SET number 1</span><br><span class="line">OK</span><br><span class="line">&gt; INCR number # 将 key 中储存的数字值增一</span><br><span class="line">(integer) 2</span><br><span class="line">&gt; GET number</span><br><span class="line">&quot;2&quot;</span><br><span class="line">&gt; DECR number # 将 key 中储存的数字值减一</span><br><span class="line">(integer) 1</span><br><span class="line">&gt; GET number</span><br><span class="line">&quot;1&quot;</span><br></pre></td></tr></table></figure>
+
 <p><strong>设置过期时间（默认为永不过期）</strong>：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&gt; EXPIRE key 60</span><br><span class="line">(integer) 1</span><br><span class="line">&gt; SETNX key 60 value # 设置值并设置过期时间</span><br><span class="line">OK</span><br><span class="line">&gt; TTL key</span><br><span class="line">(integer) 56</span><br></pre></td></tr></table></figure>
+
 <h3 id="应用场景"><a href="#应用场景" class="headerlink" title="应用场景"></a>应用场景</h3><p><strong>需要存储常规数据的场景</strong></p>
 <ul>
 <li>举例 ：<strong>缓存 session</strong>、<strong>token</strong>、<strong>图片地址</strong>、<strong>序列化后的对象</strong>(相比较于 Hash 存储更节省内存)。</li>
@@ -392,23 +388,21 @@
 <p><strong>需要计数的场景</strong></p>
 <ul>
 <li>举例 ：<strong>用户单位时间的请求数</strong>（简单限流可以用到）、<strong>页面单位时间的访问数</strong>。</li>
-<li>相关命令 ：<strong><code>SET</code></strong>、<strong><code>GET</code></strong>、 <strong><code>INCR</code></strong>、<strong><code>DECR</code></strong> 。</li>
+<li>相关命令 ：**<code>SET</code><strong>、</strong><code>GET</code>**、 <strong><code>INCR</code><strong>、</strong><code>DECR</code></strong> 。</li>
 </ul>
 <p><strong>分布式锁</strong></p>
 <p>利用 <code>SETNX key value</code> 命令可以实现一个<strong>最简易的分布式锁</strong>（存在一些缺陷，通常不建议这样实现分布式锁）。</p>
 <h2 id="List（列表）"><a href="#List（列表）" class="headerlink" title="List（列表）"></a>List（列表）</h2><h3 id="介绍-1"><a href="#介绍-1" class="headerlink" title="介绍"></a>介绍</h3><p>Redis 中的 List 其实就是<strong>链表数据结构</strong>的实现。我在 <a target="_blank" rel="noopener" href="https://javaguide.cn/cs-basics/data-structure/linear-data-structure.html">线性数据结构 :数组、链表、栈、队列</a> 这篇文章中详细介绍了链表这种数据结构，我这里就不多做介绍了。</p>
 <p>许多高级编程语言都内置了链表的实现比如 Java 中的 <code>LinkedList</code>，但是 C 语言并没有实现链表，所以 <strong>Redis 实现了自己的链表</strong>数据结构。Redis 的 List 的实现为一个 <strong>双向链表</strong>，即可以<strong>支持反向查找</strong>和<strong>遍历</strong>，更方便操作，不过带来了部分<strong>额外的内存</strong>开销。</p>
 <p>  <img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230223170443248.png" alt="image-20230223170443248"></p>
-<h3 id="常用命令-1"><a href="#常用命令-1" class="headerlink" title="常用命令"></a>常用命令</h3><div class="table-container">
-<table>
+<h3 id="常用命令-1"><a href="#常用命令-1" class="headerlink" title="常用命令"></a>常用命令</h3><table>
 <thead>
 <tr>
 <th>命令</th>
 <th>介绍</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>RPUSH key value1 value2 …</td>
 <td>在指定列表的尾部（右边）添加一个或多个元素</td>
 </tr>
@@ -436,21 +430,23 @@
 <td>LRANGE key start end</td>
 <td>获取列表 start 和 end 之间 的元素</td>
 </tr>
-</tbody>
-</table>
-</div>
+</tbody></table>
 <p>更多 Redis List 命令以及详细使用指南，请查看 Redis 官网对应的介绍：<a target="_blank" rel="noopener" href="https://redis.io/commands/?group=list">https://redis.io/commands/?group=list</a> 。</p>
 <p><strong>通过 <code>RPUSH/LPOP</code> 或者 <code>LPUSH/RPOP</code>实现队列</strong> ：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&gt; RPUSH myList value1</span><br><span class="line">(integer) 1</span><br><span class="line">&gt; RPUSH myList value2 value3</span><br><span class="line">(integer) 3</span><br><span class="line">&gt; LPOP myList</span><br><span class="line">&quot;value1&quot;</span><br><span class="line">&gt; LRANGE myList 0 1</span><br><span class="line">1) &quot;value2&quot;</span><br><span class="line">2) &quot;value3&quot;</span><br><span class="line">&gt; LRANGE myList 0 -1</span><br><span class="line">1) &quot;value2&quot;</span><br><span class="line">2) &quot;value3&quot;</span><br></pre></td></tr></table></figure>
+
 <p><strong>通过 <code>RPUSH/RPOP</code>或者<code>LPUSH/LPOP</code> 实现栈</strong> ：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&gt; RPUSH myList2 value1 value2 value3</span><br><span class="line">(integer) 3</span><br><span class="line">&gt; RPOP myList2 # 将 list的头部(最右边)元素取出</span><br><span class="line">&quot;value3&quot;</span><br></pre></td></tr></table></figure>
+
 <p>我专门画了一个图方便大家理解 <code>RPUSH</code> , <code>LPOP</code> , <code>lpush</code> , <code>RPOP</code> 命令：</p>
 <p> <img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230223170634191.png" alt="image-20230223170634191"></p>
 <p><strong>通过 <code>LRANGE</code> 查看对应下标范围的列表元素</strong> ：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&gt; RPUSH myList value1 value2 value3</span><br><span class="line">(integer) 3</span><br><span class="line">&gt; LRANGE myList 0 1</span><br><span class="line">1) &quot;value1&quot;</span><br><span class="line">2) &quot;value2&quot;</span><br><span class="line">&gt; LRANGE myList 0 -1</span><br><span class="line">1) &quot;value1&quot;</span><br><span class="line">2) &quot;value2&quot;</span><br><span class="line">3) &quot;value3&quot;</span><br></pre></td></tr></table></figure>
+
 <p>通过 <code>LRANGE</code> 命令，你可以基于 List 实现分页查询，性能非常高！</p>
 <p><strong>通过 <code>LLEN</code> 查看链表长度</strong> ：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&gt; LLEN myList</span><br><span class="line">(integer) 3</span><br></pre></td></tr></table></figure>
+
 <h3 id="应用场景-1"><a href="#应用场景-1" class="headerlink" title="应用场景"></a>应用场景</h3><p><strong>信息流展示</strong></p>
 <ul>
 <li>举例 ：<strong>最新文章</strong>、<strong>最新动态</strong>。</li>
@@ -462,16 +458,14 @@
 <h2 id="Hash（哈希）"><a href="#Hash（哈希）" class="headerlink" title="Hash（哈希）"></a>Hash（哈希）</h2><h3 id="介绍-2"><a href="#介绍-2" class="headerlink" title="介绍"></a>介绍</h3><p>Redis 中的 Hash 是一个 <strong>String 类型的 field-value（键值对）</strong> 的映射表，特别适合用于存储对象，后续操作的时候，你可以<strong>直接修改这个对象中的某些字段的值</strong>。</p>
 <p>Hash 类似于 JDK1.8 前的 <code>HashMap</code>，内部实现也差不多(<strong>数组 + 链表</strong>)。不过，Redis 的 Hash 做了更多优化。</p>
 <p>  <img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230223171412938.png" alt="image-20230223171412938"></p>
-<h3 id="常用命令-2"><a href="#常用命令-2" class="headerlink" title="常用命令"></a>常用命令</h3><div class="table-container">
-<table>
+<h3 id="常用命令-2"><a href="#常用命令-2" class="headerlink" title="常用命令"></a>常用命令</h3><table>
 <thead>
 <tr>
 <th>命令</th>
 <th>介绍</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>HSET key field value</td>
 <td>设置指定哈希表中指定字段的值</td>
 </tr>
@@ -511,12 +505,11 @@
 <td>HINCRBY key field increment</td>
 <td>对指定哈希中的指定字段做运算操作（正数为加，负数为减）</td>
 </tr>
-</tbody>
-</table>
-</div>
+</tbody></table>
 <p>更多 Redis Hash 命令以及详细使用指南，请查看 Redis 官网对应的介绍：<a target="_blank" rel="noopener" href="https://redis.io/commands/?group=hash">https://redis.io/commands/?group=hash</a> 。</p>
 <p><strong>模拟对象数据存储</strong> ：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&gt; HMSET userInfoKey name &quot;guide&quot; description &quot;dev&quot; age 24</span><br><span class="line">OK</span><br><span class="line">&gt; HEXISTS userInfoKey name # 查看 key 对应的 value中指定的字段是否存在。</span><br><span class="line">(integer) 1</span><br><span class="line">&gt; HGET userInfoKey name # 获取存储在哈希表中指定字段的值。</span><br><span class="line">&quot;guide&quot;</span><br><span class="line">&gt; HGET userInfoKey age</span><br><span class="line">&quot;24&quot;</span><br><span class="line">&gt; HGETALL userInfoKey # 获取在哈希表中指定 key 的所有字段和值</span><br><span class="line">1) &quot;name&quot;</span><br><span class="line">2) &quot;guide&quot;</span><br><span class="line">3) &quot;description&quot;</span><br><span class="line">4) &quot;dev&quot;</span><br><span class="line">5) &quot;age&quot;</span><br><span class="line">6) &quot;24&quot;</span><br><span class="line">&gt; HSET userInfoKey name &quot;GuideGeGe&quot;</span><br><span class="line">&gt; HGET userInfoKey name</span><br><span class="line">&quot;GuideGeGe&quot;</span><br><span class="line">&gt; HINCRBY userInfoKey age 2</span><br><span class="line">(integer) 26</span><br></pre></td></tr></table></figure>
+
 <h3 id="应用场景-2"><a href="#应用场景-2" class="headerlink" title="应用场景"></a>应用场景</h3><p><strong>对象数据存储场景</strong></p>
 <ul>
 <li>举例 ：用户信息、商品信息、文章信息、购物车信息。</li>
@@ -525,16 +518,14 @@
 <h2 id="Set（集合）"><a href="#Set（集合）" class="headerlink" title="Set（集合）"></a>Set（集合）</h2><h3 id="介绍-3"><a href="#介绍-3" class="headerlink" title="介绍"></a>介绍</h3><p>Redis 中的 Set 类型是一种无序集合，集合中的元素没有先后顺序但都唯一，有点类似于 Java 中的 <code>HashSet</code> 。当你需要存储一个列表数据，又<strong>不希望出现重复数据</strong>时，Set 是一个很好的选择，并且 Set 提供了判断某个元素是否在一个 Set 集合内的重要接口，这个也是 List 所不能提供的。</p>
 <p>你可以基于 Set 轻易实现<strong>交集</strong>、<strong>并集</strong>、<strong>差集</strong>的操作，比如你可以将一个用户所有的关注人存在一个集合中，将其所有粉丝存在一个集合。这样的话，Set 可以非常方便的实现如共同关注、共同粉丝、共同喜好等功能。这个过程也就是求交集的过程。</p>
 <p> <img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230223172115019.png" alt="image-20230223172115019"></p>
-<h3 id="常用命令-3"><a href="#常用命令-3" class="headerlink" title="常用命令"></a>常用命令</h3><div class="table-container">
-<table>
+<h3 id="常用命令-3"><a href="#常用命令-3" class="headerlink" title="常用命令"></a>常用命令</h3><table>
 <thead>
 <tr>
 <th>命令</th>
 <th>介绍</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>SADD key member1 member2 …</td>
 <td>向指定集合添加一个或多个元素</td>
 </tr>
@@ -582,36 +573,36 @@
 <td>SRANDMEMBER key count</td>
 <td>随机获取指定集合中指定数量的元素</td>
 </tr>
-</tbody>
-</table>
-</div>
+</tbody></table>
 <p>更多 Redis Set 命令以及详细使用指南，请查看 Redis 官网对应的介绍：<a target="_blank" rel="noopener" href="https://redis.io/commands/?group=set">https://redis.io/commands/?group=set</a> 。</p>
 <p><strong>基本操作</strong> ：</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">&gt; </span><span class="language-bash">SADD mySet value1 value2</span></span><br><span class="line">(integer) 2</span><br><span class="line"><span class="meta prompt_">&gt; </span><span class="language-bash">SADD mySet value1 <span class="comment"># 不允许有重复元素，因此添加失败</span></span></span><br><span class="line">(integer) 0</span><br><span class="line"><span class="meta prompt_">&gt; </span><span class="language-bash">SMEMBERS mySet</span></span><br><span class="line">1) &quot;value1&quot;</span><br><span class="line">2) &quot;value2&quot;</span><br><span class="line"><span class="meta prompt_">&gt; </span><span class="language-bash">SCARD mySet</span></span><br><span class="line">(integer) 2</span><br><span class="line"><span class="meta prompt_">&gt; </span><span class="language-bash">SISMEMBER mySet value1</span></span><br><span class="line">(integer) 1</span><br><span class="line"><span class="meta prompt_">&gt; </span><span class="language-bash">SADD mySet2 value2 value3</span></span><br><span class="line">(integer) 2</span><br></pre></td></tr></table></figure>
+
 <ul>
 <li><code>mySet</code> : <code>value1</code>、<code>value2</code> 。</li>
 <li><code>mySet2</code> ： <code>value2</code> 、<code>value3</code> 。</li>
 </ul>
 <p><strong>求交集</strong> ：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&gt; SINTERSTORE mySet3 mySet mySet2</span><br><span class="line">(integer) 1</span><br><span class="line">&gt; SMEMBERS mySet3</span><br><span class="line">1) &quot;value2&quot;</span><br></pre></td></tr></table></figure>
+
 <p><strong>求并集</strong> ：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&gt; SUNION mySet mySet2</span><br><span class="line">1) &quot;value3&quot;</span><br><span class="line">2) &quot;value2&quot;</span><br><span class="line">3) &quot;value1&quot;</span><br></pre></td></tr></table></figure>
+
 <p><strong>求差集</strong> ：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&gt; SDIFF mySet mySet2 # 差集是由所有属于 mySet 但不属于 A 的元素组成的集合</span><br><span class="line">1) &quot;value1&quot;</span><br></pre></td></tr></table></figure>
+
 <h3 id="应用场景-3"><a href="#应用场景-3" class="headerlink" title="应用场景"></a>应用场景</h3><p><strong>需要存放的数据不能重复的场景</strong></p>
 <ul>
 <li>举例：网站 UV 统计（数据量巨大的场景还是 <code>HyperLogLog</code>更适合一些）、文章<strong>点赞</strong>、动态<strong>点赞</strong>等场景。</li>
-<li><p>相关命令：<code>SCARD</code>（获取集合数量） 。</p>
-<p><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230223172545043.png" alt="image-20230223172545043"></p>
-</li>
+<li>相关命令：<code>SCARD</code>（获取集合数量） 。</li>
 </ul>
+<p> <img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230223172545043.png" alt="image-20230223172545043"></p>
 <p><strong>需要获取多个数据源交集、并集和差集的场景</strong></p>
 <ul>
-<li>举例 ：<strong>共同好友(</strong>交集)、<strong>共同粉丝</strong>(交集)、<strong>共同关注</strong>(交集)、<strong>好友推荐</strong>（差集）、<strong>音乐推荐</strong>（差集） 、<strong>订阅号推荐</strong>（差集+交集） 等场景。</li>
-<li><p>相关命令：<code>SINTER</code>（交集）、<code>SINTERSTORE</code> （交集）、<code>SUNION</code> （并集）、<code>SUNIONSTORE</code>（并集）、<code>SDIFF</code>（差集）、<code>SDIFFSTORE</code> （差集）。</p>
-<p><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230223172709442.png" alt="image-20230223172709442"></p>
-</li>
+<li>举例 ：<strong>共同好友(<strong>交集)、</strong>共同粉丝</strong>(交集)、<strong>共同关注</strong>(交集)、<strong>好友推荐</strong>（差集）、<strong>音乐推荐</strong>（差集） 、<strong>订阅号推荐</strong>（差集+交集） 等场景。</li>
+<li>相关命令：<code>SINTER</code>（交集）、<code>SINTERSTORE</code> （交集）、<code>SUNION</code> （并集）、<code>SUNIONSTORE</code>（并集）、<code>SDIFF</code>（差集）、<code>SDIFFSTORE</code> （差集）。</li>
 </ul>
+<p> <img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230223172709442.png" alt="image-20230223172709442"></p>
 <p><strong>需要随机获取数据源中的元素的场景</strong></p>
 <ul>
 <li>举例 ：<strong>抽奖系统</strong>、<strong>随机</strong>。</li>
@@ -619,16 +610,14 @@
 </ul>
 <h2 id="Sorted-Set（有序集合）"><a href="#Sorted-Set（有序集合）" class="headerlink" title="Sorted Set（有序集合）"></a>Sorted Set（有序集合）</h2><h3 id="介绍-4"><a href="#介绍-4" class="headerlink" title="介绍"></a>介绍</h3><p>Sorted Set 类似于 Set，但和 Set 相比，Sorted Set 增加了一个权重参数 <code>score</code>，使得<strong>集合中的元素能够按 <code>score</code> 进行有序排列</strong>，还可以<strong>通过 <code>score</code> 的范围来获取元素的列表</strong>。有点像是 Java 中 <code>HashMap</code> 和 <code>TreeSet</code> 的结合体。</p>
 <p> <img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230223172750821.png" alt="image-20230223172750821"></p>
-<h3 id="常用命令-4"><a href="#常用命令-4" class="headerlink" title="常用命令"></a>常用命令</h3><div class="table-container">
-<table>
+<h3 id="常用命令-4"><a href="#常用命令-4" class="headerlink" title="常用命令"></a>常用命令</h3><table>
 <thead>
 <tr>
 <th>命令</th>
 <th>介绍</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>ZADD key score1 member1 score2 member2 …</td>
 <td>向指定有序集合添加一个或多个元素</td>
 </tr>
@@ -664,31 +653,33 @@
 <td>ZREVRANK key member</td>
 <td>获取指定有序集合中指定元素的排名(score 从大到小排序)</td>
 </tr>
-</tbody>
-</table>
-</div>
+</tbody></table>
 <p>更多 Redis Sorted Set 命令以及详细使用指南，请查看 Redis 官网对应的介绍：<a target="_blank" rel="noopener" href="https://redis.io/commands/?group=sorted-set">https://redis.io/commands/?group=sorted-set</a> 。</p>
 <p><strong>基本操作</strong> ：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&gt; ZADD myZset 2.0 value1 1.0 value2</span><br><span class="line">(integer) 2</span><br><span class="line">&gt; ZCARD myZset</span><br><span class="line">2</span><br><span class="line">&gt; ZSCORE myZset value1</span><br><span class="line">2.0</span><br><span class="line">&gt; ZRANGE myZset 0 1</span><br><span class="line">1) &quot;value2&quot;</span><br><span class="line">2) &quot;value1&quot;</span><br><span class="line">&gt; ZREVRANGE myZset 0 1</span><br><span class="line">1) &quot;value1&quot;</span><br><span class="line">2) &quot;value2&quot;</span><br><span class="line">&gt; ZADD myZset2 4.0 value2 3.0 value3</span><br><span class="line">(integer) 2</span><br></pre></td></tr></table></figure>
+
 <ul>
 <li><code>myZset</code> : <code>value1</code>(2.0)、<code>value2</code>(1.0) 。</li>
 <li><code>myZset2</code> ： <code>value2</code> （4.0）、<code>value3</code>(3.0) 。</li>
 </ul>
 <p><strong>获取指定元素的排名</strong> ：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&gt; ZREVRANK myZset value1</span><br><span class="line">0</span><br><span class="line">&gt; ZREVRANK myZset value2</span><br><span class="line">1</span><br></pre></td></tr></table></figure>
+
 <p><strong>求交集</strong> ：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&gt; ZINTERSTORE myZset3 2 myZset myZset2</span><br><span class="line">1</span><br><span class="line">&gt; ZRANGE myZset3 0 1 WITHSCORES</span><br><span class="line">value2</span><br><span class="line">5</span><br></pre></td></tr></table></figure>
+
 <p><strong>求并集</strong> ：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&gt; ZUNIONSTORE myZset4 2 myZset myZset2</span><br><span class="line">3</span><br><span class="line">&gt; ZRANGE myZset4 0 2 WITHSCORES</span><br><span class="line">value1</span><br><span class="line">2</span><br><span class="line">value3</span><br><span class="line">3</span><br><span class="line">value2</span><br><span class="line">5</span><br></pre></td></tr></table></figure>
+
 <p><strong>求差集</strong> ：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&gt; ZDIFF 2 myZset myZset2 WITHSCORES</span><br><span class="line">value1</span><br><span class="line">2</span><br></pre></td></tr></table></figure>
+
 <h3 id="应用场景-4"><a href="#应用场景-4" class="headerlink" title="应用场景"></a>应用场景</h3><p><strong>需要随机获取数据源中的元素根据某个权重进行排序的场景</strong></p>
 <ul>
 <li>举例 ：各种排行榜比如<strong>直播间送礼物的排行榜</strong>、<strong>朋友圈的微信步数排行榜</strong>、<strong>王者荣耀中的段位排行榜</strong>、<strong>话题热度排行榜</strong>等等。</li>
-<li><p>相关命令 ：<code>ZRANGE</code> (从小到大排序) 、 <code>ZREVRANGE</code> （从大到小排序）、<code>ZREVRANK</code> (指定元素排名)。</p>
-<p><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230223172833312.png" alt="image-20230223172833312"></p>
-</li>
+<li>相关命令 ：<code>ZRANGE</code> (从小到大排序) 、 <code>ZREVRANGE</code> （从大到小排序）、<code>ZREVRANK</code> (指定元素排名)。</li>
 </ul>
+<p> <img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230223172833312.png" alt="image-20230223172833312"></p>
 <p><a target="_blank" rel="noopener" href="https://www.yuque.com/docs/share/f37fc804-bfe6-4b0d-b373-9c462188fec7">《Java 面试指北》</a> 的「技术面试题篇」就有一篇文章详细介绍如何使用 Sorted Set 来设计制作一个排行榜。</p>
 <p><a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/317276eeb2a1e20cbb05435b624f9882a2cecdd253cc77c4fe34d4ccf8176039/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f64617461626173652f72656469732f696d6167652d32303232303731393037313131353134302e706e67"><img src="https://camo.githubusercontent.com/317276eeb2a1e20cbb05435b624f9882a2cecdd253cc77c4fe34d4ccf8176039/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f64617461626173652f72656469732f696d6167652d32303232303731393037313131353134302e706e67" alt="img"></a></p>
 <p><strong>需要存储的数据有优先级或者重要程度的场景</strong> 比如优先级任务队列。</p>
@@ -765,7 +756,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">45:25</span>
+    <span title="站点阅读时长">45:37</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动

@@ -256,7 +256,7 @@
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>3.4k</span>
+      <span>3.5k</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
@@ -275,22 +275,20 @@
     
     
     <div class="post-body" itemprop="articleBody"><blockquote>
-<p>转载自<a target="_blank" rel="noopener" href="https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!">https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!</a></p>
+<p>转载自<a target="_blank" rel="noopener" href="https://github.com/Snailclimb/JavaGuide%EF%BC%88%E6%B7%BB%E5%8A%A0%E5%B0%8F%E9%83%A8%E5%88%86%E7%AC%94%E8%AE%B0%EF%BC%89%E6%84%9F%E8%B0%A2%E4%BD%9C%E8%80%85">https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者</a>!</p>
 </blockquote>
 <p>除了 5 种基本的数据结构之外，Redis 还支持 3 种特殊的数据结构 ：<strong>Bitmap</strong>、<strong>HyperLogLog</strong>、<strong>GEO</strong>。</p>
 <h2 id="Bitmap"><a href="#Bitmap" class="headerlink" title="Bitmap"></a>Bitmap</h2><h3 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h3><p>Bitmap 存储的是连续的二进制数字（0 和 1），通过 Bitmap, <strong>只需要一个 bit 位来表示某个元素对应的值</strong>或者<strong>状态</strong>，key 就是对应元素本身 。我们知道 8 个 bit 可以组成一个 byte，所以 Bitmap 本身会极大的节省储存空间。</p>
 <p>你可以将 Bitmap 看作是一个<strong>存储二进制数字（0 和 1）的数组</strong>，数组中每个元素的下标叫做 offset（偏移量）。</p>
 <p><a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/1c1ce8351556fe9727cadfd385fdbd6f449d92a174bbd65db5383791fec05a13/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f64617461626173652f72656469732f696d6167652d32303232303732303139343135343133332e706e67"><img src="https://camo.githubusercontent.com/1c1ce8351556fe9727cadfd385fdbd6f449d92a174bbd65db5383791fec05a13/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f64617461626173652f72656469732f696d6167652d32303232303732303139343135343133332e706e67" alt="img"></a></p>
-<h3 id="常用命令"><a href="#常用命令" class="headerlink" title="常用命令"></a>常用命令</h3><div class="table-container">
-<table>
+<h3 id="常用命令"><a href="#常用命令" class="headerlink" title="常用命令"></a>常用命令</h3><table>
 <thead>
 <tr>
 <th>命令</th>
 <th>介绍</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>SETBIT key offset value</td>
 <td>设置指定 offset 位置的值</td>
 </tr>
@@ -306,12 +304,11 @@
 <td>BITOP operation destkey key1 key2 …</td>
 <td>对一个或多个 Bitmap 进行运算，可用运算符有 AND, OR, XOR 以及 NOT</td>
 </tr>
-</tbody>
-</table>
-</div>
+</tbody></table>
 <p><strong>Bitmap 基本操作演示</strong> ：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># SETBIT 会返回之前位的值（默认是 0）这里会生成 7 个位</span><br><span class="line">&gt; SETBIT mykey 7 1</span><br><span class="line">(integer) 0</span><br><span class="line">&gt; SETBIT mykey 7 0</span><br><span class="line">(integer) 1</span><br><span class="line">&gt; GETBIT mykey 7</span><br><span class="line">(integer) 0</span><br><span class="line">&gt; SETBIT mykey 6 1</span><br><span class="line">(integer) 0</span><br><span class="line">&gt; SETBIT mykey 8 1</span><br><span class="line">(integer) 0</span><br><span class="line"># 通过 bitcount 统计被被设置为 1 的位的数量。</span><br><span class="line">&gt; BITCOUNT mykey</span><br><span class="line">(integer) 2</span><br></pre></td></tr></table></figure>
-<h3 id="应用场景"><a href="#应用场景" class="headerlink" title="应用场景"></a>应用场景</h3><p><strong>需要保存状态信息（0/1 即可表示）的场景</strong></p>
+
+<h3 id="应用场景"><a href="#应用场景" class="headerlink" title="应用场景"></a>应用场景</h3><p><strong>需要保存状态信息（0&#x2F;1 即可表示）的场景</strong></p>
 <ul>
 <li>举例 ：<strong>用户签到情况</strong>、<strong>活跃用户情况</strong>、<strong>用户行为统计</strong>（比如<strong>是否点赞</strong>过某个视频）。</li>
 <li>相关命令 ：<code>SETBIT</code>、<code>GETBIT</code>、<code>BITCOUNT</code>、<code>BITOP</code>。</li>
@@ -329,7 +326,6 @@
 <p>HyperLogLog 的使用非常简单，但原理非常复杂。HyperLogLog 的原理以及在 Redis 中的实现可以看这篇文章：<a target="_blank" rel="noopener" href="https://juejin.cn/post/6844903785744056333">HyperLogLog 算法的原理讲解以及 Redis 是如何应用它的</a> 。</p>
 <p>再推荐一个可以帮助理解 HyperLogLog 原理的工具：<a target="_blank" rel="noopener" href="http://content.research.neustar.biz/blog/hll.html">Sketch of the Day: HyperLogLog — Cornerstone of a Big Data Infrastructure</a> 。</p>
 <h3 id="常用命令-1"><a href="#常用命令-1" class="headerlink" title="常用命令"></a>常用命令</h3><p>HyperLogLog 相关的命令非常少，最常用的也就 3 个。</p>
-<div class="table-container">
 <table>
 <thead>
 <tr>
@@ -337,8 +333,7 @@
 <th>介绍</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>PFADD key element1 element2 …</td>
 <td>添加一个或多个元素到 HyperLogLog 中</td>
 </tr>
@@ -350,29 +345,26 @@
 <td>PFMERGE destkey sourcekey1 sourcekey2 …</td>
 <td>将多个 HyperLogLog 合并到 destkey 中，destkey 会结合多个源，算出对应的唯一计数。</td>
 </tr>
-</tbody>
-</table>
-</div>
+</tbody></table>
 <p><strong>HyperLogLog 基本操作演示</strong> ：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&gt; PFADD hll foo bar zap</span><br><span class="line">(integer) 1</span><br><span class="line">&gt; PFADD hll zap zap zap</span><br><span class="line">(integer) 0</span><br><span class="line">&gt; PFADD hll foo bar</span><br><span class="line">(integer) 0</span><br><span class="line">&gt; PFCOUNT hll</span><br><span class="line">(integer) 3</span><br><span class="line">&gt; PFADD some-other-hll 1 2 3</span><br><span class="line">(integer) 1</span><br><span class="line">&gt; PFCOUNT hll some-other-hll</span><br><span class="line">(integer) 6</span><br><span class="line">&gt; PFMERGE desthll hll some-other-hll</span><br><span class="line">&quot;OK&quot;</span><br><span class="line">&gt; PFCOUNT desthll</span><br><span class="line">(integer) 6</span><br></pre></td></tr></table></figure>
+
 <h3 id="应用场景-1"><a href="#应用场景-1" class="headerlink" title="应用场景"></a>应用场景</h3><p><strong>数量量巨大（百万、千万级别以上）的计数场景</strong></p>
 <ul>
-<li>举例 ：热门网站每日/每周/每月访问 ip 数统计、热门帖子 uv 统计、</li>
+<li>举例 ：热门网站每日&#x2F;每周&#x2F;每月访问 ip 数统计、热门帖子 uv 统计、</li>
 <li>相关命令 ：<code>PFADD</code>、<code>PFCOUNT</code> 。</li>
 </ul>
 <h2 id="Geospatial-index"><a href="#Geospatial-index" class="headerlink" title="Geospatial index"></a>Geospatial index</h2><h3 id="介绍-2"><a href="#介绍-2" class="headerlink" title="介绍"></a>介绍</h3><p>Geospatial index（地理空间索引，简称 GEO） 主要用于存储地理位置信息，基于 Sorted Set 实现。</p>
 <p>通过 GEO 我们可以轻松实现两个位置距离的计算、获取指定位置附近的元素等功能。</p>
 <p><a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/0d9dcc2582eea427e1ac41c6e8a106e1dec3d71eb5e32a41fe0a75000824a825/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f64617461626173652f72656469732f696d6167652d32303232303732303139343335393439342e706e67"><img src="https://camo.githubusercontent.com/0d9dcc2582eea427e1ac41c6e8a106e1dec3d71eb5e32a41fe0a75000824a825/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f64617461626173652f72656469732f696d6167652d32303232303732303139343335393439342e706e67" alt="img"></a></p>
-<h3 id="常用命令-2"><a href="#常用命令-2" class="headerlink" title="常用命令"></a>常用命令</h3><div class="table-container">
-<table>
+<h3 id="常用命令-2"><a href="#常用命令-2" class="headerlink" title="常用命令"></a>常用命令</h3><table>
 <thead>
 <tr>
 <th>命令</th>
 <th>介绍</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>GEOADD key longitude1 latitude1 member1 …</td>
 <td>添加一个或多个元素对应的经纬度信息到 GEO 中</td>
 </tr>
@@ -381,7 +373,7 @@
 <td>返回给定元素的经纬度信息</td>
 </tr>
 <tr>
-<td>GEODIST key member1 member2 M/KM/FT/MI</td>
+<td>GEODIST key member1 member2 M&#x2F;KM&#x2F;FT&#x2F;MI</td>
 <td>返回两个给定元素之间的距离</td>
 </tr>
 <tr>
@@ -392,20 +384,21 @@
 <td>GEORADIUSBYMEMBER key member radius distance</td>
 <td>类似于 GEORADIUS 命令，只是参照的中心点是 GEO 中的元素</td>
 </tr>
-</tbody>
-</table>
-</div>
+</tbody></table>
 <p><strong>基本操作</strong> ：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&gt; GEOADD personLocation 116.33 39.89 user1 116.34 39.90 user2 116.35 39.88 user3</span><br><span class="line">3</span><br><span class="line">&gt; GEOPOS personLocation user1</span><br><span class="line">116.3299986720085144</span><br><span class="line">39.89000061669732844</span><br><span class="line">&gt; GEODIST personLocation user1 user2 km</span><br><span class="line">1.4018</span><br></pre></td></tr></table></figure>
+
 <p>通过 Redis 可视化工具查看 <code>personLocation</code> ，果不其然，底层就是 Sorted Set。</p>
 <p>GEO 中存储的地理位置信息的经纬度数据通过 GeoHash 算法转换成了一个整数，这个整数作为 Sorted Set 的 score(权重参数)使用。</p>
 <p><a target="_blank" rel="noopener" href="https://camo.githubusercontent.com/6548c21cd00f3bbad56fe1a902cb3f5d1f9c2f40897ce4d10f414ebe100e5c5e/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f64617461626173652f72656469732f696d6167652d32303232303732313230313534353134372e706e67"><img src="https://camo.githubusercontent.com/6548c21cd00f3bbad56fe1a902cb3f5d1f9c2f40897ce4d10f414ebe100e5c5e/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f64617461626173652f72656469732f696d6167652d32303232303732313230313534353134372e706e67" alt="img"></a></p>
 <p><strong>获取指定位置范围内的其他元素</strong> ：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&gt; GEORADIUS personLocation 116.33 39.87 3 km</span><br><span class="line">user3</span><br><span class="line">user1</span><br><span class="line">&gt; GEORADIUS personLocation 116.33 39.87 2 km</span><br><span class="line">&gt; GEORADIUS personLocation 116.33 39.87 5 km</span><br><span class="line">user3</span><br><span class="line">user1</span><br><span class="line">user2</span><br><span class="line">&gt; GEORADIUSBYMEMBER personLocation user1 5 km</span><br><span class="line">user3</span><br><span class="line">user1</span><br><span class="line">user2</span><br><span class="line">&gt; GEORADIUSBYMEMBER personLocation user1 2 km</span><br><span class="line">user1</span><br><span class="line">user2</span><br></pre></td></tr></table></figure>
+
 <p><code>GEORADIUS</code> 命令的底层原理解析可以看看阿里的这篇文章：<a target="_blank" rel="noopener" href="https://juejin.cn/post/6844903966061363207">Redis 到底是怎么实现“附近的人”这个功能的呢？</a> 。</p>
 <p><strong>移除元素</strong> ：</p>
 <p>GEO 底层是 Sorted Set ，你可以对 GEO 使用 Sorted Set 相关的命令。</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&gt; ZREM personLocation user1</span><br><span class="line">1</span><br><span class="line">&gt; ZRANGE personLocation 0 -1</span><br><span class="line">user3</span><br><span class="line">user2</span><br><span class="line">&gt; ZSCORE personLocation user2</span><br><span class="line">4069879562983946</span><br></pre></td></tr></table></figure>
+
 <h3 id="应用场景-2"><a href="#应用场景-2" class="headerlink" title="应用场景"></a>应用场景</h3><p><strong>需要管理使用地理空间数据的场景</strong></p>
 <ul>
 <li>举例：附近的人。</li>
@@ -479,7 +472,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">45:25</span>
+    <span title="站点阅读时长">45:37</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动

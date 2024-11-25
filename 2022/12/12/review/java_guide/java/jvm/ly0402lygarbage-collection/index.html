@@ -289,7 +289,7 @@
     
     
     <div class="post-body" itemprop="articleBody"><blockquote>
-<p>转载自<a target="_blank" rel="noopener" href="https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!">https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!</a></p>
+<p>转载自<a target="_blank" rel="noopener" href="https://github.com/Snailclimb/JavaGuide%EF%BC%88%E6%B7%BB%E5%8A%A0%E5%B0%8F%E9%83%A8%E5%88%86%E7%AC%94%E8%AE%B0%EF%BC%89%E6%84%9F%E8%B0%A2%E4%BD%9C%E8%80%85">https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者</a>!</p>
 </blockquote>
 <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>当<strong>需要排查各种内存溢出问题</strong>、当<strong>垃圾收集</strong>成为系统达到更高并发的瓶颈时，我们就需要对这些<strong>“自动化”</strong>的技术实施必要的<strong>监控</strong>和<strong>调节</strong></p>
 <h1 id="堆空间的基本结构"><a href="#堆空间的基本结构" class="headerlink" title="堆空间的基本结构"></a>堆空间的基本结构</h1><ul>
@@ -297,8 +297,10 @@
 </li>
 <li><p>Java堆是垃圾收集器管理的主要区域，因此也被称作<strong>GC堆（Garbage Collected Heap）</strong></p>
 </li>
-<li>从<strong>垃圾回收的角度</strong>来说，由于现在收集器基本都采用<strong>分代垃圾收集算法</strong>，所以Java堆被划分为了几个不同的区域，这样我们就可以<strong>根据各个区域的特点</strong>选择<strong>合适的垃圾收集算法</strong></li>
-<li>JDK7版本及JDK7版本之前，堆内存被通常分为下面三部分：<ol>
+<li><p>从<strong>垃圾回收的角度</strong>来说，由于现在收集器基本都采用<strong>分代垃圾收集算法</strong>，所以Java堆被划分为了几个不同的区域，这样我们就可以<strong>根据各个区域的特点</strong>选择<strong>合适的垃圾收集算法</strong></p>
+</li>
+<li><p>JDK7版本及JDK7版本之前，堆内存被通常分为下面三部分：</p>
+<ol>
 <li>新生代内存（Young Generation）</li>
 <li>老生代（Old Generation）</li>
 <li>永久代（Permanent Generation）</li>
@@ -310,39 +312,44 @@
 <h1 id="内存分配和回收原则"><a href="#内存分配和回收原则" class="headerlink" title="内存分配和回收原则"></a>内存分配和回收原则</h1><h2 id="对象优先在Eden区分配"><a href="#对象优先在Eden区分配" class="headerlink" title="对象优先在Eden区分配"></a>对象优先在Eden区分配</h2><ul>
 <li><p>多数情况下，对象在<strong>新生代中Eden区</strong>分配。当Eden区没有足够空间进行分配时，会触发一次MinorGC<br>首先，先添加一下参数打印GC详情：<code>-XX:+PrintGCDetails</code></p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">GCTest</span> &#123;</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">		<span class="type">byte</span>[] allocation1, allocation2;</span><br><span class="line">		allocation1 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">30900</span>*<span class="number">1024</span>];<span class="comment">//会用掉3万多K</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+
 <p>运行后的结果（这里应该是配过xms和xmx了，即堆内存大小）<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/28954286.jpg" alt="img"><br>如上，<strong>Eden区内存几乎被分配完全</strong>（即使程序什么都不做，新生代也会使用2000多K）</p>
 <blockquote>
-<p>注： PSYoungGen 为 38400K ，= 33280K + 5120K （Survivor区总会有一个是空的，所以只加了一个5120K ）</p>
+<p>注： PSYoungGen 为 38400K ，&#x3D; 33280K + 5120K （Survivor区总会有一个是空的，所以只加了一个5120K ）</p>
 </blockquote>
 <p>假如我们再为allocation2分配内存会怎么样(不处理的话，年轻代会溢出)</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line">allocation2 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">900</span> * <span class="number">1024</span>];</span><br></pre></td></tr></table></figure>
+
 <p><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/28128785.jpg" alt="img"><br>在给allocation2分配内存之前，Eden区内存几乎已经被分配完。所以当<strong>Eden区没有足够空间进行分配时</strong>，虚拟机将发起一次MinorGC。GC期间虚拟机又发现<strong>allocation1无法存入空间</strong>，所以只好通过<strong>分配担保机制</strong>，把<strong>新生代的对象</strong>，<strong>提前转移到老年代</strong>去，老年代的空间足够存放allocation1，<strong>所以不会出现Full GC（这里可能是之前的说法，可能只是要表达老年代的GC，而不是Full GC(整堆GC) ）</strong>　　</p>
-<p>执行MinorGC后，<strong>后面分配的对象如果能够存在Eden区</strong>的话，还是会在Eden区分配内存<br>执行如下代码验证：  </p>
+<p>执行MinorGC后，<strong>后面分配的对象如果能够存在Eden区</strong>的话，还是会在Eden区分配内存</p>
 </li>
 </ul>
+<p>执行如下代码验证：  </p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">GCTest</span> &#123;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">		<span class="type">byte</span>[] allocation1, allocation2,allocation3,allocation4,allocation5;</span><br><span class="line">		allocation1 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">32000</span>*<span class="number">1024</span>];</span><br><span class="line">		allocation2 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">1000</span>*<span class="number">1024</span>];</span><br><span class="line">		allocation3 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">1000</span>*<span class="number">1024</span>];</span><br><span class="line">		allocation4 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">1000</span>*<span class="number">1024</span>];</span><br><span class="line">		allocation5 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">1000</span>*<span class="number">1024</span>];</span><br><span class="line">	&#125;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+
 <h2 id="大对象直接进入老年代"><a href="#大对象直接进入老年代" class="headerlink" title="大对象直接进入老年代"></a>大对象直接进入老年代</h2><ul>
 <li>大对象就是需要连续空间的对象（<strong>字符串</strong>、<strong>数组</strong>等）</li>
-<li>大对象直接进入老年代，主要是为了避免为<strong>大对象分配内存时</strong>，由于<strong>分配担保机制(这好像跟分配担保机制没有太大关系)</strong>带来的复制而<strong>降低效率</strong>。</li>
+<li>大对象直接进入老年代，主要是为了避免为<strong>大对象分配内存时</strong>，由于<strong>分配担保机制(这好像跟分配担保机制没有太大关系)<strong>带来的复制而</strong>降低效率</strong>。</li>
 </ul>
 <blockquote>
 <ul>
 <li><p>假设大对象最后会晋升老年代，而新生代是基于复制算法来回收垃圾的，由两个Survivor区域配合完成复制算法，如果新生代中出现大对象且能屡次躲过GC，那这个对象就会在两个Survivor区域中来回复制，直至最后升入老年代，而大对象在内存里来回复制移动，就会消耗更多的时间。</p>
 </li>
-<li><p>假设大对象最后不会晋升老年代，新生代空间是有限的，在新生代里的对象大部分都是朝生夕死的，如果让一个大对象占据了新生代空间，那么相比起<strong>正常的对象被分配在新生代</strong>，大对象无疑会<strong>让新生代GC提早发</strong>生，因为内<strong>存空间会更快不够用</strong>，如果这个大对象因为业务原因，并不会马上被GC回收，那么这个对象就会进入到Survivor区域，默认情况下，Survivor区域本来就不会被分配的很大，那此时被大对象占据了大部分空间，很可能会导致之后的新生代GC后，存活下来的对象，Survivor区域空间不够放不下，导致大部分对象进入老年代，这就加快了老年代GC发生的时间，而<strong>老年代GC对系统性能的负面影响则远远大于新生代GC</strong>了。 </p>
+<li><p>假设大对象最后不会晋升老年代，新生代空间是有限的，在新生代里的对象大部分都是朝生夕死的，如果让一个大对象占据了新生代空间，那么相比起<strong>正常的对象被分配在新生代</strong>，大对象无疑会<strong>让新生代GC提早发</strong>生，因为内<strong>存空间会更快不够用</strong>，如果这个大对象因为业务原因，并不会马上被GC回收，那么这个对象就会进入到Survivor区域，默认情况下，Survivor区域本来就不会被分配的很大，那此时被大对象占据了大部分空间，很可能会导致之后的新生代GC后，存活下来的对象，Survivor区域空间不够放不下，导致大部分对象进入老年代，这就加快了老年代GC发生的时间，而<strong>老年代GC对系统性能的负面影响则远远大于新生代GC</strong>了。</p>
 </li>
 </ul>
 </blockquote>
 <h2 id="长期存活的对象进入老年代"><a href="#长期存活的对象进入老年代" class="headerlink" title="长期存活的对象进入老年代"></a>长期存活的对象进入老年代</h2><ul>
-<li><p>内存回收时必须能够识别，哪些对象放在新生代，哪些对象放在老年代—-&gt; 因此，虚拟机给每个对象一个<strong>对象年龄（Age）</strong>计数器</p>
+<li><p>内存回收时必须能够识别，哪些对象放在新生代，哪些对象放在老年代—&gt; 因此，虚拟机给每个对象一个<strong>对象年龄（Age）</strong>计数器</p>
 </li>
-<li><p>&lt;流程&gt; : 大部分情况下，对象都会<strong>首先在Eden区域</strong>分配。如果对象在Eden出生并经过<strong>第一次MinorGC后</strong>仍然能够存活，并且<strong>能</strong>被Survivor容纳的话，将被移动到Survivor空间（S0或S1）中，并将对象年龄设为<strong>1</strong>(<strong>Eden区 —&gt; Survivor区后</strong>对象初始年龄变为1 )</p>
+<li><p>&lt;流程&gt; : 大部分情况下，对象都会<strong>首先在Eden区域</strong>分配。如果对象在Eden出生并经过<strong>第一次MinorGC后</strong>仍然能够存活，并且<strong>能</strong>被Survivor容纳的话，将被移动到Survivor空间（S0或S1）中，并将对象年龄设为<strong>1</strong>(<strong>Eden区 –&gt; Survivor区后</strong>对象初始年龄变为1 )</p>
 <ul>
-<li>后续，对象在<strong>Survivor区</strong>中每熬过一次MinorGC，<strong>年龄就增加1岁</strong>，当年龄增加到一定程序（<strong>默认为15岁</strong>），就会被晋升到老年代中。对象晋升到老年代的年龄<strong>阈值</strong>，可以通过参数<strong><code>-XX:MaxTenuringThreshold</code></strong>来设置</li>
+<li>后续，对象在<strong>Survivor区</strong>中每熬过一次MinorGC，<strong>年龄就增加1岁</strong>，当年龄增加到一定程序（<strong>默认为15岁</strong>），就会被晋升到老年代中。对象晋升到老年代的年龄<strong>阈值</strong>，可以通过参数**<code>-XX:MaxTenuringThreshold</code>**来设置</li>
 <li><strong>★★修正：</strong> “Hotspot 遍历所有对象时，按照年龄<strong>从小到大</strong>对其所<strong>占用的大小进行累积</strong>，当<strong>累积的某个年龄大小超过了 survivor 区的 50%</strong> 时（默认值是 50%，可以通过 <code>-XX:TargetSurvivorRatio=percent</code> 来设置，参见 <a target="_blank" rel="noopener" href="https://github.com/Snailclimb/JavaGuide/issues/1199">issue1199open in new window</a> ），取<strong>这个年龄</strong>和 <strong>MaxTenuringThreshold 中更小的一个值</strong>，作为新的晋升年龄阈值”。</li>
 </ul>
 <p>动态年龄计算的代码：  </p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line">uint ageTable::compute_tenuring_threshold(size_t survivor_capacity) &#123;</span><br><span class="line"><span class="comment">//survivor_capacity是survivor空间的大小</span></span><br><span class="line"><span class="type">size_t</span> <span class="variable">desired_survivor_size</span> <span class="operator">=</span> (size_t)((((<span class="type">double</span>)survivor_capacity)*TargetSurvivorRatio)/<span class="number">100</span>);</span><br><span class="line"><span class="type">size_t</span> <span class="variable">total</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line"><span class="type">uint</span> <span class="variable">age</span> <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line"><span class="keyword">while</span> (age &lt; table_size) &#123;</span><br><span class="line"><span class="comment">//sizes数组是每个年龄段对象大小</span></span><br><span class="line">total += sizes[age];</span><br><span class="line"><span class="keyword">if</span> (total &gt; desired_survivor_size) &#123;</span><br><span class="line"><span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br><span class="line">age++; <span class="comment">//注意这里，age是递增的，最终是去某个值，而不是区间的值计算</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="type">uint</span> <span class="variable">result</span> <span class="operator">=</span> age &lt; MaxTenuringThreshold ? age : MaxTenuringThreshold;</span><br><span class="line">...</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+
 <blockquote>
 <p>例子： 如<strong>对象年龄5的占30%，年龄6的占36%，年龄7的占34%，加入某个年龄段（如例子中的年龄6）</strong>后，总占用超过Survivor空间*TargetSurvivorRatio的时候，从该年龄段开始及大于的年龄对象就要进入老年代（即例子中的年龄6对象，就是年龄6和年龄7晋升到老年代），这时候无需等到MaxTenuringThreshold中要求的15</p>
 <blockquote>
@@ -356,8 +363,8 @@
 <p>总结：<br>针对HotSpotVM的实现，它里面的GC准确分类只有两大种：  </p>
 <ol>
 <li>部分收集（Partial GC）<ul>
-<li>新生代收集（Minor GC/ Young GC ）：只对<strong>新生代</strong>进行垃圾收集</li>
-<li>老年代（Major GC / Old GC )：只对<strong>老年代</strong>进行垃圾收集。★★：注意，MajorGC在有的语境中也用于指代<strong>整堆收集</strong></li>
+<li>新生代收集（Minor GC&#x2F; Young GC ）：只对<strong>新生代</strong>进行垃圾收集</li>
+<li>老年代（Major GC &#x2F; Old GC )：只对<strong>老年代</strong>进行垃圾收集。★★：注意，MajorGC在有的语境中也用于指代<strong>整堆收集</strong></li>
 <li>混合收集（Mixed GC）：对<strong>整个新生代</strong>和<strong>部分老年代</strong>进行垃圾收集</li>
 </ul>
 </li>
@@ -382,19 +389,20 @@
 <li>任何时候<strong>计数器为0的对象</strong>就是<strong>不可能再被使用</strong>的</li>
 </ul>
 </li>
-<li><p>这个方法实现<strong>简单，效率高</strong>，但是目前主流的虚拟机中并没有选择这个算法来管理内存，其最主要的原因是它<strong>很难解决对象之间相互循环引用</strong>的问题。 </p>
+<li><p>这个方法实现<strong>简单，效率高</strong>，但是目前主流的虚拟机中并没有选择这个算法来管理内存，其最主要的原因是它<strong>很难解决对象之间相互循环引用</strong>的问题。</p>
+</li>
+</ul>
 <blockquote>
 <p>除了对象 <code>objA</code> 和 <code>objB</code> 相互引用着对方之外，这两个对象之间再无任何引用。但是他们因为互相引用对方，导致它们的引用计数器都不为 0，于是引用计数算法无法通知 GC 回收器回收他们</p>
 </blockquote>
-<p>★其实我觉得只跟相互有关，跟是不是<strong>循环</strong>关系不会太大</p>
+<p>  ★其实我觉得只跟相互有关，跟是不是<strong>循环</strong>关系不会太大</p>
 <blockquote>
 <p>ly 改：相互在<strong>语言逻辑</strong>上也可以理解成<strong>“循环”</strong></p>
 </blockquote>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ReferenceCountingGc</span> &#123;</span><br><span class="line">    <span class="type">Object</span> <span class="variable">instance</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">ReferenceCountingGc</span> <span class="variable">objA</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ReferenceCountingGc</span>();</span><br><span class="line">        <span class="type">ReferenceCountingGc</span> <span class="variable">objB</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ReferenceCountingGc</span>();</span><br><span class="line">        objA.instance = objB;</span><br><span class="line">        objB.instance = objA;</span><br><span class="line">        objA = <span class="literal">null</span>;</span><br><span class="line">        objB = <span class="literal">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
-</li>
-</ul>
+  <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ReferenceCountingGc</span> &#123;</span><br><span class="line">    <span class="type">Object</span> <span class="variable">instance</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">ReferenceCountingGc</span> <span class="variable">objA</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ReferenceCountingGc</span>();</span><br><span class="line">        <span class="type">ReferenceCountingGc</span> <span class="variable">objB</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ReferenceCountingGc</span>();</span><br><span class="line">        objA.instance = objB;</span><br><span class="line">        objB.instance = objA;</span><br><span class="line">        objA = <span class="literal">null</span>;</span><br><span class="line">        objB = <span class="literal">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+
 <h2 id="可达性分析算法"><a href="#可达性分析算法" class="headerlink" title="可达性分析算法"></a>可达性分析算法</h2><ul>
-<li><p>该算法的基本思想就是通过一系列称为<strong>“GC Roots”</strong>的对象作为起点，从这些节点开始<strong>向下搜索</strong>，节点所走过的<strong>路径</strong> 称为<strong>引用链</strong>，当一个对象到GC Roots<strong>没有任何引用链</strong>相连的话，证明该对象不可用，需要<strong>被回收</strong><br>下图中由于Object 6 ~ Object 10之间有引用关系，但它们到GC不可达，所以需要被回收<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/jvm-gc-roots.d187e957.png" alt="可达性分析算法"></p>
+<li><p>该算法的基本思想就是通过一系列称为<strong>“GC Roots”<strong>的对象作为起点，从这些节点开始</strong>向下搜索</strong>，节点所走过的<strong>路径</strong> 称为<strong>引用链</strong>，当一个对象到GC Roots<strong>没有任何引用链</strong>相连的话，证明该对象不可用，需要<strong>被回收</strong><br>下图中由于Object 6 ~ Object 10之间有引用关系，但它们到GC不可达，所以需要被回收<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/jvm-gc-roots.d187e957.png" alt="可达性分析算法"></p>
 </li>
 <li><p>哪些对象可以作为GC Roots呢</p>
 <ol>
@@ -409,7 +417,7 @@
 <ol>
 <li><p>可达性分析中<strong>不可达的对象被第一次标记</strong>并且进行<strong>一次筛选</strong>：筛选的条件是此对象是否有必要执行finalize方法（有必要则放入）<br>当对象<strong>没有覆盖finalize</strong>方法，或<strong>finalize方法已经被虚拟机调用</strong>过，则虚拟机将两种情况视为<strong>没有必要</strong>执行，该对象会被<strong>直接回收</strong></p>
 </li>
-<li><p>如果这个对象被判定为<strong>有必要执行finalize()</strong>方法，那么这个对象将会被<strong>放置在一个叫做F-Queue的队列</strong>中，然后由Finalizer线程去执行。GC将会<strong>对F-Queue中的对象进行第二次标记</strong>，如果对象<strong>在finalize()方法中重新与引用链上的任何一个对象建立关联</strong>，那么在<strong>第二次标记时将会被移除“即将回收”的集合</strong>，否则该对象将会被回收。</p>
+<li><p>如果这个对象被判定为<strong>有必要执行finalize()<strong>方法，那么这个对象将会被</strong>放置在一个叫做F-Queue的队列</strong>中，然后由Finalizer线程去执行。GC将会<strong>对F-Queue中的对象进行第二次标记</strong>，如果对象<strong>在finalize()方法中重新与引用链上的任何一个对象建立关联</strong>，那么在<strong>第二次标记时将会被移除“即将回收”的集合</strong>，否则该对象将会被回收。</p>
 <p>（比如：<strong>把自己（this关键字）赋值给某个类变量(static修饰)或者对象的成员变量</strong>(在finalize方法中) ）</p>
 </li>
 </ol>
@@ -421,8 +429,7 @@
 <h2 id="引用类型总结"><a href="#引用类型总结" class="headerlink" title="引用类型总结"></a>引用类型总结</h2><ul>
 <li>不论是通过<strong>引用计数法</strong>判断对象引用数量，还是通过<strong>可达性分析法</strong>判断对象的引用链是否可达，判定对象的存活都与<strong>”引用“</strong>有关</li>
 <li>JDK1.2 之前，Java中<strong>引用</strong>的定义很传统：如果<strong>reference类型的数据存储</strong>的数值代表的是<strong>另一块内存的起始地址</strong>，就称这块内存代表<strong>一个引用</strong></li>
-<li><p>JDK1.2 之后，Java对引用的概念进行了扩充，将引用(具体)分为<strong>强引用</strong>、<strong>软引用</strong>、<strong>弱引用</strong>、<strong>虚引用</strong>四种（引用强度<strong>逐渐减弱</strong>）  </p>
-<ol>
+<li>JDK1.2 之后，Java对引用的概念进行了扩充，将引用(具体)分为<strong>强引用</strong>、<strong>软引用</strong>、<strong>弱引用</strong>、<strong>虚引用</strong>四种（引用强度<strong>逐渐减弱</strong>）  <ol>
 <li><p><strong>强引用</strong>（Strong Reference）</p>
 <blockquote>
 <ul>
@@ -466,7 +473,7 @@
 </li>
 <li><p>在程序设计中一般很少使用弱引用与虚引用，使用软引用的情况较多，这是因为<strong>软引用可以加速 JVM 对垃圾内存的回收速度，可以维护系统的运行安全，防止内存溢出（OutOfMemory）等问题的产生</strong>  </p>
 <blockquote>
-<p>ThreadLocal中的key用到了弱引用  </p>
+<p>ThreadLocal中的key用到了弱引用</p>
 </blockquote>
 </li>
 </ol>
@@ -512,7 +519,8 @@
 <p>对象存活周期，也就是有些对象活的时间短，有些对象活的时间长。</p>
 </blockquote>
 </li>
-<li>一般将Java堆分为<strong>新生代</strong>和<strong>老年代</strong>，这样就可以<strong>根据各个年代的特点</strong>，选择合适的<strong>垃圾收集算法</strong><ul>
+<li><p>一般将Java堆分为<strong>新生代</strong>和<strong>老年代</strong>，这样就可以<strong>根据各个年代的特点</strong>，选择合适的<strong>垃圾收集算法</strong></p>
+<ul>
 <li><strong>新生代</strong>中，每次收集都会有大量对象死去，所以可以选择<strong>“标记-复制”</strong>算法，只需要付出少量<strong>对象的复制成本</strong>就可以完成<strong>每次垃圾收集</strong></li>
 <li><strong>老年代</strong>对象存活几率是比较高的，而且<strong>没有额外的空间对它进行分配担保</strong>，所以必须选择<strong>标记-清除</strong>或者<strong>“标记-整理”</strong>算法进行垃圾收集</li>
 </ul>
@@ -525,10 +533,10 @@
 <h2 id="汇总"><a href="#汇总" class="headerlink" title="汇总"></a>汇总</h2><p><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/11e9dcd0f1ee4f25836e6f1c47104c51-new-image69e1c56a-1d40-493a-9901-6efc647a01f3.png" alt="img"></p>
 <blockquote>
 <ul>
-<li>新生代的垃圾回收器：Serial（串行—标记复制），ParNew（并行—标记复制），ParallelScavenge（并行—标记复制）</li>
-<li>老年代的垃圾回收器：SerialOld（串行—标记整理），ParallelOld（并行—标记整理），CMS（并发—标记清除）</li>
+<li>新生代的垃圾回收器：Serial（串行–标记复制），ParNew（并行–标记复制），ParallelScavenge（并行–标记复制）</li>
+<li>老年代的垃圾回收器：SerialOld（串行–标记整理），ParallelOld（并行–标记整理），CMS（并发–标记清除）</li>
 <li>只有CMS和G1是并发，且CMS只作用于老年代，而G1都有</li>
-<li>JDK8为止，默认垃圾回收器是Parallel Scavenge和Parallel Old【<strong>并行—复制</strong>和<strong>并行—标记整理</strong>】</li>
+<li>JDK8为止，默认垃圾回收器是Parallel Scavenge和Parallel Old【<strong>并行–复制</strong>和<strong>并行–标记整理</strong>】</li>
 <li>JDK9开始，G1收集器成为默认的垃圾收集器，目前来看，G1回收期停顿时间最短且没有明显缺点，偏适合Web应用</li>
 </ul>
 <blockquote>
@@ -553,8 +561,9 @@
 </li>
 </ul>
 </li>
-<li><p>```shell<br>-XX:+UseSerialGC  #虚拟机运行在Client模式下的默认值，Serial+Serial Old。</p>
+<li><pre><code class="shell">-XX:+UseSerialGC  #虚拟机运行在Client模式下的默认值，Serial+Serial Old。
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">## ParNew 收集器</span><br><span class="line"></span><br><span class="line">- **ParNew**收集器其实就是**Serial收集器**的**多线程版本**，除了使用**多线程**进行垃圾收集外，其余行为（**控制参数**、**收集算法**、**回收策略**等等）和**Serial收集器**完全一样</span><br><span class="line"></span><br><span class="line">- **新生代**采用**标记-复制**算法，**老年代**采用**标记-整理**算法</span><br><span class="line"></span><br><span class="line">  ![ParNew 收集器 ](https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/22018368.df835851.png)</span><br><span class="line">  ★★★  这是许多运行在Server模式下的虚拟机的首要选择，除了**Serial收集器**外，只有它能与**CMS收集器**（真正意义上的**并发**收集器）配合工作（**ParNew是并行**）</span><br><span class="line"></span><br><span class="line">- **并行和并发**概念补充</span><br><span class="line"></span><br><span class="line">  - **并行（Parallel）**：指**多条垃圾收集线程**并行工作，但此时用户线程仍然处于**等待**状态</span><br><span class="line">  - **并发（Concurrent）**：指**用户线程**与**垃圾收集线程** **同时**执行（不一定并行，可能会交替执行），**用户程序在继续执行**，而**收集收集器**运行在另一个CPU上</span><br><span class="line"></span><br><span class="line">- ```shell</span><br><span class="line">  -XX:+UseParNewGC  #ParNew+Serial Old，在JDK1.8被废弃，在JDK1.7还可以使用。</span><br></pre></td></tr></table></figure>
+</code></pre>
 </li>
 </ul>
 <h2 id="ParallelScavenge-收集器"><a href="#ParallelScavenge-收集器" class="headerlink" title="ParallelScavenge 收集器"></a>ParallelScavenge 收集器</h2><ul>
@@ -576,9 +585,9 @@
 </li>
 <li><p>这是JDK1.8 的默认收集器<br>使用 java -XX:+PrintCommandLineFlags -version 命令查看<br>如下，两种情况：</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">默认</span></span><br><span class="line">λ java -XX:+PrintCommandLineFlags -version</span><br><span class="line">-XX:InitialHeapSize=531924800 -XX:MaxHeapSize=8510796800 -XX:+PrintCommandLineFlags -XX:+UseCompressedClassPointers -XX:+UseCompressedOops -XX:-UseLargePagesIndividualAllocation -XX:+UseParallelGC</span><br><span class="line">java version &quot;1.8.0_202&quot;</span><br><span class="line">Java(TM) SE Runtime Environment (build 1.8.0_202-b08)</span><br><span class="line">Java HotSpot(TM) 64-Bit Server VM (build 25.202-b08, mixed mode)</span><br></pre></td></tr></table></figure>
+
 <p>第二种情况：(注意：<code>-XX:-UseParallelOldGC</code>)</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">λ java -XX:-UseParallelOldGC -XX:+PrintCommandLineFlags -version</span><br><span class="line">-XX:InitialHeapSize=531924800 -XX:MaxHeapSize=8510796800 -XX:+PrintCommandLineFlags -XX:+UseCompressedClassPointers -XX:+UseCompressedOops -XX:-UseLargePagesIndividualAllocation -XX:+UseParallelGC -XX:-UseParallelOldGC</span><br><span class="line"></span><br><span class="line">java version &quot;1.8.0_202&quot;</span><br><span class="line">Java(TM) SE Runtime Environment (build 1.8.0_202-b08)</span><br><span class="line">Java HotSpot(TM) 64-Bit Server VM (build 25.202-b08, mixed mode)</span><br></pre></td></tr></table></figure>
-</li>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">λ java -XX:-UseParallelOldGC -XX:+PrintCommandLineFlags -version</span><br><span class="line">-XX:InitialHeapSize=531924800 -XX:MaxHeapSize=8510796800 -XX:+PrintCommandLineFlags -XX:+UseCompressedClassPointers -XX:+UseCompressedOops -XX:-UseLargePagesIndividualAllocation -XX:+UseParallelGC -XX:-UseParallelOldGC</span><br><span class="line"></span><br><span class="line">java version &quot;1.8.0_202&quot;</span><br><span class="line">Java(TM) SE Runtime Environment (build 1.8.0_202-b08)</span><br><span class="line">Java HotSpot(TM) 64-Bit Server VM (build 25.202-b08, mixed mode)</span><br></pre></td></tr></table></figure></li>
 </ul>
 <h2 id="SerialOld-收集器"><a href="#SerialOld-收集器" class="headerlink" title="SerialOld 收集器"></a>SerialOld 收集器</h2><ul>
 <li>Serial收集器的<strong>老年代版本</strong>，是一个<strong>单线程</strong>收集器<ol>
@@ -737,7 +746,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">45:25</span>
+    <span title="站点阅读时长">45:37</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动

@@ -255,7 +255,7 @@
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>6.9k</span>
+      <span>7k</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
@@ -285,20 +285,15 @@
 </li>
 <li><p>以下为一个个的进程<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221026212505577.png" alt="image-20221026212505577"></p>
 <ul>
-<li>查看java进程    </li>
+<li><p>查看java进程    </p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">jps -l</span><br><span class="line">32 org.jetbrains.jps.cmdline.Launcher</span><br><span class="line">10084</span><br><span class="line">16244 com.Test</span><br><span class="line">17400 sun.tools.jps.Jps</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>杀死进程  </p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">taskkill /f /pid 16244</span><br></pre></td></tr></table></figure></li>
 </ul>
 </li>
 </ul>
 </li>
-</ul>
-</li>
-</ul>
-<pre><code>    <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">jps -l</span><br><span class="line">32 org.jetbrains.jps.cmdline.Launcher</span><br><span class="line">10084</span><br><span class="line">16244 com.Test</span><br><span class="line">17400 sun.tools.jps.Jps</span><br></pre></td></tr></table></figure>
-
-  - 杀死进程  
-
-    <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">taskkill /f /pid 16244</span><br></pre></td></tr></table></figure>
-</code></pre><ul>
 <li><p>何为线程</p>
 <ul>
 <li><p>线程，比进程更小的执行单位</p>
@@ -307,6 +302,7 @@
 </li>
 <li><p>Java天生就是多线程程序，如：</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MultiThread</span> &#123;</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">		<span class="comment">// 获取 Java 线程管理 MXBean</span></span><br><span class="line">	<span class="type">ThreadMXBean</span> <span class="variable">threadMXBean</span> <span class="operator">=</span> ManagementFactory.getThreadMXBean();</span><br><span class="line">		<span class="comment">// 不需要获取同步的 monitor 和 synchronizer 信息，仅获取线程和线程堆栈信息</span></span><br><span class="line">		ThreadInfo[] threadInfos = threadMXBean.dumpAllThreads(<span class="literal">false</span>, <span class="literal">false</span>);</span><br><span class="line">		<span class="comment">// 遍历线程信息，仅打印线程 ID 和线程名称信息</span></span><br><span class="line">		<span class="keyword">for</span> (ThreadInfo threadInfo : threadInfos) &#123;</span><br><span class="line">			System.out.println(<span class="string">&quot;[&quot;</span> + threadInfo.getThreadId() + <span class="string">&quot;] &quot;</span> + threadInfo.getThreadName());</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//输出</span></span><br><span class="line">[<span class="number">5</span>] Attach Listener <span class="comment">//添加事件</span></span><br><span class="line">[<span class="number">4</span>] Signal Dispatcher <span class="comment">// 分发处理给 JVM 信号的线程</span></span><br><span class="line">[<span class="number">3</span>] Finalizer <span class="comment">//调用对象 finalize 方法的线程</span></span><br><span class="line">[<span class="number">2</span>] Reference Handler <span class="comment">//清除 reference 线程</span></span><br><span class="line">[<span class="number">1</span>] main <span class="comment">//main 线程,程序入口</span></span><br></pre></td></tr></table></figure>
+
 <p>也就是说，一个Java程序的运行，是main线程和多个其他线程同时运行</p>
 </li>
 </ul>
@@ -338,10 +334,10 @@
 <li>为了保证<strong>线程中局部变量不被别的线程访问</strong>到，<strong>虚拟机栈</strong>和<strong>本地方法栈</strong>是私有的</li>
 </ul>
 </li>
-<li><p><strong>堆和方法区</strong>是所有线程共享的资源，<strong>堆</strong>是进程中最大一块内存，用于<strong>存放新创建的对象</strong>（几乎所有对象都在这分配内存）; 方法区则存放<strong>已被加载的 </strong> <strong>类信息、常量、静态变量</strong>、<strong>即时编译器编译后的代码</strong>等数据</p>
+<li><p><strong>堆和方法区</strong>是所有线程共享的资源，<strong>堆</strong>是进程中最大一块内存，用于<strong>存放新创建的对象</strong>（几乎所有对象都在这分配内存）; 方法区则存放<strong>已被加载的 ** <strong>类信息、常量、静态变量</strong>、</strong>即时编译器编译后的代码**等数据</p>
 </li>
 </ul>
-<ul>
+</li>
 <li><p>并发与并行的区别</p>
 <ul>
 <li>并发：两个及两个以上的作业在<strong>同一时间段</strong>内执行（线程，同一个代码同一秒只能由一个线程访问）</li>
@@ -382,7 +378,7 @@
 </li>
 <li><p><strong>TERMINATED</strong>：终止状态，表示该线程<strong>已经运行完毕</strong><br>如图<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20221027094635757.png" alt="image-20221027094635757"><br>对于该图有以下几点要注意：  </p>
 <ol>
-<li><p>线程创建后处于<strong>NEW</strong>状态，之后调用<strong>start()</strong>方法运行，此时线程处于<strong>READY</strong>，可运行的线程获得CPU时间片（timeslice）后处于<strong>RUNNING</strong>状态</p>
+<li><p>线程创建后处于<strong>NEW</strong>状态，之后调用<strong>start()<strong>方法运行，此时线程处于</strong>READY</strong>，可运行的线程获得CPU时间片（timeslice）后处于<strong>RUNNING</strong>状态</p>
 <blockquote>
 <ul>
 <li>操作系统中有READY和RUNNING两个状态，而JVM中只有RUNNABLE状态</li>
@@ -390,13 +386,13 @@
 </ul>
 </blockquote>
 </li>
-<li><p>线程执行<strong>wait()</strong>方法后，进入<strong>WAITING(等待 )</strong>状态，进入等待状态的线程需要依靠其他线程<strong>通知</strong>才能回到运行状态 </p>
+<li><p>线程执行<strong>wait()<strong>方法后，进入</strong>WAITING(等待 )<strong>状态，进入等待状态的线程需要依靠其他线程</strong>通知</strong>才能回到运行状态 </p>
 </li>
-<li><p><strong>TIMED_WAITING(超时等待)</strong>状态，在<strong>等待状态的基础上</strong>增加<strong>超时限制</strong>，通过sleep(long millis)或wait(long millis) 方法可以将线程置于<strong>TIMED_WAITING</strong>状态，超时结束后返回到<strong>RUNNABLE</strong>状态（注意，不是RUNNING）</p>
+<li><p><strong>TIMED_WAITING(超时等待)<strong>状态，在</strong>等待状态的基础上</strong>增加<strong>超时限制</strong>，通过sleep(long millis)或wait(long millis) 方法可以将线程置于<strong>TIMED_WAITING</strong>状态，超时结束后返回到<strong>RUNNABLE</strong>状态（注意，不是RUNNING）</p>
 </li>
-<li><p>当线程进入<strong>synchronized</strong>方法/块或者调用wait后(被notify)重新进入<strong>synchronized</strong>方法/块，但是锁被其他线程占有，这个时候线程就会进入BLOCKED（阻塞）状态</p>
+<li><p>当线程进入<strong>synchronized</strong>方法&#x2F;块或者调用wait后(被notify)重新进入<strong>synchronized</strong>方法&#x2F;块，但是锁被其他线程占有，这个时候线程就会进入BLOCKED（阻塞）状态</p>
 </li>
-<li><p>线程在执行完了<strong>run()</strong>方法之后就会进入到<strong>TERMINATED（终止）</strong>状态</p>
+<li><p>线程在执行完了<strong>run()<strong>方法之后就会进入到</strong>TERMINATED（终止）</strong>状态</p>
 </li>
 <li><p>注意上述，阻塞和等待的区别</p>
 </li>
@@ -436,7 +432,7 @@
 </li>
 </ul>
 </li>
-<li><p>如何预防死锁—-&gt;破坏死锁的必要条件</p>
+<li><p>如何预防死锁—&gt;破坏死锁的必要条件</p>
 <ul>
 <li>破坏<strong>请求与保持</strong>条件：一次性申请所有资源</li>
 <li>破坏<strong>不剥夺</strong>条件：占用部分资源的线程进一步申请其他资源时，如果申请不到，可以<strong>主动释放</strong>它占有的资源</li>
@@ -452,8 +448,10 @@
 </li>
 <li><p>修改线程2的代码<br>原线程1代码不变</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">            <span class="keyword">synchronized</span> (resource1) &#123;</span><br><span class="line">                System.out.println(Thread.currentThread() + <span class="string">&quot;get resource1&quot;</span>);</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    Thread.sleep(<span class="number">1000</span>);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125;</span><br><span class="line">                System.out.println(Thread.currentThread() + <span class="string">&quot;waiting get resource2&quot;</span>);</span><br><span class="line">                <span class="keyword">synchronized</span> (resource2) &#123;</span><br><span class="line">                    System.out.println(Thread.currentThread() + <span class="string">&quot;get resource2&quot;</span>);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;, <span class="string">&quot;线程 1&quot;</span>).start();</span><br></pre></td></tr></table></figure>
+
 <p>线程2代码修改：</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line">  <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">              <span class="keyword">synchronized</span> (resource1) &#123;</span><br><span class="line">                  System.out.println(Thread.currentThread() + <span class="string">&quot;get resource1&quot;</span>);</span><br><span class="line">                  <span class="keyword">try</span> &#123;</span><br><span class="line">                      Thread.sleep(<span class="number">1000</span>);</span><br><span class="line">                  &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                      e.printStackTrace();</span><br><span class="line">                  &#125;</span><br><span class="line">                  System.out.println(Thread.currentThread() + <span class="string">&quot;waiting get resource2&quot;</span>);</span><br><span class="line">                  <span class="keyword">synchronized</span> (resource2) &#123;</span><br><span class="line">                      System.out.println(Thread.currentThread() + <span class="string">&quot;get resource2&quot;</span>);</span><br><span class="line">                  &#125;</span><br><span class="line">              &#125;</span><br><span class="line">          &#125;, <span class="string">&quot;线程 2&quot;</span>).start();</span><br><span class="line">  <span class="comment">/* 输出</span></span><br><span class="line"><span class="comment">Thread[线程 1,5,main]get resource1</span></span><br><span class="line"><span class="comment">  Thread[线程 1,5,main]waiting get resource2</span></span><br><span class="line"><span class="comment">Thread[线程 1,5,main]get resource2</span></span><br><span class="line"><span class="comment">  Thread[线程 2,5,main]get resource1</span></span><br><span class="line"><span class="comment">  Thread[线程 2,5,main]waiting get resource2</span></span><br><span class="line"><span class="comment">  Thread[线程 2,5,main]get resource2</span></span><br><span class="line"><span class="comment">  </span></span><br><span class="line"><span class="comment">  Process finished with exit code 0 </span></span><br><span class="line"><span class="comment">  */</span></span><br></pre></td></tr></table></figure>
+
 <p>分析  </p>
 <blockquote>
 <p>线程 1 首先获得到 resource1 的监视器锁,这时候线程 2 就获取不到了。然后线程 1 再去获取 resource2 的监视器锁，可以获取到。然后<strong>线程 1 释放了对 resource1、resource2 的监视器锁的占用，线程 2 获取到（resource1）就可以执行了</strong>。这样就破坏了破坏循环等待条件，因此避免了死锁。</p>
@@ -466,8 +464,8 @@
 <li>共同点： 两者都可暂停线程执行</li>
 <li>区别<ol>
 <li>seep() 方法<strong>没有释放锁</strong>，wait() 方法<strong>释放了锁</strong></li>
-<li>wait() 通常用于<strong>线程间交互/通信</strong>，sleep()用于<strong>暂停执行</strong></li>
-<li>wait()方法被调用后，<strong>线程不会自动苏醒</strong>，需要别的线程调用同一对象（监视器monitor）的<strong>notify()</strong>或者<strong>notifyAll()</strong>方法；sleep()方法执行完成后/或者wait(long timeout)超时后，线程会<strong>自动苏醒</strong></li>
+<li>wait() 通常用于<strong>线程间交互&#x2F;通信</strong>，sleep()用于<strong>暂停执行</strong></li>
+<li>wait()方法被调用后，<strong>线程不会自动苏醒</strong>，需要别的线程调用同一对象（监视器monitor）的<strong>notify()<strong>或者</strong>notifyAll()<strong>方法；sleep()方法执行完成后&#x2F;或者wait(long timeout)超时后，线程会</strong>自动苏醒</strong></li>
 <li>sleep时Thread类的<strong>静态本地方法</strong>，wait()则是<strong>Object类的本地方法</strong></li>
 </ol>
 </li>
@@ -480,12 +478,13 @@
 <li>sleep()是<strong>让当前线程暂停执行</strong>，<strong>不涉及对象类</strong>，也<strong>不需要获得对象锁</strong></li>
 </ul>
 </li>
-<li>可以直接调用Thread类的run方法吗<ul>
+<li><p>可以直接调用Thread类的run方法吗</p>
+<ul>
 <li>new一个Thread之后，线程进入新建状态</li>
-<li>调用<strong>start()</strong>，会<strong>启动线程并使他进入就绪</strong>状态（Runable，可运行状态，又分为Ready和Running），分配到时间片后就开始运行</li>
-<li>start()执行线程相应准备工作，之后<strong>自动执行run()</strong>方法的内容</li>
+<li>调用<strong>start()<strong>，会</strong>启动线程并使他进入就绪</strong>状态（Runable，可运行状态，又分为Ready和Running），分配到时间片后就开始运行</li>
+<li>start()执行线程相应准备工作，之后**自动执行run()**方法的内容</li>
 <li>如果直接执行run()方法，则<strong>会把run()方法当作main线程下普通方法去执行</strong>，并不会在某个线程中执行它</li>
-<li>只有调用<strong>start()</strong>方法才可以<strong>启动新的线程</strong>使他<strong>进入就绪</strong>状态，<strong>等待获取时间片后运行</strong></li>
+<li>只有调用<strong>start()<strong>方法才可以</strong>启动新的线程</strong>使他<strong>进入就绪</strong>状态，<strong>等待获取时间片后运行</strong></li>
 </ul>
 </li>
 </ul>
@@ -552,7 +551,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">45:25</span>
+    <span title="站点阅读时长">45:37</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动

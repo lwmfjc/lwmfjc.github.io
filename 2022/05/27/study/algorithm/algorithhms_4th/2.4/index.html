@@ -341,7 +341,7 @@
 </li>
 <li><p>下面将<strong>二叉树</strong> 简称为堆</p>
 </li>
-<li><p>在一个堆中，位置k 的结点的父结点的位置为k/2，而它的两个子结点的位置则分别为2k 和2k+1。这样在不使用指针的情况下（我们在第3 章中讨论二叉树时会用到它们）我们也可以通过计算数组的索引在树中上下移动：从a[k] 向上一层就令k 等于k/2，向下一层则令k 等于2k 或2k+1</p>
+<li><p>在一个堆中，位置k 的结点的父结点的位置为k&#x2F;2，而它的两个子结点的位置则分别为2k 和2k+1。这样在不使用指针的情况下（我们在第3 章中讨论二叉树时会用到它们）我们也可以通过计算数组的索引在树中上下移动：从a[k] 向上一层就令k 等于k&#x2F;2，向下一层则令k 等于2k 或2k+1</p>
 </li>
 <li><blockquote>
 <p>一棵大小为N的完全二叉树的高度为[lgN]</p>
@@ -353,6 +353,7 @@
 <h2 id="堆的算法"><a href="#堆的算法" class="headerlink" title="堆的算法"></a>堆的算法</h2><ul>
 <li><p>堆实现的比较和交换方法</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> Boolean <span class="title function_">less</span><span class="params">(<span class="type">int</span> i, <span class="type">int</span> j)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">return</span> pq[i].compareTo(pq[j]) &lt; <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">exch</span><span class="params">(<span class="type">int</span> i, <span class="type">int</span> j)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="type">Key</span> <span class="variable">t</span> <span class="operator">=</span> pq[i];</span><br><span class="line">	pq[i] = pq[j];</span><br><span class="line">	pq[j] = t;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <ul>
 <li><p>堆的操作首先进行一些简单的改动，打破堆的状态，再遍历堆并按照要求将堆的状态回复，这个过程称为堆的<strong>有序化</strong></p>
 </li>
@@ -363,8 +364,7 @@
 <li><p>说明<br>如果堆的有序状态因为某个结点变得比它的父结点更大而被打破，那么我们就需要通过交换它和它的父结点来修复堆。交换后，这个结点比它的两个子结点都大（一个是曾经的父结点，另一个比它更小，因为它是曾经父结点的子结点），但这个结点仍然可能比它现在的父结点更大。我们可以一遍遍地用同样的办法恢复秩序，将这个结点不断向上移动直到我们遇<br>到了一个更大的父结点。</p>
 </li>
 <li><p>代码</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">swim</span><span class="params">(<span class="type">int</span> k)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">while</span> (k &gt; <span class="number">1</span> &amp;&amp; less(k/<span class="number">2</span>, k))</span><br><span class="line">	&#123;</span><br><span class="line">		exch(k/<span class="number">2</span>, k);</span><br><span class="line">		k = k/<span class="number">2</span>;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">swim</span><span class="params">(<span class="type">int</span> k)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">while</span> (k &gt; <span class="number">1</span> &amp;&amp; less(k/<span class="number">2</span>, k))</span><br><span class="line">	&#123;</span><br><span class="line">		exch(k/<span class="number">2</span>, k);</span><br><span class="line">		k = k/<span class="number">2</span>;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
 </ul>
 </li>
 <li><p>由上至下的堆有序化（下沉）<em>【在根节点插入一个元素】</em></p>
@@ -372,8 +372,7 @@
 <li><p>如果堆的有序状态因为某个结点变得比它的两个子结点或是其中之一更小了而被打破了，那么我们可以通过将它和它的两个子结点中的较大者交换来恢复堆。交换可能会在子结点处继续打破堆的有序状态，因此我们需要不断地用相同的方式将其修复，将结点向下移动直到它的子结点都比它更小或是到达了堆的底部</p>
 </li>
 <li><p>代码</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">sink</span><span class="params">(<span class="type">int</span> k)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">while</span> (<span class="number">2</span>*k &lt;= N)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">2</span>*k;</span><br><span class="line">    <span class="comment">//j&lt;N用来判断j是否存在右兄弟结点，当j==N（即j为树的[从左到右]最末一个结点，那么它没有右兄弟结点）</span></span><br><span class="line">		<span class="keyword">if</span> (j &lt; N &amp;&amp; less(j, j+<span class="number">1</span>)) j++;</span><br><span class="line">    <span class="comment">//当根节点没有小于子节点时，跳出循环</span></span><br><span class="line">		<span class="keyword">if</span> (!less(k, j)) <span class="keyword">break</span>;</span><br><span class="line">		exch(k, j);</span><br><span class="line">		k = j;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">sink</span><span class="params">(<span class="type">int</span> k)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">while</span> (<span class="number">2</span>*k &lt;= N)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">2</span>*k;</span><br><span class="line">    <span class="comment">//j&lt;N用来判断j是否存在右兄弟结点，当j==N（即j为树的[从左到右]最末一个结点，那么它没有右兄弟结点）</span></span><br><span class="line">		<span class="keyword">if</span> (j &lt; N &amp;&amp; less(j, j+<span class="number">1</span>)) j++;</span><br><span class="line">    <span class="comment">//当根节点没有小于子节点时，跳出循环</span></span><br><span class="line">		<span class="keyword">if</span> (!less(k, j)) <span class="keyword">break</span>;</span><br><span class="line">		exch(k, j);</span><br><span class="line">		k = j;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
 </ul>
 </li>
 <li><p>对于上面的说明</p>
@@ -400,7 +399,7 @@
 </li>
 </ul>
 </li>
-<li><p>多叉堆<br>基于用数组表示的完全三叉树构造堆并修改相应的代码并不困难。对于数组中1 至N 的N 个元素，位置k的结点大于等于位于3k-1、3k 和3k+1 的结点，小于等于位于(k+1)/3 的结点</p>
+<li><p>多叉堆<br>基于用数组表示的完全三叉树构造堆并修改相应的代码并不困难。对于数组中1 至N 的N 个元素，位置k的结点大于等于位于3k-1、3k 和3k+1 的结点，小于等于位于(k+1)&#x2F;3 的结点</p>
 </li>
 <li><p>调整数组大小<br>添加一个没有参数的构造函数， 在insert() 中添加将数组长度加倍的代码，在delMax()中添加将数组长度减半的代码，就像在1.3 节中的栈那样</p>
 </li>
@@ -413,8 +412,6 @@
 </li>
 </ul>
 </li>
-</ul>
-<ul>
 <li><p>索引优先队列用例<br>将多个<strong>有序</strong>的输入流归并成一个有序的输出流<br>★注意，这多个输入流本身是有序的</p>
  <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Multiway</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">merge</span><span class="params">(In[] streams)</span></span><br><span class="line">	&#123;</span><br><span class="line">		<span class="type">int</span> <span class="variable">N</span> <span class="operator">=</span> streams.length;</span><br><span class="line">		IndexMinPQ&lt;String&gt; pq = <span class="keyword">new</span> <span class="title class_">IndexMinPQ</span>&lt;String&gt;(N);</span><br><span class="line">		<span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; N; i++)&#123;</span><br><span class="line">			<span class="keyword">if</span> (!streams[i].isEmpty())&#123;</span><br><span class="line">        <span class="comment">//初始化，从文件流中读取一个数，放到优先队列中</span></span><br><span class="line">				pq.insert(i, streams[i].readString());</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">while</span> (!pq.isEmpty())</span><br><span class="line">		&#123;</span><br><span class="line">			StdOut.println(pq.min());</span><br><span class="line">      <span class="comment">//从优先队列中取最小的数出来</span></span><br><span class="line">			<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> pq.delMin();</span><br><span class="line">			<span class="keyword">if</span> (!streams[i].isEmpty())</span><br><span class="line">        <span class="comment">//取出数的那个位置，再从文件流读一个值放进去</span></span><br><span class="line">				pq.insert(i, streams[i].readString());</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span></span><br><span class="line">	&#123;</span><br><span class="line">		<span class="type">int</span> <span class="variable">N</span> <span class="operator">=</span> args.length;</span><br><span class="line">		In[] streams = <span class="keyword">new</span> <span class="title class_">In</span>[N];</span><br><span class="line">		<span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; N; i++)</span><br><span class="line">				streams[i] = <span class="keyword">new</span> <span class="title class_">In</span>(args[i]);</span><br><span class="line">    <span class="comment">//三个文件地址</span></span><br><span class="line">		merge(streams);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 </li>
@@ -423,7 +420,7 @@
 <h2 id="堆排序"><a href="#堆排序" class="headerlink" title="堆排序"></a>堆排序</h2><ul>
 <li><p>我们可以把任意优先队列变成一种排序方法，将所有元素插入一个查找最小元素的优先队列，然后再重复调用删除最小元素的操作来将他们按顺序删去</p>
 <ul>
-<li>用堆来实现经典而优雅的排序算法—堆排序</li>
+<li>用堆来实现经典而优雅的排序算法–堆排序</li>
 <li>为了与前面代码保持一致，使用面向最大元素的优先队列并重复删除最大元素；为了排序需要，直接使用swim()和sink()，且将需要排序的数组本身作为堆，省去额外空间</li>
 </ul>
 </li>
@@ -437,6 +434,7 @@
 </li>
 <li><p>进行排序<br>主要是将数组的位置1和N-1进行交换，然后在1位置进行sink()操作<br>不断循环，即可让整个数组有序</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line">sort(Comparable[] a)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="type">int</span> <span class="variable">N</span> <span class="operator">=</span> a.length;</span><br><span class="line">	<span class="keyword">for</span> (<span class="type">int</span> <span class="variable">k</span> <span class="operator">=</span> N/<span class="number">2</span>; k &gt;= <span class="number">1</span>;</span><br><span class="line">	k--)</span><br><span class="line">	sink(a, k, N);</span><br><span class="line">	<span class="keyword">while</span> (N &gt; <span class="number">1</span>)</span><br><span class="line">	&#123;</span><br><span class="line">		exch(a, <span class="number">1</span>, N--);</span><br><span class="line">		sink(a, <span class="number">1</span>, N);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <ul>
 <li>注意，这里的sink()函数被修改过，主要是指定了要sink的最后一个位置【sink() 被修改过，以a[] 和N 作为参数】</li>
 </ul>
@@ -523,7 +521,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">45:25</span>
+    <span title="站点阅读时长">45:37</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动

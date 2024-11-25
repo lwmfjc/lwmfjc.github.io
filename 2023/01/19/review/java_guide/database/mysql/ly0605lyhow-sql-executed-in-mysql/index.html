@@ -272,15 +272,14 @@
     
     
     <div class="post-body" itemprop="articleBody"><blockquote>
-<p>转载自<a target="_blank" rel="noopener" href="https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!">https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!</a></p>
+<p>转载自<a target="_blank" rel="noopener" href="https://github.com/Snailclimb/JavaGuide%EF%BC%88%E6%B7%BB%E5%8A%A0%E5%B0%8F%E9%83%A8%E5%88%86%E7%AC%94%E8%AE%B0%EF%BC%89%E6%84%9F%E8%B0%A2%E4%BD%9C%E8%80%85">https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者</a>!</p>
 <p>原文 <a target="_blank" rel="noopener" href="https://github.com/kinglaw1204">https://github.com/kinglaw1204</a> 感谢作者</p>
 </blockquote>
 <ul>
 <li>本篇文章会分析<strong>一个SQL语句</strong>在MySQL的<strong>执行流程</strong>，包括<strong>SQL的查询</strong>在MySQL内部会怎么<strong>流转</strong>，<strong>SQL语句的更新</strong>是怎么完成的</li>
-<li><p>分析之前先看看<strong>MySQL的基础架构</strong>，知道了MySQL由<strong>哪些组件</strong>组成以及<strong>这些组件的作用</strong>是什么，可以帮助我们<strong>理解</strong>和<strong>解决</strong>这些问题</p>
-<h1 id="MySQL基础架构分析"><a href="#MySQL基础架构分析" class="headerlink" title="MySQL基础架构分析"></a>MySQL基础架构分析</h1></li>
+<li>分析之前先看看<strong>MySQL的基础架构</strong>，知道了MySQL由<strong>哪些组件</strong>组成以及<strong>这些组件的作用</strong>是什么，可以帮助我们<strong>理解</strong>和<strong>解决</strong>这些问题</li>
 </ul>
-<p><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230313164253061.png" alt="image-20230313164253061"></p>
+<h1 id="MySQL基础架构分析"><a href="#MySQL基础架构分析" class="headerlink" title="MySQL基础架构分析"></a>MySQL基础架构分析</h1><p><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230313164253061.png" alt="image-20230313164253061"></p>
 <h2 id="MySQL基本架构概览"><a href="#MySQL基本架构概览" class="headerlink" title="MySQL基本架构概览"></a>MySQL基本架构概览</h2><ul>
 <li>下图是MySQL的简要架构图，从下图可以看到<strong>用户的SQL语句</strong>在MySQL内部是<strong>如何执行的</strong></li>
 <li>先简单介绍一个下图涉及的一些组件的基本作用<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230119113638560.png" alt="image-20230119113638560"><ol>
@@ -332,10 +331,11 @@
 <ol>
 <li><p>先<strong>检查该语句是否有权限</strong>，如果没有权限，直接返回错误信息，如果有权限，在 MySQL8.0 版本以前，会先查询缓存，以这条 SQL 语句为 key 在内存中查询是否有结果，如果有直接缓存，如果没有，执行下一步。</p>
 </li>
-<li><p>通过<strong>分析器</strong>进行<strong>词法分析</strong>，提取 SQL 语句的关键元素，比如提取上面这个语句是查询 select，提取需要查询的表名为 tb_student，需要查询所有的列，查询条件是这个表的 id=’1’。然后判断这个 SQL 语句是否有<strong>语法错误</strong>，比如关键词是否正确等等，如果检查没问题就执行下一步。</p>
+<li><p>通过<strong>分析器</strong>进行<strong>词法分析</strong>，提取 SQL 语句的关键元素，比如提取上面这个语句是查询 select，提取需要查询的表名为 tb_student，需要查询所有的列，查询条件是这个表的 id&#x3D;’1’。然后判断这个 SQL 语句是否有<strong>语法错误</strong>，比如关键词是否正确等等，如果检查没问题就执行下一步。</p>
 </li>
 <li><p>接下来就是优化器进行确定执行方案，上面的 SQL 语句，可以有两种执行方案：  </p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">a.先查询学生表中姓名为“张三”的学生，然后判断是否年龄是 18。</span><br><span class="line">b.先找出学生中年龄 18 岁的学生，然后再查询姓名为“张三”的学生。</span><br></pre></td></tr></table></figure>
+
 <p>那么优化器根据自己的优化算法进行选择执行效率最好的一个方案（<strong>优化器认为，有时候不一定最好</strong>）。那么确认了执行计划后就准备开始执行了</p>
 </li>
 <li><p>进行<strong>权限校验</strong>，如果没有权限就会返回错误信息，如果有权限就会调用<strong>数据库引擎接口</strong>，<strong>返回引擎的执行结果</strong></p>
@@ -360,7 +360,7 @@
 </li>
 <li><p>并不是说只用一个日志模块不可以，只是 InnoDB 引擎就是通过 redo log 来支持事务的。那么，又会有同学问，我用两个日志模块，但是不要这么复杂行不行，为什么 redo log 要引入 prepare 预提交状态？这里我们用反证法来说明下为什么要这么做？</p>
 <ul>
-<li><strong>先写 redo log 直接提交，然后写 binlog</strong>，假设写完 redo log 后，机器挂了，binlog 日志没有被写入，那么机器重启后，这台机器会通过 redo log 恢复数据，但是这个时候 binlog 并没有记录该数据，<strong>后续进行机器备份(从机)</strong>的时候，就会丢失这一条数据，同时主从同步也会丢失这一条数据。</li>
+<li><strong>先写 redo log 直接提交，然后写 binlog</strong>，假设写完 redo log 后，机器挂了，binlog 日志没有被写入，那么机器重启后，这台机器会通过 redo log 恢复数据，但是这个时候 binlog 并没有记录该数据，**后续进行机器备份(从机)**的时候，就会丢失这一条数据，同时主从同步也会丢失这一条数据。</li>
 <li><strong>先写 binlog，然后写 redo log</strong>，假设写完了 binlog，机器异常重启了，由于没有 redo log，<strong>本机是无法恢复</strong>这一条记录的，但是 binlog 又有记录，那么和上面同样的道理，就会产生数据不一致的情况。</li>
 </ul>
 </li>
@@ -377,8 +377,8 @@
 </li>
 <li><p>引擎层是插件式的，目前主要包括，<strong>MyISAM</strong>,<strong>InnoDB</strong>,<strong>Memory</strong> 等。</p>
 </li>
-<li><p><strong>查询</strong>语句的执行流程如下：<strong>权限校验（如果命中缓存）—-&gt;查询缓存—-&gt;分析器—-&gt;优化器—-&gt;权限校验—-&gt;执行器—-&gt;引擎</strong></p>
-<p><strong>更新</strong>语句执行流程如下：<strong>分析器——&gt;权限校验——&gt;执行器—-&gt;引擎—-redo log(prepare 状态)—-&gt;binlog—-&gt;redo log(commit状态</strong></p>
+<li><p><strong>查询</strong>语句的执行流程如下：<strong>权限校验（如果命中缓存）—&gt;查询缓存—&gt;分析器—&gt;优化器—&gt;权限校验—&gt;执行器—&gt;引擎</strong></p>
+<p><strong>更新</strong>语句执行流程如下：<strong>分析器—-&gt;权限校验—-&gt;执行器—&gt;引擎—redo log(prepare 状态)—&gt;binlog—&gt;redo log(commit状态</strong></p>
 </li>
 </ul>
 
@@ -444,7 +444,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">45:25</span>
+    <span title="站点阅读时长">45:37</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动

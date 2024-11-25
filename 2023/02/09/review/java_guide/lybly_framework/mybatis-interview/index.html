@@ -268,23 +268,24 @@
     
     
     <div class="post-body" itemprop="articleBody"><blockquote>
-<p>转载自<a target="_blank" rel="noopener" href="https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!">https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!</a></p>
+<p>转载自<a target="_blank" rel="noopener" href="https://github.com/Snailclimb/JavaGuide%EF%BC%88%E6%B7%BB%E5%8A%A0%E5%B0%8F%E9%83%A8%E5%88%86%E7%AC%94%E8%AE%B0%EF%BC%89%E6%84%9F%E8%B0%A2%E4%BD%9C%E8%80%85">https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者</a>!</p>
 <p>部分疑问参考自 <a target="_blank" rel="noopener" href="https://blog.csdn.net/Gherbirthday0916">https://blog.csdn.net/Gherbirthday0916</a> 感谢作者! </p>
 </blockquote>
 <h3 id="和-的区别是什么？"><a href="#和-的区别是什么？" class="headerlink" title="#{} 和 ${} 的区别是什么？"></a>#{} 和 ${} 的区别是什么？</h3><p>注：这道题是面试官面试我同事的。</p>
 <p>答：</p>
 <ul>
 <li><code>$&#123;&#125;</code>是 Properties <strong>文件中的变量占位符</strong>，它可以用于<strong>标签属性值</strong>和 <strong>sql 内部</strong>，属于<strong>静态文本替换</strong>，比如${driver}会被静态替换为<code>com.mysql.jdbc. Driver</code>。</li>
-<li><code>#&#123;&#125;</code>是 sql 的参数占位符，MyBatis 会<strong>将 sql 中的<code>#&#123;&#125;</code></strong>替换为<strong>? 号</strong>，在 sql 执行前会使用 <strong>PreparedStatement 的参数设置</strong>方法，<strong>按序给 sql 的? 号占位符设置参数值</strong>，比如 ps.setInt(0, parameterValue)，<code>#&#123;item.name&#125;</code> 的取值方式为使用<strong>反射从参数对象中获取 item 对象的 name 属性值</strong>，相当于 <strong><code>param.getItem().getName()</code></strong>。 [<strong>这里用到了反射</strong>]</li>
+<li><code>#&#123;&#125;</code>是 sql 的参数占位符，MyBatis 会<strong>将 sql 中的<code>#&#123;&#125;</code><strong>替换为</strong>? 号</strong>，在 sql 执行前会使用 <strong>PreparedStatement 的参数设置</strong>方法，<strong>按序给 sql 的? 号占位符设置参数值</strong>，比如 ps.setInt(0, parameterValue)，<code>#&#123;item.name&#125;</code> 的取值方式为使用<strong>反射从参数对象中获取 item 对象的 name 属性值</strong>，相当于 **<code>param.getItem().getName()</code>**。 [<strong>这里用到了反射</strong>]</li>
 </ul>
 <blockquote>
-<p>在<strong>底层构造完整SQL</strong>语句时，MyBatis的两种<strong>传参方式</strong>所采取的方式不同。<code>#&#123;Parameter&#125;</code>采用<strong>预编译</strong>的方式构造SQL，<strong>避免了 SQL注入</strong> 的产生。而<strong><code>$&#123;Parameter&#125;</code>采用拼接</strong>的方式构造SQL，在<strong>对用户输入过滤不严格</strong>的前提下，此处很可能存在SQL注入</p>
+<p>在<strong>底层构造完整SQL</strong>语句时，MyBatis的两种<strong>传参方式</strong>所采取的方式不同。<code>#&#123;Parameter&#125;</code>采用<strong>预编译</strong>的方式构造SQL，<strong>避免了 SQL注入</strong> 的产生。而**<code>$&#123;Parameter&#125;</code>采用拼接<strong>的方式构造SQL，在</strong>对用户输入过滤不严格**的前提下，此处很可能存在SQL注入</p>
 </blockquote>
 <h3 id="xml-映射文件中，除了常见的-select、insert、update、delete-标签之外，还有哪些标签？"><a href="#xml-映射文件中，除了常见的-select、insert、update、delete-标签之外，还有哪些标签？" class="headerlink" title="xml 映射文件中，除了常见的 select、insert、update、delete 标签之外，还有哪些标签？"></a>xml 映射文件中，除了常见的 select、insert、update、delete 标签之外，还有哪些标签？</h3><p>注：这道题是京东面试官面试我时问的。</p>
 <p>答：还有很多其他的标签， <strong><code>&lt;resultMap&gt;</code></strong> 、 <strong><code>&lt;parameterMap&gt;</code></strong> 、 <strong><code>&lt;sql&gt;</code></strong> 、 <strong><code>&lt;include&gt;</code></strong> 、 <strong><code>&lt;selectKey&gt;</code></strong> ，加上动态 sql 的 9 个标签， <strong><code>trim|where|set|foreach|if|choose|when|otherwise|bind</code></strong> 等，其中 <code>&lt;sql&gt;</code> 为 sql 片段标签，通过 <code>&lt;include&gt;</code> 标签引入 sql 片段， <code>&lt;selectKey&gt;</code> 为不支持自增的主键生成策略标签。  </p>
 <blockquote>
 <p>set标签，是update用的  </p>
 <figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">update</span> <span class="attr">id</span>=<span class="string">&quot;updateUserById&quot;</span> <span class="attr">parameterType</span>=<span class="string">&quot;user&quot;</span>&gt;</span></span><br><span class="line">     update user</span><br><span class="line">     <span class="tag">&lt;<span class="name">set</span>&gt;</span></span><br><span class="line">         <span class="tag">&lt;<span class="name">if</span> <span class="attr">test</span>=<span class="string">&quot;uid!=null&quot;</span>&gt;</span></span><br><span class="line">           uid=#&#123;uid&#125; </span><br><span class="line">         <span class="tag">&lt;/<span class="name">if</span>&gt;</span> </span><br><span class="line"> 	<span class="tag">&lt;/<span class="name">set</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">update</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
 <hr>
 <ol>
 <li><p><strong>ResultMap（结果集映射）：</strong><br>假设我们的<strong>数据库字段</strong>和<strong>映射pojo类的属性字段不一致</strong>，那么查询结果，不一致的字段值会为null<br>这时可以使用Mybatis <code>ResultMap</code> 结果集映射</p>
@@ -296,16 +297,17 @@
 <p><code>parameterMap</code>标签可以用来定义参数组，可以为参数组<strong>指定ID</strong>、<strong>参数类型</strong></p>
 <p>例如有一个bean是这样的：  </p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ArgBean</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> age;</span><br><span class="line">    <span class="comment">// 忽略 getter 和 setter</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>下面使用 <code>&lt;parameterMap&gt;</code> 将参数 ArgBean 对象进行映射</p>
 <figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">parameterMap</span> <span class="attr">id</span>=<span class="string">&quot;PARAM_MAP&quot;</span> <span class="attr">type</span>=<span class="string">&quot;com.hxstrive.mybatis.parameter.demo2.ArgBean&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">parameter</span> <span class="attr">property</span>=<span class="string">&quot;age&quot;</span> <span class="attr">javaType</span>=<span class="string">&quot;integer&quot;</span> /&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">parameter</span> <span class="attr">property</span>=<span class="string">&quot;name&quot;</span> <span class="attr">javaType</span>=<span class="string">&quot;String&quot;</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">parameterMap</span>&gt;</span> </span><br></pre></td></tr></table></figure>
 </li>
-<li><p><strong>sql（sql片段标签）/include（片段插入标签）：</strong>  重复的SQL预计永远不可避免，<code>&lt;sql&gt;</code>标签就是用来解决这个问题的</p>
+<li><p><strong>sql（sql片段标签）&#x2F;include（片段插入标签）：</strong>  重复的SQL预计永远不可避免，<code>&lt;sql&gt;</code>标签就是用来解决这个问题的</p>
 <p>其中 <code>&lt;sql&gt;</code> 为 sql 片段标签，通过 <code>&lt;include&gt;</code> 标签引入 sql 片段</p>
 <p>例如：  </p>
 <figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">mapper</span> <span class="attr">namespace</span>=<span class="string">&quot;com.klza.dao.UserMapper&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">sql</span> <span class="attr">id</span>=<span class="string">&quot;sqlUserParameter&quot;</span>&gt;</span>id,username,password<span class="tag">&lt;/<span class="name">sql</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">select</span> <span class="attr">id</span>=<span class="string">&quot;getUserList&quot;</span> <span class="attr">resultType</span>=<span class="string">&quot;user&quot;</span>&gt;</span></span><br><span class="line">        select</span><br><span class="line">        <span class="tag">&lt;<span class="name">include</span> <span class="attr">refid</span>=<span class="string">&quot;sqlUserParameter&quot;</span>/&gt;</span></span><br><span class="line">        from test.user</span><br><span class="line">    <span class="tag">&lt;/<span class="name">select</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">mapper</span>&gt;</span> </span><br></pre></td></tr></table></figure>
+
 <p><strong><code>&lt;selectKey&gt;</code> 为不支持自增的主键生成策略标签</strong>  </p>
-<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">insert</span> <span class="attr">id</span>=<span class="string">&quot;insert&quot;</span> <span class="attr">parameterType</span>=<span class="string">&quot;com.pinyougou.pojo.TbGoods&quot;</span> &gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">selectKey</span> <span class="attr">resultType</span>=<span class="string">&quot;java.lang.Long&quot;</span> <span class="attr">order</span>=<span class="string">&quot;AFTER&quot;</span> <span class="attr">keyProperty</span>=<span class="string">&quot;id&quot;</span>&gt;</span></span><br><span class="line">      SELECT LAST_INSERT_ID() AS id</span><br><span class="line">    <span class="tag">&lt;/<span class="name">selectKey</span>&gt;</span></span><br><span class="line">    insert into tb_goods (id, seller_id )</span><br><span class="line">    values (#&#123;id,jdbcType=BIGINT&#125;, #&#123;sellerId,jdbcType=VARCHAR&#125; </span><br><span class="line">  <span class="tag">&lt;/<span class="name">insert</span>&gt;</span></span><br></pre></td></tr></table></figure>
-</li>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">insert</span> <span class="attr">id</span>=<span class="string">&quot;insert&quot;</span> <span class="attr">parameterType</span>=<span class="string">&quot;com.pinyougou.pojo.TbGoods&quot;</span> &gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">selectKey</span> <span class="attr">resultType</span>=<span class="string">&quot;java.lang.Long&quot;</span> <span class="attr">order</span>=<span class="string">&quot;AFTER&quot;</span> <span class="attr">keyProperty</span>=<span class="string">&quot;id&quot;</span>&gt;</span></span><br><span class="line">      SELECT LAST_INSERT_ID() AS id</span><br><span class="line">    <span class="tag">&lt;/<span class="name">selectKey</span>&gt;</span></span><br><span class="line">    insert into tb_goods (id, seller_id )</span><br><span class="line">    values (#&#123;id,jdbcType=BIGINT&#125;, #&#123;sellerId,jdbcType=VARCHAR&#125; </span><br><span class="line">  <span class="tag">&lt;/<span class="name">insert</span>&gt;</span></span><br></pre></td></tr></table></figure></li>
 </ol>
 </blockquote>
 <h3 id="Dao-接口的工作原理是什么？Dao-接口里的方法，参数不同时，方法能重载吗？"><a href="#Dao-接口的工作原理是什么？Dao-接口里的方法，参数不同时，方法能重载吗？" class="headerlink" title="Dao 接口的工作原理是什么？Dao 接口里的方法，参数不同时，方法能重载吗？"></a>Dao 接口的工作原理是什么？Dao 接口里的方法，参数不同时，方法能重载吗？</h3><p>注：这道题也是京东面试官面试我被问的。</p>
@@ -314,8 +316,10 @@
 <p>Dao 接口里的<strong>方法可以重载</strong>，但是 Mybatis 的 <strong>xml 里面的 ID 不允许重复</strong>。</p>
 <p>Mybatis 版本 3.3.0，亲测如下：</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Mapper接口里面方法重载</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">StuMapper</span> &#123;</span><br><span class="line"></span><br><span class="line">	List&lt;Student&gt; <span class="title function_">getAllStu</span><span class="params">()</span>;</span><br><span class="line"></span><br><span class="line">	List&lt;Student&gt; <span class="title function_">getAllStu</span><span class="params">(<span class="meta">@Param(&quot;id&quot;)</span> Integer id)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>然后在 <code>StuMapper.xml</code> 中利用 Mybatis 的动态 sql 就可以实现。</p>
 <figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">select</span> <span class="attr">id</span>=<span class="string">&quot;getAllStu&quot;</span> <span class="attr">resultType</span>=<span class="string">&quot;com.pojo.Student&quot;</span>&gt;</span></span><br><span class="line">		select * from student</span><br><span class="line">	<span class="tag">&lt;<span class="name">where</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">if</span> <span class="attr">test</span>=<span class="string">&quot;id != null&quot;</span>&gt;</span></span><br><span class="line">			id = #&#123;id&#125;</span><br><span class="line">		<span class="tag">&lt;/<span class="name">if</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">where</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">select</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
 <p>能正常运行，并能得到相应的结果，这样就实现了在 Dao 接口中写重载方法。</p>
 <p><strong>Mybatis 的 Dao 接口可以有多个重载方法，但是多个接口对应的映射必须只有一个，否则启动会报错。</strong></p>
 <p>相关 issue ：<a target="_blank" rel="noopener" href="https://github.com/Snailclimb/JavaGuide/issues/1122">更正：Dao 接口里的方法可以重载，但是 Mybatis 的 xml 里面的 ID 不允许重复！</a>。</p>
@@ -328,28 +332,33 @@
 </ol>
 <p><strong>测试如下</strong> ：</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line">PersonDao.java</span><br><span class="line">Person <span class="title function_">queryById</span><span class="params">()</span>;</span><br><span class="line"></span><br><span class="line">Person <span class="title function_">queryById</span><span class="params">(<span class="meta">@Param(&quot;id&quot;)</span> Long id)</span>;</span><br><span class="line"></span><br><span class="line">Person <span class="title function_">queryById</span><span class="params">(<span class="meta">@Param(&quot;id&quot;)</span> Long id, <span class="meta">@Param(&quot;name&quot;)</span> String name)</span>;</span><br><span class="line">PersonMapper.xml</span><br><span class="line">&lt;select id=<span class="string">&quot;queryById&quot;</span> resultMap=<span class="string">&quot;PersonMap&quot;</span>&gt;</span><br><span class="line">    select</span><br><span class="line">      id, name, age, address</span><br><span class="line">    from person</span><br><span class="line">    &lt;where&gt;</span><br><span class="line">        &lt;<span class="keyword">if</span> test=<span class="string">&quot;id != null&quot;</span>&gt;</span><br><span class="line">            id = #&#123;id&#125;</span><br><span class="line">        &lt;/<span class="keyword">if</span>&gt;</span><br><span class="line">        &lt;<span class="keyword">if</span> test=<span class="string">&quot;name != null and name != &#x27;&#x27;&quot;</span>&gt;</span><br><span class="line">            <span class="type">and</span> <span class="variable">name</span> <span class="operator">=</span> #&#123;name&#125;</span><br><span class="line">        &lt;/<span class="keyword">if</span>&gt;</span><br><span class="line">    &lt;/where&gt;</span><br><span class="line">    limit <span class="number">1</span></span><br><span class="line">&lt;/select&gt;</span><br></pre></td></tr></table></figure>
+
 <p><code>org.apache.ibatis.scripting.xmltags. DynamicContext. ContextAccessor#getProperty</code> 方法用于获取 <code>&lt;if&gt;</code> 标签中的条件值  </p>
 <blockquote>
 <p>ContextAccessor 这个修饰符为默认（同一个包内）</p>
 </blockquote>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> Object <span class="title function_">getProperty</span><span class="params">(Map context, Object target, Object name)</span> &#123;</span><br><span class="line">  <span class="type">Map</span> <span class="variable">map</span> <span class="operator">=</span> (Map) target;</span><br><span class="line"></span><br><span class="line">  <span class="type">Object</span> <span class="variable">result</span> <span class="operator">=</span> map.get(name);</span><br><span class="line">  <span class="keyword">if</span> (map.containsKey(name) || result != <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="type">Object</span> <span class="variable">parameterObject</span> <span class="operator">=</span> map.get(PARAMETER_OBJECT_KEY);</span><br><span class="line">  <span class="keyword">if</span> (parameterObject <span class="keyword">instanceof</span> Map) &#123;</span><br><span class="line">    <span class="keyword">return</span> ((Map)parameterObject).get(name);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p><code>parameterObject</code> 为 map，存放的是 Dao 接口中参数相关信息。</p>
 <p><code>((Map)parameterObject).get(name)</code> 方法如下</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> V <span class="title function_">get</span><span class="params">(Object key)</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (!<span class="built_in">super</span>.containsKey(key)) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">BindingException</span>(<span class="string">&quot;Parameter &#x27;&quot;</span> + key + <span class="string">&quot;&#x27; not found. Available parameters are &quot;</span> + keySet());</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">super</span>.get(key);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <ol>
-<li><code>queryById()</code>方法执行时，<strong><code>parameterObject</code>为 null</strong>，<strong><code>getProperty</code>方法返回 null 值</strong>，<strong><code>&lt;if&gt;</code>标签获取的所有条件值都为 null</strong>，所有条件不成立，动态 sql 可以正常执行。</li>
-<li><code>queryById(1L)</code>方法执行时，<code>parameterObject</code>为 map，包含了<strong><code>id</code>和<code>param1</code></strong>两个 key 值。当获取<code>&lt;if&gt;</code>标签中<code>name</code>的属性值时，<strong>进入<code>((Map)parameterObject).get(name)</code>方法中，map 中 key 不包含<code>name</code>，所以抛出异常</strong>。</li>
-<li><code>queryById(1L,&quot;1&quot;)</code>方法执行时，<strong><code>parameterObject</code>中包含<code>id</code>,<code>param1</code>,<code>name</code>,<code>param2</code>四个 key 值，<code>id</code>和<code>name</code>属性都可以获取到</strong>，动态 sql 正常执行。</li>
+<li><code>queryById()</code>方法执行时，**<code>parameterObject</code>为 null<strong>，</strong><code>getProperty</code>方法返回 null 值<strong>，</strong><code>&lt;if&gt;</code>标签获取的所有条件值都为 null**，所有条件不成立，动态 sql 可以正常执行。</li>
+<li><code>queryById(1L)</code>方法执行时，<code>parameterObject</code>为 map，包含了**<code>id</code>和<code>param1</code><strong>两个 key 值。当获取<code>&lt;if&gt;</code>标签中<code>name</code>的属性值时，</strong>进入<code>((Map)parameterObject).get(name)</code>方法中，map 中 key 不包含<code>name</code>，所以抛出异常**。</li>
+<li><code>queryById(1L,&quot;1&quot;)</code>方法执行时，**<code>parameterObject</code>中包含<code>id</code>,<code>param1</code>,<code>name</code>,<code>param2</code>四个 key 值，<code>id</code>和<code>name</code>属性都可以获取到**，动态 sql 正常执行。</li>
 </ol>
 <blockquote>
-<p>也就是说，if<strong>的test一定是会进行判断</strong>的(<strong>除非整个parameterObject为null)</strong>。但是如果这里面的param 不存在，那么就会抛异常 (BindingException)</p>
+<p>也就是说，if<strong>的test一定是会进行判断</strong>的(**除非整个parameterObject为null)**。但是如果这里面的param 不存在，那么就会抛异常 (BindingException)</p>
 </blockquote>
 <h3 id="MyBatis-是如何进行分页的？分页插件的原理是什么？"><a href="#MyBatis-是如何进行分页的？分页插件的原理是什么？" class="headerlink" title="MyBatis 是如何进行分页的？分页插件的原理是什么？"></a>MyBatis 是如何进行分页的？分页插件的原理是什么？</h3><p>注：我出的。</p>
-<p>答：<strong>(1)</strong> MyBatis 使用 RowBounds 对象进行分页，它是<strong>针对 ResultSet 结果集</strong>执行的<strong>内存分页</strong>，而非物理分页；  </p>
+<p>答：**(1)** MyBatis 使用 RowBounds 对象进行分页，它是<strong>针对 ResultSet 结果集</strong>执行的<strong>内存分页</strong>，而非物理分页；  </p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//使用 </span></span><br><span class="line"><span class="comment">//Mapper中  </span></span><br><span class="line">List&lt;User&gt; <span class="title function_">getUserListLimit</span><span class="params">(RowBounds rowBounds)</span>;</span><br><span class="line"><span class="comment">//Mapper.xml定义 （不变）  </span></span><br><span class="line">&lt;select id=<span class="string">&quot;getUserListLimit&quot;</span> resultType=<span class="string">&quot;user&quot;</span>&gt;</span><br><span class="line">    select * from test.user</span><br><span class="line">&lt;/select&gt;</span><br><span class="line"><span class="comment">//使用, 将会从index为0的记录开始，取两条记录</span></span><br><span class="line"></span><br><span class="line">List&lt;User&gt; userListLimit = userMapper.getUserListLimit(<span class="keyword">new</span> <span class="title class_">RowBounds</span>(<span class="number">0</span>, <span class="number">2</span>));</span><br><span class="line"><span class="keyword">for</span> (User user : userListLimit) &#123;</span><br><span class="line">    System.out.println(user);</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+
 <blockquote>
 <p>想要使用mybatis日志，只要加上日志模块的依赖即可  </p>
 <figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.slf4j<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>slf4j-api<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.7.30<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">      <span class="comment">&lt;!-- https://mvnrepository.com/artifact/ch.qos.logback/logback-classic --&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>ch.qos.logback<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>logback-classic<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.2.3<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
 <p>查看上面的日志可以发现，实际查找的是全部的数据(没有使用物理分页)  </p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">14:28:14.938 [main] DEBUG org.mybatis.example.BlogMapper.selectBlog - ==&gt;  Preparing: select * from Blog</span><br><span class="line">14:28:14.996 [main] DEBUG org.mybatis.example.BlogMapper.selectBlog - ==&gt; Parameters: </span><br><span class="line">[Blog&#123;id=2, name=&#x27;n2&#x27;, age=20&#125;, Blog&#123;id=3, name=&#x27;n3&#x27;, age=30&#125;]</span><br></pre></td></tr></table></figure>
 </blockquote>
@@ -359,15 +368,20 @@
 <p>分页插件的使用<br>接下来介绍PageHelper插件的使用：</p>
 <p>第一步，引入依赖：</p>
 <figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="comment">&lt;!-- https://mvnrepository.com/artifact/com.github.pagehelper/pagehelper --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.github.pagehelper<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>pagehelper<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>5.3.2<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
 <p>第二步，mybatis-config.xml配置拦截器：</p>
 <figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="comment">&lt;!-- 配置pageHelper拦截器 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">plugins</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">plugin</span> <span class="attr">interceptor</span>=<span class="string">&quot;com.github.pagehelper.PageInterceptor&quot;</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">plugins</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
 <p>第三步，代码编写：</p>
 <p>Mapper接口类：</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line">List&lt;User&gt; <span class="title function_">getUserListByPageHelper</span><span class="params">()</span>;</span><br></pre></td></tr></table></figure>
+
 <p>Mapper.xml：  </p>
 <figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">select</span> <span class="attr">id</span>=<span class="string">&quot;getUserListByPageHelper&quot;</span> <span class="attr">resultType</span>=<span class="string">&quot;user&quot;</span>&gt;</span></span><br><span class="line">    select * from test.user</span><br><span class="line"><span class="tag">&lt;/<span class="name">select</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
 <p>测试程序：</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 开启分页功能</span></span><br><span class="line"><span class="type">int</span> <span class="variable">pageNum</span> <span class="operator">=</span> <span class="number">1</span>;  <span class="comment">// 当前页码</span></span><br><span class="line"><span class="type">int</span> <span class="variable">pageSize</span> <span class="operator">=</span> <span class="number">2</span>;  <span class="comment">// 每页的记录数</span></span><br><span class="line">PageHelper.startPage(pageNum, pageSize);</span><br><span class="line">List&lt;User&gt; userListByPageHelper = userMapper.getUserListByPageHelper();</span><br><span class="line">userListByPageHelper.forEach(System.out::println); </span><br></pre></td></tr></table></figure>
+
 <p>第四步：获取pageInfo信息：</p>
 <p>pageHelper真正强大的地方在于它的pageInfo功能，它可以为我们提供详细的分页数据：</p>
 <p>例如：</p>
@@ -389,7 +403,7 @@
 <li><code>&lt;bind/&gt;</code></li>
 </ul>
 <p>关于 MyBatis 动态 SQL 的详细介绍，请看这篇文章：<a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000039335704">Mybatis 系列全解（八）：Mybatis 的 9 大动态 SQL 标签你知道几个？</a> 。</p>
-<p>关于这些动态 SQL 的具体使用方法，请看这篇文章：<a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1943349">Mybatis【13】— Mybatis 动态 sql 标签怎么使用？</a></p>
+<p>关于这些动态 SQL 的具体使用方法，请看这篇文章：<a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1943349">Mybatis【13】– Mybatis 动态 sql 标签怎么使用？</a></p>
 <h3 id="MyBatis-是如何将-sql-执行结果封装为目标对象并返回的？都有哪些映射形式？"><a href="#MyBatis-是如何将-sql-执行结果封装为目标对象并返回的？都有哪些映射形式？" class="headerlink" title="MyBatis 是如何将 sql 执行结果封装为目标对象并返回的？都有哪些映射形式？"></a>MyBatis 是如何将 sql 执行结果封装为目标对象并返回的？都有哪些映射形式？</h3><p>注：我出的。</p>
 <p>答：第一种是使用 <strong><code>&lt;resultMap&gt;</code></strong> 标签，逐一定义列名和对象属性名之间的映射关系。第二种是使用 <strong>sql 列的别名</strong>功能，将列别名书写为<strong>对象属性名</strong>，比如 T_NAME AS NAME，对象属性名一般是 name，小写，但是<strong>列名不区分大小写</strong>，MyBatis 会忽略列名大小写，智能找到<strong>与之对应对象属性名</strong>，你甚至可以写成 T_NAME AS NaMe，MyBatis 一样可以正常工作。</p>
 <p>有了列名与属性名的映射关系后，MyBatis 通过反射创建对象，同时<strong>使用反射</strong> 给对象的属性逐一赋值并返回，那些找不到映射关系的属性，是无法完成赋值的。</p>
@@ -399,7 +413,6 @@
 <p>那么问题来了，join 查询出来 100 条记录，如何确定主对象是 5 个，而不是 100 个？其去重复的原理是 <code>&lt;resultMap&gt;</code> 标签内的 <code>&lt;id&gt;</code> 子标签，指定了唯一确定一条记录的 id 列，MyBatis 根据 <code>&lt;id&gt;</code> 列值来完成 100 条记录的去重复功能， <code>&lt;id&gt;</code> 可以有多个，代表了联合主键的语意。</p>
 <p>同样主对象的关联对象，也是根据这个原理去重复的，尽管一般情况下，只有主对象会有重复记录，关联对象一般不会重复。</p>
 <p>举例：下面 join 查询出来 6 条记录，一、二列是 Teacher 对象列，第三列为 Student 对象列，MyBatis 去重复处理后，结果为 1 个老师 6 个学生，而不是 6 个老师 6 个学生。</p>
-<div class="table-container">
 <table>
 <thead>
 <tr>
@@ -408,8 +421,7 @@
 <th>s_id</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>1</td>
 <td>teacher</td>
 <td>38</td>
@@ -439,9 +451,7 @@
 <td>teacher</td>
 <td>43</td>
 </tr>
-</tbody>
-</table>
-</div>
+</tbody></table>
 <h3 id="MyBatis-是否支持延迟加载？如果支持，它的实现原理是什么？"><a href="#MyBatis-是否支持延迟加载？如果支持，它的实现原理是什么？" class="headerlink" title="MyBatis 是否支持延迟加载？如果支持，它的实现原理是什么？"></a>MyBatis 是否支持延迟加载？如果支持，它的实现原理是什么？</h3><p>注：我出的。</p>
 <p>答：MyBatis <strong>仅支持 association 关联对象</strong>和 <strong>collection 关联集合对象</strong>的<strong>延迟加载</strong>，association 指的就是一对一，collection 指的就是一对多查询。在 MyBatis 配置文件中，可以配置是否启用延迟加载 <code>lazyLoadingEnabled=true|false。</code></p>
 <p>它的原理是，使用 <code>CGLIB</code> 创建目标对象的代理对象，当调用目标方法时，进入拦截器方法，比如调用 <code>a.getB().getName()</code> ，拦截器 <code>invoke()</code> 方法发现 <code>a.getB()</code> 是 null 值，那么就会单独发送事先保存好的查询关联 B 对象的 sql，把 B 查询上来，然后调用 a.setB(b)，于是 a 的对象 b 属性就有值了，接着完成 <code>a.getB().getName()</code> 方法的调用。这就是延迟加载的基本原理。</p>
@@ -455,7 +465,7 @@
 <p>答：MyBatis 有三种基本的 <code>Executor</code> 执行器：</p>
 <ul>
 <li><strong><code>SimpleExecutor</code>：</strong> <strong>每执行</strong>一次 <strong>update</strong> 或 <strong>select</strong>，就开启一个 Statement 对象，<strong>用完立刻关闭</strong> Statement 对象。</li>
-<li><strong><code>ReuseExecutor</code>：</strong> 执行 update 或 select，<strong>以 sql 作为 key 查找 Statement 对象</strong>，存在就使用，不存在就创建，用完后，不关闭 Statement 对象，而是<strong>放置于 Map<String, Statement>内，供下一次使用</strong>。简言之，就是重复使用 Statement 对象。</li>
+<li><strong><code>ReuseExecutor</code>：</strong> 执行 update 或 select，<strong>以 sql 作为 key 查找 Statement 对象</strong>，存在就使用，不存在就创建，用完后，不关闭 Statement 对象，而是<strong>放置于 Map&lt;String, Statement&gt;内，供下一次使用</strong>。简言之，就是重复使用 Statement 对象。</li>
 <li><strong><code>BatchExecutor</code></strong> ：执行 update（没有 select，JDBC 批处理不支持 select），<strong>将所有 sql 都添加到批处理中</strong>（addBatch()），等待统一执行（executeBatch()），它缓存了多个 Statement 对象，每个 Statement 对象都是 addBatch()完毕后，等待逐一执行 executeBatch()批处理。与 JDBC 批处理相同。</li>
 </ul>
 <p>作用范围：<code>Executor</code> 的这些特点，都严格限制在 SqlSession 生命周期范围内。</p>
@@ -538,7 +548,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">45:25</span>
+    <span title="站点阅读时长">45:37</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动

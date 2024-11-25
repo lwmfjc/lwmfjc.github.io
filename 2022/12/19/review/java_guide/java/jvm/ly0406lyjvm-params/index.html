@@ -270,7 +270,9 @@
     
     
     <div class="post-body" itemprop="articleBody"><blockquote>
-<p>转载自<a target="_blank" rel="noopener" href="https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!">https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!</a></p>
+<p>转载自<a target="_blank" rel="noopener" href="https://github.com/Snailclimb/JavaGuide%EF%BC%88%E6%B7%BB%E5%8A%A0%E5%B0%8F%E9%83%A8%E5%88%86%E7%AC%94%E8%AE%B0%EF%BC%89%E6%84%9F%E8%B0%A2%E4%BD%9C%E8%80%85">https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者</a>!</p>
+</blockquote>
+<blockquote>
 <p>本文由 JavaGuide 翻译自 <a target="_blank" rel="noopener" href="https://www.baeldung.com/jvm-parameters">https://www.baeldung.com/jvm-parametersopen in new window</a>，并对文章进行了大量的完善补充。翻译不易，如需转载请注明出处，作者：<a target="_blank" rel="noopener" href="https://www.baeldung.com/author/baeldung/">baeldungopen in new window</a> 。</p>
 </blockquote>
 <h1 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h1><p>本篇文章中，将掌握最常用的<strong>JVM参数配置</strong>。下面提到了一些概念，<strong>堆</strong>、<strong>方法区</strong>、<strong>垃圾回收</strong>等。</p>
@@ -280,38 +282,39 @@
 </li>
 <li><p>如果我们需要指定<strong>最小</strong>和<strong>最大堆</strong>大小（推荐显示指定大小）：  </p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">-Xms&lt;heap size&gt;[unit] </span><br><span class="line">-Xmx&lt;heap size&gt;[unit]</span><br></pre></td></tr></table></figure>
+
 <ul>
 <li><strong>heap size</strong> 表示要初始化内存的具体大小。</li>
-<li><strong>unit</strong> 表示要初始化内存的单位。单位为<strong><em>“ g”</em></strong> (GB) 、<strong><em>“ m”</em></strong>（MB）、<strong><em>“ k”</em></strong>（KB）。</li>
+<li><strong>unit</strong> 表示要初始化内存的单位。单位为<em><strong>“ g”</strong></em> (GB) 、<em><strong>“ m”</strong></em>（MB）、<em><strong>“ k”</strong></em>（KB）。</li>
 </ul>
 </li>
 <li><p>举例，为JVM分配最小2GB和最大5GB的堆内存大小</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">-Xms2G -Xmx5G</span><br></pre></td></tr></table></figure>
-</li>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">-Xms2G -Xmx5G</span><br></pre></td></tr></table></figure></li>
 </ul>
 <h2 id="显示新生代内存（Young-Generation）"><a href="#显示新生代内存（Young-Generation）" class="headerlink" title="显示新生代内存（Young Generation）"></a>显示新生代内存（Young Generation）</h2><ul>
 <li><p>在堆总可用内存配置完成之后，第二大影响因素是为 <strong><code>Young Generation</code></strong> 在堆内存所占的比例。默认情况下，<strong>YG 的最小大小为 1310 <em>MB</em></strong>，最大大小为<em>无限制</em>。</p>
 </li>
 <li><p>两种指定 <strong>新生代内存(Young Generation)</strong> 大小的方法  </p>
 <ol>
-<li><p>通过 <code>-XX:NewSize</code> 和 <code>-XX:MaxNewSize</code></p>
+<li><p>通过 <code>-XX:NewSize</code> 和 <code>-XX:MaxNewSize </code></p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line">-XX:NewSize=&lt;young size&gt;[unit] </span><br><span class="line">-XX:MaxNewSize=&lt;young size&gt;[unit]</span><br></pre></td></tr></table></figure>
+
 <p>如，为新生代分配<strong>最小256m</strong>的内存，<strong>最大1024m</strong>的内存我们的参数为：  </p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line">-XX:NewSize=256m</span><br><span class="line">-XX:MaxNewSize=1024m</span><br></pre></td></tr></table></figure>
 </li>
-<li><p>通过<code>-Xmn&lt;young size&gt;[unit]</code>指定<br>举例，为新生代分配256m的内存（NewSize与MaxNewSize设为一致）<br><code>-Xmn256m</code></p>
+<li><p>通过<code>-Xmn&lt;young size&gt;[unit] </code>指定<br>举例，为新生代分配256m的内存（NewSize与MaxNewSize设为一致）<br><code>-Xmn256m </code></p>
 <blockquote>
 <p>将新对象预留在新生代，由于 <strong>Full GC 的成本远高于 Minor GC</strong>，因此尽可能<strong>将对象分配在新生代</strong>是明智的做法，实际项目中<strong>根据 GC 日志分析新生代空间大小分配是否合理</strong>，适当通过“-Xmn”命令调节新生代大小，<strong>最大限度降低新对象直接进入老年代</strong>的情况。</p>
 </blockquote>
 <p>另外，你还可以通过 <strong><code>-XX:NewRatio=&lt;int&gt;</code></strong> 来设置老年代与新生代内存的比值。</p>
 <blockquote>
-<p>下面的参数，设置<strong>老年代</strong>与<strong>新生代</strong>内存的比例为1，即 老年代：新生代 = 1：1，新生代占整个堆栈的1/2<br><code>-XX:NewRadio=1</code></p>
+<p>下面的参数，设置<strong>老年代</strong>与<strong>新生代</strong>内存的比例为1，即 老年代：新生代 &#x3D; 1：1，新生代占整个堆栈的1&#x2F;2<br><code>-XX:NewRadio=1</code></p>
 </blockquote>
 </li>
 </ol>
 </li>
 </ul>
-<h2 id="显示指定永久代-元空间的大小"><a href="#显示指定永久代-元空间的大小" class="headerlink" title="显示指定永久代/元空间的大小"></a>显示指定永久代/元空间的大小</h2><p>从Java 8开始，<strong>如果我们没有指定 Metaspace(元空间)</strong> 的大小，随着更多类的创建，<strong>虚拟机会耗尽</strong>所有<strong>可用的系统内存</strong>（永久代并不会出现这种情况）  </p>
+<h2 id="显示指定永久代-元空间的大小"><a href="#显示指定永久代-元空间的大小" class="headerlink" title="显示指定永久代&#x2F;元空间的大小"></a>显示指定永久代&#x2F;元空间的大小</h2><p>从Java 8开始，<strong>如果我们没有指定 Metaspace(元空间)</strong> 的大小，随着更多类的创建，<strong>虚拟机会耗尽</strong>所有<strong>可用的系统内存</strong>（永久代并不会出现这种情况）  </p>
 <ul>
 <li><p><strong>JDK 1.8 之前永久代还没被彻底移除</strong>的时候通常通过下面这些参数来调节方法区大小</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line">-XX:PermSize=N <span class="comment">//方法区 (永久代) 初始大小</span></span><br><span class="line">-XX:MaxPermSize=N <span class="comment">//方法区 (永久代) 最大大小,超过这个值将会抛出 OutOfMemoryError 异常:java.lang.OutOfMemoryError: PermGen </span></span><br></pre></td></tr></table></figure>
@@ -319,8 +322,7 @@
 <li><p><strong>相对</strong>而言，垃圾收集行为在这个区域是<strong>比较少出现</strong>的，但<strong>并非数据进入方法区后就“永久存在”</strong>了。</p>
 </li>
 <li><p><strong>JDK 1.8 的时候，方法区（HotSpot 的永久代）被彻底移除了（JDK1.7 就已经开始了），取而代之是元空间，元空间使用的是本地内存</strong></p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">-XX:MetaspaceSize=N <span class="comment">//设置 Metaspace 的初始（和最小大小）</span></span><br><span class="line">-XX:MaxMetaspaceSize=N <span class="comment">//设置 Metaspace 的最大大小，如果不指定大小的话，随着更多类的创建，虚拟机会耗尽所有可用的系统内存。 </span></span><br></pre></td></tr></table></figure>
-</li>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">-XX:MetaspaceSize=N <span class="comment">//设置 Metaspace 的初始（和最小大小）</span></span><br><span class="line">-XX:MaxMetaspaceSize=N <span class="comment">//设置 Metaspace 的最大大小，如果不指定大小的话，随着更多类的创建，虚拟机会耗尽所有可用的系统内存。 </span></span><br></pre></td></tr></table></figure></li>
 </ul>
 <h1 id="垃圾收集相关"><a href="#垃圾收集相关" class="headerlink" title="垃圾收集相关"></a>垃圾收集相关</h1><h2 id="垃圾回收器"><a href="#垃圾回收器" class="headerlink" title="垃圾回收器"></a>垃圾回收器</h2><p>为了提高应用程序的稳定性，选择正确的<strong>垃圾收集算法</strong>至关重要<br>JVM具有<strong>四种类型</strong>的GC实现：  </p>
 <ol>
@@ -331,8 +333,10 @@
 </ol>
 <p>使用下列参数实现：  </p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">-XX:+UseSerialGC</span><br><span class="line">-XX:+UseParallelGC</span><br><span class="line">-XX:+UseParNewGC</span><br><span class="line">-XX:+UseG1GC</span><br></pre></td></tr></table></figure>
+
 <h2 id="GC记录"><a href="#GC记录" class="headerlink" title="GC记录"></a>GC记录</h2><p>为了严格<strong>监控应用程序</strong>的<strong>运行状况</strong>，应该始终<strong>检查JVM的垃圾回收性能</strong>。最简单的方法是<strong>以人类可读的格式记录GC活动</strong><br>通过以下参数  </p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">-XX:+UseGCLogFileRotation </span><br><span class="line">-XX:NumberOfGCLogFiles=&lt; number of log files &gt; </span><br><span class="line">-XX:GCLogFileSize=&lt; file size &gt;[ unit ]</span><br><span class="line">-Xloggc:/path/to/gc.log </span><br></pre></td></tr></table></figure>
+
 
     </div>
 
@@ -396,7 +400,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">45:25</span>
+    <span title="站点阅读时长">45:37</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动

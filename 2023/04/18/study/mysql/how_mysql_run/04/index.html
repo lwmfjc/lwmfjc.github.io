@@ -258,7 +258,7 @@
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>4.7k</span>
+      <span>4.8k</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
@@ -282,29 +282,33 @@
 <h1 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h1><p>表数据存在哪，以什么格式存放，MySQL以什么方式来访问<br>存储引擎：对表中数据进行<strong>存储</strong>和<strong>写入</strong><br>InnoDB是MySQL默认的存储引擎，这章主要讲<strong>InnoDB存储引擎的记录存储结构</strong></p>
 <h1 id="InnoDB页简介"><a href="#InnoDB页简介" class="headerlink" title="InnoDB页简介"></a>InnoDB页简介</h1><p><strong>注意，是简介</strong><br>InnoDB：将表中的数据<strong>存储到磁盘上</strong><br>真正处理数据的过程：内存中。所以需要<strong>把磁盘中数据加载到内存中</strong>，如果是<strong>写入</strong>或<strong>修改</strong>请求，还需要把<strong>内存</strong>中的内容<strong>刷新到磁盘</strong>上<br>获取记录：不是一条条从磁盘读，InnoDB将数据划分为若干个页，以<strong>页</strong>作为<strong>磁盘</strong>和<strong>内存</strong>之间交互的基本单位。页大小-&gt; 一般是16KB<br>一般情况：一次最少从磁盘读取16KB的内容<strong>到内存中</strong>，一次最少把内存中的16KB内容<strong>刷新到磁盘</strong>中  </p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash"> SHOW VARIABLES LIKE <span class="string">&#x27;innodb_page_size&#x27;</span>;</span></span><br><span class="line">+------------------+-------+</span><br><span class="line">| Variable_name    | Value |</span><br><span class="line">+------------------+-------+</span><br><span class="line">| innodb_page_size | 16384 |</span><br><span class="line">+------------------+-------+</span><br><span class="line">1 row in set (0.00 sec)</span><br></pre></td></tr></table></figure>
-<p>只能在第一次初始化MySQL数据目录时指定，之后<strong>再也不能更改</strong>（通过mysqld —initialize初始化数据目录[旧版本]）</p>
+
+<p>只能在第一次初始化MySQL数据目录时指定，之后<strong>再也不能更改</strong>（通过mysqld –initialize初始化数据目录[旧版本]）</p>
 <h1 id="InnoDB行格式"><a href="#InnoDB行格式" class="headerlink" title="InnoDB行格式"></a>InnoDB行格式</h1><p>以记录为单位向表中插入数据，而这些记录在<strong>磁盘上的存放形式</strong>也被称为<strong>行格式</strong>或者<strong>记录格式</strong><br>目前有4中<strong>不同类型的行格式</strong>：COMPACT、REDUNDANT、DYNAMIC和COMPRESSED  </p>
 <blockquote>
 <p>compact [kəmˈpækt]契约<br>redundant[rɪˈdʌndənt] 冗余的<br>dynamic[daɪˈnæmɪk]动态的<br>compressed [kəmˈprest] 压缩的</p>
 </blockquote>
-<h2 id="指定行格式的语法"><a href="#指定行格式的语法" class="headerlink" title="指定行格式的语法"></a>指定行格式的语法</h2><p>CREATE TABLE 表名(列的信息) ROW_FORMAT=行格式名称<br>ALTER TABLE 表名 ROW_FORMATE=行格式名称<br>如下，在数据库xiaohaizi下创建一个表  </p>
+<h2 id="指定行格式的语法"><a href="#指定行格式的语法" class="headerlink" title="指定行格式的语法"></a>指定行格式的语法</h2><p>CREATE TABLE 表名(列的信息) ROW_FORMAT&#x3D;行格式名称<br>ALTER TABLE 表名 ROW_FORMATE&#x3D;行格式名称<br>如下，在数据库xiaohaizi下创建一个表  </p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">CREATE TABLE record_format_demo(</span><br><span class="line">      c1 VARCHAR(10),</span><br><span class="line">      c2 VARCHAR(10) NOT NULL,</span><br><span class="line">      c3 CHAR(10),</span><br><span class="line">      c4 VARCHAR(10)</span><br><span class="line">      ) CHARSET=ascii ROW_FORMAT=COMPACT;  </span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">回顾：ascii每个字符1字节即可表示，且只有空格标点数字字母不可见字符</span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">插入两条数据</span></span><br><span class="line">INSERT INTO record_format_demo(c1,c2,c3,c4) VALUES(&#x27;aaaa&#x27;,&#x27;bbb&#x27;,&#x27;cc&#x27;,&#x27;d&#x27;),(&#x27;eeee&#x27;,&#x27;fff&#x27;,NULL,NULL);</span><br></pre></td></tr></table></figure>
+
 <p>查询  </p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">查询</span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">SELECT * FROM record_format_demo;</span></span><br><span class="line">+------+-----+------+------+</span><br><span class="line">| c1   | c2  | c3   | c4   |</span><br><span class="line">+------+-----+------+------+</span><br><span class="line">| aaaa | bbb | cc   | d    |</span><br><span class="line">| eeee | fff | NULL | NULL |</span><br><span class="line">+------+-----+------+------+</span><br><span class="line">2 rows in set (0.01 sec)</span><br></pre></td></tr></table></figure>
+
 <h2 id="COMPACT行格式"><a href="#COMPACT行格式" class="headerlink" title="COMPACT行格式"></a>COMPACT行格式</h2><p><code>[kəmˈpækt]契约</code></p>
 <h3 id="额外信息"><a href="#额外信息" class="headerlink" title="额外信息"></a>额外信息</h3><p>包括<strong>变长字段长度列表、NULL值列表、记录头信息</strong><br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230419143303256.png" alt="image-20230419143303256"></p>
 <h3 id="记录的真实数据"><a href="#记录的真实数据" class="headerlink" title="记录的真实数据"></a>记录的真实数据</h3><p><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230419185811554.png" alt="image-20230419185811554"></p>
-<h2 id="REDUNDANT行格式"><a href="#REDUNDANT行格式" class="headerlink" title="REDUNDANT行格式"></a>REDUNDANT行格式</h2><p><code>[rɪˈdʌndənt] 冗余的</code><br>MySQL5.0之前使用的一种行格式（古老）<br>如图<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230419173856310.png" alt="image-20230419173856310"></p>
+<h2 id="REDUNDANT行格式"><a href="#REDUNDANT行格式" class="headerlink" title="REDUNDANT行格式"></a>REDUNDANT行格式</h2><p><code>[rɪˈdʌndənt] 冗余的  </code><br>MySQL5.0之前使用的一种行格式（古老）<br>如图<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230419173856310.png" alt="image-20230419173856310"></p>
 <p>下面主要和COMPACT行格式做比较  </p>
 <h3 id="字段长度偏移列表"><a href="#字段长度偏移列表" class="headerlink" title="字段长度偏移列表"></a>字段长度偏移列表</h3><ol>
 <li>记录了所有列</li>
-<li>偏移，即不是直接记录，而是通过加减  </li>
+<li>偏移，即不是直接记录，而是通过加减</li>
 </ol>
 <p><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230419174348286.png" alt="image-20230419174348286"></p>
-<p>同样是逆序，如第一条记录<br>06 0C 13 17 1A 24 25，则<br>第1列(RD_ROW_ID)：6字节<br>第2列(DB_TRX_ID)：6字节  0C-06=6<br>第3列(DB_ROLL_POINTER)：7字节    13-0C=7<br>第4列(c1)：4字节<br>第5列(c2)：3字节<br>第6列(c3)：10字节<br>第7列(c4)：1字节</p>
+<p>同样是逆序，如第一条记录<br>06 0C 13 17 1A 24 25，则<br>第1列(RD_ROW_ID)：6字节<br>第2列(DB_TRX_ID)：6字节  0C-06&#x3D;6<br>第3列(DB_ROLL_POINTER)：7字节    13-0C&#x3D;7<br>第4列(c1)：4字节<br>第5列(c2)：3字节<br>第6列(c3)：10字节<br>第7列(c4)：1字节</p>
 <h3 id="记录头信息"><a href="#记录头信息" class="headerlink" title="记录头信息"></a>记录头信息</h3><p>相比COMPACT行格式，多出了2个，少了一个    </p>
 <p>没有了record_type这个属性<br>多了n_field和1byte_offs_flag这两个属性：<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230419183041824.png" alt="image-20230419183041824"></p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">查询</span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">SELECT * FROM record_format_demo;</span></span><br><span class="line">+------+-----+------+------+</span><br><span class="line">| c1   | c2  | c3   | c4   |</span><br><span class="line">+------+-----+------+------+</span><br><span class="line">| aaaa | bbb | cc   | d    |</span><br><span class="line">| eeee | fff | NULL | NULL |</span><br><span class="line">+------+-----+------+------+</span><br><span class="line">2 rows in set (0.01 sec)</span><br></pre></td></tr></table></figure>
+
 <p>第一条记录的头信息为：00 00 10 0F 00 BC</p>
 <p>即：00000000 00000000 00010000 00001111 00000000 1011 1100</p>
 <p>前面2字节都是0，即预留位1，预留位2，deleted_flag，min_rec_flag，n_owned都是0<br>heap_no前面8位是0，再取5位：即 00000000 0001 0，即0x02<br>n_field：000 0000111，即0x07<br>1byte_offs_flag：0x01<br>next_record：00000000 1011 1100，即0xBC </p>
@@ -312,9 +316,9 @@
 <blockquote>
 <p>如上，0x06代表第一列(DB_ROW_ID)在真实数据的第6字节处结束；0x0C 代表第二列(DB_TRX_ID)在真实数据的第12字节处结束…. </p>
 </blockquote>
-<p>讨论：每个列对应的偏移量可以使用1字节或2字节来存储，那么什么时候1什么时候2<br><strong>根据REDUNDANT行格式记录的真实数据占用的总大小</strong>来判断<br>如果真实数据占用的字节数不大于127时，每个列对应的偏移量占用1字节<strong>[注意，这里只用到了1字节的7位，即max=01111111]</strong><br>如果大于127但不大于32767 （2^15-1，也就是15位的最大表示）时，使用2字节。  </p>
+<p>讨论：每个列对应的偏移量可以使用1字节或2字节来存储，那么什么时候1什么时候2<br><strong>根据REDUNDANT行格式记录的真实数据占用的总大小</strong>来判断<br>如果真实数据占用的字节数不大于127时，每个列对应的偏移量占用1字节**[注意，这里只用到了1字节的7位，即max&#x3D;01111111]**<br>如果大于127但不大于32767 （2^15-1，也就是15位的最大表示）时，使用2字节。  </p>
 <blockquote>
-<p>如果超过32767，则本页中只保留前768字节和20字节的<strong>溢出页面地址</strong>（20字节还有别的信息）。这种情况下只是用2字节存储每个列对应的偏移量即可（127&lt;768&lt;=32767)</p>
+<p>如果超过32767，则本页中只保留前768字节和20字节的<strong>溢出页面地址</strong>（20字节还有别的信息）。这种情况下只是用2字节存储每个列对应的偏移量即可（127&lt;768&lt;&#x3D;32767)</p>
 </blockquote>
 <p>在<strong>头信息</strong>中放置了一个1byte_offs_flag属性，值为1时表明使用1字节存储偏移量；值为0时表明使用2字节存储偏移量  </p>
 <h3 id="REDUNDANT行格式中NULL值的处理"><a href="#REDUNDANT行格式中NULL值的处理" class="headerlink" title="REDUNDANT行格式中NULL值的处理"></a>REDUNDANT行格式中NULL值的处理</h3><blockquote>
@@ -322,17 +326,18 @@
 </blockquote>
 <p>将<strong>列对应的偏移量值</strong>的<strong>第一个比特位</strong>，作为是否为NULL的依据，也称之为<strong>NULL比特位</strong><br>不论是1字节还是2字节，都要使用第1个比特位来标记该列值是否为NULL<br>对于<strong>NULL列</strong>来说，该列的类型<strong>是否为变长类型</strong>决定了该列在记录的<strong>真实数据处</strong>的存储方式。</p>
 <p>分析第2条数据<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230420232026832.png" alt="image-20230420232026832"></p>
-<p>字段长度偏移列表-&gt;按照列的顺序排放：06 0C 13 17 1A A4 A4<br>c3=NULL，且c3类型-&gt;CHAR(10) ==&gt;真实数据部分占用10字节,0x00<br>c3 原偏移量为36=32+4 = 00100100-&gt;0x24，由于为NULL，所以首位(比特)为1，所以（真实）偏移量为10100100，0xA4<br>c2偏移量为0x1A，则c2字节数为0x24-0x1A=36-26=10<br>如果<strong>存储NULL值的字段为变长数据类型</strong>，则不在记录的真实数据部分占用任何存储空间<br>所以c4的偏移量应该和c3相同，都是00100100，且由于是NULL，所以首位为1-&gt;10100100,0xA4  </p>
+<p>字段长度偏移列表-&gt;按照列的顺序排放：06 0C 13 17 1A A4 A4<br>c3&#x3D;NULL，且c3类型-&gt;CHAR(10) &#x3D;&#x3D;&gt;真实数据部分占用10字节,0x00<br>c3 原偏移量为36&#x3D;32+4 &#x3D; 00100100-&gt;0x24，由于为NULL，所以首位(比特)为1，所以（真实）偏移量为10100100，0xA4<br>c2偏移量为0x1A，则c2字节数为0x24-0x1A&#x3D;36-26&#x3D;10<br>如果<strong>存储NULL值的字段为变长数据类型</strong>，则不在记录的真实数据部分占用任何存储空间<br>所以c4的偏移量应该和c3相同，都是00100100，且由于是NULL，所以首位为1-&gt;10100100,0xA4  </p>
 <blockquote>
 <p>从结果往回推理，c4也是0xA4，和c3相同，说明c4和c3一样都是NULL</p>
 </blockquote>
 <p>COMPACT行格式的记录占用的空间更少  </p>
 <h3 id="CHAR-m-列的存储格式"><a href="#CHAR-m-列的存储格式" class="headerlink" title="CHAR(m)列的存储格式"></a>CHAR(m)列的存储格式</h3><p>COMPACT中，当定长类型CHAR(M)的字符集的每个字符占用字节不固定时，才会记录CHAR列的长度；而REDUNDANT行格式中，该列<strong>真实数据</strong>占用的存储空间大小，就是该字符集<strong>表示一个字符最多需要的字节数</strong>和<strong>M</strong>的乘积：utf8的CHAR(10)类型的列，<strong>真实数据占用存储空间大小</strong>始终为30字节；使用gbk字符集的CHAR(10)，始终20字节  </p>
 <h2 id="溢出列"><a href="#溢出列" class="headerlink" title="溢出列"></a>溢出列</h2><h3 id="溢出列-1"><a href="#溢出列-1" class="headerlink" title="溢出列"></a>溢出列</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">举例</span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">CREATE TABLE off_page_demo(</span></span><br><span class="line">      c VARCHAR(65532)</span><br><span class="line">      ) CHARSET=ascii ROW_FORMAT=COMPACT;</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">插入一条数据</span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">INSERT INTO off_page_demo(c) VALUES(REPEAT(<span class="string">&#x27;a&#x27;</span>,65532));</span></span><br><span class="line">Query OK, 1 row affected (0.06 sec)</span><br></pre></td></tr></table></figure>
+
 <blockquote>
 <p>ascii字符集中1字符占用1字节，REPEAT(‘a’,65532)生成一个把字符’a’重复65532次数的字符串</p>
 </blockquote>
-<p><strong>1页有16kb=1024*16=16384字节，65532字节远超1页大小</strong><br><strong>COMPACT和REDUNDANT行格式</strong>中，对于存储空间占用特别多的列，真实数据处只会存储该列一部分数据，剩余数据存储在<strong>几个其他的页</strong>中，在记录的真实数据处用<strong>20字节</strong>存储指向这些页的地址（当然，这20字节还包括<strong>分散在其他页面中的数据所占用的字节数</strong>）  </p>
+<p><strong>1页有16kb&#x3D;1024*16&#x3D;16384字节，65532字节远超1页大小</strong><br><strong>COMPACT和REDUNDANT行格式</strong>中，对于存储空间占用特别多的列，真实数据处只会存储该列一部分数据，剩余数据存储在<strong>几个其他的页</strong>中，在记录的真实数据处用<strong>20字节</strong>存储指向这些页的地址（当然，这20字节还包括<strong>分散在其他页面中的数据所占用的字节数</strong>）  </p>
 <blockquote>
 <p>原书加了括号里的话，不是很理解，我的理解是：这20字节指向的页中，包括了溢出的那部分数据  </p>
 </blockquote>
@@ -340,11 +345,11 @@
 <p>如上，如果列数据非常大，只会存储该列前768字节的数据以及一个指向其他页的地址（存疑，应该不止一个，有时候1个是放不下所有溢出页数据的吧？）<br>简化：<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230421100649877.png" alt="image-20230421100649877"><br>例子中列c的数据<strong>需要使用溢出页</strong>来存储，我们把这个列称为<strong>溢出列</strong>，不止VARCHAR(M)，TEXT和BLOB也可能成为溢出列  </p>
 <h3 id="产生溢出列的临界点"><a href="#产生溢出列的临界点" class="headerlink" title="产生溢出列的临界点"></a>产生溢出列的临界点</h3><p>MySQL中规定一个页<strong>至少存放2条记录</strong>  </p>
 <blockquote>
-<p>16KB=16384字节</p>
+<p>16KB&#x3D;16384字节</p>
 </blockquote>
 <p>每个页除了记录，还有额外信息，这些额外信息需要<strong>132字节</strong>。<br>每个记录需要<strong>27字节</strong>，包括  </p>
 <blockquote>
-<p>针对下面的表<br>mysql&gt; CREATE TABLE off_page_demo(<br>      c VARCHAR(65532)<br>      ) CHARSET=ascii ROW_FORMAT=COMPACT;</p>
+<p>针对下面的表<br>mysql&gt; CREATE TABLE off_page_demo(<br>      c VARCHAR(65532)<br>      ) CHARSET&#x3D;ascii ROW_FORMAT&#x3D;COMPACT;</p>
 <p><strong>注意，是COMPACT行格式</strong></p>
 </blockquote>
 <p><strong>对于每一行记录</strong><br>存储真实数据长度（2字节）<br>存储列是否为NULL值（1字节）<br>5字节大小的头信息<br>6字节的row_id列<br>6字节的row_id列<br>7字节的roll_pointer列  </p>
@@ -421,7 +426,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">45:25</span>
+    <span title="站点阅读时长">45:37</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动

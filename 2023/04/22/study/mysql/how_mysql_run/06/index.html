@@ -276,7 +276,7 @@
         <i class="far fa-clock"></i>
       </span>
       <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>18 分钟</span>
+      <span>19 分钟</span>
     </span>
 </div>
 
@@ -308,6 +308,7 @@
 </ul>
 <p><strong>没有索引</strong>情况下，不能快速定位到所在页，只能从<strong>第一页</strong>沿着<strong>双向链表</strong>一直往下找，而如果是主键，每一页则可以在<strong>页目录</strong>二分查找。<br>不过由于要<strong>遍历所有页</strong>，所以超级<strong>耗时</strong></p>
 <h1 id="索引"><a href="#索引" class="headerlink" title="索引"></a>索引</h1><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">例子</span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">CREATE TABLE index_demo(</span></span><br><span class="line">      c1 INT,</span><br><span class="line">      c2 INT,</span><br><span class="line">      c3 CHAR(1),</span><br><span class="line">      PRIMARY KEY(c1)</span><br><span class="line">      ) ROW_FORMAT=COMPACT;</span><br></pre></td></tr></table></figure>
+
 <blockquote>
 <p>完整的行格式</p>
 </blockquote>
@@ -326,9 +327,11 @@
 <h2 id="一个简单的索引方案"><a href="#一个简单的索引方案" class="headerlink" title="一个简单的索引方案"></a>一个简单的索引方案</h2><p>思考：在<strong>根据某个条件</strong>查找一些记录，为什么要<strong>遍历所有</strong>的<strong>数据页</strong>呢？因为各个<strong>页</strong>中的记录没有规律，不知道<strong>搜索条件会匹配哪些页</strong><br>思路：为<strong>快速定位</strong>记录所在的<strong>数据页</strong>而建立一个别的目录  </p>
 <h3 id="有序"><a href="#有序" class="headerlink" title="有序"></a>有序</h3><p>下一个数据页中<strong>用户记录</strong>的<strong>主键值</strong>必须大于上一页<strong>用户记录</strong>的<strong>主键值</strong><br>假设一页只能存放3条记录   </p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">插入3条记录</span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">INSERT INTO index_demo VALUES(1,4,<span class="string">&#x27;u&#x27;</span>),(3,9,<span class="string">&#x27;d&#x27;</span>),(5,3,<span class="string">&#x27;y&#x27;</span>);</span></span><br><span class="line">Query OK, 3 rows affected (0.02 sec)</span><br><span class="line">Records: 3  Duplicates: 0  Warnings: 0</span><br></pre></td></tr></table></figure>
+
 <p>此时页的情况<br><strong>记录组成了单链表</strong><br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230423120232629.png" alt="image-20230423120232629"></p>
 <p>再<strong>插入一条记录</strong>  </p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">INSERT INTO index_demo VALUES(4,4,<span class="string">&#x27;a&#x27;</span>);</span></span><br><span class="line">Query OK, 1 row affected (0.01 sec)</span><br></pre></td></tr></table></figure>
+
 <p>(注意，页之间可能<strong>不是连续</strong>的)</p>
 <p><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230423120335929.png" alt="image-20230423120335929"></p>
 <p>由于页10中<strong>最大记录</strong>是<strong>5</strong>，而页28中有一条记录是<strong>4</strong>，因为5&gt;4，不符合<strong>下一个数据页中用户记录的主键值</strong>必须<strong>大于上一页中用户记录的主键值</strong>，所以在<strong>插入主键值为4的记录时需要伴随着一次记录移动</strong>，也就是把5的记录移动到<strong>页28</strong>中，再把<strong>主键值4</strong>的记录<strong>插入到页10中</strong><br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230423122233694.png" alt="image-20230423122233694"></p>
@@ -337,7 +340,7 @@
 <p>1页有16KB，这些页在磁盘上可能并不连续，<strong>要想从这么多页中</strong>根据<strong>主键值</strong>快速定位<strong>某些记录所在的页</strong>，需要给他们编制一个<strong>目录</strong>，每个页对应一个<strong>目录项</strong>，每个目录项包括<strong>两部分</strong>：  </p>
 <ul>
 <li>页的<strong>用户记录</strong>中<strong>最小的主键值</strong>，用<strong>key</strong>表示</li>
-<li>页号，<strong>page_no</strong>表示 </li>
+<li>页号，<strong>page_no</strong>表示</li>
 </ul>
 <p><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230423122846720.png" alt="image-20230423122846720"></p>
 <p>假设我们此时把<strong>目录项</strong>在<strong>物理存储器上连续存储</strong>，比如放到数组中，此时就可以<strong>根据主键值</strong>快速查找<strong>某条记录</strong>  </p>
@@ -353,7 +356,7 @@
 <p>这个目录项的别名：<strong>索引</strong></p>
 <h2 id="InnoDB中的索引方案"><a href="#InnoDB中的索引方案" class="headerlink" title="InnoDB中的索引方案"></a>InnoDB中的索引方案</h2><h3 id="上述方案的问题"><a href="#上述方案的问题" class="headerlink" title="上述方案的问题"></a>上述方案的问题</h3><ul>
 <li>InnoDB使用页作为<strong>管理存储空间</strong>的基本单位，即<strong>只能保证16KB</strong>的<strong>连续存储空间</strong>，如果记录非常多，则需要的<strong>连续存储空间</strong>就<strong>非常大</strong></li>
-<li><strong>增删改</strong>是很频繁的，如果页28的记录全部移除，那么目录项2就没有出现的必要，即<strong>要删除目录项2</strong>，那么所有的<strong>目录项</strong>都需要<strong>左移</strong>/或者不移动，作为冗余<strong>放到目录项列表</strong>中，浪费空间</li>
+<li><strong>增删改</strong>是很频繁的，如果页28的记录全部移除，那么目录项2就没有出现的必要，即<strong>要删除目录项2</strong>，那么所有的<strong>目录项</strong>都需要<strong>左移</strong>&#x2F;或者不移动，作为冗余<strong>放到目录项列表</strong>中，浪费空间</li>
 </ul>
 <h3 id="方案"><a href="#方案" class="headerlink" title="方案"></a>方案</h3><p>复用之前存储用户记录的<strong>数据页</strong>来存储目录项，用了和<strong>用户记录</strong>进行区分，把这些<strong>用来表示目录项</strong>的记录称为<strong>目录项记录</strong>。如何区分一条记录是<strong>普通用户记录</strong>，还是<strong>目录项记录</strong>：使用<strong>记录头信息</strong>中的<strong>record_type</strong>属性  </p>
 <ul>
@@ -387,23 +390,23 @@
 <p><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230423141605646.png" alt="image-20230423141605646"></p>
 <p>此时再进行查找</p>
 <ul>
-<li>确定存储目录项记录的页<br>现在<strong>存储目录项记录的页</strong>有2个，即页30和页32。又因为页30表示的目录项<strong>记录主键值</strong>范围是<strong>[1，320)</strong>，页32表示的<strong>目录项记录主键值</strong>范围 <strong>&gt; 320</strong>。所以确定主键值为20的记录<strong>对应的目录项记录</strong>在页30中</li>
+<li>确定存储目录项记录的页<br>现在<strong>存储目录项记录的页</strong>有2个，即页30和页32。又因为页30表示的目录项<strong>记录主键值</strong>范围是**[1，320)<strong>，页32表示的</strong>目录项记录主键值<strong>范围 <strong>&gt; 320</strong>。所以确定主键值为20的记录</strong>对应的目录项记录**在页30中</li>
 <li>按照<strong>单个</strong> <strong>目录项记录页</strong>的方案查找</li>
 </ul>
 <h2 id="多个目录项记录页"><a href="#多个目录项记录页" class="headerlink" title="多个目录项记录页"></a>多个目录项记录页</h2><p>如果数据再增加，则再<strong>生成存储更高级目录项记录</strong>的<strong>数据页</strong><br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230423142254862.png" alt="image-20230423142254862"></p>
 <p>无论是<strong>存放用户记录</strong>的数据页，还是<strong>存放目录项记录</strong>的数据页，都放到B+树数据结构中，我们也将这些<strong>数据页</strong>称为<strong>B+树的节点</strong><br>如图，我们真正的<strong>用户记录</strong>其实都存放在B+树<strong>最底层的节点上</strong>，这些节点也称为<strong>叶子节点</strong>或<strong>页节点</strong>，其余用来存放<strong>目录项记录</strong>的节点称为<strong>非叶子节点</strong>或者<strong>内节点</strong>，其中B+树最上边的那个节点也称为<strong>根节点</strong><br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230423142809455.png" alt="image-20230423142809455"></p>
-<p>这里我们规定，<strong>最下面</strong>那层（存放<strong>用户记录</strong>的那层）为0层，之后<strong>层级</strong>依次往上加。<br>这里我们假设所有存放<strong>用户记录</strong>的<strong>叶子节点</strong>所代表的<strong>数据页</strong>可以存放100条<strong>用户记录</strong>（16KB=16 <em> 1024 ≈10000 字节，差不多一条记录100字节），假设所有存放<strong>目录项记录</strong>的<strong>内节点</strong>所代表的<strong>数据页</strong>可以存放1000条<strong>目录项记录</strong>（10000字节，假设<em>*1个目录项10字节</em></em>），那么如果  </p>
+<p>这里我们规定，<strong>最下面</strong>那层（存放<strong>用户记录</strong>的那层）为0层，之后<strong>层级</strong>依次往上加。<br>这里我们假设所有存放<strong>用户记录</strong>的<strong>叶子节点</strong>所代表的<strong>数据页</strong>可以存放100条<strong>用户记录</strong>（16KB&#x3D;16 * 1024 ≈10000 字节，差不多一条记录100字节），假设所有存放<strong>目录项记录</strong>的<strong>内节点</strong>所代表的<strong>数据页</strong>可以存放1000条<strong>目录项记录</strong>（10000字节，假设<strong>1个目录项10字节</strong>），那么如果  </p>
 <ul>
 <li>如果B+树有1层，那么只有一个用于存放用户记录的节点，那么能存放100条用户记录（1百）</li>
-<li>如果B+树有2层，那么能存放 1000 * 100=100,000条用户记录(10万)</li>
-<li>如果B+树有3层，那么能存放 1000 <em> 1000 </em> 100=100,000,000条用户记录(1亿)</li>
-<li>如果B+树有4层，那么能存放 1000 <em> 1000 </em> 1000 * 100=100,000,000,000条用户记录 (1000亿)</li>
+<li>如果B+树有2层，那么能存放 1000 * 100&#x3D;100,000条用户记录(10万)</li>
+<li>如果B+树有3层，那么能存放 1000 * 1000 * 100&#x3D;100,000,000条用户记录(1亿)</li>
+<li>如果B+树有4层，那么能存放 1000 * 1000 * 1000 * 100&#x3D;100,000,000,000条用户记录 (1000亿)</li>
 </ul>
 <p>所以<strong>一般情况</strong>下，我们用到的<strong>B+树不会超过4层</strong>。  </p>
-<p>当我们要通过<strong>主键值</strong>查找<strong>某条记录  </strong></p>
+<p>当我们要通过<strong>主键值</strong>查找**某条记录  **</p>
 <ul>
 <li><strong>最多只需要进行</strong>4个页面内的查找（查找<strong>3个存储目录项记录</strong>的页和<strong>1个存储用户记录</strong>的页）  </li>
-<li>每个页面内存在<strong>PageDirectory（页目录）</strong>，所以在页面内<strong>也可以</strong>通过<strong>二分法</strong>快速定位记录  </li>
+<li>每个页面内存在<strong>PageDirectory（页目录）</strong>，所以在页面内<strong>也可以</strong>通过<strong>二分法</strong>快速定位记录</li>
 </ul>
 <blockquote>
 <p>PageHeader中，有一个名为<strong>PAGE_LEVEL</strong>的属性，代表着<strong>这个数据页</strong>作为<strong>节点</strong>在B+树中的层级</p>
@@ -422,6 +425,8 @@
 <h3 id="二级索引"><a href="#二级索引" class="headerlink" title="二级索引"></a>二级索引</h3><p>聚簇索引只能在搜索条件是<strong>主键值</strong>时才发挥作用，如果要以别的列作为搜索条件，可以<strong>多建几颗B+树</strong>，而且不同<strong>B+树</strong>中的数据，采用<strong>不同的排序规则</strong>  </p>
 <blockquote>
 <p>比如用c2列的大小作为<strong>数据页</strong>、<strong>页中记录</strong>的排序规则，再建一颗B+树</p>
+</blockquote>
+<blockquote>
 <p> “前言：c1已经是主键了”  </p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">例子</span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">CREATE TABLE index_demo(</span></span><br><span class="line">      c1 INT,</span><br><span class="line">      c2 INT,</span><br><span class="line">      c3 CHAR(1),</span><br><span class="line">      PRIMARY KEY(c1)</span><br><span class="line">      ) ROW_FORMAT=COMPACT;</span><br></pre></td></tr></table></figure>
 </blockquote>
@@ -439,24 +444,24 @@
 <li>目录项记录中不再是<strong>主键+页号</strong>的匹配，而变成了<strong>c2列+页号</strong>的搭配</li>
 </ul>
 <p>B+树如下<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230423165035649.png" alt="image-20230423165035649"></p>
-<h4 id="举例-1"><a href="#举例-1" class="headerlink" title="举例"></a>举例</h4><p>假设要查找c2=4的记录，可以使用上面的B+树。由于c2没有唯一性约束，所以可能会有很多条：我们只需要在<strong>该B+树的叶子节点处</strong>定位到<strong>第一条</strong>满足搜索条件c2=4的那条，然后由<strong>记录</strong>组成的单向链表<strong>一直向后扫描</strong>即可。另外，<strong>各个叶子节点</strong>组成了<strong>双向链表</strong>，搜索完了<strong>本页面的记录</strong>后可以顺利跳到<strong>下一个页面</strong>中的<strong>第一条记录</strong>，然后沿着记录组成的<strong>单向链表</strong>向后扫描  </p>
+<h4 id="举例-1"><a href="#举例-1" class="headerlink" title="举例"></a>举例</h4><p>假设要查找c2&#x3D;4的记录，可以使用上面的B+树。由于c2没有唯一性约束，所以可能会有很多条：我们只需要在<strong>该B+树的叶子节点处</strong>定位到<strong>第一条</strong>满足搜索条件c2&#x3D;4的那条，然后由<strong>记录</strong>组成的单向链表<strong>一直向后扫描</strong>即可。另外，<strong>各个叶子节点</strong>组成了<strong>双向链表</strong>，搜索完了<strong>本页面的记录</strong>后可以顺利跳到<strong>下一个页面</strong>中的<strong>第一条记录</strong>，然后沿着记录组成的<strong>单向链表</strong>向后扫描  </p>
 <h5 id="查找过程"><a href="#查找过程" class="headerlink" title="查找过程"></a>查找过程</h5><ol>
-<li><p>确定第一条符合c2=4条件的<strong>目录项记录</strong>所在的<strong>页</strong>  </p>
+<li><p>确定第一条符合c2&#x3D;4条件的<strong>目录项记录</strong>所在的<strong>页</strong>  </p>
 <blockquote>
-<p>根据<strong>根页面（44）</strong>可以快速定位到第一条符合c2=4条件的目录项记录所在页为页42（因为2&lt;4&lt;9)</p>
+<p>根据<strong>根页面（44）</strong>可以快速定位到第一条符合c2&#x3D;4条件的目录项记录所在页为页42（因为2&lt;4&lt;9)</p>
 </blockquote>
 </li>
-<li><p>通过第一条符合c2=4条件的目录项记录<strong>所在的页面</strong>确定第一条符合c2=4条件的<strong>用户记录</strong>所在的<strong>页</strong>  </p>
+<li><p>通过第一条符合c2&#x3D;4条件的目录项记录<strong>所在的页面</strong>确定第一条符合c2&#x3D;4条件的<strong>用户记录</strong>所在的<strong>页</strong>  </p>
 <blockquote>
-<p>根据页42可以快速定位（通过<strong>页目录</strong>）到第一条符合条件的<strong>用户记录</strong>所在页为34或35，因为2&lt;4&lt;=4</p>
+<p>根据页42可以快速定位（通过<strong>页目录</strong>）到第一条符合条件的<strong>用户记录</strong>所在页为34或35，因为2&lt;4&lt;&#x3D;4</p>
 </blockquote>
 </li>
-<li><p>在<strong>真正存储</strong>第一条符合c2=4条件的<strong>用户记录的页</strong>中定位到具体的记录  </p>
+<li><p>在<strong>真正存储</strong>第一条符合c2&#x3D;4条件的<strong>用户记录的页</strong>中定位到具体的记录  </p>
 <blockquote>
 <p>页34和页35中定位到具体的用户记录（如果页34使用<strong>页目录</strong>定位到<strong>第一条</strong>符合条件的用户记录，就不需要再到35中去再定位，因为直接一直往后查找到<strong>不等的记录</strong>即可）</p>
 </blockquote>
 </li>
-<li><p>由于这个B+树的叶子节点的记录<strong>只存储了c2和c1（即主键）</strong>两个列。在叶子节点定位到<strong>第一条</strong>符合条件的那条用户记录之后，我们需要根据该纪录中的<strong>主键信息</strong>，到<strong>聚簇索引</strong>中查找到<strong>完整的用户记录</strong>，这个通过<strong>携带主键信息</strong>到<strong>聚簇索引</strong>中重新定位<strong>完整的用户记录</strong>的过程也称为<strong>回表</strong>  。<br>然后再返回到这棵B+ 树的<strong>叶子节点</strong>处，找到刚才定位到的<strong>符合条件</strong>的那条用户记录，并沿着记录组成的<strong>单向链表向后</strong>继续搜索其他也满足c2=4的记录<strong>，每找到一条</strong>的话就继续进行回表操作。重复这个过程，<strong>直到</strong>下一条记录<strong>不满足c2 =4</strong>的这个条件为止.</p>
+<li><p>由于这个B+树的叶子节点的记录<strong>只存储了c2和c1（即主键）</strong>两个列。在叶子节点定位到<strong>第一条</strong>符合条件的那条用户记录之后，我们需要根据该纪录中的<strong>主键信息</strong>，到<strong>聚簇索引</strong>中查找到<strong>完整的用户记录</strong>，这个通过<strong>携带主键信息</strong>到<strong>聚簇索引</strong>中重新定位<strong>完整的用户记录</strong>的过程也称为<strong>回表</strong>  。<br>然后再返回到这棵B+ 树的<strong>叶子节点</strong>处，找到刚才定位到的<strong>符合条件</strong>的那条用户记录，并沿着记录组成的<strong>单向链表向后</strong>继续搜索其他也满足c2&#x3D;4的记录<strong>，每找到一条</strong>的话就继续进行回表操作。重复这个过程，<strong>直到</strong>下一条记录<strong>不满足c2 &#x3D;4</strong>的这个条件为止.</p>
 </li>
 </ol>
 <blockquote>
@@ -469,13 +474,13 @@
 <h3 id="联合索引"><a href="#联合索引" class="headerlink" title="联合索引"></a>联合索引</h3><p>同时以<strong>多个列</strong>的大小作为<strong>排序规则</strong>，也就是同时为<strong>多个列</strong>建立索引，含义：  </p>
 <ol>
 <li>先把各个<strong>记录</strong>和<strong>页</strong>按照<strong>c2列</strong>进行排序</li>
-<li>记录的c2列相同的情况下，再采用c3进行排序  </li>
+<li>记录的c2列相同的情况下，再采用c3进行排序</li>
 </ol>
 <p><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230423171548379.png" alt="image-20230423171548379"></p>
 <ol>
 <li><p>每条<strong>目录项记录</strong>都由c2列、c3列、页号这3个部分组成。各条记录先按照<strong>c2列的值</strong>进行排序。如果记录的c2列<strong>相同</strong>，则按照<strong>c3列的值</strong>进行排序  </p>
 <blockquote>
-<p>这里说的是极特殊的情况，也就是c2列相同的记录有<strong>很多很多条</strong>，导致<strong>好几个页都有c2 = x</strong>的记录，而且其中c3列的值还不同，那么就会出现<strong>目录项记录页</strong>中的目录项c2相同而c3不相同</p>
+<p>这里说的是极特殊的情况，也就是c2列相同的记录有<strong>很多很多条</strong>，导致<strong>好几个页都有c2 &#x3D; x</strong>的记录，而且其中c3列的值还不同，那么就会出现<strong>目录项记录页</strong>中的目录项c2相同而c3不相同</p>
 </blockquote>
 </li>
 <li><p>B+树<strong>叶子节点</strong>处的用户记录由c2列、c3列、和主键c1列组成</p>
@@ -495,10 +500,11 @@
 <p>在这个过程中，需要特别注意的是， 一个<strong>B+ 树索引的根节点自创建之日</strong>起便<strong>不会再移动</strong>(也就是<strong>页号不再改变</strong>)。<br>由于这个特性，只要我们对<strong>某个表</strong>建立一个<strong>索引</strong>，那么它的<strong>根节点的页号便会被</strong>记录到某个地方，后续凡是InnoDB引擎需要用到这个索引，会从那个<strong>固定的地方</strong>取出<strong>根节点的页号</strong>，从而访问这个索引  </p>
 <blockquote>
 <p>“存储某个索引的根节点在哪个页面中”，就是传说中的<strong>数据字典</strong>中的一项信息</p>
+</blockquote>
+<blockquote>
 <p>这里还有一个问题，书上没说，就是根节点作为a，b页的存储目录项记录的页，一旦后面页越来越多，根节点放不下了，接下来<br>我猜是这样的，也是再新分配一个页X，然后对页X页分裂，得到页Y。把根节点此时的所有目录项全复制到页X，然后新插入的目录项记录根据键值分配到页X，或Y，然后根节点又变为<strong>存储目录项记录</strong>的页</p>
 </blockquote>
 <h3 id="内节点中目录项记录的唯一性"><a href="#内节点中目录项记录的唯一性" class="headerlink" title="内节点中目录项记录的唯一性"></a>内节点中目录项记录的唯一性</h3><p>目前为止，我们说<strong>B+树索引</strong>的<strong>内节点</strong>中，<strong>目录项记录</strong>的内容是<strong>索引列</strong>加<strong>页号</strong>的搭配，但是这个搭配对<strong>二级索引</strong>来说有点儿不太严谨。以下面这个表为例（c1是主键，c2是二级索引）  </p>
-<div class="table-container">
 <table>
 <thead>
 <tr>
@@ -507,8 +513,7 @@
 <th>c3</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>1</td>
 <td>1</td>
 <td>‘u’</td>
@@ -528,11 +533,9 @@
 <td>1</td>
 <td>‘a’</td>
 </tr>
-</tbody>
-</table>
-</div>
+</tbody></table>
 <p>如果<strong>二级索引</strong>中，目录项记录的内容只是<strong>索引列+页号</strong>的匹配，那么为c2列建立索引后的B+树如下图6-16<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230423232353741.png" alt="image-20230423232353741"></p>
-<p>如果此时再插入一条记录 c1=9，c2=1，c3=’c’，那么在修改为c2列建立的<strong>二级索引</strong>对应的<strong>B+树</strong>时：由于页3中存储的目录项记录由<strong>c2列+页号</strong>构成，页3中两条目录项记录<strong>对应的c2列都是1</strong>，而新插入的这条记录中，c2列也是1，那么这条新插入的记录应该放在页4还是页5？<br>为了保证B+树<strong>同一层内节点</strong>的<strong>目录项记录</strong>除了<strong>页号</strong>这个字段以外是<strong>唯一</strong>，所以<strong>二级索引</strong>的<strong>内节点</strong>的<strong>目录项记录</strong>内容实际上由3部分构成：  <strong>索引列的值</strong>，<strong>主键值</strong>，<strong>页号</strong>  ，如上<strong>图6-17</strong></p>
+<p>如果此时再插入一条记录 c1&#x3D;9，c2&#x3D;1，c3&#x3D;’c’，那么在修改为c2列建立的<strong>二级索引</strong>对应的<strong>B+树</strong>时：由于页3中存储的目录项记录由<strong>c2列+页号</strong>构成，页3中两条目录项记录<strong>对应的c2列都是1</strong>，而新插入的这条记录中，c2列也是1，那么这条新插入的记录应该放在页4还是页5？<br>为了保证B+树<strong>同一层内节点</strong>的<strong>目录项记录</strong>除了<strong>页号</strong>这个字段以外是<strong>唯一</strong>，所以<strong>二级索引</strong>的<strong>内节点</strong>的<strong>目录项记录</strong>内容实际上由3部分构成：  <strong>索引列的值</strong>，<strong>主键值</strong>，<strong>页号</strong>  ，如上<strong>图6-17</strong></p>
 <blockquote>
 <p>插入记录（9，1，’c’）时，由于页3 中存储的目录项记录是由<strong>c2 列</strong>+ <strong>主键</strong>+<strong>页号</strong>构成的， 因此可以先把<strong>新记录的c2 列</strong>的值和<strong>页3 中各目录项</strong>记录的c2 列的值进行比较， 如果<strong>c2 列的值</strong>相同，可以<strong>接着比较主键值</strong>。因为B+ 树<strong>同一层中不同目录项记录</strong>的c2 列+主键的值肯定是不一样的，所以最后肯定<strong>能定位到唯一的一条目录项记录</strong>。<br>在本例中， 最后确定新记录应该插入到页5 中</p>
 </blockquote>
@@ -550,16 +553,18 @@
 <h3 id="索引-1"><a href="#索引-1" class="headerlink" title="索引"></a>索引</h3><p>MyISAM存储引擎会把<strong>索引信息</strong>单独存储到<strong>另一个文件中</strong>（即<strong>索引文件</strong>）<br>MyISAM会为表的主键<strong>单独</strong>创建一个索引，只不过在<strong>索引</strong>的叶子节点中存储的<strong>不是完整用户记录</strong>，而是<strong>主键值与行号</strong>的结合。即先通过<strong>索引</strong>找到对应的<strong>行号</strong>，再通过<strong>行号</strong>去找对应的<strong>记录</strong><br>与InnoDB不同，InnoDB存储隐情中，只需根据<strong>主键值</strong>对<strong>聚簇索引</strong>进行依次查找就能找到对应记录，而<strong>MyISAM</strong>中却需要进行一次<strong>回表</strong>操作。意味着<strong>MyISAM</strong>中建立的索引相当于都是<strong>二级索引</strong>  </p>
 <h3 id="其他索引"><a href="#其他索引" class="headerlink" title="其他索引"></a>其他索引</h3><p>可以为其他列<strong>分别建立索引</strong>或者<strong>建立联合索引</strong>，原理与InnoDB差不多，只不过叶子节点存储的是相应的<strong>列</strong>+<strong>行号</strong>（InnoDB中存储的则是<strong>主键</strong>）。这些索引也都是<strong>二级索引</strong>。  </p>
 <blockquote>
-<p>MyISAM行格式有<strong>定长记录格式Static</strong>、<strong>变长记录格式Dynamic</strong>、<strong>压缩记录格式 Compressed</strong>。图6-18就是定长记录格式，即<strong>一条记录</strong>占用的存储空间是固定的，这样就可以<strong>使用行号</strong>轻松算出<strong>某条记录</strong>在数据文件中的<strong>地址偏移量</strong>，但是变长记录格式就不行乐，MyISAM会直接在<strong>索引叶子节点处</strong>存储该记录在<strong>数据文件</strong>中的<strong>偏移量</strong>。==&gt; MyISAM回表快速，因为是拿着<strong>地址偏移量</strong>直接到文件中取数据。而InnoDB则是<strong>获取主键</strong>后，再去从<strong>聚簇索引</strong>中查找。</p>
+<p>MyISAM行格式有<strong>定长记录格式Static</strong>、<strong>变长记录格式Dynamic</strong>、<strong>压缩记录格式 Compressed</strong>。图6-18就是定长记录格式，即<strong>一条记录</strong>占用的存储空间是固定的，这样就可以<strong>使用行号</strong>轻松算出<strong>某条记录</strong>在数据文件中的<strong>地址偏移量</strong>，但是变长记录格式就不行乐，MyISAM会直接在<strong>索引叶子节点处</strong>存储该记录在<strong>数据文件</strong>中的<strong>偏移量</strong>。&#x3D;&#x3D;&gt; MyISAM回表快速，因为是拿着<strong>地址偏移量</strong>直接到文件中取数据。而InnoDB则是<strong>获取主键</strong>后，再去从<strong>聚簇索引</strong>中查找。</p>
 </blockquote>
 <h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>InnoDB：索引即数据<br>MyISAM：索引是索引，数据是数据</p>
-<h2 id="MySQL中创建和删除索引的语句"><a href="#MySQL中创建和删除索引的语句" class="headerlink" title="MySQL中创建和删除索引的语句"></a>MySQL中创建和删除索引的语句</h2><p>InnoDB会自动为<strong>主键</strong>或者<strong>带有UNIQUE </strong>属性的列建立索引  </p>
+<h2 id="MySQL中创建和删除索引的语句"><a href="#MySQL中创建和删除索引的语句" class="headerlink" title="MySQL中创建和删除索引的语句"></a>MySQL中创建和删除索引的语句</h2><p>InnoDB会自动为<strong>主键</strong>或者**带有UNIQUE **属性的列建立索引  </p>
 <blockquote>
-<p>InnoDB不会自动为每个列创建索引，因为<strong>每</strong>建立一个索引都会建立一颗<strong>B+</strong>树，且<strong>增删改</strong>都要维护各个记录、数据页的<strong>排序关系</strong>，费<strong>性能</strong>和<strong>存储空间</strong>  </p>
+<p>InnoDB不会自动为每个列创建索引，因为<strong>每</strong>建立一个索引都会建立一颗<strong>B+<strong>树，且</strong>增删改</strong>都要维护各个记录、数据页的<strong>排序关系</strong>，费<strong>性能</strong>和<strong>存储空间</strong>  </p>
 </blockquote>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">语法</span></span><br><span class="line">CREATE TABLE 表名(</span><br><span class="line">	各个列的信息...,</span><br><span class="line">	(KEY|INDEX) 索引名 (需要被索引的单个列或多个列);</span><br><span class="line">)</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">修改表结构</span>  </span><br><span class="line">ALTER TABLE 表名 ADD (INDEX|KEY) 索引名 (需要被索引的单个列或多个列);</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">修改表结构的时候删除索引</span></span><br><span class="line">ALTER TABLE 表名 DROP (INDEX|KEY) 索引名;</span><br></pre></td></tr></table></figure>
+
 <p>实例：  </p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">CREATE TABLE index_demo(</span></span><br><span class="line">      c1 INT,</span><br><span class="line">      c2 INT,</span><br><span class="line">      c3 CHAR(1),</span><br><span class="line">      PRIMARY KEY (c1),</span><br><span class="line">      INDEX idx_c2_c3 (c2,c3)</span><br><span class="line">      );</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">查看建表语句</span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">SHOW CREATE TABLE index_demo;</span></span><br><span class="line">+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+</span><br><span class="line">| Table      | Create Table                                                                                                                                                                                            |</span><br><span class="line">+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+</span><br><span class="line">| index_demo | CREATE TABLE `index_demo` (</span><br><span class="line">  `c1` int(11) NOT NULL,</span><br><span class="line">  `c2` int(11) DEFAULT NULL,</span><br><span class="line">  `c3` char(1) DEFAULT NULL,</span><br><span class="line">  PRIMARY KEY (`c1`),</span><br><span class="line">  KEY `idx_c2_c3` (`c2`,`c3`)</span><br><span class="line">) ENGINE=InnoDB DEFAULT CHARSET=utf8 |</span><br><span class="line">+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+</span><br><span class="line">1 row in set (0.00 sec)</span><br></pre></td></tr></table></figure>
+
 
     </div>
 
@@ -621,7 +626,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">45:25</span>
+    <span title="站点阅读时长">45:37</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动

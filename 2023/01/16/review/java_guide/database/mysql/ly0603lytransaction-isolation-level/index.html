@@ -270,17 +270,50 @@
     
     
     <div class="post-body" itemprop="articleBody"><blockquote>
-<p>转载自<a target="_blank" rel="noopener" href="https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!">https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!</a></p>
+<p>转载自<a target="_blank" rel="noopener" href="https://github.com/Snailclimb/JavaGuide%EF%BC%88%E6%B7%BB%E5%8A%A0%E5%B0%8F%E9%83%A8%E5%88%86%E7%AC%94%E8%AE%B0%EF%BC%89%E6%84%9F%E8%B0%A2%E4%BD%9C%E8%80%85">https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者</a>!</p>
 </blockquote>
 <h1 id="事务隔离级别总结"><a href="#事务隔离级别总结" class="headerlink" title="事务隔离级别总结"></a>事务隔离级别总结</h1><ul>
 <li><p>SQL标准定义了<strong>四个隔离级别</strong></p>
 <ol>
-<li><strong>READ-UNCOMMITTED(读取未提交)</strong>：<strong>最低</strong>的隔离级别，允许读取<strong>尚未提交的数据</strong>变更，可能会导致<strong>脏读、幻读或不可重复读</strong></li>
-<li><strong>READ-COMMITED(读取已提交)</strong>：允许读取<strong>并发事务</strong> <strong>已经提交</strong>的数据，可以阻止<strong>脏读</strong>，但是<strong>幻读</strong>或<strong>不可重复读</strong>仍有可能发生</li>
-<li><strong>REPEATABLE-READ(可重复读)</strong>：对<strong>同一字段的多次读取</strong>结果都是一致的，除非数据是被<strong>本身事务自己</strong>所修改，可以<strong>阻止脏读</strong>和<strong>不可重复读</strong>，但<strong>幻读</strong>仍有可能发生</li>
-<li><strong>SERIALIZABLE(可串行化)</strong>：<strong>最高</strong>的隔离级别，<strong>完全服从ACID</strong>的隔离级别。所有的<strong>事务依次逐个</strong>执行，这样事务之间就<strong>完全不可能产生干扰</strong>，也就是说，该级别可以防止<strong>脏读</strong>、<strong>不可重复读</strong>以及<strong>幻读</strong>。</li>
+<li><strong>READ-UNCOMMITTED(读取未提交)<strong>：</strong>最低</strong>的隔离级别，允许读取<strong>尚未提交的数据</strong>变更，可能会导致<strong>脏读、幻读或不可重复读</strong></li>
+<li><strong>READ-COMMITED(读取已提交)<strong>：允许读取</strong>并发事务</strong> <strong>已经提交</strong>的数据，可以阻止<strong>脏读</strong>，但是<strong>幻读</strong>或<strong>不可重复读</strong>仍有可能发生</li>
+<li><strong>REPEATABLE-READ(可重复读)<strong>：对</strong>同一字段的多次读取</strong>结果都是一致的，除非数据是被<strong>本身事务自己</strong>所修改，可以<strong>阻止脏读</strong>和<strong>不可重复读</strong>，但<strong>幻读</strong>仍有可能发生</li>
+<li><strong>SERIALIZABLE(可串行化)<strong>：</strong>最高</strong>的隔离级别，<strong>完全服从ACID</strong>的隔离级别。所有的<strong>事务依次逐个</strong>执行，这样事务之间就<strong>完全不可能产生干扰</strong>，也就是说，该级别可以防止<strong>脏读</strong>、<strong>不可重复读</strong>以及<strong>幻读</strong>。</li>
 </ol>
-<p>|     隔离级别     | 脏读 | 不可重复读 | 幻读 |<br>| :———————: | :—: | :————: | :—: |<br>| READ-UNCOMMITTED |  √   |     √      |  √   |<br>|  READ-COMMITTED  |  ×   |     √      |  √   |<br>| REPEATABLE-READ  |  ×   |     ×      |  √   |<br>|   SERIALIZABLE   |  ×   |     ×      |  ×   |</p>
+<table>
+<thead>
+<tr>
+<th align="center">隔离级别</th>
+<th align="center">脏读</th>
+<th align="center">不可重复读</th>
+<th align="center">幻读</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">READ-UNCOMMITTED</td>
+<td align="center">√</td>
+<td align="center">√</td>
+<td align="center">√</td>
+</tr>
+<tr>
+<td align="center">READ-COMMITTED</td>
+<td align="center">×</td>
+<td align="center">√</td>
+<td align="center">√</td>
+</tr>
+<tr>
+<td align="center">REPEATABLE-READ</td>
+<td align="center">×</td>
+<td align="center">×</td>
+<td align="center">√</td>
+</tr>
+<tr>
+<td align="center">SERIALIZABLE</td>
+<td align="center">×</td>
+<td align="center">×</td>
+<td align="center">×</td>
+</tr>
+</tbody></table>
 </li>
 <li><p>MySQL InnoDB 存储引擎的默认支持的隔离级别是 <strong>REPEATABLE-READ（可重读）</strong></p>
 <blockquote>
@@ -288,7 +321,7 @@
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">MySQL&gt; </span><span class="language-bash">SELECT @@tx_isolation;</span></span><br><span class="line">+-----------------+</span><br><span class="line">| @@tx_isolation  |</span><br><span class="line">+-----------------+</span><br><span class="line">| REPEATABLE-READ |</span><br><span class="line">+-----------------+ </span><br></pre></td></tr></table></figure>
 </blockquote>
 </li>
-<li><p>从上面对SQL标准定义了<strong>四个隔离级别</strong>的介绍可以看出，标准的SQL隔离级别里，<strong>REPEATABLE-READ(可重复读)</strong>是不可以防止幻读的。但是，<strong>InnoDB实现的REPEATABLE-READ</strong> 隔离级别其实是可以<strong>解决幻读</strong>问题发生的，分两种情况</p>
+<li><p>从上面对SQL标准定义了<strong>四个隔离级别</strong>的介绍可以看出，标准的SQL隔离级别里，<strong>REPEATABLE-READ(可重复读)<strong>是不可以防止幻读的。但是，</strong>InnoDB实现的REPEATABLE-READ</strong> 隔离级别其实是可以<strong>解决幻读</strong>问题发生的，分两种情况</p>
 <ol>
 <li><strong>快照读</strong>：由<strong>MVCC</strong>机制来保证不出现幻读</li>
 <li><strong>当前读</strong>：使用<strong>Next-Key Lock</strong>进行<strong>加锁</strong>来保证不出现幻读，Next-Key Lock是<strong>行锁（Record Lock ）和间隙锁（Gap Lock）的结合</strong>，行锁只能锁住已经存在的行，为了避免插入新行，需要依赖<strong>间隙锁</strong>  (<strong>只用间隙锁不行，因为间隙锁是 &gt; 或 &lt; ，不包括等于，所以再可重复读下原记录可能会被删掉</strong>)</li>
@@ -306,7 +339,7 @@
 <h1 id="实际情况演示"><a href="#实际情况演示" class="headerlink" title="实际情况演示"></a>实际情况演示</h1><ul>
 <li><p>下面会使用2个命令行MySQL，模拟多线程（多事务）对同一份数据的(脏读等)问题</p>
 <blockquote>
-<p>MySQL 命令行的默认配置中事务都是自动提交的，即执行 SQL 语句后就会马上执行 COMMIT 操作。如果要显式地开启一个事务需要使用命令：<strong><code>START TRANSACTION</code></strong></p>
+<p>MySQL 命令行的默认配置中事务都是自动提交的，即执行 SQL 语句后就会马上执行 COMMIT 操作。如果要显式地开启一个事务需要使用命令：**<code>START TRANSACTION</code>**</p>
 </blockquote>
 </li>
 <li><p>通过下面的命令来设置隔离级别<br>session ：更改只有本次会话有效；global：更改在<strong>所有会话都有效，且不会影响已开启的session</strong></p>
@@ -328,11 +361,12 @@
 <li><p>开启新连接，事务2 开启事务并更新数据</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">START TRANSACTION;</span><br><span class="line">UPDATE employ SET salary = 4500 ;</span><br></pre></td></tr></table></figure>
 </li>
-<li><p>事务1查看 <code>SELECT salary FROM employ WHERE id = 1;</code></p>
+<li><p>事务1查看 <code> SELECT salary FROM employ WHERE id = 1;</code></p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">+--------+</span><br><span class="line">| salary |</span><br><span class="line">+--------+</span><br><span class="line">|   4500 |</span><br><span class="line">+--------+</span><br></pre></td></tr></table></figure>
 </li>
-<li><p>此时事务2 进行回滚 <code>ROLLBACK;</code><br>使用事务1再次查看 <code>SELECT salary FROM employ WHERE id = 1;</code></p>
+<li><p>此时事务2 进行回滚 <code> ROLLBACK;</code><br>使用事务1再次查看 <code>SELECT salary FROM employ WHERE id = 1;</code></p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">+--------+</span><br><span class="line">| salary |</span><br><span class="line">+--------+</span><br><span class="line">|   5000 |</span><br><span class="line">+--------+</span><br></pre></td></tr></table></figure>
+
 <p>事务二进行了回滚，但是之前事务1却读取到了4500（是个脏数据）</p>
 </li>
 </ol>
@@ -341,18 +375,17 @@
 <li><p>事务1 设置为读已提交<code>SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;</code></p>
 <p>事务1 开启事务并查询数据  </p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">START TRANSACTION;</span><br><span class="line">SELECT salary FROM employ WHERE id = 1;</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">结果</span></span><br><span class="line">+--------+</span><br><span class="line">| salary |</span><br><span class="line">+--------+</span><br><span class="line">|   5000 |</span><br><span class="line">+--------+</span><br></pre></td></tr></table></figure>
+
+
 </li>
-</ol>
-<ol>
 <li><p>事务2 开启并修改数据(未提交)</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">START TRANSACTION;</span><br><span class="line"> UPDATE employ SET salary =  4500 ;</span><br></pre></td></tr></table></figure>
 </li>
-<li><p>事务1查看数据    <code>SELECT salary FROM employ WHERE id = 1;</code><br>因为事务隔离级别为<strong>读已提交</strong>，所以不会发生脏读</p>
+<li><p>事务1查看数据    <code> SELECT salary FROM employ WHERE id = 1;</code><br>因为事务隔离级别为<strong>读已提交</strong>，所以不会发生脏读</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">结果</span></span><br><span class="line">+--------+</span><br><span class="line">| salary |</span><br><span class="line">+--------+</span><br><span class="line">|   5000 |</span><br><span class="line">+--------+</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>事务2提交  <code>COMMIT;</code>后，事务1再次读取数据 </p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">SELECT salary FROM employ WHERE id = 1;</span><br><span class="line">+--------+ </span><br><span class="line">| salary | </span><br><span class="line">+--------+ </span><br><span class="line">|   4500 | </span><br><span class="line">+--------+ </span><br></pre></td></tr></table></figure>
-</li>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">SELECT salary FROM employ WHERE id = 1;</span><br><span class="line">+--------+ </span><br><span class="line">| salary | </span><br><span class="line">+--------+ </span><br><span class="line">|   4500 | </span><br><span class="line">+--------+ </span><br></pre></td></tr></table></figure></li>
 </ol>
 <h2 id="不可重复读"><a href="#不可重复读" class="headerlink" title="不可重复读"></a>不可重复读</h2><p>还是刚才<strong>读已提交</strong>的那些步骤，重复操作可以知道  虽然<strong>避免了读未提交</strong>，但是出现了，<strong>一个事务还没结束</strong>，就发生了<strong>不可重复读</strong>问题   </p>
 <blockquote>
@@ -363,6 +396,7 @@
 <ol>
 <li><p>事务1查看当前事务隔离级别 <code>select @@tx_isolation;</code></p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">+-----------------+</span><br><span class="line">| @@tx_isolation  |</span><br><span class="line">+-----------------+</span><br><span class="line">| REPEATABLE-READ |</span><br><span class="line">+-----------------+</span><br></pre></td></tr></table></figure>
+
 <p>事务1 开启事务并查询数据</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">START TRANSACTION;</span><br><span class="line">SELECT salary FROM employ WHERE id = 1;</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">结果</span></span><br><span class="line">+--------+</span><br><span class="line">| salary |</span><br><span class="line">+--------+</span><br><span class="line">|   5000 |</span><br><span class="line">+--------+</span><br></pre></td></tr></table></figure>
 </li>
@@ -378,20 +412,19 @@
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"> SELECT salary FROM employ WHERE id = 1;</span><br><span class="line">+--------+</span><br><span class="line">| salary |</span><br><span class="line">+--------+</span><br><span class="line">|   5000 |</span><br><span class="line">+--------+</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>与MySQL建立新连接并查询数据（发现数据确实是已经更新了的）</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">SELECT salary FROM employ WHERE id = 1;</span><br><span class="line">+--------+</span><br><span class="line">| salary |</span><br><span class="line">+--------+</span><br><span class="line">|   4500 |</span><br><span class="line">+--------+</span><br></pre></td></tr></table></figure>
-</li>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">SELECT salary FROM employ WHERE id = 1;</span><br><span class="line">+--------+</span><br><span class="line">| salary |</span><br><span class="line">+--------+</span><br><span class="line">|   4500 |</span><br><span class="line">+--------+</span><br></pre></td></tr></table></figure></li>
 </ol>
 <h2 id="幻读"><a href="#幻读" class="headerlink" title="幻读"></a>幻读</h2><p><strong>接下来测试一下该隔离策略下是否幻读</strong><br>这里是在<strong>可重复读下</strong></p>
 <ol>
 <li><p>先查看一下当前数据库表的数据 </p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">SELECT * FROM test;</span><br><span class="line">+----+--------+</span><br><span class="line">| id | salary |</span><br><span class="line">+----+--------+</span><br><span class="line">|  1 |   8000 |</span><br><span class="line">|  6 |   500 |</span><br><span class="line">+----+--------+</span><br></pre></td></tr></table></figure>
 </li>
-<li><p><code>use lydb;</code>  —-&gt; 事务1和事务2都开启事务 <code>START TRANSACTION;</code></p>
+<li><p><code>use lydb;</code>  —&gt; 事务1和事务2都开启事务 <code>START TRANSACTION;</code></p>
 </li>
 <li><p>事务2插入一条薪资为500的数据并提交</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">INSERT INTO test(salary) values (500);</span><br><span class="line">COMMIT;</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">此时数据库已经有两条500的数据了(事务2)</span></span><br><span class="line"> select * from test;</span><br><span class="line">+----+--------+</span><br><span class="line">| id | salary |</span><br><span class="line">+----+--------+</span><br><span class="line">|  1 |   8000 |</span><br><span class="line">|  6 |   500 |</span><br><span class="line">|  10 |   500 |</span><br><span class="line">+----+--------+</span><br></pre></td></tr></table></figure>
 </li>
-<li><p>事务1查询500的数据(<strong>★★如果在事务2提交之前查询 SELECT <em> FROM test WHERE salary = 500; 或者 SELECT </em> FROM test; 那么这里[快照读]就只会查出一条，但是不管怎么样 [当前读]都会查出两条</strong>)</p>
+<li><p>事务1查询500的数据(<strong>★★如果在事务2提交之前查询 SELECT * FROM test WHERE salary &#x3D; 500; 或者 SELECT * FROM test; 那么这里[快照读]就只会查出一条，但是不管怎么样 [当前读]都会查出两条</strong>)</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">---------------- <span class="comment"># 快照读------------------</span></span></span><br><span class="line">SELECT * FROM test WHERE salary = 500;</span><br><span class="line">+----+--------+</span><br><span class="line">| id | salary |</span><br><span class="line">+----+--------+</span><br><span class="line">|  6 |    500 | </span><br><span class="line">+----+--------+</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">----------------# 当前读------------------</span></span><br><span class="line">SELECT * FROM test WHERE salary = 500 FOR UPDATE;</span><br><span class="line">+----+--------+</span><br><span class="line">| id | salary |</span><br><span class="line">+----+--------+</span><br><span class="line">|  6 |    500 |</span><br><span class="line">| 11 |    500 |</span><br><span class="line">+----+--------+</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 </li>
 <li><p>SQL 事务1 在第一次查询工资为 500 的记录时只有一条，SQL 事务2 插入了一条工资为 500 的记录，提交之后；SQL 事务1  在同一个事务中再次使用当前读查询发现出现了两条工资为 500 的记录这种就是幻读。</p>
@@ -408,7 +441,7 @@
 <ol>
 <li>将事务隔离级别调整为 <code>SERIALIZABLE</code> 。</li>
 <li>在<strong>可重复读</strong>的事务级别下，给<strong>事务操作的这张表添加表锁</strong>。</li>
-<li>在<strong>可重复读</strong>的事务级别下，给<strong>事务操作的这张表添加 <code>Next-key Lock（Record Lock+Gap Lock）</code></strong>。</li>
+<li>在<strong>可重复读</strong>的事务级别下，给**事务操作的这张表添加 <code>Next-key Lock（Record Lock+Gap Lock）</code>**。</li>
 </ol>
 
     </div>
@@ -473,7 +506,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">45:25</span>
+    <span title="站点阅读时长">45:37</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动

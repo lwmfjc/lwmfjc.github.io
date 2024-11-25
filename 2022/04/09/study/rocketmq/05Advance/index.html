@@ -283,32 +283,34 @@
     
     
     <div class="post-body" itemprop="articleBody"><blockquote>
-<p>学习来源 <a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1L4411y7mn（添加小部分笔记）感谢作者！">https://www.bilibili.com/video/BV1L4411y7mn（添加小部分笔记）感谢作者！</a></p>
+<p>学习来源 <a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1L4411y7mn%EF%BC%88%E6%B7%BB%E5%8A%A0%E5%B0%8F%E9%83%A8%E5%88%86%E7%AC%94%E8%AE%B0%EF%BC%89%E6%84%9F%E8%B0%A2%E4%BD%9C%E8%80%85%EF%BC%81">https://www.bilibili.com/video/BV1L4411y7mn（添加小部分笔记）感谢作者！</a></p>
 </blockquote>
 <h1 id="消息存储"><a href="#消息存储" class="headerlink" title="消息存储"></a>消息存储</h1><h2 id="流程"><a href="#流程" class="headerlink" title="流程"></a>流程</h2><p><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230409093042579.png" alt="image-20230409093042579"></p>
 <h2 id="存储介质"><a href="#存储介质" class="headerlink" title="存储介质"></a>存储介质</h2><h3 id="关系型数据库DB"><a href="#关系型数据库DB" class="headerlink" title="关系型数据库DB"></a>关系型数据库DB</h3><p>适合数据量不够大，比如<strong>ActiveMQ</strong>可选用JDBC方式作为消息持久化</p>
 <h3 id="文件系统"><a href="#文件系统" class="headerlink" title="文件系统"></a>文件系统</h3><ol>
 <li>关系型数据库最终也是要存到文件系统中的，不如直接存到文件系统，绕过关系型数据库</li>
-<li>常见的RocketMQ/RabbitMQ/Kafka都是采用消息刷盘到计算机的文件系统来做持久化(<strong>同步刷盘</strong>/<strong>异步刷盘</strong>)</li>
+<li>常见的RocketMQ&#x2F;RabbitMQ&#x2F;Kafka都是采用消息刷盘到计算机的文件系统来做持久化(<strong>同步刷盘</strong>&#x2F;<strong>异步刷盘</strong>)</li>
 </ol>
 <h2 id="消息发送"><a href="#消息发送" class="headerlink" title="消息发送"></a>消息发送</h2><ol>
-<li><p>顺序写：600MB/s，随机写：100KB/s  </p>
+<li><p>顺序写：600MB&#x2F;s，随机写：100KB&#x2F;s  </p>
 <blockquote>
 <ul>
 <li><p>系统运行一段时间后，我们对文件的增删改会导致磁盘上数据无法连续，非常的分散。</p>
 </li>
 <li><p>顺序读也只是逻辑上的顺序，也就是按照当前文件的相对偏移量顺序读取，并非磁盘上连续空间读取</p>
 </li>
-<li>对于磁盘的读写分为两种模式，<strong>顺序IO</strong>和<strong>随机IO</strong>。 随机IO存在一个寻址的过程，所以效率比较低。而顺序IO，相当于有一个<strong>物理索引</strong>，在读取的时候不需要寻找地址，效率很高。 </li>
-<li>来源： <a target="_blank" rel="noopener" href="https://www.cnblogs.com/liuche/p/15455808.html">https://www.cnblogs.com/liuche/p/15455808.html</a></li>
+<li><p>对于磁盘的读写分为两种模式，<strong>顺序IO</strong>和<strong>随机IO</strong>。 随机IO存在一个寻址的过程，所以效率比较低。而顺序IO，相当于有一个<strong>物理索引</strong>，在读取的时候不需要寻找地址，效率很高。 </p>
+</li>
+<li><p>来源： <a target="_blank" rel="noopener" href="https://www.cnblogs.com/liuche/p/15455808.html">https://www.cnblogs.com/liuche/p/15455808.html</a></p>
+</li>
 </ul>
 </blockquote>
 </li>
 <li><p>数据网络传输  </p>
 <p>零拷贝技术<strong>MappedByteBuffer</strong>，省去了用户态，由<strong>内核态</strong>直接拷贝到<strong>网络驱动内核</strong>。<br>RocketMQ默认设置单个CommitLog日志数据文件为1G</p>
+<p><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230409100016046.png" alt="image-20230409100016046"></p>
 </li>
 </ol>
-<p>   <img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230409100016046.png" alt="image-20230409100016046"></p>
 <h2 id="消息存储-1"><a href="#消息存储-1" class="headerlink" title="消息存储"></a>消息存储</h2><p>三个概念：commitLog、ConsumerQueue、index</p>
 <h3 id="CommitLog"><a href="#CommitLog" class="headerlink" title="CommitLog"></a>CommitLog</h3><ol>
 <li>默认大小1G<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230409101340190.png" alt="image-20230409101340190"></li>
@@ -317,7 +319,7 @@
 </ol>
 <h3 id="ConsumerQueue"><a href="#ConsumerQueue" class="headerlink" title="ConsumerQueue"></a>ConsumerQueue</h3><ol>
 <li>存储了消息在CommitLog的索引（几百K，Linux会事先加载到内存中）</li>
-<li>包括最小/最大偏移量、已经消费的偏移量</li>
+<li>包括最小&#x2F;最大偏移量、已经消费的偏移量</li>
 <li>一个Topic多个队列，每个队列对应一个ConsumerQueue<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20230409104112974.png" alt="image-20230409104112974"></li>
 </ol>
 <h3 id="Index"><a href="#Index" class="headerlink" title="Index"></a>Index</h3><p>也是索引文件，为消息查询服务，通过key或时间区间查询消息</p>
@@ -410,7 +412,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">45:25</span>
+    <span title="站点阅读时长">45:37</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动

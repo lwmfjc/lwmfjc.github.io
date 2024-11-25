@@ -252,7 +252,7 @@
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>5.5k</span>
+      <span>5.3k</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
@@ -271,7 +271,7 @@
     
     
     <div class="post-body" itemprop="articleBody"><blockquote>
-<p> 以下内容均转自 <a target="_blank" rel="noopener" href="https://www.cnblogs.com/wuqinglong/p/9945618.html，部分疑惑参考自另一作者">https://www.cnblogs.com/wuqinglong/p/9945618.html，部分疑惑参考自另一作者</a> <a target="_blank" rel="noopener" href="https://github.com/farmerjohngit/myblog/issues/12">https://github.com/farmerjohngit/myblog/issues/12</a> ，感谢原作者。  </p>
+<p> 以下内容均转自 <a target="_blank" rel="noopener" href="https://www.cnblogs.com/wuqinglong/p/9945618.html%EF%BC%8C%E9%83%A8%E5%88%86%E7%96%91%E6%83%91%E5%8F%82%E8%80%83%E8%87%AA%E5%8F%A6%E4%B8%80%E4%BD%9C%E8%80%85">https://www.cnblogs.com/wuqinglong/p/9945618.html，部分疑惑参考自另一作者</a> <a target="_blank" rel="noopener" href="https://github.com/farmerjohngit/myblog/issues/12">https://github.com/farmerjohngit/myblog/issues/12</a> ，感谢原作者。  </p>
 <p> 【<strong>目前还是存有部分疑虑（轻量级锁那块）</strong>，可能需要详细看源码才能释疑】</p>
 </blockquote>
 <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>传统的synchronized为重量级锁（<strong>使用操作系统互斥量（<code>mutex</code>）来实现的传统锁</strong>），但是随着JavaSE1.6对synchronized优化后，部分情况下他就没有那么重了。本文介绍了JavaSE1.6为了减少获得锁和释放锁带来的性能消耗而引入的<strong>偏向锁</strong>和<strong>轻量级锁</strong>，以及<strong>锁结构</strong>、及<strong>锁升级</strong>过程</p>
@@ -291,8 +291,10 @@
 <p>对于同步方法，<strong>进入方法前</strong>添加一个 monitorenter 指令，<strong>退出方法后</strong>添加一个 monitorexit 指令。</p>
 <p>demo：  </p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Demo</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">f1</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">synchronized</span> (Demo.class) &#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;Hello World.&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title function_">f2</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;Hello World.&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>编译之后的字节码（使用 javap )</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">f1</span><span class="params">()</span>;</span><br><span class="line">  descriptor: ()V</span><br><span class="line">  flags: ACC_PUBLIC</span><br><span class="line">  Code:</span><br><span class="line">    stack=<span class="number">2</span>, locals=<span class="number">3</span>, args_size=<span class="number">1</span></span><br><span class="line">       <span class="number">0</span>: ldc           #<span class="number">2</span>                  <span class="comment">// class me/snail/base/Demo</span></span><br><span class="line">       <span class="number">2</span>: dup</span><br><span class="line">       <span class="number">3</span>: astore_1</span><br><span class="line">       <span class="number">4</span>: monitorenter</span><br><span class="line">       <span class="number">5</span>: getstatic     #<span class="number">3</span>                  <span class="comment">// Field java/lang/System.out:Ljava/io/PrintStream;</span></span><br><span class="line">       <span class="number">8</span>: ldc           #<span class="number">4</span>                  <span class="comment">// String Hello World.</span></span><br><span class="line">      <span class="number">10</span>: invokevirtual #<span class="number">5</span>                  <span class="comment">// Method java/io/PrintStream.println:(Ljava/lang/String;)V</span></span><br><span class="line">      <span class="number">13</span>: aload_1</span><br><span class="line">      <span class="number">14</span>: monitorexit</span><br><span class="line">      <span class="number">15</span>: <span class="keyword">goto</span>          <span class="number">23</span></span><br><span class="line">      <span class="number">18</span>: astore_2</span><br><span class="line">      <span class="number">19</span>: aload_1</span><br><span class="line">      <span class="number">20</span>: monitorexit</span><br><span class="line">      <span class="number">21</span>: aload_2</span><br><span class="line">      <span class="number">22</span>: athrow</span><br><span class="line">      <span class="number">23</span>: <span class="keyword">return</span></span><br><span class="line">    Exception table:</span><br><span class="line">       from    to  target type</span><br><span class="line">           <span class="number">5</span>    <span class="number">15</span>    <span class="number">18</span>   any</span><br><span class="line">          <span class="number">18</span>    <span class="number">21</span>    <span class="number">18</span>   any</span><br><span class="line">    LineNumberTable:</span><br><span class="line">      line <span class="number">6</span>: <span class="number">0</span></span><br><span class="line">      line <span class="number">7</span>: <span class="number">5</span></span><br><span class="line">      line <span class="number">8</span>: <span class="number">13</span></span><br><span class="line">      line <span class="number">9</span>: <span class="number">23</span></span><br><span class="line">    StackMapTable: number_of_entries = <span class="number">2</span></span><br><span class="line">      frame_type = <span class="number">255</span> <span class="comment">/* full_frame */</span></span><br><span class="line">        offset_delta = <span class="number">18</span></span><br><span class="line">        locals = [ <span class="keyword">class</span> <span class="title class_">me</span>/snail/base/Demo, <span class="keyword">class</span> <span class="title class_">java</span>/lang/Object ]</span><br><span class="line">        stack = [ <span class="keyword">class</span> <span class="title class_">java</span>/lang/Throwable ]</span><br><span class="line">      frame_type = <span class="number">250</span> <span class="comment">/* chop */</span></span><br><span class="line">        offset_delta = <span class="number">4</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title function_">f2</span><span class="params">()</span>;</span><br><span class="line">  descriptor: ()V</span><br><span class="line">  flags: ACC_PUBLIC, ACC_SYNCHRONIZED</span><br><span class="line">  Code:</span><br><span class="line">    stack=<span class="number">2</span>, locals=<span class="number">1</span>, args_size=<span class="number">1</span></span><br><span class="line">       <span class="number">0</span>: getstatic     #<span class="number">3</span>                  <span class="comment">// Field java/lang/System.out:Ljava/io/PrintStream;</span></span><br><span class="line">       <span class="number">3</span>: ldc           #<span class="number">4</span>                  <span class="comment">// String Hello World.</span></span><br><span class="line">       <span class="number">5</span>: invokevirtual #<span class="number">5</span>                  <span class="comment">// Method java/io/PrintStream.println:(Ljava/lang/String;)V</span></span><br><span class="line">       <span class="number">8</span>: <span class="keyword">return</span></span><br><span class="line">    LineNumberTable:</span><br><span class="line">      line <span class="number">12</span>: <span class="number">0</span></span><br><span class="line">      line <span class="number">13</span>: <span class="number">8</span></span><br></pre></td></tr></table></figure>
+
 <p>先说 <strong>f1() 方法</strong>，发现其中<strong>一个 monitorenter 对应了两个 monitorexit</strong>，这是不对的。<strong>但是</strong>仔细看 #15: goto 语句，直接跳转到了 #23: return 处，再看 #22: athrow 语句发现，原来<strong>第二个 monitorexit</strong> 是<strong>保证同步代码块抛出异常</strong>时锁能<strong>得到正确的释放</strong>而存在的，这就理解了。</p>
 <h2 id="Java对象头（存储锁类型）"><a href="#Java对象头（存储锁类型）" class="headerlink" title="Java对象头（存储锁类型）"></a>Java对象头（存储锁类型）</h2><p>HotSpot虚拟机中，对象在内存中的布局分为三块区域：<strong>对象头</strong>、<strong>实例数据</strong>、<strong>对齐填充</strong></p>
 <p>对象头又包括两部分：<strong>MarkWord</strong>和<strong>类型指针</strong>，对于<strong>数组对象</strong>，对象头中还有一部分时存储<strong>数组的长度</strong></p>
@@ -303,8 +305,31 @@
 <li><p>类型指针<br>虚拟机通过这个指针确定该对象是哪个类的实例</p>
 </li>
 <li><p>对象头的长度</p>
-<p>| 长度     | <strong>内容</strong>               | <strong>说明</strong>                       |<br>| :———- | :——————————- | :——————————————- |<br>| 32/64bit | MarkWord               | 存储对象的hashCode或锁信息等   |<br>| 32/64bit | Class Metadada Address | 存储对象类型数据的指针         |<br>| 32/64bit | Array Length           | 数组的长度(如果当前对象是数组) |</p>
-<p>如果是<strong>数组对象</strong>的话，虚拟机用<strong>3个字宽</strong>(32/64bit + 32/64bit + 32/64bit)存储对象头，如果是<strong>普通对象</strong>的话，虚拟机用<strong>2字宽</strong>存储对象头(32/64bit + 32/64bit)。  </p>
+<table>
+<thead>
+<tr>
+<th align="left">长度</th>
+<th align="left"><strong>内容</strong></th>
+<th align="left"><strong>说明</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">32&#x2F;64bit</td>
+<td align="left">MarkWord</td>
+<td align="left">存储对象的hashCode或锁信息等</td>
+</tr>
+<tr>
+<td align="left">32&#x2F;64bit</td>
+<td align="left">Class Metadada Address</td>
+<td align="left">存储对象类型数据的指针</td>
+</tr>
+<tr>
+<td align="left">32&#x2F;64bit</td>
+<td align="left">Array Length</td>
+<td align="left">数组的长度(如果当前对象是数组)</td>
+</tr>
+</tbody></table>
+<p>如果是<strong>数组对象</strong>的话，虚拟机用<strong>3个字宽</strong>(32&#x2F;64bit + 32&#x2F;64bit + 32&#x2F;64bit)存储对象头，如果是<strong>普通对象</strong>的话，虚拟机用<strong>2字宽</strong>存储对象头(32&#x2F;64bit + 32&#x2F;64bit)。  </p>
 <blockquote>
 <p>3<strong>2位的字宽为32bit，64位的字宽位64bit</strong></p>
 </blockquote>
@@ -315,23 +340,75 @@
 <p>下面以32位系统为例，每个锁状态下，每个字宽中的内容</p>
 <ol>
 <li><p>无锁状态</p>
-<p>| 25bit          | 4bit         | 1bit(是否是偏向锁) | 2bit(锁标志位) |<br>| ——————— | —————— | ————————— | ——————— |<br>| 对象的hashCode | 对象分代年龄 | 0                  | 01             |</p>
+<table>
+<thead>
+<tr>
+<th>25bit</th>
+<th>4bit</th>
+<th>1bit(是否是偏向锁)</th>
+<th>2bit(锁标志位)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>对象的hashCode</td>
+<td>对象分代年龄</td>
+<td>0</td>
+<td>01</td>
+</tr>
+</tbody></table>
 <p>这里的 hashCode 是 <strong>Object#hashCode</strong> 或者 <strong>System#identityHashCode</strong> 计算出来的值，不是用户覆盖产生的 hashCode。</p>
 </li>
 <li><p>偏向锁状态</p>
-<p>| 25bit  | 4bit  | 1bit(是否是偏向锁) | 2bit(锁标志位) |<br>| ——— | ——- | ————————— | ——————— |<br>| 线程ID | epoch | 1                  | 01             |</p>
-<p>这里 <strong>线程ID 和 epoch 占用了 hashCode</strong> 的位置，所以，如果对象如果<strong>计算过 identityHashCode</strong> 后，便<strong>无法进入偏向锁</strong>状态，反过来，如果对象<strong>处于偏向锁状态</strong>，并且<strong>需要计算其 identityHashCode</strong> 的话，则偏向锁会被撤销，<strong>升级为重量级锁</strong>。<br>对于偏向锁，如果线程ID=0 表示为加锁</p>
+<table>
+<thead>
+<tr>
+<th>25bit</th>
+<th>4bit</th>
+<th>1bit(是否是偏向锁)</th>
+<th>2bit(锁标志位)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>线程ID</td>
+<td>epoch</td>
+<td>1</td>
+<td>01</td>
+</tr>
+</tbody></table>
+<p>这里 <strong>线程ID 和 epoch 占用了 hashCode</strong> 的位置，所以，如果对象如果<strong>计算过 identityHashCode</strong> 后，便<strong>无法进入偏向锁</strong>状态，反过来，如果对象<strong>处于偏向锁状态</strong>，并且<strong>需要计算其 identityHashCode</strong> 的话，则偏向锁会被撤销，<strong>升级为重量级锁</strong>。<br>对于偏向锁，如果线程ID&#x3D;0 表示为加锁</p>
 <blockquote>
 <p>什么时候会计算 HashCode 呢？比如：<strong>将对象作为 Map 的 Key 时会自动触发计算</strong>，List 就不会计算，日常创建一个对象，持久化到库里，进行 json 序列化，或者作为临时对象等，这些情况下，并不会触发计算 hashCode，所以<strong>大部分情况不会触发</strong>计算 hashCode。</p>
 </blockquote>
 <p>Identity hash code是未被覆写的 java.lang.Object.hashCode() 或者 java.lang.System.identityHashCode(Object) 所返回的值。</p>
 </li>
 <li><p>轻量级锁状态</p>
-<p>| 30bit                             | <strong>2bit</strong> |<br>| ————————————————- | ———— |<br>| 指向 <strong>线程栈</strong>  <strong>锁记录</strong>的指针 | 00       |</p>
+<table>
+<thead>
+<tr>
+<th>30bit</th>
+<th><strong>2bit</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>指向 <strong>线程栈</strong>  <strong>锁记录</strong>的指针</td>
+<td>00</td>
+</tr>
+</tbody></table>
 <p>这里指向栈帧中的<strong>LockRecord</strong>记录，里面当然可以记录对象的<strong>identityHashCode</strong></p>
 </li>
 <li><p>重量级锁状态</p>
-<p>| 30bit                  | 2bit |<br>| ——————————— | —— |<br>| 指向<strong>锁监视器</strong>的指针 | 10   |</p>
+<table>
+<thead>
+<tr>
+<th>30bit</th>
+<th>2bit</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>指向<strong>锁监视器</strong>的指针</td>
+<td>10</td>
+</tr>
+</tbody></table>
 <p>这里指向了<strong>内存中对象的 ObjectMonitor</strong> 对象，而 <strong>ObectMontitor</strong> 对象可以<strong>存储对象的 identityHashCode</strong> 的值。</p>
 </li>
 </ol>
@@ -454,7 +531,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">45:25</span>
+    <span title="站点阅读时长">45:37</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动

@@ -306,6 +306,7 @@
 </li>
 <li><p>查看部署的流程内置的表单</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line">    </span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">getStartForm</span><span class="params">()</span>&#123;</span><br><span class="line">    ProcessEngine engine=ProcessEngines.getDefaultProcessEngine();</span><br><span class="line">    <span class="type">FormService</span> <span class="variable">formService</span> <span class="operator">=</span> engine.getFormService();</span><br><span class="line">    <span class="type">StartFormData</span> <span class="variable">startFormData</span> <span class="operator">=</span> formService.getStartFormData(<span class="string">&quot;form1-test-key:1:17504&quot;</span>);</span><br><span class="line">    List&lt;FormProperty&gt; formProperties =</span><br><span class="line">            startFormData.getFormProperties();</span><br><span class="line">    <span class="keyword">for</span> (FormProperty property:formProperties)&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;id==&gt;&quot;</span>+property.getId());</span><br><span class="line">        System.out.println(<span class="string">&quot;name==&gt;&quot;</span>+property.getName());</span><br><span class="line">        System.out.println(<span class="string">&quot;value==&gt;&quot;</span>+property.getValue());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">    </span><br></pre></td></tr></table></figure>
+
 <ul>
 <li><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220515173832080.png" alt="image-20220515173832080"></li>
 </ul>
@@ -314,18 +315,20 @@
 </li>
 <li><p>第二种启动方式</p>
 </li>
-<li><p>```java<br>@Test<br>public void startProcess2(){</p>
-<pre><code>ProcessEngine engine=ProcessEngines.getDefaultProcessEngine();
-FormService formService = engine.getFormService();
-Map&lt;String,String&gt; map=new HashMap&lt;&gt;();
-map.put(&quot;days&quot;,&quot;2&quot;);
-map.put(&quot;startTime&quot;,&quot;22020405&quot;);
-map.put(&quot;reason&quot;,&quot;想玩&quot;);
-formService.submitStartFormData(&quot;form1-test-key:1:17504&quot;,map);
-</code></pre><p>}</p>
+<li><pre><code class="java">@Test
+public void startProcess2()&#123;
+    ProcessEngine engine=ProcessEngines.getDefaultProcessEngine();
+    FormService formService = engine.getFormService();
+    Map&lt;String,String&gt; map=new HashMap&lt;&gt;();
+    map.put(&quot;days&quot;,&quot;2&quot;);
+    map.put(&quot;startTime&quot;,&quot;22020405&quot;);
+    map.put(&quot;reason&quot;,&quot;想玩&quot;);
+    formService.submitStartFormData(&quot;form1-test-key:1:17504&quot;,map);
+&#125;
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">  - 注意查看act_ru_variable变量表</span><br><span class="line">    ![image-20220515174247320](https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220515174247320.png)</span><br><span class="line"></span><br><span class="line">- 查看任务中的表单数据</span><br><span class="line"></span><br><span class="line">  ```java</span><br><span class="line">  </span><br><span class="line">      /**</span><br><span class="line">       * 查看对应的表单数据</span><br><span class="line">       */</span><br><span class="line">      @Test</span><br><span class="line">      public void getTaskFormData()&#123;</span><br><span class="line">          ProcessEngine engine=ProcessEngines.getDefaultProcessEngine();</span><br><span class="line">          FormService formService = engine.getFormService();</span><br><span class="line">          TaskFormData taskFormData = formService.getTaskFormData(&quot;20012&quot;);</span><br><span class="line">          List&lt;FormProperty&gt; formProperties = taskFormData.getFormProperties();</span><br><span class="line">  </span><br><span class="line">          for (FormProperty property:formProperties)&#123;</span><br><span class="line">              System.out.println(&quot;id==&gt;&quot;+property.getId());</span><br><span class="line">              System.out.println(&quot;name==&gt;&quot;+property.getName());</span><br><span class="line">              System.out.println(&quot;value==&gt;&quot;+property.getValue());</span><br><span class="line">          &#125;</span><br><span class="line">          //这里做一个测试，设置处理人</span><br><span class="line">           /*TaskService taskService = engine.getTaskService();</span><br><span class="line">         taskService.setAssignee(&quot;20012&quot;,&quot;lalala&quot;);*/</span><br><span class="line">  </span><br><span class="line">      &#125;</span><br></pre></td></tr></table></figure>
+</code></pre>
 </li>
-<li><p>查看完成的任务【主要】//有点问题，不管<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220515175944504.png" alt="image-20220515175944504"></p>
+<li><p>查看完成的任务【主要】&#x2F;&#x2F;有点问题，不管<br><img src="https://raw.githubusercontent.com/lwmfjc/lwmfjc.github.io.resource/main/img/image-20220515175944504.png" alt="image-20220515175944504"></p>
 </li>
 </ul>
 </li>
@@ -396,7 +399,7 @@ formService.submitStartFormData(&quot;form1-test-key:1:17504&quot;,map);
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">45:25</span>
+    <span title="站点阅读时长">45:37</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
