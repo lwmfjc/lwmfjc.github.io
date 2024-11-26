@@ -27,22 +27,22 @@
 <meta property="og:site_name" content="随记">
 <meta property="og:description" content="04InnoDB记录存储结构">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/image-20230419143303256.png">
-<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/image-20230419185811554.png">
-<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/image-20230419173856310.png">
-<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/image-20230419174348286.png">
-<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/image-20230419183041824.png">
-<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/image-20230419212005826.png">
-<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/image-20230420232026832.png">
-<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/image-20230421100332722.png">
-<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/image-20230421100649877.png">
-<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/image-20230421102458108.png">
+<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/lyx-20241126134533552.png">
+<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/lyx-20241126134534110.png">
+<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/lyx-20241126134534597.png">
+<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/lyx-20241126134535050.png">
+<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/lyx-20241126134535517.png">
+<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/lyx-20241126134535944.png">
+<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/lyx-20241126134536377.png">
+<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/lyx-20241126134536870.png">
+<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/lyx-20241126134537288.png">
+<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/lyx-20241126134537764.png">
 <meta property="article:published_time" content="2023-04-18T20:00:03.000Z">
 <meta property="article:modified_time" content="2023-04-18T20:00:03.000Z">
 <meta property="article:author" content="刘易">
 <meta property="article:tag" content="MySQL是怎样运行的">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://lwmfjc.github.io/images/mypost/image-20230419143303256.png">
+<meta name="twitter:image" content="https://lwmfjc.github.io/images/mypost/lyx-20241126134533552.png">
 
 
 <link rel="canonical" href="https://lwmfjc.github.io/2023/04/18/study/mysql/how_mysql_run/04/">
@@ -154,7 +154,7 @@
         <div class="site-overview-wrap sidebar-panel">
           <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image" alt="刘易"
-      src="/images/avatar.png">
+      src="/images/sys/avatar.png">
   <p class="site-author-name" itemprop="name">刘易</p>
   <div class="site-description" itemprop="description">知命不惧 日日自新</div>
 </div>
@@ -213,7 +213,7 @@
     <link itemprop="mainEntityOfPage" href="https://lwmfjc.github.io/2023/04/18/study/mysql/how_mysql_run/04/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="image" content="/images/sys/avatar.png">
       <meta itemprop="name" content="刘易">
     </span>
 
@@ -295,24 +295,24 @@
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">查询</span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">SELECT * FROM record_format_demo;</span></span><br><span class="line">+------+-----+------+------+</span><br><span class="line">| c1   | c2  | c3   | c4   |</span><br><span class="line">+------+-----+------+------+</span><br><span class="line">| aaaa | bbb | cc   | d    |</span><br><span class="line">| eeee | fff | NULL | NULL |</span><br><span class="line">+------+-----+------+------+</span><br><span class="line">2 rows in set (0.01 sec)</span><br></pre></td></tr></table></figure>
 
 <h2 id="COMPACT行格式"><a href="#COMPACT行格式" class="headerlink" title="COMPACT行格式"></a>COMPACT行格式</h2><p><code>[kəmˈpækt]契约</code></p>
-<h3 id="额外信息"><a href="#额外信息" class="headerlink" title="额外信息"></a>额外信息</h3><p>包括<strong>变长字段长度列表、NULL值列表、记录头信息</strong><br><img src="/images/mypost/image-20230419143303256.png" alt="image-20230419143303256"></p>
-<h3 id="记录的真实数据"><a href="#记录的真实数据" class="headerlink" title="记录的真实数据"></a>记录的真实数据</h3><p><img src="/images/mypost/image-20230419185811554.png" alt="image-20230419185811554"></p>
-<h2 id="REDUNDANT行格式"><a href="#REDUNDANT行格式" class="headerlink" title="REDUNDANT行格式"></a>REDUNDANT行格式</h2><p><code>[rɪˈdʌndənt] 冗余的  </code><br>MySQL5.0之前使用的一种行格式（古老）<br>如图<br><img src="/images/mypost/image-20230419173856310.png" alt="image-20230419173856310"></p>
+<h3 id="额外信息"><a href="#额外信息" class="headerlink" title="额外信息"></a>额外信息</h3><p>包括<strong>变长字段长度列表、NULL值列表、记录头信息</strong><br><img src="/images/mypost/lyx-20241126134533552.png" alt="lyx-20241126134533552"></p>
+<h3 id="记录的真实数据"><a href="#记录的真实数据" class="headerlink" title="记录的真实数据"></a>记录的真实数据</h3><p><img src="/images/mypost/lyx-20241126134534110.png" alt="lyx-20241126134534110"></p>
+<h2 id="REDUNDANT行格式"><a href="#REDUNDANT行格式" class="headerlink" title="REDUNDANT行格式"></a>REDUNDANT行格式</h2><p><code>[rɪˈdʌndənt] 冗余的  </code><br>MySQL5.0之前使用的一种行格式（古老）<br>如图<br><img src="/images/mypost/lyx-20241126134534597.png" alt="lyx-20241126134534597"></p>
 <p>下面主要和COMPACT行格式做比较  </p>
 <h3 id="字段长度偏移列表"><a href="#字段长度偏移列表" class="headerlink" title="字段长度偏移列表"></a>字段长度偏移列表</h3><ol>
 <li>记录了所有列</li>
 <li>偏移，即不是直接记录，而是通过加减</li>
 </ol>
-<p><img src="/images/mypost/image-20230419174348286.png" alt="image-20230419174348286"></p>
+<p><img src="/images/mypost/lyx-20241126134535050.png" alt="lyx-20241126134535050"></p>
 <p>同样是逆序，如第一条记录<br>06 0C 13 17 1A 24 25，则<br>第1列(RD_ROW_ID)：6字节<br>第2列(DB_TRX_ID)：6字节  0C-06&#x3D;6<br>第3列(DB_ROLL_POINTER)：7字节    13-0C&#x3D;7<br>第4列(c1)：4字节<br>第5列(c2)：3字节<br>第6列(c3)：10字节<br>第7列(c4)：1字节</p>
 <h3 id="记录头信息"><a href="#记录头信息" class="headerlink" title="记录头信息"></a>记录头信息</h3><p>相比COMPACT行格式，多出了2个，少了一个    </p>
-<p>没有了record_type这个属性<br>多了n_field和1byte_offs_flag这两个属性：<br><img src="/images/mypost/image-20230419183041824.png" alt="image-20230419183041824"></p>
+<p>没有了record_type这个属性<br>多了n_field和1byte_offs_flag这两个属性：<br><img src="/images/mypost/lyx-20241126134535517.png" alt="lyx-20241126134535517"></p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">查询</span></span><br><span class="line"><span class="meta prompt_">mysql&gt; </span><span class="language-bash">SELECT * FROM record_format_demo;</span></span><br><span class="line">+------+-----+------+------+</span><br><span class="line">| c1   | c2  | c3   | c4   |</span><br><span class="line">+------+-----+------+------+</span><br><span class="line">| aaaa | bbb | cc   | d    |</span><br><span class="line">| eeee | fff | NULL | NULL |</span><br><span class="line">+------+-----+------+------+</span><br><span class="line">2 rows in set (0.01 sec)</span><br></pre></td></tr></table></figure>
 
 <p>第一条记录的头信息为：00 00 10 0F 00 BC</p>
 <p>即：00000000 00000000 00010000 00001111 00000000 1011 1100</p>
 <p>前面2字节都是0，即预留位1，预留位2，deleted_flag，min_rec_flag，n_owned都是0<br>heap_no前面8位是0，再取5位：即 00000000 0001 0，即0x02<br>n_field：000 0000111，即0x07<br>1byte_offs_flag：0x01<br>next_record：00000000 1011 1100，即0xBC </p>
-<h3 id="记录头信息中的1byte-offs-flag的值是怎么选择的"><a href="#记录头信息中的1byte-offs-flag的值是怎么选择的" class="headerlink" title="记录头信息中的1byte_offs_flag的值是怎么选择的"></a>记录头信息中的1byte_offs_flag的值是怎么选择的</h3><p>字段长度偏移列表存储的<strong>偏移量</strong>指的是<strong>每个列的值占用的空间</strong>在<strong>记录的真</strong><br><strong>实数据处结束</strong>的位置<br><img src="/images/mypost/image-20230419212005826.png" alt="image-20230419212005826"></p>
+<h3 id="记录头信息中的1byte-offs-flag的值是怎么选择的"><a href="#记录头信息中的1byte-offs-flag的值是怎么选择的" class="headerlink" title="记录头信息中的1byte_offs_flag的值是怎么选择的"></a>记录头信息中的1byte_offs_flag的值是怎么选择的</h3><p>字段长度偏移列表存储的<strong>偏移量</strong>指的是<strong>每个列的值占用的空间</strong>在<strong>记录的真</strong><br><strong>实数据处结束</strong>的位置<br><img src="/images/mypost/lyx-20241126134535944.png" alt="lyx-20241126134535944"></p>
 <blockquote>
 <p>如上，0x06代表第一列(DB_ROW_ID)在真实数据的第6字节处结束；0x0C 代表第二列(DB_TRX_ID)在真实数据的第12字节处结束…. </p>
 </blockquote>
@@ -325,7 +325,7 @@
 <p>REDUNDANT行格式并没有NULL值列表</p>
 </blockquote>
 <p>将<strong>列对应的偏移量值</strong>的<strong>第一个比特位</strong>，作为是否为NULL的依据，也称之为<strong>NULL比特位</strong><br>不论是1字节还是2字节，都要使用第1个比特位来标记该列值是否为NULL<br>对于<strong>NULL列</strong>来说，该列的类型<strong>是否为变长类型</strong>决定了该列在记录的<strong>真实数据处</strong>的存储方式。</p>
-<p>分析第2条数据<br><img src="/images/mypost/image-20230420232026832.png" alt="image-20230420232026832"></p>
+<p>分析第2条数据<br><img src="/images/mypost/lyx-20241126134536377.png" alt="lyx-20241126134536377"></p>
 <p>字段长度偏移列表-&gt;按照列的顺序排放：06 0C 13 17 1A A4 A4<br>c3&#x3D;NULL，且c3类型-&gt;CHAR(10) &#x3D;&#x3D;&gt;真实数据部分占用10字节,0x00<br>c3 原偏移量为36&#x3D;32+4 &#x3D; 00100100-&gt;0x24，由于为NULL，所以首位(比特)为1，所以（真实）偏移量为10100100，0xA4<br>c2偏移量为0x1A，则c2字节数为0x24-0x1A&#x3D;36-26&#x3D;10<br>如果<strong>存储NULL值的字段为变长数据类型</strong>，则不在记录的真实数据部分占用任何存储空间<br>所以c4的偏移量应该和c3相同，都是00100100，且由于是NULL，所以首位为1-&gt;10100100,0xA4  </p>
 <blockquote>
 <p>从结果往回推理，c4也是0xA4，和c3相同，说明c4和c3一样都是NULL</p>
@@ -341,8 +341,8 @@
 <blockquote>
 <p>原书加了括号里的话，不是很理解，我的理解是：这20字节指向的页中，包括了溢出的那部分数据  </p>
 </blockquote>
-<p><img src="/images/mypost/image-20230421100332722.png" alt="image-20230421100332722"></p>
-<p>如上，如果列数据非常大，只会存储该列前768字节的数据以及一个指向其他页的地址（存疑，应该不止一个，有时候1个是放不下所有溢出页数据的吧？）<br>简化：<br><img src="/images/mypost/image-20230421100649877.png" alt="image-20230421100649877"><br>例子中列c的数据<strong>需要使用溢出页</strong>来存储，我们把这个列称为<strong>溢出列</strong>，不止VARCHAR(M)，TEXT和BLOB也可能成为溢出列  </p>
+<p><img src="/images/mypost/lyx-20241126134536870.png" alt="lyx-20241126134536870"></p>
+<p>如上，如果列数据非常大，只会存储该列前768字节的数据以及一个指向其他页的地址（存疑，应该不止一个，有时候1个是放不下所有溢出页数据的吧？）<br>简化：<br><img src="/images/mypost/lyx-20241126134537288.png" alt="lyx-20241126134537288"><br>例子中列c的数据<strong>需要使用溢出页</strong>来存储，我们把这个列称为<strong>溢出列</strong>，不止VARCHAR(M)，TEXT和BLOB也可能成为溢出列  </p>
 <h3 id="产生溢出列的临界点"><a href="#产生溢出列的临界点" class="headerlink" title="产生溢出列的临界点"></a>产生溢出列的临界点</h3><p>MySQL中规定一个页<strong>至少存放2条记录</strong>  </p>
 <blockquote>
 <p>16KB&#x3D;16384字节</p>
@@ -359,7 +359,7 @@
 </blockquote>
 <p><strong>对于该表</strong>，得出的解是n&lt;8099，也就是如果一个列存储的数据小于8099，就不会成为溢出页  </p>
 <h3 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h3><p>如果一条记录的某个列中存储的数据<strong>占用字节数非常多</strong>，导致一个页<strong>没有办法</strong>存储<strong>两条记录</strong>，该列就可能会成为溢出列  </p>
-<h2 id="DYNAMIC行格式和COMPRESSED行格式"><a href="#DYNAMIC行格式和COMPRESSED行格式" class="headerlink" title="DYNAMIC行格式和COMPRESSED行格式"></a>DYNAMIC行格式和COMPRESSED行格式</h2><p><img src="/images/mypost/image-20230421102458108.png" alt="image-20230421102458108"></p>
+<h2 id="DYNAMIC行格式和COMPRESSED行格式"><a href="#DYNAMIC行格式和COMPRESSED行格式" class="headerlink" title="DYNAMIC行格式和COMPRESSED行格式"></a>DYNAMIC行格式和COMPRESSED行格式</h2><p><img src="/images/mypost/lyx-20241126134537764.png" alt="lyx-20241126134537764"></p>
 <p>这两个与COMPACT行记录挺像，对于处理溢出列的数据有分歧：<br><strong>他们</strong>不会在记录真实处存储真实数据的前768字节，而是把该列所有真实数据都存储到溢出页，只在真实记录处存储20字节（指向溢出页的地址）。COMPRESSED行格式不同于DYNAMIC行格式的一点：COMPRESSED行格式会采用压缩算法对页面进行压缩  </p>
 <blockquote>
 <p>MySQL5.7默认使用DYNAMIC行记录</p>

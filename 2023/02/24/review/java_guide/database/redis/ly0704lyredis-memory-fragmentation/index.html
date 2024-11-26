@@ -27,10 +27,10 @@
 <meta property="og:site_name" content="随记">
 <meta property="og:description" content="redis内存碎片">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/image-20230224092641916.png">
-<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/WlNsHbsf2dcnocpVP.jpg">
-<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/87bwOYmVzemNIs5hTucErqhUVrlpaN.jpg">
-<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/4uBUgUnWsbmPISWLocNHYQOKZVbxgq.jpg">
+<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/lyx-20241126133541405.png">
+<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/lyx-20241126133541944.jpg">
+<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/lyx-20241126133542346.jpg">
+<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/lyx-20241126133542837.jpg">
 <meta property="article:published_time" content="2023-02-24T09:26:00.000Z">
 <meta property="article:modified_time" content="2023-02-24T09:26:00.000Z">
 <meta property="article:author" content="刘易">
@@ -38,7 +38,7 @@
 <meta property="article:tag" content="复习-javaGuide">
 <meta property="article:tag" content="复习-javaGuide-database">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://lwmfjc.github.io/images/mypost/image-20230224092641916.png">
+<meta name="twitter:image" content="https://lwmfjc.github.io/images/mypost/lyx-20241126133541405.png">
 
 
 <link rel="canonical" href="https://lwmfjc.github.io/2023/02/24/review/java_guide/database/redis/ly0704lyredis-memory-fragmentation/">
@@ -150,7 +150,7 @@
         <div class="site-overview-wrap sidebar-panel">
           <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image" alt="刘易"
-      src="/images/avatar.png">
+      src="/images/sys/avatar.png">
   <p class="site-author-name" itemprop="name">刘易</p>
   <div class="site-description" itemprop="description">知命不惧 日日自新</div>
 </div>
@@ -209,7 +209,7 @@
     <link itemprop="mainEntityOfPage" href="https://lwmfjc.github.io/2023/02/24/review/java_guide/database/redis/ly0704lyredis-memory-fragmentation/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="image" content="/images/sys/avatar.png">
       <meta itemprop="name" content="刘易">
     </span>
 
@@ -277,7 +277,7 @@
 </blockquote>
 <h2 id="什么是内存碎片"><a href="#什么是内存碎片" class="headerlink" title="什么是内存碎片?"></a>什么是内存碎片?</h2><p>你可以将内存碎片简单地理解为那些<strong>不可用的空闲内存</strong>。</p>
 <p>举个例子：操作系统为你分配了 32 字节的连续内存空间，而你存储数据实际只需要使用 24 字节内存空间，那这多余出来的 8 字节内存空间如果后续没办法再被分配存储其他数据的话，就可以被称为内存碎片。</p>
-<p> <img src="/images/mypost/image-20230224092641916.png" alt="image-20230224092641916"></p>
+<p> <img src="/images/mypost/lyx-20241126133541405.png" alt="lyx-20241126133541405"></p>
 <p>Redis 内存碎片虽然不会影响 Redis 性能，但是会<strong>增加内存消耗</strong>。</p>
 <h2 id="为什么会有-Redis-内存碎片"><a href="#为什么会有-Redis-内存碎片" class="headerlink" title="为什么会有 Redis 内存碎片?"></a>为什么会有 Redis 内存碎片?</h2><p>Redis 内存碎片产生比较常见的 2 个原因：</p>
 <p><strong>1、Redis 存储存储数据的时候向操作系统申请的内存空间可能会大于数据实际需要的存储空间。</strong></p>
@@ -290,15 +290,15 @@
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">void *zmalloc(size_t size) &#123;</span><br><span class="line">   // 分配指定大小的内存</span><br><span class="line">   void *ptr = malloc(size+PREFIX_SIZE);</span><br><span class="line">   if (!ptr) zmalloc_oom_handler(size);</span><br><span class="line">#ifdef HAVE_MALLOC_SIZE</span><br><span class="line">   update_zmalloc_stat_alloc(zmalloc_size(ptr));</span><br><span class="line">   return ptr;</span><br><span class="line">#else</span><br><span class="line">   *((size_t*)ptr) = size;</span><br><span class="line">   update_zmalloc_stat_alloc(size+PREFIX_SIZE);</span><br><span class="line">   return (char*)ptr+PREFIX_SIZE;</span><br><span class="line">#endif</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>另外，Redis 可以使用<strong>多种内存分配器</strong>来分配内存（ <strong>libc</strong>、<strong>jemalloc</strong>、<strong>tcmalloc</strong>），默认使用 <a target="_blank" rel="noopener" href="https://github.com/jemalloc/jemalloc">jemalloc</a>，而 jemalloc 按照一系列固定的大小（8 字节、16 字节、32 字节……）来分配内存的。jemalloc 划分的内存单元如下图所示：</p>
-<p> <img src="/images/mypost/WlNsHbsf2dcnocpVP.jpg" alt="jemalloc 内存单元示意图"> </p>
+<p> <img src="/images/mypost/lyx-20241126133541944.jpg" alt="jemalloc 内存单元示意图"> </p>
 <p>当程序申请的内存最接近某个固定值时，jemalloc 会给它分配相应大小的空间，就比如说程序需要申请 17 字节的内存，jemalloc 会直接给它分配 32 字节的内存，这样会导致有 15 字节内存的浪费。不过，jemalloc 专门针对内存碎片问题做了优化，一般不会存在过度碎片化的问题。</p>
 <p><strong>2、频繁修改 Redis 中的数据也会产生内存碎片。</strong></p>
 <p>当 Redis 中的<strong>某个数据删除</strong>时，Redis 通常<strong>不会轻易释放内存</strong>给操作系统。</p>
 <p>这个在 Redis 官方文档中也有对应的原话:</p>
-<p> <img src="/images/mypost/87bwOYmVzemNIs5hTucErqhUVrlpaN.jpg" alt="img"> </p>
+<p> <img src="/images/mypost/lyx-20241126133542346.jpg" alt="img"> </p>
 <p>文档地址：<a target="_blank" rel="noopener" href="https://redis.io/topics/memory-optimization">https://redis.io/topics/memory-optimization</a> 。</p>
 <h2 id="如何查看-Redis-内存碎片的信息？"><a href="#如何查看-Redis-内存碎片的信息？" class="headerlink" title="如何查看 Redis 内存碎片的信息？"></a>如何查看 Redis 内存碎片的信息？</h2><p>使用 <code>info memory</code> 命令即可查看 Redis 内存相关的信息。下图中每个参数具体的含义，Redis 官方文档有详细的介绍：<a target="_blank" rel="noopener" href="https://redis.io/commands/INFO">https://redis.io/commands/INFO</a> 。</p>
-<p> <img src="/images/mypost/4uBUgUnWsbmPISWLocNHYQOKZVbxgq.jpg" alt="img">] </p>
+<p> <img src="/images/mypost/lyx-20241126133542837.jpg" alt="img">] </p>
 <p>Redis 内存碎片率的计算公式：<code>mem_fragmentation_ratio</code> （内存碎片率）&#x3D; <code>used_memory_rss</code> (操作系统实际分配给 Redis 的物理内存空间大小)&#x2F; <code>used_memory</code>(Redis 内存分配器为了存储数据实际申请使用的内存空间大小)</p>
 <p>也就是说，<code>mem_fragmentation_ratio</code> （内存碎片率）的值越大代表内存碎片率越严重。</p>
 <p>一定不要误认为<code>used_memory_rss</code> 减去 <code>used_memory</code>值就是内存碎片的大小！！！这不仅包括内存碎片，还包括其他进程开销，以及共享库、堆栈等的开销。</p>

@@ -27,11 +27,11 @@
 <meta property="og:site_name" content="随记">
 <meta property="og:description" content="类加载器详解">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/WuzreOkDEQacMWZyP.jpg">
-<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/image-20230312100217901.png">
-<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/image-20230312100717451.png">
-<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/image-20230312102118086.png">
-<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/image-20230312102416811.png">
+<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/lyx-20241126133739384.jpg">
+<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/lyx-20241126133739912.png">
+<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/lyx-20241126133740373.png">
+<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/lyx-20241126133740813.png">
+<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/lyx-20241126133741265.png">
 <meta property="article:published_time" content="2022-12-17T22:39:21.000Z">
 <meta property="article:modified_time" content="2022-12-18T08:23:21.000Z">
 <meta property="article:author" content="刘易">
@@ -39,7 +39,7 @@
 <meta property="article:tag" content="复习-javaGuide">
 <meta property="article:tag" content="复习-javaGuide-jvm">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://lwmfjc.github.io/images/mypost/WuzreOkDEQacMWZyP.jpg">
+<meta name="twitter:image" content="https://lwmfjc.github.io/images/mypost/lyx-20241126133739384.jpg">
 
 
 <link rel="canonical" href="https://lwmfjc.github.io/2022/12/17/review/java_guide/java/jvm/ly0405lyclassloader-detail/">
@@ -151,7 +151,7 @@
         <div class="site-overview-wrap sidebar-panel">
           <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image" alt="刘易"
-      src="/images/avatar.png">
+      src="/images/sys/avatar.png">
   <p class="site-author-name" itemprop="name">刘易</p>
   <div class="site-description" itemprop="description">知命不惧 日日自新</div>
 </div>
@@ -210,7 +210,7 @@
     <link itemprop="mainEntityOfPage" href="https://lwmfjc.github.io/2022/12/17/review/java_guide/java/jvm/ly0405lyclassloader-detail/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="image" content="/images/sys/avatar.png">
       <meta itemprop="name" content="刘易">
     </span>
 
@@ -288,7 +288,7 @@
 <li>类加载过程：<strong>加载-&gt;连接-&gt;初始化</strong>。</li>
 <li>连接过程又可分为三步：<strong>验证-&gt;准备-&gt;解析</strong>。</li>
 </ul>
-<p>[<img src="/images/mypost/WuzreOkDEQacMWZyP.jpg" alt="类加载过程"> </p>
+<p>[<img src="/images/mypost/lyx-20241126133739384.jpg" alt="类加载过程"> </p>
 <p>加载是类加载过程的第一步，主要完成下面 3 件事情：</p>
 <ol>
 <li>通过<strong>全类名</strong>获取定义此类的<strong>二进制字节流</strong></li>
@@ -335,7 +335,7 @@
 </ul>
 </blockquote>
 <p>除了这三种类加载器之外，用户还可以加入<strong>自定义的类加载器</strong>来进行拓展，以满足自己的<strong>特殊需求</strong>。就比如说，我们可以对 Java 类的字节码（ <code>.class</code> 文件）进行<strong>加密</strong>，加载时再利用自定义的类加载器对其<strong>解密</strong>。  </p>
-<p><img src="/images/mypost/image-20230312100217901.png" alt="image-20230312100217901"></p>
+<p><img src="/images/mypost/lyx-20241126133739912.png" alt="lyx-20241126133739912"></p>
 <p><strong>除了 <code>BootstrapClassLoader</code></strong> 是 JVM 自身的一部分之外，其他所有的类加载器都是在 <strong>JVM 外部</strong>实现的，并且全都<strong>继承自 <code>ClassLoader</code>抽象类</strong>。这样做的好处是用户可以自定义类加载器，以便让应用程序自己决定如何去获取所需的类。</p>
 <p>每个 <code>ClassLoader</code> 可以通过**<code>getParent()</code>获取其父 <code>ClassLoader</code><strong>，如果获取到 <code>ClassLoader</code> 为</strong><code>null</code>**的话，那么该类是通过 <strong><code>BootstrapClassLoader</code></strong> 加载的。</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">ClassLoader</span> &#123;</span><br><span class="line">  ...</span><br><span class="line">  <span class="comment">// 父加载器</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> ClassLoader parent;</span><br><span class="line">  <span class="meta">@CallerSensitive</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">final</span> ClassLoader <span class="title function_">getParent</span><span class="params">()</span> &#123;</span><br><span class="line">     <span class="comment">//...</span></span><br><span class="line">  &#125;</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -381,7 +381,7 @@
 <li><code>ClassLoader</code> 实例会在试图<strong>亲自查找类或资源之前</strong>，将搜索类或资源的任务委托给其父类加载器。</li>
 </ul>
 <p>下图展示的各种类加载器之间的层次关系被称为类加载器的“**双亲委派模型(Parents Delegation Model)**”。</p>
-<p> <img src="/images/mypost/image-20230312100717451.png" alt="image-20230312100717451"></p>
+<p> <img src="/images/mypost/lyx-20241126133740373.png" alt="lyx-20241126133740373"></p>
 <p>注意⚠️：双亲委派模型并不是一种强制性的约束，只是 JDK 官方推荐的一种方式。如果我们因为某些特殊需求想要打破双亲委派模型，也是可以的，后文会介绍具体的方法。</p>
 <p>其实这个双亲翻译的容易让别人误解，我们一般理解的双亲都是父母，这里的双亲更多地表达的是“父母这一辈”的人<strong>而已，并不是说真的有一个</strong> <code>MotherClassLoader</code> 和一个<code>FatherClassLoader</code> 。个人觉得翻译成单亲委派模型更好一些，不过，国内既然翻译成了双亲委派模型并流传了，按照这个来也没问题，不要被误解了就好。</p>
 <p>另外，类加载器之间的父子关系<strong>一般不是以继承的关系来实现</strong>的，而是通常<strong>使用组合关系来复用父加载器</strong>的代码。</p>
@@ -400,7 +400,7 @@
 <li>类加载器在进行类加载的时候，它首先不会自己去尝试加载这个类，而是把这个请求委派给父类加载器去完成（调用父加载器 <code>loadClass()</code>方法来加载类）。这样的话，所有的请求最终都会传送到顶层的启动类加载器 <code>BootstrapClassLoader</code> 中。</li>
 <li>只有当父加载器反馈自己无法完成这个加载请求（它的搜索范围中没有找到所需的类）时，子加载器才会尝试自己去加载（调用自己的 <code>findClass()</code> 方法来加载类）。</li>
 </ul>
-<p><img src="/images/mypost/image-20230312102118086.png" alt="image-20230312102118086"></p>
+<p><img src="/images/mypost/lyx-20241126133740813.png" alt="lyx-20241126133740813"></p>
 <p>🌈 拓展一下：</p>
 <p><strong>JVM 判定两个 Java 类是否相同的具体规则</strong> ：JVM 不仅要看<strong>类的全名是否相同</strong>，还要看<strong>加载此类的类加载器</strong>是否一样。只有两者都相同的情况，才认为两个类是相同的。<strong>即使</strong>两个类来源于<strong>同一个 <code>Class</code></strong> 文件，被<strong>同一个虚拟机</strong>加载，只要<strong>加载它们的类加载器不同</strong>，那这<strong>两个类就必定不相同</strong>。</p>
 <h3 id="双亲委派模型的好处"><a href="#双亲委派模型的好处" class="headerlink" title="双亲委派模型的好处"></a>双亲委派模型的好处</h3><p>双亲委派模型保证了 Java 程序的稳定运行，可以<strong>避免类的重复加载</strong>（JVM 区分不同类的方式不仅仅根据类名，相同的类文件被不同的类加载器加载产生的是两个不同的类），也保证了 Java 的核心 API 不被篡改。</p>
@@ -413,7 +413,7 @@
 </blockquote>
 <p>我们比较熟悉的 Tomcat 服务器为了能够<strong>优先加载 Web 应用目录下的类</strong>，然后<strong>再加载其他目录下的类</strong>，就<strong>自定义了类加载器 <code>WebAppClassLoader</code></strong> 来打破双亲委托机制。这也是 <strong>Tomcat 下 Web 应用之间的类实现隔离</strong>的具体原理。</p>
 <p>Tomcat 的类加载器的层次结构如下：</p>
-<p><img src="/images/mypost/image-20230312102416811.png" alt="image-20230312102416811"></p>
+<p><img src="/images/mypost/lyx-20241126133741265.png" alt="lyx-20241126133741265"></p>
 <p>感兴趣的小伙伴可以自行研究一下 Tomcat 类加载器的层次结构，这有助于我们搞懂 Tomcat 隔离 Web 应用的原理，推荐资料是<a target="_blank" rel="noopener" href="http://gk.link/a/10Egr">《深入拆解 Tomcat &amp; Jetty》</a>。</p>
 <h2 id="推荐阅读"><a href="#推荐阅读" class="headerlink" title="推荐阅读"></a>推荐阅读</h2><ul>
 <li>《深入拆解 Java 虚拟机》</li>

@@ -27,13 +27,13 @@
 <meta property="og:site_name" content="随记">
 <meta property="og:description" content="线程池最佳实践">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/image-20221129144110632.png">
-<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/image-20221129151614427.png">
-<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/image-20221129153400643.png">
-<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/image-20221129154616346.png">
-<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/image-20221129154543256.png">
-<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/image-20221129154916589.png">
-<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/image-20221129155849107.png">
+<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/lyx-20241126133644699.png">
+<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/lyx-20241126133645364.png">
+<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/lyx-20241126133645816.png">
+<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/lyx-20241126133646252.png">
+<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/lyx-20241126133646673.png">
+<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/lyx-20241126133647089.png">
+<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/lyx-20241126133647510.png">
 <meta property="article:published_time" content="2022-11-29T11:31:20.000Z">
 <meta property="article:modified_time" content="2022-11-29T11:31:20.000Z">
 <meta property="article:author" content="刘易">
@@ -41,7 +41,7 @@
 <meta property="article:tag" content="复习-javaGuide">
 <meta property="article:tag" content="复习-javaGuide-并发">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://lwmfjc.github.io/images/mypost/image-20221129144110632.png">
+<meta name="twitter:image" content="https://lwmfjc.github.io/images/mypost/lyx-20241126133644699.png">
 
 
 <link rel="canonical" href="https://lwmfjc.github.io/2022/11/29/review/java_guide/java/concurrent/ly0306lythread-pool-best/">
@@ -153,7 +153,7 @@
         <div class="site-overview-wrap sidebar-panel">
           <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image" alt="刘易"
-      src="/images/avatar.png">
+      src="/images/sys/avatar.png">
   <p class="site-author-name" itemprop="name">刘易</p>
   <div class="site-description" itemprop="description">知命不惧 日日自新</div>
 </div>
@@ -212,7 +212,7 @@
     <link itemprop="mainEntityOfPage" href="https://lwmfjc.github.io/2022/11/29/review/java_guide/java/concurrent/ly0306lythread-pool-best/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="image" content="/images/sys/avatar.png">
       <meta itemprop="name" content="刘易">
     </span>
 
@@ -289,7 +289,7 @@
 <li>提高线程的可管理性</li>
 </ol>
 <h3 id="2-线程池在实际项目的使用场景"><a href="#2-线程池在实际项目的使用场景" class="headerlink" title="2. 线程池在实际项目的使用场景"></a>2. 线程池在实际项目的使用场景</h3><p>线程池一般用于执行<strong>多个不相关联的耗时任务</strong>，没有多线程的情况下，任务顺序执行，使用了线程池的话可让多个不相关联的任务<strong>同时执行</strong>。</p>
-<p><img src="/images/mypost/image-20221129144110632.png" alt="image-20221129144110632"></p>
+<p><img src="/images/mypost/lyx-20241126133644699.png" alt="lyx-20241126133644699"></p>
 <h3 id="3-如何使用线程池"><a href="#3-如何使用线程池" class="headerlink" title="3. 如何使用线程池"></a>3. 如何使用线程池</h3><p>一般是通过 <code>ThreadPoolExecutor</code> 的构造函数来创建线程池，然后提交任务给线程池执行就可以了。构造函数如下：  </p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">   * 用给定的初始参数创建一个新的ThreadPoolExecutor。</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">ThreadPoolExecutor</span><span class="params">(<span class="type">int</span> corePoolSize,//线程池的核心线程数量</span></span><br><span class="line"><span class="params">                            <span class="type">int</span> maximumPoolSize,//线程池的最大线程数</span></span><br><span class="line"><span class="params">                            <span class="type">long</span> keepAliveTime,//当线程数大于核心线程数时，多余的空闲线程存活的最长时间</span></span><br><span class="line"><span class="params">                            TimeUnit unit,//时间单位</span></span><br><span class="line"><span class="params">                            BlockingQueue&lt;Runnable&gt; workQueue,//任务队列，用来储存等待执行任务的队列</span></span><br><span class="line"><span class="params">                            ThreadFactory threadFactory,//线程工厂，用来创建线程，一般默认即可</span></span><br><span class="line"><span class="params">                            RejectedExecutionHandler handler//拒绝策略，当提交的任务过多而不能及时处理时，我们可以定制策略来处理任务</span></span><br><span class="line"><span class="params">                             )</span> &#123;</span><br><span class="line">      <span class="keyword">if</span> (corePoolSize &lt; <span class="number">0</span> ||</span><br><span class="line">          maximumPoolSize &lt;= <span class="number">0</span> ||</span><br><span class="line">          maximumPoolSize &lt; corePoolSize ||</span><br><span class="line">          keepAliveTime &lt; <span class="number">0</span>)</span><br><span class="line">          <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>();</span><br><span class="line">      <span class="keyword">if</span> (workQueue == <span class="literal">null</span> || threadFactory == <span class="literal">null</span> || handler == <span class="literal">null</span>)</span><br><span class="line">          <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">NullPointerException</span>();</span><br><span class="line">      <span class="built_in">this</span>.corePoolSize = corePoolSize;</span><br><span class="line">      <span class="built_in">this</span>.maximumPoolSize = maximumPoolSize;</span><br><span class="line">      <span class="built_in">this</span>.workQueue = workQueue;</span><br><span class="line">      <span class="built_in">this</span>.keepAliveTime = unit.toNanos(keepAliveTime);</span><br><span class="line">      <span class="built_in">this</span>.threadFactory = threadFactory;</span><br><span class="line">      <span class="built_in">this</span>.handler = handler;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
 
@@ -311,7 +311,7 @@
 </ol>
 <h3 id="2-监测线程池运行状态"><a href="#2-监测线程池运行状态" class="headerlink" title="2. 监测线程池运行状态"></a>2. 监测线程池运行状态</h3><p>可以通过一些手段检测线程池运行状态，比如SpringBoot中的Actuator组件</p>
 <p>或者利用ThreadPoolExecutor相关的API做简陋监控，ThreadPoolExecutor提供了<strong>获取线程池当前的线程数</strong>和<strong>活跃线程数</strong>、<strong>已经执行完成的任务数</strong>，<strong>正在排队中的任务数</strong>等</p>
-<p><img src="/images/mypost/image-20221129151614427.png" alt="image-20221129151614427"></p>
+<p><img src="/images/mypost/lyx-20241126133645364.png" alt="lyx-20241126133645364"></p>
 <p>简单的demo，使用ScheduleExecutorService定时打印线程池信息</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 打印线程池的状态</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> threadPool 线程池对象</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">printThreadPoolStatus</span><span class="params">(ThreadPoolExecutor threadPool)</span> &#123;</span><br><span class="line">    <span class="type">ScheduledExecutorService</span> <span class="variable">scheduledExecutorService</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ScheduledThreadPoolExecutor</span>(<span class="number">1</span>, createThreadFactory(<span class="string">&quot;print-images/thread-pool-status&quot;</span>, <span class="literal">false</span>));</span><br><span class="line">    scheduledExecutorService.scheduleAtFixedRate(() -&gt; &#123;</span><br><span class="line">        log.info(<span class="string">&quot;=========================&quot;</span>);</span><br><span class="line">        log.info(<span class="string">&quot;ThreadPool Size: [&#123;&#125;]&quot;</span>, threadPool.getPoolSize());</span><br><span class="line">        log.info(<span class="string">&quot;Active Threads: &#123;&#125;&quot;</span>, threadPool.getActiveCount());</span><br><span class="line">        log.info(<span class="string">&quot;Number of Tasks : &#123;&#125;&quot;</span>, threadPool.getCompletedTaskCount());</span><br><span class="line">        log.info(<span class="string">&quot;Number of Tasks in Queue: &#123;&#125;&quot;</span>, threadPool.getQueue().size());</span><br><span class="line">        log.info(<span class="string">&quot;=========================&quot;</span>);</span><br><span class="line">    &#125;, <span class="number">0</span>, <span class="number">1</span>, TimeUnit.SECONDS);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
@@ -320,10 +320,10 @@
 <h3 id="3-建议不同类别的业务用不同的线程池"><a href="#3-建议不同类别的业务用不同的线程池" class="headerlink" title="3. 建议不同类别的业务用不同的线程池"></a>3. 建议不同类别的业务用不同的线程池</h3><blockquote>
 <p>建议是<strong>不同的业务使用不同的线程池</strong>，配置线程池的时候根据当前业务的情况对当前线程池进行配置，因为<strong>不同的业务的并发</strong>以及<strong>对资源的使用情况</strong>都不同，重心<strong>优化系统性能瓶颈</strong>相关的业务</p>
 </blockquote>
-<p>极端情况导致死锁：<br><img src="/images/mypost/image-20221129153400643.png" alt="image-20221129153400643"></p>
+<p>极端情况导致死锁：<br><img src="/images/mypost/lyx-20241126133645816.png" alt="lyx-20241126133645816"></p>
 <p>假如我们线程池的核心线程数为 <strong>n</strong>，父任务（扣费任务）数量为 <strong>n</strong>，父任务下面有两个子任务（扣费任务下的子任务），其中一个已经执行完成，另外一个被放在了任务队列中。由于<strong>父任务把线程池核心线程资源用完</strong>，所以子任务因为无法获取到线程资源无法正常执行，一直被阻塞在队列中。父任务等待子任务执行完成，而子任务等待父任务释放线程池资源，这也就造成了 **”死锁”**。</p>
-<p><img src="/images/mypost/image-20221129154616346.png" alt="image-20221129154616346"></p>
-<p><img src="/images/mypost/image-20221129154543256.png" alt="image-20221129154543256"></p>
+<p><img src="/images/mypost/lyx-20241126133646252.png" alt="lyx-20241126133646252"></p>
+<p><img src="/images/mypost/lyx-20241126133646673.png" alt="lyx-20241126133646673"></p>
 <h3 id="4-别忘记给线程池命名"><a href="#4-别忘记给线程池命名" class="headerlink" title="4. 别忘记给线程池命名"></a>4. 别忘记给线程池命名</h3><p><strong>初始化线程池时显示命名</strong>（设置线程池名称前缀），有利于<strong>定位问题</strong></p>
 <ul>
 <li><p>利用guava的ThreadFactoryBuilder</p>
@@ -365,12 +365,12 @@
 <li><strong><code>maximumPoolSize</code> :</strong> 当队列中存放的任务达到队列容量的时候，当前可以同时运行的线程数量变为最大线程数。</li>
 <li><strong><code>workQueue</code>:</strong> 当新任务来的时候会先判断当前运行的线程数量是否达到核心线程数，如果达到的话，新任务就会被存放在队列中</li>
 </ul>
-<p>参数动态配置<br><img src="/images/mypost/image-20221129154916589.png" alt="image-20221129154916589"></p>
+<p>参数动态配置<br><img src="/images/mypost/lyx-20241126133647089.png" alt="lyx-20241126133647089"></p>
 <ol>
 <li>格外需要注意的是<code>corePoolSize</code>， <strong>程序运行期间</strong>的时候，我们<strong>调用 <code>setCorePoolSize（）</code><strong>这个方法的话，线程池会</strong>首先判断当前工作线程数是否大于<code>corePoolSize</code><strong>，如果</strong>大于的话就会回收工作线程</strong>。【<strong>ThreadPoolExecutor里面的</strong>】</li>
 <li>另外，你也看到了上面并没有动态指定队列长度的方法，美团的方式是自定义了一个叫做 <code>ResizableCapacityLinkedBlockIngQueue</code> 的队列（主要就是<strong>把<code>LinkedBlockingQueue</code>的 capacity 字段的 final 关键字修饰给去掉了，让它变为可变的</strong>）</li>
 </ol>
-<p><img src="/images/mypost/image-20221129155849107.png" alt="image-20221129155849107"></p>
+<p><img src="/images/mypost/lyx-20241126133647510.png" alt="lyx-20241126133647510"></p>
 </li>
 </ul>
 
