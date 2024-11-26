@@ -27,14 +27,14 @@
 <meta property="og:site_name" content="随记">
 <meta property="og:description" content="01初识MySQL">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/lyx-20241126134528923.png">
-<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/lyx-20241126134529473.png">
+<meta property="og:image" content="https://lwmfjc.github.io/attachments/img/lyx-20241126134528923.png">
+<meta property="og:image" content="https://lwmfjc.github.io/attachments/img/lyx-20241126134529473.png">
 <meta property="article:published_time" content="2023-04-17T11:39:48.000Z">
 <meta property="article:modified_time" content="2023-04-17T11:39:48.000Z">
 <meta property="article:author" content="刘易">
 <meta property="article:tag" content="MySQL是怎样运行的">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://lwmfjc.github.io/images/mypost/lyx-20241126134528923.png">
+<meta name="twitter:image" content="https://lwmfjc.github.io/attachments/img/lyx-20241126134528923.png">
 
 
 <link rel="canonical" href="https://lwmfjc.github.io/2023/04/17/study/mysql/how_mysql_run/01/">
@@ -310,9 +310,9 @@
 <p>端口号修改与远程连接</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">修改MySQL启动的端口</span></span><br><span class="line">vim /etc/my.cnf</span><br><span class="line"></span><br><span class="line">[mysqld]</span><br><span class="line">port=33062 #新增该行即可</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">重启</span></span><br><span class="line">systemctl restart mysqld</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">查看状态</span></span><br><span class="line">systemctl status mysqld</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">查看服务是否启动</span></span><br><span class="line">netstat -lntup |grep mysql</span><br><span class="line">tcp6       0      0 :::33062                :::*                    LISTEN      4612/mysqld</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">远程连接</span></span><br><span class="line">mysql -hnode2 -uroot -P33062 -p</span><br></pre></td></tr></table></figure>
 
-<p>处理客户端请求<br><img src="/images/mypost/lyx-20241126134528923.png" alt="lyx-20241126134528923"></p>
+<p>处理客户端请求<br><img src="/attachments/img/lyx-20241126134528923.png" alt="lyx-20241126134528923"></p>
 <p>常用存储引擎：Innodb和MyISAM</p>
-<p>查看当前服务器支持的存储引擎<br><img src="/images/mypost/lyx-20241126134529473.png" alt="lyx-20241126134529473"></p>
+<p>查看当前服务器支持的存储引擎<br><img src="/attachments/img/lyx-20241126134529473.png" alt="lyx-20241126134529473"></p>
 <p>只有InnoDB是支持事务的且支持分布式事务、部分回滚</p>
 <p>存储引擎是负责对<strong>表</strong>中数据进行<strong>读取</strong>和<strong>写入</strong>的</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">-- 创建表时指定存储引擎</span><br><span class="line">CREATE TABLE engine_demo_table(i int) ENGINE = MyISAM</span><br><span class="line">-- 查看建表语句</span><br><span class="line">mysql&gt; SHOW CREATE TABLE engine_demo_table \G</span><br><span class="line">*************************** 1. row ***************************</span><br><span class="line">       Table: engine_demo_table</span><br><span class="line">Create Table: CREATE TABLE `engine_demo_table` (</span><br><span class="line">  `i` int(11) DEFAULT NULL</span><br><span class="line">) ENGINE=MyISAM DEFAULT CHARSET=latin1</span><br><span class="line">1 row in set (0.00 sec)</span><br><span class="line">-- 修改建表时指定的存储引擎</span><br><span class="line">ALTER TABLE engine_demo_table ENGINE=InnoDB</span><br><span class="line">-- 修改编码</span><br><span class="line">ALTER TABLE engine_demo_table CHARSET=UTF8</span><br></pre></td></tr></table></figure>

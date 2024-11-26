@@ -27,12 +27,12 @@
 <meta property="og:site_name" content="随记">
 <meta property="og:description" content="服务限流详解">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/lyx-20241126133957417.jpg">
-<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/lyx-20241126133957899.jpg">
-<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/lyx-20241126133958384.jpg">
-<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/lyx-20241126133958793.jpg">
-<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/lyx-20241126133959269.png">
-<meta property="og:image" content="https://lwmfjc.github.io/images/mypost/lyx-20241126133959699.jpg">
+<meta property="og:image" content="https://lwmfjc.github.io/attachments/img/lyx-20241126133957417.jpg">
+<meta property="og:image" content="https://lwmfjc.github.io/attachments/img/lyx-20241126133957899.jpg">
+<meta property="og:image" content="https://lwmfjc.github.io/attachments/img/lyx-20241126133958384.jpg">
+<meta property="og:image" content="https://lwmfjc.github.io/attachments/img/lyx-20241126133958793.jpg">
+<meta property="og:image" content="https://lwmfjc.github.io/attachments/img/lyx-20241126133959269.png">
+<meta property="og:image" content="https://lwmfjc.github.io/attachments/img/lyx-20241126133959699.jpg">
 <meta property="article:published_time" content="2023-02-16T17:06:11.000Z">
 <meta property="article:modified_time" content="2023-02-16T17:06:11.000Z">
 <meta property="article:author" content="刘易">
@@ -40,7 +40,7 @@
 <meta property="article:tag" content="复习-javaGuide">
 <meta property="article:tag" content="复习-javaGuide-distributed_system">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://lwmfjc.github.io/images/mypost/lyx-20241126133957417.jpg">
+<meta name="twitter:image" content="https://lwmfjc.github.io/attachments/img/lyx-20241126133957417.jpg">
 
 
 <link rel="canonical" href="https://lwmfjc.github.io/2023/02/16/review/java_guide/lyfly_high-availability/ly03ly_limit-request/">
@@ -280,7 +280,7 @@
 <p>针对软件系统来说，限流就是<strong>对请求的速率进行限制</strong>，<strong>避免瞬时的大量请求击垮软件系统</strong>。毕竟，软件系统的处理能力是有限的。如果说超过了其处理能力的范围，软件系统可能直接就挂掉了。</p>
 <p>限流可能会<strong>导致用户的请求无法被正确处理</strong>，不过，这往往也是<strong>权衡了软件系统的稳定性之后得到的最优解</strong>。</p>
 <p>现实生活中，处处都有限流的实际应用，就比如<strong>排队买票</strong>是为了避免大量用户涌入购票而导致<strong>售票员无法处理</strong>。</p>
-<p> <img src="/images/mypost/lyx-20241126133957417.jpg" alt="排队示意图"> </p>
+<p> <img src="/attachments/img/lyx-20241126133957417.jpg" alt="排队示意图"> </p>
 <h2 id="常见限流算法有哪些？"><a href="#常见限流算法有哪些？" class="headerlink" title="常见限流算法有哪些？"></a>常见限流算法有哪些？</h2><p>简单介绍 4 种非常好理解并且容易实现的限流算法！</p>
 <blockquote>
 <p>图片来源于 InfoQ 的一篇文章<a target="_blank" rel="noopener" href="https://www.infoq.cn/article/Qg2tX8fyw5Vt-f3HH673">《分布式服务限流实战，已经为你排好坑了》</a>。</p>
@@ -294,7 +294,7 @@
 </ul>
 <p><strong>这种限流算法无法保证限流速率，因而无法保证突然激增的流量。</strong></p>
 <p>就比如说我们限制某个接口 1 分钟只能访问 1000 次，该接口的 QPS 为 500，前 55s 这个接口 1 个请求没有接收，后 1s 突然接收了 1000 个请求。然后，在当前场景下，这 1000 个请求在 1s 内是没办法被处理的，系统直接就被瞬时的大量请求给击垮了。</p>
-<p> <img src="/images/mypost/lyx-20241126133957899.jpg" alt="固定窗口计数器算法"> </p>
+<p> <img src="/attachments/img/lyx-20241126133957899.jpg" alt="固定窗口计数器算法"> </p>
 <h3 id="滑动窗口计数器算法"><a href="#滑动窗口计数器算法" class="headerlink" title="滑动窗口计数器算法"></a>滑动窗口计数器算法</h3><p><strong>滑动窗口计数器算法</strong> 算的上是固定窗口计数器算法的升级版。</p>
 <p>滑动窗口计数器算法相比于固定窗口计数器算法的优化在于：<strong>它把时间以一定比例分片(即分片后应用”固定窗口计数器”算法)</strong> 。</p>
 <p>例如我们的接口限流每分钟处理 60 个请求，我们可以把 1 分钟分为 **60 个窗口(每个窗口时1秒)**。每隔 1 秒移动一次，每个窗口一秒只能处理 不大于 <code>60(请求数)/60（窗口数）</code> 的请求， 如果当前窗口的请求计数总和超过了限制的数量的话就不再处理其他请求。  </p>
@@ -302,12 +302,12 @@
 <p>感觉上面的例子和图没匹配上，应该是<br>例如我们的接口限流每分钟处理 300 个请求，我们可以把 1 分钟分为 **60 个窗口(每个窗口时1秒)**。每隔 1 秒移动一次，每个窗口一秒只能处理 不大于 <code>300(请求数)/60（窗口数）</code> 的请求， 如果当前窗口的请求计数总和超过了限制的数量的话就不再处理其他请求。</p>
 </blockquote>
 <p>很显然， <strong>当滑动窗口的格子划分的越多，滑动窗口的滚动就越平滑，限流的统计就会越精确。</strong></p>
-<p><img src="/images/mypost/lyx-20241126133958384.jpg" alt="滑动窗口计数器算法">] </p>
+<p><img src="/attachments/img/lyx-20241126133958384.jpg" alt="滑动窗口计数器算法">] </p>
 <h3 id="漏桶算法"><a href="#漏桶算法" class="headerlink" title="漏桶算法"></a>漏桶算法</h3><p>我们可以把发请求的动作比作成注水到桶中，我们处理请求的过程可以比喻为漏桶漏水。我们往桶中<strong>以任意速率流入水</strong>，以一定速率流出水。当<strong>水超过桶流量则丢弃</strong>，因为桶容量是不变的，保证了整体的速率。</p>
 <p>如果想要实现这个算法的话也很简单，<strong>准备一个队列用来保存请求</strong>，然后我们<strong>定期从队列中拿请求来执行</strong>就好了（和消息队列削峰&#x2F;限流的思想是一样的）。</p>
-<p> <img src="/images/mypost/lyx-20241126133958793.jpg" alt="漏桶算法"> </p>
+<p> <img src="/attachments/img/lyx-20241126133958793.jpg" alt="漏桶算法"> </p>
 <h3 id="令牌桶算法"><a href="#令牌桶算法" class="headerlink" title="令牌桶算法"></a>令牌桶算法</h3><p>令牌桶算法也比较简单。和漏桶算法算法一样，我们的主角还是桶（这限流算法和桶过不去啊）。不过现在<strong>桶里装的是令牌</strong>了，请求在<strong>被处理之前需要拿到一个令牌</strong>，请求<strong>处理完毕之后将这个令牌丢弃（删除）</strong>。我们<strong>根据限流大小，按照一定的速率往桶里添加令牌</strong>。如果<strong>桶装满了，就不能继续往里面继续添加令牌</strong>了。</p>
-<p> <img src="/images/mypost/lyx-20241126133959269.png" alt="lyx-20241126133959269"></p>
+<p> <img src="/attachments/img/lyx-20241126133959269.png" alt="lyx-20241126133959269"></p>
 <h2 id="单机限流怎么做？"><a href="#单机限流怎么做？" class="headerlink" title="单机限流怎么做？"></a>单机限流怎么做？</h2><p>单机限流针对的是单体架构应用。</p>
 <p>单机限流可以直接使用 Google Guava 自带的限流工具类 <code>RateLimiter</code> 。 <strong><code>RateLimiter</code> 基于令牌桶算法</strong>，可以应对突发流量。</p>
 <blockquote>
@@ -361,7 +361,7 @@
 <blockquote>
 <p>ShenYu 地址: <a target="_blank" rel="noopener" href="https://github.com/apache/incubator-shenyu">https://github.com/apache/incubator-shenyu</a></p>
 </blockquote>
-<p> <img src="/images/mypost/lyx-20241126133959699.jpg" alt="img"></p>
+<p> <img src="/attachments/img/lyx-20241126133959699.jpg" alt="img"></p>
 <ul>
 <li>服务治理之轻量级熔断框架 Resilience4j ：<a target="_blank" rel="noopener" href="https://xie.infoq.cn/article/14786e571c1a4143ad1ef8f19">https://xie.infoq.cn/article/14786e571c1a4143ad1ef8f19</a></li>
 <li>超详细的 Guava RateLimiter 限流原理解析：<a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1408819">https://cloud.tencent.com/developer/article/1408819</a></li>
