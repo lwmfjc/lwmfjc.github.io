@@ -27,10 +27,10 @@
 <meta property="og:site_name" content="随记">
 <meta property="og:description" content="(该文弃用)锁升级">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://lwmfjc.github.io/attachments/img/lyx-20241126133621435.png">
-<meta property="og:image" content="https://lwmfjc.github.io/attachments/img/lyx-20241126133621967.png">
-<meta property="og:image" content="https://lwmfjc.github.io/attachments/img/lyx-20241126133622383.png">
-<meta property="og:image" content="https://lwmfjc.github.io/attachments/img/lyx-20241126133622889.png">
+<meta property="og:image" content="https://lwmfjc.github.io/attachments/img/ly-20241129104336755.png">
+<meta property="og:image" content="https://lwmfjc.github.io/attachments/img/ly-20241129104337348.png">
+<meta property="og:image" content="https://lwmfjc.github.io/attachments/img/ly-20241129104337683.png">
+<meta property="og:image" content="https://lwmfjc.github.io/attachments/img/ly-20241129104338019.png">
 <meta property="article:published_time" content="2022-11-03T11:08:59.000Z">
 <meta property="article:modified_time" content="2022-11-03T11:08:59.000Z">
 <meta property="article:author" content="刘易">
@@ -38,7 +38,7 @@
 <meta property="article:tag" content="复习-javaGuide">
 <meta property="article:tag" content="复习-javaGuide-并发">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://lwmfjc.github.io/attachments/img/lyx-20241126133621435.png">
+<meta name="twitter:image" content="https://lwmfjc.github.io/attachments/img/ly-20241129104336755.png">
 
 
 <link rel="canonical" href="https://lwmfjc.github.io/2022/11/03/review/java_guide/java/concurrent/lock_escalation_deprecated2/">
@@ -158,7 +158,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">252</span>
+          <span class="site-state-item-count">253</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -304,7 +304,7 @@
 <ul>
 <li>如上，多个线程同时访问一段同步代码时，多个线程会<strong>先被</strong>存放在<strong>ContentionList</strong>和**_EntryList**集合中，处于block状态的线程都会加入该列表。</li>
 <li>当线程获取到对象的Monitor时，Monitor依靠底层操作系统的MutexLock实现互斥，线程申请Mutex成功，则持有该Mutex，其他线程无法获取；竞争失败的线程再次进入ContentionList被挂起</li>
-<li>如果线程调用wait()方法，则会释放当前持有的Mutex，并且该线程进入WaitSet集合中，等待下一次被唤醒（或者顺利执行完方法也会释放Mutex）<br><img src="/attachments/img/lyx-20241126133621435.png" alt="lyx-20241126133621435"></li>
+<li>如果线程调用wait()方法，则会释放当前持有的Mutex，并且该线程进入WaitSet集合中，等待下一次被唤醒（或者顺利执行完方法也会释放Mutex）<br><img src="/attachments/img/ly-20241129104336755.png" alt="ly-20241129104336755"></li>
 </ul>
 </li>
 </ul>
@@ -312,7 +312,7 @@
 <li>为了提升性能，Java1.6，引入了<strong>偏向锁、轻量级锁、重量级锁</strong>，来<strong>减少</strong>锁竞争带来的上下文切换，由新增的<strong>Java对象头</strong>实现了<strong>锁升级</strong>。锁只能升级不能降级，目的是<strong>提高获得锁和释放锁的效率</strong></li>
 <li>当Java对象<strong>被Synchronized</strong>关键字修饰为同步锁后，围绕这个锁的一系列升级操作都和<strong>Java对象头</strong>有关</li>
 <li>JDK1.6 JVM中，对象实例在堆内存中被分为三个部分：<strong>对象头</strong>、<strong>实例数据</strong>和<strong>对齐填充</strong>。其中<strong>对象头</strong>由<strong>MarkWord</strong>、<strong>指向类的指针</strong>以及数组长度三部分组成</li>
-<li>MarkWord记录了对象和锁相关的信息，它在64为JVM的长度是64bit，下图为<strong>64位JVM的存储结构</strong>：<br><img src="/attachments/img/lyx-20241126133621967.png" alt="lyx-20241126133621967"><br>32位如下<br><img src="/attachments/img/lyx-20241126133622383.png" alt="lyx-20241126133622383"><ul>
+<li>MarkWord记录了对象和锁相关的信息，它在64为JVM的长度是64bit，下图为<strong>64位JVM的存储结构</strong>：<br><img src="/attachments/img/ly-20241129104337348.png" alt="ly-20241129104337348"><br>32位如下<br><img src="/attachments/img/ly-20241129104337683.png" alt="ly-20241129104337683"><ul>
 <li>锁标志位是两位，<strong>无锁</strong>和<strong>偏向锁</strong>的锁标志位实际为<strong>01</strong>，轻量级锁的锁标志位为<strong>00</strong></li>
 <li>锁升级功能，主要依赖于MarkWord中的<strong>锁标志位</strong>和<strong>释放偏向锁标志位</strong>，Synchronized同步锁，是从<strong>偏向锁</strong>开始的，随着竞争越来越激烈，<strong>偏向锁</strong>升级到<strong>轻量级锁</strong>，最终升级到<strong>重量级锁</strong></li>
 </ul>
@@ -339,7 +339,7 @@
 <li></li>
 </ol>
 </blockquote>
-<p><img src="/attachments/img/lyx-20241126133622889.png" alt="lyx-20241126133622889"><br><strong>偏向锁默认开启</strong>（JDK15默认关闭)，如果<strong>应用程序里所有的锁通常情况下处于竞争</strong>状态，此时可以添加JVM参数关闭偏向锁来调优系统性能</p>
+<p><img src="/attachments/img/ly-20241129104338019.png" alt="ly-20241129104338019"><br><strong>偏向锁默认开启</strong>（JDK15默认关闭)，如果<strong>应用程序里所有的锁通常情况下处于竞争</strong>状态，此时可以添加JVM参数关闭偏向锁来调优系统性能</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">-XX:-UseBiasedLocking //关闭偏向锁（默认打开）</span><br></pre></td></tr></table></figure></li>
 </ul>
 <h3 id="轻量级锁"><a href="#轻量级锁" class="headerlink" title="轻量级锁"></a>轻量级锁</h3><ul>

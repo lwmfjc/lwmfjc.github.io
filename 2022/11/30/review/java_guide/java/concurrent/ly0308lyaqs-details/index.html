@@ -27,9 +27,9 @@
 <meta property="og:site_name" content="随记">
 <meta property="og:description" content="aqs详解">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://lwmfjc.github.io/attachments/img/lyx-20241126133649407.png">
-<meta property="og:image" content="https://lwmfjc.github.io/attachments/img/lyx-20241126133649961.png">
-<meta property="og:image" content="https://lwmfjc.github.io/attachments/img/lyx-20241126133650381.png">
+<meta property="og:image" content="https://lwmfjc.github.io/attachments/img/ly-20241129104401754.png">
+<meta property="og:image" content="https://lwmfjc.github.io/attachments/img/ly-20241129104402250.png">
+<meta property="og:image" content="https://lwmfjc.github.io/attachments/img/ly-20241129104402685.png">
 <meta property="article:published_time" content="2022-11-30T14:48:01.000Z">
 <meta property="article:modified_time" content="2022-12-05T09:18:01.000Z">
 <meta property="article:author" content="刘易">
@@ -37,7 +37,7 @@
 <meta property="article:tag" content="复习-javaGuide">
 <meta property="article:tag" content="复习-javaGuide-并发">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://lwmfjc.github.io/attachments/img/lyx-20241126133649407.png">
+<meta name="twitter:image" content="https://lwmfjc.github.io/attachments/img/ly-20241129104401754.png">
 
 
 <link rel="canonical" href="https://lwmfjc.github.io/2022/11/30/review/java_guide/java/concurrent/ly0308lyaqs-details/">
@@ -157,7 +157,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">252</span>
+          <span class="site-state-item-count">253</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -291,7 +291,7 @@
 </ul>
 </blockquote>
 <h1 id="AQS简单介绍"><a href="#AQS简单介绍" class="headerlink" title="AQS简单介绍"></a>AQS简单介绍</h1><p>AQS,AbstractQueueSyschronizer，即抽象队列同步器，这个类在java.util.concurrent.locks包下面</p>
-<p><img src="/attachments/img/lyx-20241126133649407.png" alt="lyx-20241126133649407"></p>
+<p><img src="/attachments/img/ly-20241129104401754.png" alt="ly-20241129104401754"></p>
 <p>AQS是一个抽象类，主要用来构建<strong>锁</strong>和<strong>同步器</strong></p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">AbstractQueuedSynchronizer</span> <span class="keyword">extends</span> <span class="title class_">AbstractOwnableSynchronizer</span> <span class="keyword">implements</span> <span class="title class_">java</span>.io.Serializable &#123;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
 
@@ -299,10 +299,10 @@
 <h1 id="AQS原理"><a href="#AQS原理" class="headerlink" title="AQS原理"></a>AQS原理</h1><h2 id="AQS核心思想"><a href="#AQS核心思想" class="headerlink" title="AQS核心思想"></a>AQS核心思想</h2><p><strong>面试不是背题，大家一定要加入自己的思想，即使加入不了自己的思想也要保证自己能够通俗的讲出来而不是背出来</strong></p>
 <p>AQS 核心思想是，如果被请求的<strong>共享资源（AQS内部）</strong>空闲，则将<strong>当前请求资源的线程</strong>设置为<strong>有效</strong>的工作线程，并且将<strong>共享资源</strong>设置为<strong>锁定</strong>状态。如果被请求的共享资源<strong>被占用</strong>，那么就需要一套<strong>线程阻塞等待</strong>以及<strong>被唤醒时锁分配</strong>的机制，这个机制 AQS 是用 <strong>CLH 队列锁</strong>实现的，即<strong>将暂时获取不到锁的线程加入到队列</strong>中。 </p>
 <blockquote>
-<p>CLH(Craig,Landin and Hagersten)队列是一个<strong>虚拟的双向队列</strong>（虚拟的双向队列即<strong>不存在队列实例</strong>，仅存在结点之间的关联关系）。AQS 是<strong>将每条请求共享资源的线程封装成一个 CLH 锁队列的一个结点</strong>（Node）来实现锁的分配。<br>[ 搜索了一下，CLH好像是人名 ]<br>在 CLH 同步队列中，一个节点表示一个线程，它保存着<strong>线程的引用</strong>（thread）、 当前节点在<strong>队列中的状态</strong>（waitStatus）、<strong>前驱节点</strong>（prev）、<strong>后继节点</strong>（next）。<br>CLH队列结构<br><img src="/attachments/img/lyx-20241126133649961.png" alt="lyx-20241126133649961"></p>
+<p>CLH(Craig,Landin and Hagersten)队列是一个<strong>虚拟的双向队列</strong>（虚拟的双向队列即<strong>不存在队列实例</strong>，仅存在结点之间的关联关系）。AQS 是<strong>将每条请求共享资源的线程封装成一个 CLH 锁队列的一个结点</strong>（Node）来实现锁的分配。<br>[ 搜索了一下，CLH好像是人名 ]<br>在 CLH 同步队列中，一个节点表示一个线程，它保存着<strong>线程的引用</strong>（thread）、 当前节点在<strong>队列中的状态</strong>（waitStatus）、<strong>前驱节点</strong>（prev）、<strong>后继节点</strong>（next）。<br>CLH队列结构<br><img src="/attachments/img/ly-20241129104402250.png" alt="ly-20241129104402250"></p>
 </blockquote>
 <ul>
-<li><p>AQS（AbstractQueuedSynchronized）原理图<br>  <img src="/attachments/img/lyx-20241126133650381.png" alt="lyx-20241126133650381"></p>
+<li><p>AQS（AbstractQueuedSynchronized）原理图<br>  <img src="/attachments/img/ly-20241129104402685.png" alt="ly-20241129104402685"></p>
 <p>AQS使用一个<strong>int成员变量来表示同步状态</strong>，通过内置的<strong>线程等待队列</strong>来获取资源线程的排队工作。</p>
 </li>
 </ul>

@@ -27,10 +27,10 @@
 <meta property="og:site_name" content="随记">
 <meta property="og:description" content="api网关">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://lwmfjc.github.io/attachments/img/lyx-20241126133902103.png">
-<meta property="og:image" content="https://lwmfjc.github.io/attachments/img/lyx-20241126133902651.jpg">
-<meta property="og:image" content="https://lwmfjc.github.io/attachments/img/lyx-20241126133903100.jpg">
-<meta property="og:image" content="https://lwmfjc.github.io/attachments/img/lyx-20241126133903538.jpg">
+<meta property="og:image" content="https://lwmfjc.github.io/attachments/img/ly-20241129104547333.png">
+<meta property="og:image" content="https://lwmfjc.github.io/attachments/img/ly-20241129104547782.jpg">
+<meta property="og:image" content="https://lwmfjc.github.io/attachments/img/ly-20241129104548119.jpg">
+<meta property="og:image" content="https://lwmfjc.github.io/attachments/img/ly-20241129104548461.jpg">
 <meta property="article:published_time" content="2023-02-10T22:26:59.000Z">
 <meta property="article:modified_time" content="2023-02-10T22:26:59.000Z">
 <meta property="article:author" content="刘易">
@@ -38,7 +38,7 @@
 <meta property="article:tag" content="复习-javaGuide">
 <meta property="article:tag" content="复习-javaGuide-distributed_system">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://lwmfjc.github.io/attachments/img/lyx-20241126133902103.png">
+<meta name="twitter:image" content="https://lwmfjc.github.io/attachments/img/ly-20241129104547333.png">
 
 
 <link rel="canonical" href="https://lwmfjc.github.io/2023/02/10/review/java_guide/lydly_distributed_system/ly01ly_api-gateway/">
@@ -158,7 +158,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">252</span>
+          <span class="site-state-item-count">253</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -276,12 +276,12 @@
 <p>转载自<a target="_blank" rel="noopener" href="https://github.com/Snailclimb/JavaGuide%EF%BC%88%E6%B7%BB%E5%8A%A0%E5%B0%8F%E9%83%A8%E5%88%86%E7%AC%94%E8%AE%B0%EF%BC%89%E6%84%9F%E8%B0%A2%E4%BD%9C%E8%80%85">https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者</a>!</p>
 </blockquote>
 <h2 id="什么是网关？有什么用？"><a href="#什么是网关？有什么用？" class="headerlink" title="什么是网关？有什么用？"></a>什么是网关？有什么用？</h2><p>微服务背景下，一个系统被<strong>拆分为多个服务</strong>，但是像<strong>安全认证</strong>，<strong>流量控制</strong>，<strong>日志</strong>，<strong>监控</strong>等功能是每个服务都需要的，没有网关的话，我们就需要在<strong>每个服务</strong>中单独实现，这使得我们做了很多重复的事情并且没有一个<strong>全局的视图来统一管理</strong>这些功能。</p>
-<p><img src="/attachments/img/lyx-20241126133902103.png" alt="lyx-20241126133902103.png"></p>
+<p><img src="/attachments/img/ly-20241129104547333.png" alt="ly-20241129104547333.png"></p>
 <p>一般情况下，网关可以为我们提供<strong>请求转发</strong>、<strong>安全认证（身份&#x2F;权限认证）</strong>、<strong>流量控制</strong>、<strong>负载均衡</strong>、<strong>降级熔断</strong>、<strong>日志</strong>、<strong>监控</strong>等功能。</p>
 <p>上面介绍了这么多功能，实际上，网关主要做了一件事情：<strong>请求过滤</strong> 。</p>
 <h2 id="有哪些常见的网关系统？"><a href="#有哪些常见的网关系统？" class="headerlink" title="有哪些常见的网关系统？"></a>有哪些常见的网关系统？</h2><h3 id="Netflix-Zuul"><a href="#Netflix-Zuul" class="headerlink" title="Netflix Zuul"></a>Netflix Zuul</h3><p>Zuul 是 Netflix 开发的一款提供<strong>动态路由</strong>、<strong>监控</strong>、<strong>弹性</strong>、<strong>安全</strong>的网关服务。</p>
 <p>Zuul 主要通过<strong>过滤器（类似于 AOP）来过滤请求</strong>，从而实现网关必备的各种功能。</p>
-<p><img src="/attachments/img/lyx-20241126133902651.jpg" alt="Zuul架构"></p>
+<p><img src="/attachments/img/ly-20241129104547782.jpg" alt="Zuul架构"></p>
 <p>我们可以自定义过滤器来处理请求，并且，Zuul 生态本身就有很多现成的过滤器供我们使用。就比如限流可以直接用国外朋友写的 <a target="_blank" rel="noopener" href="https://github.com/marcosbarbero/spring-cloud-zuul-ratelimit">spring-cloud-zuul-ratelimit</a> (这里只是举例说明，一般是配合 hystrix 来做限流)：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">  &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;spring-cloud-starter-netflix-zuul&lt;/artifactId&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br><span class="line">&lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;com.marcosbarbero.cloud&lt;/groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;spring-cloud-zuul-ratelimit&lt;/artifactId&gt;</span><br><span class="line">    &lt;version&gt;2.2.0.RELEASE&lt;/version&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br></pre></td></tr></table></figure>
 
@@ -314,7 +314,7 @@
 <p><em>etcd</em>是使用 <strong>Go 语言</strong>开发的一个开源的、高可用的分布式 key-value 存储系统，使用 Raft 协议做分布式共识。</p>
 </blockquote>
 <p>与传统 API 网关相比，APISIX 具有<strong>动态路由</strong>和<strong>插件热加载</strong>，特别适合微服务系统下的 API 管理。并且，APISIX 与 SkyWalking（分布式链路追踪系统）、Zipkin（分布式链路追踪系统）、Prometheus（监控系统） 等 DevOps 生态工具对接都十分方便。</p>
-<p><img src="/attachments/img/lyx-20241126133903100.jpg" alt="apisix架构图"></p>
+<p><img src="/attachments/img/ly-20241129104548119.jpg" alt="apisix架构图"></p>
 <p>作为 NGINX 和 Kong 的替代项目，APISIX 目前已经是 Apache 顶级开源项目，并且是最快毕业的国产开源项目。国内目前已经有很多知名企业（比如金山、有赞、爱奇艺、腾讯、贝壳）使用 APISIX 处理核心的业务流量。</p>
 <p>根据官网介绍：“APISIX 已经生产可用，功能、性能、架构全面优于 Kong”。</p>
 <ul>
@@ -328,7 +328,7 @@
 <li><a target="_blank" rel="noopener" href="https://www.apiseven.com/zh/usercases">APISIX 用户案例</a></li>
 </ul>
 <h3 id="Shenyu"><a href="#Shenyu" class="headerlink" title="Shenyu"></a>Shenyu</h3><p>Shenyu 是一款<strong>基于 WebFlux 的可扩展、高性能、响应式网关</strong>，<strong>Apache 顶级开源项目</strong>。</p>
-<p><img src="/attachments/img/lyx-20241126133903538.jpg" alt="Shenyu架构"></p>
+<p><img src="/attachments/img/ly-20241129104548461.jpg" alt="Shenyu架构"></p>
 <p>Shenyu 通过插件扩展功能，<strong>插件</strong>是 ShenYu 的灵魂，并且插件也是可扩展和热插拔的。不同的插件实现不同的功能。Shenyu 自带了诸如<strong>限流、熔断、转发 、重写、重定向、和路由监控</strong>等插件。</p>
 <ul>
 <li>Github 地址： <a target="_blank" rel="noopener" href="https://github.com/apache/incubator-shenyu">https://github.com/apache/incubator-shenyu</a></li>
