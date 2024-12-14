@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>复习-JavaGuide-Diagram on 随记</title><link>https://lwmfjc.github.io/zh/tags/%E5%A4%8D%E4%B9%A0-javaGuide-diagram/</link><description>Recent content in 复习-JavaGuide-Diagram on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Mon, 27 Feb 2023 22:11:02 +0000</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/tags/%E5%A4%8D%E4%B9%A0-javaGuide-diagram/index.xml" rel="self" type="application/rss+xml"/><item><title>redis问题图解</title><link>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/database/Redis/diagram/</link><pubDate>Mon, 27 Feb 2023 22:11:02 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/database/Redis/diagram/</guid><description>&lt;blockquote>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;ol>
+&lt;li>
+&lt;p>主从复制原理&lt;/p>
+&lt;p>&lt;img src="img/ly-20241212141920958.png" alt="主从复制原理" />&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>哨兵模式(简单)&lt;br>
+&lt;img src="img/ly-20241212141921249.png" alt="ly-20241212141921249" />&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>哨兵模式详解&lt;/p>
+&lt;blockquote>
+&lt;p>先配置&lt;strong>主从模式&lt;/strong>，再配置&lt;strong>哨兵模式&lt;/strong>&lt;/p>
+&lt;/blockquote>
+&lt;p>所有的哨兵 sentinel.conf 都是配置为监听master&amp;ndash;&amp;gt; 192.168.14.101，如果主机宕机，sentinel.conf 中的配置也会自动更改为选举后的&lt;img src="img/ly-20241212141921408.png" alt="ly-20241212141921408" />&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>Java客户端连接原理&lt;/p>
+&lt;blockquote>
+&lt;p>客户端是和Sentinel来进行交互的,通过Sentinel来获取真正的Redis节点信息,然后来操作.实际工作时,Sentinel 内部维护了一个主题队列,用来保存Redis的节点信息,并实时更新,客户端订阅了这个主题,然后实时的去获取这个队列的Redis节点信息.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/**
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">代码相对比较简单
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">**/&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//1.设置sentinel 各个节点集合&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Set&lt;span style="color:#f92672">&amp;lt;&lt;/span>String&lt;span style="color:#f92672">&amp;gt;&lt;/span> sentinelSet &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> HashSet&lt;span style="color:#f92672">&amp;lt;&amp;gt;&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>sentinelSet.&lt;span style="color:#a6e22e">add&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;192.168.14.101:26379&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>sentinelSet.&lt;span style="color:#a6e22e">add&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;192.168.14.102:26380&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>sentinelSet.&lt;span style="color:#a6e22e">add&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;192.168.14.103:26381&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//2.设置jedispool 连接池配置文件&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>JedisPoolConfig config &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> JedisPoolConfig();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>config.&lt;span style="color:#a6e22e">setMaxTotal&lt;/span>(10);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>config.&lt;span style="color:#a6e22e">setMaxWaitMillis&lt;/span>(1000);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//3.设置mastername,sentinelNode集合,配置文件,Redis登录密码&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>JedisSentinelPool jedisSentinelPool &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> JedisSentinelPool(&lt;span style="color:#e6db74">&amp;#34;mymaster&amp;#34;&lt;/span>,sentinelSet,config,&lt;span style="color:#e6db74">&amp;#34;123&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Jedis jedis &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">null&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">try&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> jedis &lt;span style="color:#f92672">=&lt;/span> jedisSentinelPool.&lt;span style="color:#a6e22e">getResource&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">//获取Redis中key=hello的值&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> String value &lt;span style="color:#f92672">=&lt;/span> jedis.&lt;span style="color:#a6e22e">get&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;hello&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> System.&lt;span style="color:#a6e22e">out&lt;/span>.&lt;span style="color:#a6e22e">println&lt;/span>(value);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>} &lt;span style="color:#66d9ef">catch&lt;/span> (Exception e) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> e.&lt;span style="color:#a6e22e">printStackTrace&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>} &lt;span style="color:#66d9ef">finally&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span>(jedis &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#66d9ef">null&lt;/span>){
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> jedis.&lt;span style="color:#a6e22e">close&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/blockquote>
+&lt;p>&lt;img src="img/ly-20241212141921579.png" alt="ly-20241212141921579" />&lt;/p></description></item></channel></rss>

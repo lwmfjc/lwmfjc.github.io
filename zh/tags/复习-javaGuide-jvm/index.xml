@@ -1,0 +1,380 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>复习-JavaGuide-Jvm on 随记</title><link>https://lwmfjc.github.io/zh/tags/%E5%A4%8D%E4%B9%A0-javaGuide-jvm/</link><description>Recent content in 复习-JavaGuide-Jvm on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Mon, 19 Dec 2022 16:04:34 +0000</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/tags/%E5%A4%8D%E4%B9%A0-javaGuide-jvm/index.xml" rel="self" type="application/rss+xml"/><item><title>jvm监控和故障处理工具 总结</title><link>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/java/JVM/ly0408lyjdk-monitoring-and-troubleshooting-tools/</link><pubDate>Mon, 19 Dec 2022 16:04:34 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/java/JVM/ly0408lyjdk-monitoring-and-troubleshooting-tools/</guid><description>&lt;blockquote>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;h1 id="jdk-命令行工具">
+ JDK 命令行工具
+ &lt;a class="anchor" href="#jdk-%e5%91%bd%e4%bb%a4%e8%a1%8c%e5%b7%a5%e5%85%b7">#&lt;/a>
+&lt;/h1>
+&lt;p>这些命令在 JDK 安装目录下的 bin 目录下：&lt;/p>
+&lt;ul>
+&lt;li>&lt;strong>&lt;code>jps&lt;/code>&lt;/strong> (JVM Process Status）: 类似 UNIX 的 &lt;code>ps&lt;/code> 命令。用于查看所有 Java 进程的启动类、传入参数和 Java 虚拟机参数等信息；&lt;/li>
+&lt;li>&lt;strong>&lt;code>jstat&lt;/code>&lt;/strong>（JVM Statistics Monitoring Tool）: 用于收集 HotSpot 虚拟机各方面的运行数据;&lt;/li>
+&lt;li>&lt;strong>&lt;code>jinfo&lt;/code>&lt;/strong> (Configuration Info for Java) : Configuration Info for Java,显示虚拟机配置信息;&lt;/li>
+&lt;li>&lt;strong>&lt;code>jmap&lt;/code>&lt;/strong> (Memory Map for Java) : 生成堆转储快照;&lt;/li>
+&lt;li>&lt;strong>&lt;code>jhat&lt;/code>&lt;/strong> (JVM Heap Dump Browser) : 用于分析 heapdump 文件，它会建立一个 HTTP/HTML 服务器，让用户可以在浏览器上查看分析结果;&lt;/li>
+&lt;li>&lt;strong>&lt;code>jstack&lt;/code>&lt;/strong> (Stack Trace for Java) : 生成虚拟机当前时刻的线程快照，线程快照就是当前虚拟机内每一条线程正在执行的方法堆栈的集合。&lt;/li>
+&lt;/ul>
+&lt;h2 id="jps-查看所有-java-进程">
+ jps: 查看所有 Java 进程
+ &lt;a class="anchor" href="#jps-%e6%9f%a5%e7%9c%8b%e6%89%80%e6%9c%89-java-%e8%bf%9b%e7%a8%8b">#&lt;/a>
+&lt;/h2>
+&lt;p>&lt;code>jps&lt;/code>(JVM Process Status) 命令类似 UNIX 的 &lt;code>ps&lt;/code> 命令。&lt;/p></description></item><item><title>jvm参数</title><link>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/java/JVM/ly0406lyjvm-params/</link><pubDate>Mon, 19 Dec 2022 15:24:01 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/java/JVM/ly0406lyjvm-params/</guid><description>&lt;blockquote>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;blockquote>
+&lt;p>本文由 JavaGuide 翻译自 &lt;a href="https://www.baeldung.com/jvm-parameters">https://www.baeldung.com/jvm-parametersopen in new window&lt;/a>，并对文章进行了大量的完善补充。翻译不易，如需转载请注明出处，作者：&lt;a href="https://www.baeldung.com/author/baeldung/">baeldungopen in new window&lt;/a> 。&lt;/p>
+&lt;/blockquote>
+&lt;h1 id="概述">
+ 概述
+ &lt;a class="anchor" href="#%e6%a6%82%e8%bf%b0">#&lt;/a>
+&lt;/h1>
+&lt;p>本篇文章中，将掌握最常用的&lt;strong>JVM参数配置&lt;/strong>。下面提到了一些概念，&lt;strong>堆&lt;/strong>、&lt;strong>方法区&lt;/strong>、&lt;strong>垃圾回收&lt;/strong>等。&lt;/p>
+&lt;h1 id="堆内存相关">
+ 堆内存相关
+ &lt;a class="anchor" href="#%e5%a0%86%e5%86%85%e5%ad%98%e7%9b%b8%e5%85%b3">#&lt;/a>
+&lt;/h1>
+&lt;p>Java 虚拟机所管理的&lt;strong>内存中最大的一块&lt;/strong>，&lt;strong>Java 堆&lt;/strong>是&lt;strong>所有线程共享的一块内存区域&lt;/strong>，在虚拟机&lt;strong>启动时创建&lt;/strong>。此内存区域的&lt;strong>唯一目的就是存放对象实例&lt;/strong>，&lt;strong>几乎&lt;/strong> &lt;strong>所有的对象实例&lt;/strong>以及&lt;strong>数组&lt;/strong>都在这里分配内存。&lt;br>
+&lt;img src="img/ly-20241212142002639.png" alt="ly-20241212142002639" />&lt;/p>
+&lt;h2 id="显式指定堆内存-xms和-xmx">
+ 显式指定堆内存-Xms和-Xmx
+ &lt;a class="anchor" href="#%e6%98%be%e5%bc%8f%e6%8c%87%e5%ae%9a%e5%a0%86%e5%86%85%e5%ad%98-xms%e5%92%8c-xmx">#&lt;/a>
+&lt;/h2>
+&lt;ul>
+&lt;li>
+&lt;p>与&lt;strong>性能相关&lt;/strong>的最常见实践之一是根据应用程序要求&lt;strong>初始化堆内存&lt;/strong>。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>如果我们需要指定&lt;strong>最小&lt;/strong>和&lt;strong>最大堆&lt;/strong>大小（推荐显示指定大小）：&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>-Xms&amp;lt;heap size&amp;gt;&lt;span style="color:#f92672">[&lt;/span>unit&lt;span style="color:#f92672">]&lt;/span> 
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>-Xmx&amp;lt;heap size&amp;gt;&lt;span style="color:#f92672">[&lt;/span>unit&lt;span style="color:#f92672">]&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;ul>
+&lt;li>&lt;strong>heap size&lt;/strong> 表示要初始化内存的具体大小。&lt;/li>
+&lt;li>&lt;strong>unit&lt;/strong> 表示要初始化内存的单位。单位为***“ g”*** (GB) 、&lt;em>&lt;strong>“ m”&lt;/strong>&lt;/em>（MB）、&lt;em>&lt;strong>“ k”&lt;/strong>&lt;/em>（KB）。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>举例，为JVM分配最小2GB和最大5GB的堆内存大小&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>-Xms2G -Xmx5G
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;/ul>
+&lt;h2 id="显示新生代内存young-generation">
+ 显示新生代内存（Young Generation）
+ &lt;a class="anchor" href="#%e6%98%be%e7%a4%ba%e6%96%b0%e7%94%9f%e4%bb%a3%e5%86%85%e5%ad%98young-generation">#&lt;/a>
+&lt;/h2>
+&lt;ul>
+&lt;li>
+&lt;p>在堆总可用内存配置完成之后，第二大影响因素是为 &lt;strong>&lt;code>Young Generation&lt;/code>&lt;/strong> 在堆内存所占的比例。默认情况下，&lt;strong>YG 的最小大小为 1310 &lt;em>MB&lt;/em>&lt;/strong>，最大大小为&lt;em>无限制&lt;/em>。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>两种指定 &lt;strong>新生代内存(Young Generation)&lt;/strong> 大小的方法&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>通过 &lt;code>-XX:NewSize&lt;/code> 和 &lt;code>-XX:MaxNewSize &lt;/code>&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">-&lt;/span>XX:NewSize&lt;span style="color:#f92672">=&amp;lt;&lt;/span>young size&lt;span style="color:#f92672">&amp;gt;[&lt;/span>unit&lt;span style="color:#f92672">]&lt;/span> 
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">-&lt;/span>XX:MaxNewSize&lt;span style="color:#f92672">=&amp;lt;&lt;/span>young size&lt;span style="color:#f92672">&amp;gt;[&lt;/span>unit&lt;span style="color:#f92672">]&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>如，为新生代分配&lt;strong>最小256m&lt;/strong>的内存，&lt;strong>最大1024m&lt;/strong>的内存我们的参数为：&lt;/p></description></item><item><title>类文件结构</title><link>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/java/JVM/ly0403lyclass-structure/</link><pubDate>Sun, 18 Dec 2022 08:24:36 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/java/JVM/ly0403lyclass-structure/</guid><description>&lt;blockquote>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;h1 id="概述">
+ 概述
+ &lt;a class="anchor" href="#%e6%a6%82%e8%bf%b0">#&lt;/a>
+&lt;/h1>
+&lt;ul>
+&lt;li>Java中，JVM可以理解的代码就叫做&lt;strong>字节码&lt;/strong>（即扩展名为.class的文件），它不面向任何特定的处理器，只&lt;strong>面向虚拟机&lt;/strong>&lt;/li>
+&lt;li>Java语言通过&lt;strong>字节码&lt;/strong>的方式，在一定程度上解决了&lt;strong>传统解释型语言执行效率低&lt;/strong>的问题，同时又保留了&lt;strong>解释型语言&lt;/strong>可移植的特点。所以Java程序运行时&lt;strong>效率极高&lt;/strong>，且由于字节码并不针对一种特定的&lt;strong>机器&lt;/strong>。因此，Java程序无需重新编译便可在&lt;strong>多种不通操作系统的计算机&lt;/strong>运行&lt;/li>
+&lt;li>Clojure（Lisp 语言的一种方言）、Groovy、Scala 等语言都是运行在 Java 虚拟机之上。下图展示了&lt;strong>不同的语言被不同的编译器&lt;/strong>编译&lt;strong>成&lt;code>.class&lt;/code>&lt;strong>文件&lt;/strong>最终运行在 Java 虚拟机&lt;/strong>之上。&lt;strong>&lt;code>.class&lt;/code>文件的二进制格式&lt;/strong>可以使用 &lt;a href="https://www.x-ways.net/winhex/">WinHexopen in new window&lt;/a> 查看。&lt;/li>
+&lt;/ul>
+&lt;p>&lt;img src="img/ly-20241212141957797.png" alt="ly-20241212141957797" />&lt;/p>
+&lt;p>.class文件是不同语言在&lt;strong>Java虚拟机&lt;/strong>之间的重要桥梁，同时也是&lt;strong>支持Java跨平台&lt;/strong>很重要的一个原因&lt;/p>
+&lt;h1 id="class文件结构总结">
+ Class文件结构总结
+ &lt;a class="anchor" href="#class%e6%96%87%e4%bb%b6%e7%bb%93%e6%9e%84%e6%80%bb%e7%bb%93">#&lt;/a>
+&lt;/h1>
+&lt;p>根据Java虚拟机规范，Class文件通过&lt;strong>ClassFile&lt;/strong>定义，有点类似C语言的&lt;strong>结构体&lt;/strong>&lt;/p>
+&lt;p>ClassFile的结构如下：&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>ClassFile {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> u4 magic; &lt;span style="color:#75715e">//Class 文件的标志&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> u2 minor_version;&lt;span style="color:#75715e">//Class 的小版本号&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> u2 major_version;&lt;span style="color:#75715e">//Class 的大版本号&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> u2 constant_pool_count;&lt;span style="color:#75715e">//常量池的数量&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> cp_info constant_pool&lt;span style="color:#f92672">[&lt;/span>constant_pool_count&lt;span style="color:#f92672">-&lt;/span>1&lt;span style="color:#f92672">]&lt;/span>;&lt;span style="color:#75715e">//常量池&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> u2 access_flags;&lt;span style="color:#75715e">//Class 的访问标记&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> u2 this_class;&lt;span style="color:#75715e">//当前类&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> u2 super_class;&lt;span style="color:#75715e">//父类&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> u2 interfaces_count;&lt;span style="color:#75715e">//接口&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> u2 interfaces&lt;span style="color:#f92672">[&lt;/span>interfaces_count&lt;span style="color:#f92672">]&lt;/span>;&lt;span style="color:#75715e">//一个类可以实现多个接口&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> u2 fields_count;&lt;span style="color:#75715e">//Class 文件的字段属性&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> field_info fields&lt;span style="color:#f92672">[&lt;/span>fields_count&lt;span style="color:#f92672">]&lt;/span>;&lt;span style="color:#75715e">//一个类可以有多个字段&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> u2 methods_count;&lt;span style="color:#75715e">//Class 文件的方法数量&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> method_info methods&lt;span style="color:#f92672">[&lt;/span>methods_count&lt;span style="color:#f92672">]&lt;/span>;&lt;span style="color:#75715e">//一个类可以有个多个方法&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> u2 attributes_count;&lt;span style="color:#75715e">//此类的属性表中的属性数&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> attribute_info attributes&lt;span style="color:#f92672">[&lt;/span>attributes_count&lt;span style="color:#f92672">]&lt;/span>;&lt;span style="color:#75715e">//属性表集合&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>} 
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;img src="img/ly-20241212141958065.png" alt="ly-20241212141958065" />&lt;/p></description></item><item><title>类加载器详解</title><link>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/java/JVM/ly0405lyclassloader-detail/</link><pubDate>Sat, 17 Dec 2022 22:39:21 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/java/JVM/ly0405lyclassloader-detail/</guid><description>&lt;blockquote>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;h2 id="回顾一下类加载过程">
+ 回顾一下类加载过程
+ &lt;a class="anchor" href="#%e5%9b%9e%e9%a1%be%e4%b8%80%e4%b8%8b%e7%b1%bb%e5%8a%a0%e8%bd%bd%e8%bf%87%e7%a8%8b">#&lt;/a>
+&lt;/h2>
+&lt;p>开始介绍类加载器和双亲委派模型之前，简单回顾一下类加载过程。&lt;/p>
+&lt;ul>
+&lt;li>类加载过程：&lt;strong>加载-&amp;gt;连接-&amp;gt;初始化&lt;/strong>。&lt;/li>
+&lt;li>连接过程又可分为三步：&lt;strong>验证-&amp;gt;准备-&amp;gt;解析&lt;/strong>。&lt;/li>
+&lt;/ul>
+&lt;p>[&lt;img src="img/ly-20241212142001796.jpg" alt="类加载过程" />&lt;/p>
+&lt;p>加载是类加载过程的第一步，主要完成下面 3 件事情：&lt;/p>
+&lt;ol>
+&lt;li>通过&lt;strong>全类名&lt;/strong>获取定义此类的&lt;strong>二进制字节流&lt;/strong>&lt;/li>
+&lt;li>将字节流所代表的静态存储结构&lt;strong>转换为方法区的运行时数据结构&lt;/strong>&lt;/li>
+&lt;li>在&lt;strong>内存&lt;/strong>中生成一个代表该类的 &lt;strong>&lt;code>Class&lt;/code> 对象&lt;/strong>，作为&lt;strong>方法区这些数据的访问入口&lt;/strong>&lt;/li>
+&lt;/ol>
+&lt;h2 id="类加载器">
+ 类加载器
+ &lt;a class="anchor" href="#%e7%b1%bb%e5%8a%a0%e8%bd%bd%e5%99%a8">#&lt;/a>
+&lt;/h2>
+&lt;h3 id="类加载器介绍">
+ 类加载器介绍
+ &lt;a class="anchor" href="#%e7%b1%bb%e5%8a%a0%e8%bd%bd%e5%99%a8%e4%bb%8b%e7%bb%8d">#&lt;/a>
+&lt;/h3>
+&lt;p>类加载器从 JDK 1.0 就出现了，最初只是为了满足 Java Applet（已经被淘汰） 的需要。后来，慢慢成为 Java 程序中的一个重要组成部分，赋予了 &lt;strong>Java 类可以被动态加载到 JVM&lt;/strong> 中并执行的能力。&lt;/p>
+&lt;p>根据官方 API 文档的介绍：&lt;/p>
+&lt;blockquote>
+&lt;p>A class loader is an object that is responsible for loading classes. The class ClassLoader is an abstract class. Given the binary name of a class, a class loader should attempt to locate or generate data that constitutes a definition for the class. A typical strategy is to transform the name into a file name and then read a &amp;ldquo;class file&amp;rdquo; of that name from a file system.&lt;/p></description></item><item><title>类加载过程</title><link>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/java/JVM/ly0404lyclassloader-process/</link><pubDate>Fri, 16 Dec 2022 10:06:50 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/java/JVM/ly0404lyclassloader-process/</guid><description>&lt;blockquote>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;h1 id="类的声明周期">
+ 类的声明周期
+ &lt;a class="anchor" href="#%e7%b1%bb%e7%9a%84%e5%a3%b0%e6%98%8e%e5%91%a8%e6%9c%9f">#&lt;/a>
+&lt;/h1>
+&lt;p>&lt;img src="img/ly-20241212141959924.png" alt="ly-20241212141959924" />&lt;/p>
+&lt;h1 id="类加载过程">
+ 类加载过程
+ &lt;a class="anchor" href="#%e7%b1%bb%e5%8a%a0%e8%bd%bd%e8%bf%87%e7%a8%8b">#&lt;/a>
+&lt;/h1>
+&lt;ul>
+&lt;li>Class文件，需要&lt;strong>加载到虚拟机中&lt;/strong>之后才能运行和使用，那么虚拟机是&lt;strong>如何加载&lt;/strong>这些Class文件呢&lt;/li>
+&lt;li>系统加载Class类文件需要三步：&lt;strong>加载&lt;/strong>-&amp;gt;&lt;strong>连接&lt;/strong>-&amp;gt;&lt;strong>初始化&lt;/strong>。连接过程又分为三步：&lt;strong>验证&lt;/strong>-&amp;gt;&lt;strong>准备&lt;/strong>-&amp;gt;&lt;strong>解析&lt;/strong>&lt;br>
+&lt;img src="img/ly-20241212142000194.png" alt="ly-20241212142000194" />&lt;/li>
+&lt;/ul>
+&lt;h2 id="加载">
+ 加载
+ &lt;a class="anchor" href="#%e5%8a%a0%e8%bd%bd">#&lt;/a>
+&lt;/h2>
+&lt;p>类加载的第一步，主要完成3件事情&lt;/p>
+&lt;blockquote>
+&lt;p>&lt;strong>构造与类相关联的方法表&lt;/strong>&lt;/p>
+&lt;/blockquote>
+&lt;ol>
+&lt;li>&lt;strong>通过全类名&lt;/strong>获取定义此类的&lt;strong>二进制字节流&lt;/strong>&lt;/li>
+&lt;li>将&lt;strong>字节流&lt;/strong>所代表的&lt;strong>静态存储结构&lt;/strong>，转换为&lt;strong>方法区&lt;/strong>的&lt;strong>运行时数据结构&lt;/strong>&lt;/li>
+&lt;li>在内存中生成一个该类的&lt;strong>Class对象&lt;/strong>，作为&lt;strong>方法区&lt;/strong>这些数据的访问入口&lt;/li>
+&lt;/ol>
+&lt;blockquote>
+&lt;p>虚拟机规范对上面3点不具体，比较灵活&lt;/p>
+&lt;ol>
+&lt;li>对于1 没有具体指明从哪里获取、怎样获取。可以从ZIP包读取 （JAR/EAR/WAR格式的基础）、其他文件生成（JSP）等&lt;/li>
+&lt;/ol>
+&lt;/blockquote>
+&lt;ul>
+&lt;li>非数组类的加载阶段（加载阶段&lt;strong>获取类的二进制字节流&lt;/strong>的动作）是可控性最强的阶段，这一步我们可以去完成还可以&lt;strong>自定义类加载器&lt;/strong>去&lt;strong>控制字节流&lt;/strong>的获取方式（重写一个类加载器的**loadClass()**方法&lt;/li>
+&lt;li>数组类型&lt;strong>不通过&lt;/strong>类加载器创建，它由&lt;strong>Java虚拟机&lt;/strong>直接创建&lt;/li>
+&lt;/ul>
+&lt;p>&lt;strong>加载阶段&lt;/strong>和&lt;strong>连接阶段&lt;/strong>的部分内容是&lt;strong>交叉执行&lt;/strong>的，即加载阶段尚未结束，连接阶段就可能已经开始了&lt;/p>
+&lt;h2 id="验证">
+ 验证
+ &lt;a class="anchor" href="#%e9%aa%8c%e8%af%81">#&lt;/a>
+&lt;/h2>
+&lt;p>验证是连接阶段的第一步，这一阶段的目的是确保 Class 文件的&lt;strong>字节流&lt;/strong>中包含的信息&lt;strong>符合《Java 虚拟机规范》&lt;strong>的全部约束要求，保证这些信息被当作代码运行后&lt;/strong>不会危害虚拟机自身的安全&lt;/strong>。&lt;/p>
+&lt;p>验证阶段主要由&lt;strong>四个&lt;/strong>检验阶段组成：&lt;/p>
+&lt;ol>
+&lt;li>&lt;strong>文件格式&lt;/strong>验证（Class 文件格式检查）&lt;/li>
+&lt;li>&lt;strong>元数据&lt;/strong>验证（字节码语义检查）&lt;/li>
+&lt;li>&lt;strong>字节码&lt;/strong>验证（程序语义检查）&lt;/li>
+&lt;li>&lt;strong>符号引用&lt;/strong>验证（类的正确性检查）&lt;/li>
+&lt;/ol>
+&lt;p>&lt;img src="img/ly-20241212142000337.png" alt="ly-20241212142000337" />&lt;/p>
+&lt;h2 id="准备">
+ 准备
+ &lt;a class="anchor" href="#%e5%87%86%e5%a4%87">#&lt;/a>
+&lt;/h2>
+&lt;ul>
+&lt;li>
+&lt;p>准备阶段是正式&lt;strong>为类变量分配内存&lt;/strong>并&lt;strong>设置类变量初始值&lt;/strong>的阶段，这些内存都将在&lt;strong>方法区&lt;/strong>中分配，注意：&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>这时候进行内存分配的&lt;strong>仅&lt;/strong>包括&lt;strong>类变量&lt;/strong>（&lt;strong>ClassVariables&lt;/strong>，即&lt;strong>静态变量&lt;/strong>：被&lt;code>static&lt;/code>关键字修饰的变量，&lt;strong>只与类相关&lt;/strong>，因此被称为&lt;strong>类变量&lt;/strong>），而&lt;strong>不包括&lt;/strong>实例变量。&lt;/p>
+&lt;blockquote>
+&lt;p>实例变量会在&lt;strong>对象实例化&lt;/strong>时，随着对象一块分配到&lt;strong>Java堆&lt;/strong>中&lt;/p>
+&lt;/blockquote>
+&lt;/li>
+&lt;li>
+&lt;p>从概念上讲，类变量所使用的内存都应当在 &lt;strong>方法区&lt;/strong> 中进行分配。不过有一点需要注意的是：JDK 7 之前，HotSpot 使用永久代来实现方法区的时候，实现是完全符合这种逻辑概念的。 而在 &lt;strong>JDK 7 及之后&lt;/strong>，HotSpot 已经把&lt;strong>原本放在永久代&lt;/strong>的&lt;strong>字符串常量池&lt;/strong>、&lt;strong>静态变量&lt;/strong>等移动到&lt;strong>堆&lt;/strong>中，这个时候&lt;strong>类变量&lt;/strong>则会随着 **Class 对象（上面有提到，内存区生成Class对象）**一起存放在 Java 堆中&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>这里所设置的初始值**&amp;ldquo;通常情况&amp;rdquo;&lt;strong>下是&lt;/strong>数据类型默认的零值（如 0、0L、null、false 等**），比如我们定义了**&lt;code>public static int value=111&lt;/code>** ，那么 value 变量在准备阶段的&lt;strong>初始值就是 0 而不是 111&lt;/strong>（&lt;strong>初始化&lt;/strong>阶段才会赋值）。&lt;strong>特殊情况&lt;/strong>：比如给 &lt;strong>value 变量加上了 final&lt;/strong> 关键字&lt;code>public static final int value=111&lt;/code> ，那么准备阶段 value 的值就被赋值为 111&lt;/p></description></item><item><title>java垃圾回收</title><link>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/java/JVM/ly0402lygarbage-collection/</link><pubDate>Mon, 12 Dec 2022 15:58:48 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/java/JVM/ly0402lygarbage-collection/</guid><description>&lt;blockquote>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;h1 id="前言">
+ 前言
+ &lt;a class="anchor" href="#%e5%89%8d%e8%a8%80">#&lt;/a>
+&lt;/h1>
+&lt;p>当&lt;strong>需要排查各种内存溢出问题&lt;/strong>、当&lt;strong>垃圾收集&lt;/strong>成为系统达到更高并发的瓶颈时，我们就需要对这些**“自动化”&lt;strong>的技术实施必要的&lt;/strong>监控&lt;strong>和&lt;/strong>调节**&lt;/p>
+&lt;h1 id="堆空间的基本结构">
+ 堆空间的基本结构
+ &lt;a class="anchor" href="#%e5%a0%86%e7%a9%ba%e9%97%b4%e7%9a%84%e5%9f%ba%e6%9c%ac%e7%bb%93%e6%9e%84">#&lt;/a>
+&lt;/h1>
+&lt;ul>
+&lt;li>
+&lt;p>Java的&lt;strong>自动内存管理&lt;/strong>主要是针对对象内存的&lt;strong>回收&lt;/strong>和对象内存的&lt;strong>分配&lt;/strong>。且Java自动内存管理最核心的功能是&lt;strong>堆&lt;/strong>内存中的对象&lt;strong>分配&lt;/strong>和&lt;strong>回收&lt;/strong>&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Java堆是垃圾收集器管理的主要区域，因此也被称作&lt;strong>GC堆（Garbage Collected Heap）&lt;/strong>&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>从&lt;strong>垃圾回收的角度&lt;/strong>来说，由于现在收集器基本都采用&lt;strong>分代垃圾收集算法&lt;/strong>，所以Java堆被划分为了几个不同的区域，这样我们就可以&lt;strong>根据各个区域的特点&lt;/strong>选择&lt;strong>合适的垃圾收集算法&lt;/strong>&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>JDK7版本及JDK7版本之前，堆内存被通常分为下面三部分：&lt;/p>
+&lt;ol>
+&lt;li>新生代内存（Young Generation）&lt;/li>
+&lt;li>老生代（Old Generation）&lt;/li>
+&lt;li>永久代（Permanent Generation）&lt;/li>
+&lt;/ol>
+&lt;/li>
+&lt;/ul>
+&lt;p>&lt;img src="https://javaguide.cn/assets/hotspot-heap-structure.41533631.png" alt="hotspot-heap-structure" />&lt;/p>
+&lt;p>JDK8版本之后PermGen（永久）已被Metaspace（元空间）取代，且已经不在堆里面了，元空间使用的是&lt;strong>直接内存&lt;/strong>。&lt;/p>
+&lt;h1 id="内存分配和回收原则">
+ 内存分配和回收原则
+ &lt;a class="anchor" href="#%e5%86%85%e5%ad%98%e5%88%86%e9%85%8d%e5%92%8c%e5%9b%9e%e6%94%b6%e5%8e%9f%e5%88%99">#&lt;/a>
+&lt;/h1>
+&lt;h2 id="对象优先在eden区分配">
+ 对象优先在Eden区分配
+ &lt;a class="anchor" href="#%e5%af%b9%e8%b1%a1%e4%bc%98%e5%85%88%e5%9c%a8eden%e5%8c%ba%e5%88%86%e9%85%8d">#&lt;/a>
+&lt;/h2>
+&lt;ul>
+&lt;li>
+&lt;p>多数情况下，对象在&lt;strong>新生代中Eden区&lt;/strong>分配。当Eden区没有足够空间进行分配时，会触发一次MinorGC
+首先，先添加一下参数打印GC详情：&lt;code>-XX:+PrintGCDetails&lt;/code>&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">GCTest&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>(String&lt;span style="color:#f92672">[]&lt;/span> args) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">byte&lt;/span>&lt;span style="color:#f92672">[]&lt;/span> allocation1, allocation2;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		allocation1 &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> &lt;span style="color:#66d9ef">byte&lt;/span>&lt;span style="color:#f92672">[&lt;/span>30900&lt;span style="color:#f92672">*&lt;/span>1024&lt;span style="color:#f92672">]&lt;/span>;&lt;span style="color:#75715e">//会用掉3万多K&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>} 
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>运行后的结果（这里应该是配过xms和xmx了，即堆内存大小）
+&lt;img src="img/ly-20241212141955776.jpg" alt="img" />
+如上，&lt;strong>Eden区内存几乎被分配完全&lt;/strong>（即使程序什么都不做，新生代也会使用2000多K）&lt;/p>
+&lt;blockquote>
+&lt;p>注： PSYoungGen 为 38400K ，= 33280K + 5120K （Survivor区总会有一个是空的，所以只加了一个5120K ）&lt;/p>
+&lt;/blockquote>
+&lt;p>假如我们再为allocation2分配内存会怎么样(不处理的话，年轻代会溢出)&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>allocation2 &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> &lt;span style="color:#66d9ef">byte&lt;/span>&lt;span style="color:#f92672">[&lt;/span>900 &lt;span style="color:#f92672">*&lt;/span> 1024&lt;span style="color:#f92672">]&lt;/span>;
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;img src="img/ly-20241212141956049.jpg" alt="img" />
+在给allocation2分配内存之前，Eden区内存几乎已经被分配完。所以当&lt;strong>Eden区没有足够空间进行分配时&lt;/strong>，虚拟机将发起一次MinorGC。GC期间虚拟机又发现&lt;strong>allocation1无法存入空间&lt;/strong>，所以只好通过&lt;strong>分配担保机制&lt;/strong>，把&lt;strong>新生代的对象&lt;/strong>，&lt;strong>提前转移到老年代&lt;/strong>去，老年代的空间足够存放allocation1，&lt;strong>所以不会出现Full GC（这里可能是之前的说法，可能只是要表达老年代的GC，而不是Full GC(整堆GC) ）&lt;/strong>　　&lt;/p>
+&lt;p>执行MinorGC后，&lt;strong>后面分配的对象如果能够存在Eden区&lt;/strong>的话，还是会在Eden区分配内存&lt;br>
+执行如下代码验证：&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">GCTest&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 	&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>(String&lt;span style="color:#f92672">[]&lt;/span> args) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 		&lt;span style="color:#66d9ef">byte&lt;/span>&lt;span style="color:#f92672">[]&lt;/span> allocation1, allocation2,allocation3,allocation4,allocation5;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 		allocation1 &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> &lt;span style="color:#66d9ef">byte&lt;/span>&lt;span style="color:#f92672">[&lt;/span>32000&lt;span style="color:#f92672">*&lt;/span>1024&lt;span style="color:#f92672">]&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 		allocation2 &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> &lt;span style="color:#66d9ef">byte&lt;/span>&lt;span style="color:#f92672">[&lt;/span>1000&lt;span style="color:#f92672">*&lt;/span>1024&lt;span style="color:#f92672">]&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 		allocation3 &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> &lt;span style="color:#66d9ef">byte&lt;/span>&lt;span style="color:#f92672">[&lt;/span>1000&lt;span style="color:#f92672">*&lt;/span>1024&lt;span style="color:#f92672">]&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 		allocation4 &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> &lt;span style="color:#66d9ef">byte&lt;/span>&lt;span style="color:#f92672">[&lt;/span>1000&lt;span style="color:#f92672">*&lt;/span>1024&lt;span style="color:#f92672">]&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 		allocation5 &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> &lt;span style="color:#66d9ef">byte&lt;/span>&lt;span style="color:#f92672">[&lt;/span>1000&lt;span style="color:#f92672">*&lt;/span>1024&lt;span style="color:#f92672">]&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> } 
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="大对象直接进入老年代">
+ 大对象直接进入老年代
+ &lt;a class="anchor" href="#%e5%a4%a7%e5%af%b9%e8%b1%a1%e7%9b%b4%e6%8e%a5%e8%bf%9b%e5%85%a5%e8%80%81%e5%b9%b4%e4%bb%a3">#&lt;/a>
+&lt;/h2>
+&lt;ul>
+&lt;li>大对象就是需要连续空间的对象（&lt;strong>字符串&lt;/strong>、&lt;strong>数组&lt;/strong>等）&lt;/li>
+&lt;li>大对象直接进入老年代，主要是为了避免为&lt;strong>大对象分配内存时&lt;/strong>，由于&lt;strong>分配担保机制(这好像跟分配担保机制没有太大关系)&lt;strong>带来的复制而&lt;/strong>降低效率&lt;/strong>。&lt;/li>
+&lt;/ul>
+&lt;blockquote>
+&lt;ul>
+&lt;li>
+&lt;p>假设大对象最后会晋升老年代，而新生代是基于复制算法来回收垃圾的，由两个Survivor区域配合完成复制算法，如果新生代中出现大对象且能屡次躲过GC，那这个对象就会在两个Survivor区域中来回复制，直至最后升入老年代，而大对象在内存里来回复制移动，就会消耗更多的时间。&lt;/p></description></item><item><title>jvm-intro</title><link>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/java/JVM/ly0407lyjvm-intro/</link><pubDate>Fri, 09 Dec 2022 08:48:22 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/java/JVM/ly0407lyjvm-intro/</guid><description>&lt;blockquote>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
+&lt;p>原文地址： &lt;a href="https://juejin.im/post/5e1505d0f265da5d5d744050#heading-28">https://juejin.im/post/5e1505d0f265da5d5d744050#heading-28&lt;/a> 感谢原作者分享！！&lt;/p>
+&lt;/blockquote>
+&lt;h1 id="jvm的基本介绍">
+ JVM的基本介绍
+ &lt;a class="anchor" href="#jvm%e7%9a%84%e5%9f%ba%e6%9c%ac%e4%bb%8b%e7%bb%8d">#&lt;/a>
+&lt;/h1>
+&lt;ul>
+&lt;li>JVM，JavaVirtualMachine的缩写，虚拟出来的计算机，通过在实际的计算机上&lt;strong>仿真模拟&lt;/strong>各类计算机功能实现&lt;/li>
+&lt;li>JVM类似一台小电脑，运行在windows或者linux这些&lt;strong>真实操作系统环境下&lt;/strong>，&lt;strong>直接&lt;/strong>和操作系统交互，&lt;strong>与硬件不直接交互&lt;/strong>，操作系统帮我们完成和硬件交互的工作&lt;/li>
+&lt;/ul>
+&lt;p>&lt;img src="img/ly-20241212142002924.png" alt="img" />&lt;/p>
+&lt;h2 id="java文件是如何运行的">
+ Java文件是如何运行的
+ &lt;a class="anchor" href="#java%e6%96%87%e4%bb%b6%e6%98%af%e5%a6%82%e4%bd%95%e8%bf%90%e8%a1%8c%e7%9a%84">#&lt;/a>
+&lt;/h2>
+&lt;p>场景假设：我们写了一个HelloWorld.java，这是一个文本文件。JVM不认识文本文件，所以&lt;strong>需要一个编译&lt;/strong>，让其(xxx.java)成为一个&lt;strong>JVM会读的二进制文件&amp;mdash;&amp;gt; HelloWorld.class&lt;/strong>&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>类加载器
+如果JVM想要执行这个.class文件，需要将其**(这里应该指的二进制文件)&lt;strong>装进&lt;/strong>类加载器**中，它就像一个搬运工一样，会把所有的.class文件全部搬进JVM里面
+&lt;img src="img/ly-20241212142003190.png" alt="img" />&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>方法区&lt;/p>
+&lt;blockquote>
+&lt;p>类加载器将.class文件搬过来，就是先丢到这一块上&lt;/p>
+&lt;/blockquote>
+&lt;p>方法区是用于&lt;strong>存放类似于元数据信息方面的数据&lt;/strong>的，比如&lt;strong>类信息&lt;/strong>、&lt;strong>常量&lt;/strong>、&lt;strong>静态变量&lt;/strong>、&lt;strong>编译后代码&lt;/strong>&amp;hellip;等&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>堆
+堆主要放一些&lt;strong>存储的数据&lt;/strong>，比如&lt;strong>对象实例&lt;/strong>、&lt;strong>数组&lt;/strong>&amp;hellip;等，它和&lt;strong>方法区&lt;/strong>都同属于&lt;strong>线程共享区域&lt;/strong>，即它们都是&lt;strong>线程不安全&lt;/strong>的&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>栈&lt;/p>
+&lt;p>线程独享&lt;br>
+栈是我们&lt;strong>代码运行空间&lt;/strong>，我们编写的&lt;strong>每一个方法&lt;/strong>都会放到&lt;strong>栈&lt;/strong>里面运行。&lt;br>
+名词：&lt;strong>本地方法栈&lt;/strong>或&lt;strong>本地方法接口&lt;/strong>，不过我们基本不会涉及这两块内容，这&lt;strong>两底层使用C&lt;/strong>进行工作，&lt;strong>和Java没有太大关系&lt;/strong>&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>程序计数器
+主要就是完成一个加载工作，类似于一个指针一样的，&lt;strong>指向下一行我们需要执行的代码&lt;/strong>。和栈一样，都是&lt;strong>线程独享&lt;/strong>的，就是&lt;strong>每一个线程都会自己对应的一块区域&lt;/strong>而不会存在并发和多线程问题。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>小总结
+&lt;img src="img/ly-20241212142003329.png" alt="img" />&lt;/p>
+&lt;ol>
+&lt;li>Java文件经过编译后编程.class字节码文件&lt;/li>
+&lt;li>字节码文件通过类加载器被搬运到 JVM虚拟机中&lt;/li>
+&lt;li>虚拟机主要的5大块：&lt;strong>方法区、堆&lt;/strong> 都为&lt;strong>线程共享&lt;/strong>区域，有线程安全问题；&lt;strong>栈&lt;/strong>和&lt;strong>本地方法栈&lt;/strong>和&lt;strong>计数器&lt;/strong>都是&lt;strong>独享&lt;/strong>区域，不存在线程安全问题，而JVM的调优主要就是围绕&lt;strong>堆&lt;/strong>、&lt;strong>栈&lt;/strong>两大块进行&lt;/li>
+&lt;/ol>
+&lt;/li>
+&lt;/ol>
+&lt;h2 id="简单的代码例子">
+ 简单的代码例子
+ &lt;a class="anchor" href="#%e7%ae%80%e5%8d%95%e7%9a%84%e4%bb%a3%e7%a0%81%e4%be%8b%e5%ad%90">#&lt;/a>
+&lt;/h2>
+&lt;p>一个简单的学生类及main方法:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">Student&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> String name;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#a6e22e">Student&lt;/span>(String name) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">this&lt;/span>.&lt;span style="color:#a6e22e">name&lt;/span> &lt;span style="color:#f92672">=&lt;/span> name;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">sayName&lt;/span>() {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> System.&lt;span style="color:#a6e22e">out&lt;/span>.&lt;span style="color:#a6e22e">println&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;student&amp;#39;s name is : &amp;#34;&lt;/span> &lt;span style="color:#f92672">+&lt;/span> name);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>main方法：&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">App&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>(String&lt;span style="color:#f92672">[]&lt;/span> args) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> Student student &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> Student(&lt;span style="color:#e6db74">&amp;#34;tellUrDream&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> student.&lt;span style="color:#a6e22e">sayName&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>★★ 执行main方法的步骤如下&lt;/p></description></item></channel></rss>

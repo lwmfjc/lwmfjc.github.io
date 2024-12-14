@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>分布式系统 on 随记</title><link>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/lydly_distributed_system/</link><description>Recent content in 分布式系统 on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Tue, 14 Feb 2023 10:45:39 +0000</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/docs/study/Review/java_guide/lydly_distributed_system/index.xml" rel="self" type="application/rss+xml"/><item><title>zookeeper实战</title><link>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/lydly_distributed_system/ly08ly_zookeeper-in-action/</link><pubDate>Tue, 14 Feb 2023 10:45:39 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/lydly_distributed_system/ly08ly_zookeeper-in-action/</guid><description>&lt;blockquote>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;h2 id="1-前言">
+ 1. 前言
+ &lt;a class="anchor" href="#1-%e5%89%8d%e8%a8%80">#&lt;/a>
+&lt;/h2>
+&lt;p>这篇文章简单给演示一下 ZooKeeper 常见命令的使用以及 ZooKeeper Java客户端 Curator 的基本使用。介绍到的内容都是最基本的操作，能满足日常工作的基本需要。&lt;/p>
+&lt;p>如果文章有任何需要改善和完善的地方，欢迎在评论区指出，共同进步！&lt;/p>
+&lt;h2 id="2-zookeeper-安装和使用">
+ 2. ZooKeeper 安装和使用
+ &lt;a class="anchor" href="#2-zookeeper-%e5%ae%89%e8%a3%85%e5%92%8c%e4%bd%bf%e7%94%a8">#&lt;/a>
+&lt;/h2>
+&lt;h3 id="21-使用docker-安装-zookeeper">
+ 2.1. 使用Docker 安装 zookeeper
+ &lt;a class="anchor" href="#21-%e4%bd%bf%e7%94%a8docker-%e5%ae%89%e8%a3%85-zookeeper">#&lt;/a>
+&lt;/h3>
+&lt;p>&lt;strong>a.使用 Docker 下载 ZooKeeper&lt;/strong>&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>docker pull zookeeper:3.5.8
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;strong>b.运行 ZooKeeper&lt;/strong>&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>docker run -d --name zookeeper -p 2181:2181 zookeeper:3.5.8
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="22-连接-zookeeper-服务">
+ 2.2. 连接 ZooKeeper 服务
+ &lt;a class="anchor" href="#22-%e8%bf%9e%e6%8e%a5-zookeeper-%e6%9c%8d%e5%8a%a1">#&lt;/a>
+&lt;/h3>
+&lt;p>&lt;strong>a.进入ZooKeeper容器中&lt;/strong>&lt;/p>
+&lt;p>先使用 &lt;code>docker ps&lt;/code> 查看 ZooKeeper 的 ContainerID，然后使用 &lt;code>docker exec -it ContainerID /bin/bash&lt;/code> 命令进入容器中。&lt;/p>
+&lt;p>&lt;strong>b.先进入 bin 目录,然后通过 &lt;code>./zkCli.sh -server 127.0.0.1:2181&lt;/code>命令连接ZooKeeper 服务&lt;/strong>&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>root@eaf70fc620cb:/apache-zookeeper-3.5.8-bin# cd bin
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>如果你看到控制台成功打印出如下信息的话，说明你已经成功连接 ZooKeeper 服务。&lt;/p></description></item><item><title>zookeeper进阶</title><link>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/lydly_distributed_system/ly07ly_zookeeper-plus/</link><pubDate>Mon, 13 Feb 2023 17:30:07 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/lydly_distributed_system/ly07ly_zookeeper-plus/</guid><description>&lt;blockquote>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;blockquote>
+&lt;p>&lt;a href="https://juejin.im/user/5c33853851882525ea106810">FrancisQ&lt;/a> 投稿。&lt;/p>
+&lt;/blockquote>
+&lt;h2 id="1-好久不见">
+ 1. 好久不见
+ &lt;a class="anchor" href="#1-%e5%a5%bd%e4%b9%85%e4%b8%8d%e8%a7%81">#&lt;/a>
+&lt;/h2>
+&lt;p>离上一篇文章的发布也快一个月了，想想已经快一个月没写东西了，其中可能有期末考试、课程设计和驾照考试，但这都不是借口！&lt;/p>
+&lt;p>一到冬天就懒的不行，望广大掘友督促我🙄🙄✍️✍️。&lt;/p>
+&lt;blockquote>
+&lt;p>文章很长，先赞后看，养成习惯。❤️ 🧡 💛 💚 💙 💜&lt;/p>
+&lt;/blockquote>
+&lt;h2 id="2-什么是zookeeper">
+ 2. 什么是ZooKeeper
+ &lt;a class="anchor" href="#2-%e4%bb%80%e4%b9%88%e6%98%afzookeeper">#&lt;/a>
+&lt;/h2>
+&lt;p>&lt;code>ZooKeeper&lt;/code> 由 &lt;code>Yahoo&lt;/code> 开发，后来捐赠给了 &lt;code>Apache&lt;/code> ，现已成为 &lt;code>Apache&lt;/code> 顶级项目。&lt;code>ZooKeeper&lt;/code> 是一个开源的&lt;strong>分布式应用程序协调服务器&lt;/strong>，其为&lt;strong>分布式系统提供一致性&lt;/strong>服务。其一致性是通过基于 &lt;code>Paxos&lt;/code> 算法的 &lt;code>ZAB&lt;/code> 协议完成的。其主要功能包括：&lt;strong>配置维护&lt;/strong>、&lt;strong>分布式同步&lt;/strong>、&lt;strong>集群管理&lt;/strong>、&lt;strong>分布式事务&lt;/strong>等。&lt;/p>
+&lt;p>&lt;img src="img/ly-20241212142035025.png" alt="ly-20241212142035025" />&lt;/p>
+&lt;p>简单来说， &lt;code>ZooKeeper&lt;/code> 是一个 &lt;strong>分布式协调服务框架&lt;/strong> 。分布式？协调服务？这啥玩意？🤔🤔&lt;/p>
+&lt;p>其实解释到分布式这个概念的时候，我发现有些同学并不是能把 &lt;strong>分布式和集群&lt;/strong> 这两个概念很好的理解透。前段时间有同学和我探讨起分布式的东西，他说分布式不就是加机器吗？一台机器不够用再加一台抗压呗。当然加机器这种说法也无可厚非，你一个分布式系统必定涉及到多个机器，但是你别忘了，计算机学科中还有一个相似的概念—— &lt;code>Cluster&lt;/code> ，集群不也是加机器吗？但是 &lt;strong>集群 和 分布式&lt;/strong> 其实就是两个&lt;strong>完全不同的概念&lt;/strong>。&lt;/p>
+&lt;p>比如，我现在有一个秒杀服务，并发量太大单机系统承受不住，那我加几台服务器也 &lt;strong>一样&lt;/strong> 提供秒杀服务，这个时候就是 &lt;strong>&lt;code>Cluster&lt;/code> 集群&lt;/strong> 。&lt;/p>
+&lt;p>&lt;a href="https://camo.githubusercontent.com/87c9624f298e404de4aa6387af959870f61d9461a2a60de3a31f5ee47385360d/68747470733a2f2f696d672d626c6f672e6373646e696d672e636e2f696d675f636f6e766572742f66666362303830656236366632343266666364386432303437613766343661612e706e67">&lt;img src="img/ly-20241212142035275.jpg" alt="cluster" />&lt;/a>&lt;/p>
+&lt;p>但是，我现在换一种方式，我将一个秒杀服务 &lt;strong>拆分成多个子服务&lt;/strong> ，比如创建订单服务，增加积分服务，扣优惠券服务等等，&lt;strong>然后我将这些子服务都部署在不同的服务器上&lt;/strong> ，这个时候就是 &lt;strong>&lt;code>Distributed&lt;/code> 分布式&lt;/strong> 。&lt;/p>
+&lt;p>&lt;a href="https://camo.githubusercontent.com/d2c1c6b9feb20352ecfa8182cdb3058d7dd3ffeec287cc66286461ca34226323/68747470733a2f2f696d672d626c6f672e6373646e696d672e636e2f696d675f636f6e766572742f30373139316633386161393437623030373565356330613661303139613131642e706e67">&lt;img src="img/ly-20241212142035394.jpg" alt="distributed" />&lt;/a>&lt;/p>
+&lt;p>而我为什么反驳同学所说的分布式就是加机器呢？因为我认为加机器更加适用于构建&lt;strong>集群&lt;/strong>，因为它真是只有加机器。而对于分布式来说，你首先需要将&lt;strong>业务进行拆分&lt;/strong>，然后&lt;strong>再加机器&lt;/strong>（不仅仅是加机器那么简单），同时你还要去解决&lt;strong>分布式带来的一系列问题&lt;/strong>。&lt;/p>
+&lt;p>&lt;img src="img/ly-20241212142035517.jpg" alt="img" />&lt;/p>
+&lt;p>比如各个分布式组件&lt;strong>如何协调&lt;/strong>起来，如何&lt;strong>减少&lt;/strong>各个系统之间的&lt;strong>耦合度&lt;/strong>，&lt;strong>分布式事务&lt;/strong>的处理，如何去&lt;strong>配置整个分布式系统&lt;/strong>等等。&lt;code>ZooKeeper&lt;/code> 主要就是解决这些问题的。&lt;/p>
+&lt;h2 id="3-一致性问题">
+ 3. 一致性问题
+ &lt;a class="anchor" href="#3-%e4%b8%80%e8%87%b4%e6%80%a7%e9%97%ae%e9%a2%98">#&lt;/a>
+&lt;/h2>
+&lt;p>&lt;img src="img/ly-20241212142035639.png" alt="image.png" />&lt;/p></description></item><item><title>zookeeper介绍</title><link>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/lydly_distributed_system/ly06ly_zookeeper-intro/</link><pubDate>Mon, 13 Feb 2023 15:59:20 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/lydly_distributed_system/ly06ly_zookeeper-intro/</guid><description>&lt;blockquote>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;h2 id="1-前言">
+ 1. 前言
+ &lt;a class="anchor" href="#1-%e5%89%8d%e8%a8%80">#&lt;/a>
+&lt;/h2>
+&lt;p>相信大家对 ZooKeeper 应该不算陌生。但是你真的了解 ZooKeeper 到底有啥用不？如果别人/面试官让你给他讲讲对于 ZooKeeper 的认识，你能回答到什么地步呢？&lt;/p>
+&lt;p>拿我自己来说吧！我本人曾经使用 Dubbo 来做分布式项目的时候，使用了 ZooKeeper 作为&lt;strong>注册中心&lt;/strong>。为了保证分布式系统能够&lt;strong>同步访问某个资源&lt;/strong>，我还使用 ZooKeeper 做过&lt;strong>分布式锁&lt;/strong>。另外，我在学习 Kafka 的时候，知道 &lt;strong>Kafka&lt;/strong> 很多功能的实现&lt;strong>依赖了 ZooKeeper&lt;/strong>。&lt;/p>
+&lt;p>前几天，总结项目经验的时候，我突然问自己 ZooKeeper 到底是个什么东西？想了半天，脑海中只是简单的能浮现出几句话：&lt;/p>
+&lt;ol>
+&lt;li>ZooKeeper 可以被用作&lt;strong>注册中心、分布式锁&lt;/strong>；&lt;/li>
+&lt;li>ZooKeeper 是 &lt;strong>Hadoop 生态系统&lt;/strong>的一员；&lt;/li>
+&lt;li>构建 ZooKeeper 集群的时候，使用的服务器最好是&lt;strong>奇数台&lt;/strong>。&lt;/li>
+&lt;/ol>
+&lt;p>由此可见，我对于 ZooKeeper 的理解仅仅是停留在了表面。&lt;/p>
+&lt;p>所以，通过本文，希望带大家稍微详细的了解一下 ZooKeeper 。如果没有学过 ZooKeeper ，那么本文将会是你进入 ZooKeeper 大门的垫脚砖。如果你已经接触过 ZooKeeper ，那么本文将带你回顾一下 ZooKeeper 的一些基础概念。&lt;/p>
+&lt;p>另外，本文不光会涉及到 ZooKeeper 的一些概念，后面的文章会介绍到 ZooKeeper 常见命令的使用以及使用 Apache Curator 作为 ZooKeeper 的客户端。&lt;/p>
+&lt;p>&lt;em>如果文章有任何需要改善和完善的地方，欢迎在评论区指出，共同进步！&lt;/em>&lt;/p>
+&lt;h2 id="2-zookeeper-介绍">
+ 2. ZooKeeper 介绍
+ &lt;a class="anchor" href="#2-zookeeper-%e4%bb%8b%e7%bb%8d">#&lt;/a>
+&lt;/h2>
+&lt;h3 id="21-zookeeper-由来">
+ 2.1. ZooKeeper 由来
+ &lt;a class="anchor" href="#21-zookeeper-%e7%94%b1%e6%9d%a5">#&lt;/a>
+&lt;/h3>
+&lt;p>正式介绍 ZooKeeper 之前，我们先来看看 ZooKeeper 的由来，还挺有意思的。&lt;/p></description></item><item><title>rpc_http</title><link>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/lydly_distributed_system/ly04ly_rpc-http/</link><pubDate>Sat, 11 Feb 2023 19:59:58 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/lydly_distributed_system/ly04ly_rpc-http/</guid><description>&lt;blockquote>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;p>&lt;img src="img/ly-20241212142032772.png" alt="" />&lt;/p>
+&lt;p>我正在参与掘金技术社区创作者签约计划招募活动，&lt;a href="https://juejin.cn/post/7112770927082864653">点击链接报名投稿&lt;/a>。&lt;/p>
+&lt;p>我想起了我刚工作的时候，第一次接触RPC协议，当时就很懵，我HTTP协议用的好好的，为什么还要用RPC协议？&lt;/p>
+&lt;p>于是就到网上去搜。&lt;/p>
+&lt;p>不少解释显得非常官方，我相信大家在各种平台上也都看到过，解释了又好像没解释，都在&lt;strong>用一个我们不认识的概念去解释另外一个我们不认识的概念&lt;/strong>，懂的人不需要看，不懂的人看了还是不懂。&lt;/p>
+&lt;p>这种看了，又好像没看的感觉，云里雾里的很难受，&lt;strong>我懂&lt;/strong>。&lt;/p>
+&lt;p>为了避免大家有强烈的&lt;strong>审丑疲劳&lt;/strong>，今天我们来尝试重新换个方式讲一讲。&lt;/p>
+&lt;h3 id="从tcp聊起">
+ 从TCP聊起
+ &lt;a class="anchor" href="#%e4%bb%8etcp%e8%81%8a%e8%b5%b7">#&lt;/a>
+&lt;/h3>
+&lt;p>作为一个程序员，假设我们需要在A电脑的进程发一段数据到B电脑的进程，我们一般会在代码里使用socket进行编程。&lt;/p>
+&lt;p>这时候，我们可选项一般也就&lt;strong>TCP和UDP二选一。TCP可靠，UDP不可靠。&lt;/strong> 除非是马总这种神级程序员（早期QQ大量使用UDP），否则，只要稍微对可靠性有些要求，普通人一般无脑选TCP就对了。&lt;/p>
+&lt;p>类似下面这样。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-ini" data-lang="ini">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">fd&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#e6db74">socket(AF_INET,SOCK_STREAM,0);&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">复制代码&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>其中&lt;code>SOCK_STREAM&lt;/code>，是指使用&lt;strong>字节流&lt;/strong>传输数据，说白了就是&lt;strong>TCP协议&lt;/strong>。&lt;/p>
+&lt;p>在定义了socket之后，我们就可以愉快的对这个socket进行操作，比如用&lt;code>bind()&lt;/code>绑定IP端口，用&lt;code>connect()&lt;/code>发起建连。&lt;/p>
+&lt;p>&lt;img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/f410977cda814d32b0eff3645c385a8a~tplv-k3u1fbpfcp-zoom-in-crop-mark:4536:0:0:0.awebp" alt="握手建立连接流程" />&lt;/p>
+&lt;p>在连接建立之后，我们就可以使用&lt;code>send()&lt;/code>发送数据，&lt;code>recv()&lt;/code>接收数据。&lt;/p>
+&lt;p>光这样一个纯裸的TCP连接，就可以做到收发数据了，那是不是就够了？&lt;/p>
+&lt;p>不行，这么用会有问题。&lt;/p>
+&lt;h3 id="使用纯裸tcp会有什么问题">
+ 使用纯裸TCP会有什么问题
+ &lt;a class="anchor" href="#%e4%bd%bf%e7%94%a8%e7%ba%af%e8%a3%b8tcp%e4%bc%9a%e6%9c%89%e4%bb%80%e4%b9%88%e9%97%ae%e9%a2%98">#&lt;/a>
+&lt;/h3>
+&lt;p>八股文常背，TCP是有三个特点，&lt;strong>面向连接&lt;/strong>、&lt;strong>可靠&lt;/strong>、基于&lt;strong>字节流&lt;/strong>。&lt;/p>
+&lt;p>&lt;img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/acb4508111cb47d8a3df6734d04818bc~tplv-k3u1fbpfcp-zoom-in-crop-mark:4536:0:0:0.awebp" alt="TCP是什么" />&lt;/p>
+&lt;p>这三个特点真的概括的&lt;strong>非常精辟&lt;/strong>，这个八股文我们没白背。&lt;/p>
+&lt;p>每个特点展开都能聊一篇文章，而今天我们需要关注的是&lt;strong>基于字节流&lt;/strong>这一点。&lt;/p>
+&lt;p>字节流可以理解为一个双向的通道里流淌的数据，这个&lt;strong>数据&lt;/strong>其实就是我们常说的二进制数据，简单来说就是一大堆 &lt;strong>01 串&lt;/strong>。纯裸TCP收发的这些 01 串之间是&lt;strong>没有任何边界&lt;/strong>的，你根本不知道到哪个地方才算一条完整消息。
+&lt;img src="img/ly-20241212142033022.png" alt="" />&lt;/p>
+&lt;p>正因为这个没有&lt;strong>任何边界&lt;/strong>的特点，所以当我们选择使用TCP发送 &lt;strong>&amp;ldquo;夏洛&amp;quot;和&amp;quot;特烦恼&amp;rdquo;&lt;/strong> 的时候，接收端收到的就是 &lt;strong>&amp;ldquo;夏洛特烦恼&amp;rdquo;&lt;/strong> ，这时候接收端没发区分你是想要表达 &lt;strong>&amp;ldquo;夏洛&amp;rdquo;+&amp;ldquo;特烦恼&amp;rdquo;&lt;/strong> 还是 &lt;strong>&amp;ldquo;夏洛特&amp;rdquo;+&amp;ldquo;烦恼&amp;rdquo;&lt;/strong> 。&lt;/p>
+&lt;p>&lt;img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/4e120d0f1152419585565f693e744a3a~tplv-k3u1fbpfcp-zoom-in-crop-mark:4536:0:0:0.awebp" alt="消息对比" />&lt;/p>
+&lt;p>这就是所谓的&lt;strong>粘包问题&lt;/strong>，之前也写过一篇专门的&lt;a href="https://link.juejin.cn/?target=https%3A%2F%2Fmp.weixin.qq.com%2Fs%2F0-YBxU1cSbDdzcZEZjmQYA">文章&lt;/a>聊过这个问题。&lt;/p>
+&lt;p>说这个的目的是为了告诉大家，纯裸TCP是不能直接拿来用的，你需要在这个基础上加入一些&lt;strong>自定义的规则&lt;/strong>，用于区分&lt;strong>消息边界&lt;/strong>。&lt;/p>
+&lt;p>于是我们会把每条要发送的数据都包装一下，比如加入&lt;strong>消息头&lt;/strong>，&lt;strong>消息头里写清楚一个完整的包长度是多少&lt;/strong>，根据这个长度可以继续接收数据，截取出来后它们就是我们真正要传输的&lt;strong>消息体&lt;/strong>。&lt;/p>
+&lt;p>&lt;img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/cb29659d4907446e9f70551c44c6369f~tplv-k3u1fbpfcp-zoom-in-crop-mark:4536:0:0:0.awebp" alt="消息边界长度标志" />&lt;/p>
+&lt;p>而这里头提到的&lt;strong>消息头&lt;/strong>，还可以放各种东西，比如消息体是否被压缩过和消息体格式之类的，只要上下游都约定好了，互相都认就可以了，这就是所谓的&lt;strong>协议。&lt;/strong>&lt;/p>
+&lt;p>每个使用TCP的项目都可能会定义一套类似这样的协议解析标准，他们可能&lt;strong>有区别，但原理都类似&lt;/strong>。&lt;/p>
+&lt;p>&lt;strong>于是基于TCP，就衍生了非常多的协议，比如HTTP和RPC。&lt;/strong>&lt;/p>
+&lt;h3 id="http和rpc">
+ HTTP和RPC
+ &lt;a class="anchor" href="#http%e5%92%8crpc">#&lt;/a>
+&lt;/h3>
+&lt;p>我们回过头来看网络的分层图。&lt;/p>
+&lt;p>&lt;img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/04b603b5bd2443209233deea87816161~tplv-k3u1fbpfcp-zoom-in-crop-mark:4536:0:0:0.awebp" alt="四层网络协议" />&lt;/p>
+&lt;p>&lt;strong>TCP是传输层的协议&lt;/strong>，而基于TCP造出来的HTTP和&lt;strong>各类&lt;/strong>RPC协议，它们都只是定义了不同消息格式的&lt;strong>应用层协议&lt;/strong>而已。&lt;/p>
+&lt;p>&lt;strong>HTTP&lt;/strong>协议（&lt;strong>H&lt;/strong>yper &lt;strong>T&lt;/strong>ext &lt;strong>T&lt;/strong>ransfer &lt;strong>P&lt;/strong>rotocol），又叫做&lt;strong>超文本传输协议&lt;/strong>。我们用的比较多，平时上网在浏览器上敲个网址就能访问网页，这里用到的就是HTTP协议。&lt;/p>
+&lt;p>&lt;img src="img/ly-20241212142033146.png" alt="" />&lt;/p></description></item><item><title>rpc基础及面试题</title><link>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/lydly_distributed_system/ly05ly_rpc-intro/</link><pubDate>Sat, 11 Feb 2023 19:41:34 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/lydly_distributed_system/ly05ly_rpc-intro/</guid><description>&lt;blockquote>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;p>简单介绍一下 RPC 相关的基础概念。&lt;/p>
+&lt;h2 id="何为-rpc">
+ 何为 RPC?
+ &lt;a class="anchor" href="#%e4%bd%95%e4%b8%ba-rpc">#&lt;/a>
+&lt;/h2>
+&lt;p>&lt;strong>RPC（Remote Procedure Call）&lt;/strong> 即远程过程调用，通过名字我们就能看出 RPC 关注的是远程调用而非本地调用。&lt;/p>
+&lt;p>&lt;strong>为什么要 RPC ？&lt;/strong> 因为，两个不同的服务器上的服务提供的方法不在一个内存空间，所以，需要通过网络编程才能传递方法调用所需要的参数。并且，方法调用的结果也需要通过网络编程来接收。但是，如果我们自己手动网络编程来实现这个调用过程的话工作量是非常大的，因为，我们需要考虑底层传输方式（TCP还是UDP）、序列化方式等等方面。&lt;/p>
+&lt;p>&lt;strong>RPC 能帮助我们做什么呢？&lt;/strong> 简单来说，通过 RPC 可以帮助我们调用远程计算机上某个服务的方法，这个过程就像调用本地方法一样简单。并且！我们不需要了解底层网络编程的具体细节。&lt;/p>
+&lt;p>举个例子：两个不同的服务 A、B 部署在两台不同的机器上，服务 A 如果想要调用服务 B 中的某个方法的话就可以通过 RPC 来做。&lt;/p>
+&lt;p>一言蔽之：&lt;strong>RPC 的出现就是为了让你调用远程方法像调用本地方法一样简单。&lt;/strong>&lt;/p>
+&lt;h2 id="rpc-的原理是什么">
+ RPC 的原理是什么?
+ &lt;a class="anchor" href="#rpc-%e7%9a%84%e5%8e%9f%e7%90%86%e6%98%af%e4%bb%80%e4%b9%88">#&lt;/a>
+&lt;/h2>
+&lt;p>为了能够帮助小伙伴们理解 RPC 原理，我们可以将整个 RPC的 核心功能看作是下面👇 5 个部分实现的：&lt;/p>
+&lt;ol>
+&lt;li>&lt;strong>客户端（服务消费端）&lt;/strong> ：调用远程方法的一端。&lt;/li>
+&lt;li>&lt;strong>客户端 Stub（桩）&lt;/strong> ： 这其实就是一代理类。代理类主要做的事情很简单，就是把你调用方法、类、方法参数等信息传递到服务端。&lt;/li>
+&lt;li>&lt;strong>网络传输&lt;/strong> ： 网络传输就是你要把你调用的方法的信息比如说参数啊这些东西传输到服务端，然后服务端执行完之后再把返回结果通过网络传输给你传输回来。网络传输的实现方式有很多种比如最近基本的 Socket或者性能以及封装更加优秀的 Netty（推荐）。&lt;/li>
+&lt;li>&lt;strong>服务端 Stub（桩）&lt;/strong> ：这个桩就不是代理类了。我觉得理解为桩实际不太好，大家注意一下就好。这里的服务端 Stub 实际指的就是接收到客户端执行方法的请求后，去指定对应的方法然后返回结果给客户端的类。&lt;/li>
+&lt;li>&lt;strong>服务端（服务提供端）&lt;/strong> ：提供远程方法的一端。&lt;/li>
+&lt;/ol>
+&lt;p>具体原理图如下，后面我会串起来将整个RPC的过程给大家说一下。&lt;/p>
+&lt;p>&lt;a href="https://camo.githubusercontent.com/5e8198844ec97b718219e83fec147089c73daadc5c987752787bfa4d4d538c24/68747470733a2f2f6d792d626c6f672d746f2d7573652e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f31382d31322d362f33373334353835312e6a7067">&lt;img src="img/ly-20241212142033652.jpg" alt="RPC原理图" />&lt;/a>&lt;/p>
+&lt;ol>
+&lt;li>服务消费端（client）以本地调用的方式调用远程服务；&lt;/li>
+&lt;li>客户端 Stub（client stub） 接收到调用后负责将方法、参数等组装成能够进行网络传输的消息体（序列化）：&lt;code>RpcRequest&lt;/code>；&lt;/li>
+&lt;li>客户端 Stub（client stub） 找到远程服务的地址，并将消息发送到服务提供端；&lt;/li>
+&lt;li>服务端 Stub（桩）收到消息将消息反序列化为Java对象: &lt;code>RpcRequest&lt;/code>；&lt;/li>
+&lt;li>服务端 Stub（桩）根据&lt;code>RpcRequest&lt;/code>中的类、方法、方法参数等信息调用本地的方法；&lt;/li>
+&lt;li>服务端 Stub（桩）得到方法执行结果并将组装成能够进行网络传输的消息体：&lt;code>RpcResponse&lt;/code>（序列化）发送至消费方；&lt;/li>
+&lt;li>客户端 Stub（client stub）接收到消息并将消息反序列化为Java对象:&lt;code>RpcResponse&lt;/code> ，这样也就得到了最终结果。over!&lt;/li>
+&lt;/ol>
+&lt;p>相信小伙伴们看完上面的讲解之后，已经了解了 RPC 的原理。&lt;/p></description></item><item><title>分布式锁</title><link>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/lydly_distributed_system/ly03ly_distributed-lock/</link><pubDate>Sat, 11 Feb 2023 13:24:32 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/lydly_distributed_system/ly03ly_distributed-lock/</guid><description>&lt;blockquote>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;p>网上有很多分布式锁相关的文章，写了一个相对简洁易懂的版本，针对面试和工作应该够用了。&lt;/p>
+&lt;h2 id="什么是分布式锁">
+ 什么是分布式锁？
+ &lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e5%88%86%e5%b8%83%e5%bc%8f%e9%94%81">#&lt;/a>
+&lt;/h2>
+&lt;p>对于单机多线程来说，在 Java 中，我们通常使用 &lt;code>ReetrantLock&lt;/code> 类、&lt;code>synchronized&lt;/code> 关键字这类 JDK 自带的 &lt;strong>本地锁&lt;/strong> 来控制&lt;strong>一个 JVM 进程&lt;/strong>内的&lt;strong>多个线程&lt;/strong>对&lt;strong>本地共享资源&lt;/strong>的访问。&lt;/p>
+&lt;p>下面是我对本地锁画的一张示意图。&lt;/p>
+&lt;p>&lt;img src="img/ly-20241212142031650.png" alt="ly-20241212142031650" />&lt;/p>
+&lt;p>从图中可以看出，这些线程访问共享资源是互斥的，同一时刻只有一个线程可以获取到本地锁访问共享资源。&lt;/p>
+&lt;p>&lt;strong>分布式系统&lt;/strong>下，&lt;strong>不同的服务/客户端&lt;/strong>通常&lt;strong>运行在独立的 JVM 进程&lt;/strong>上。如果&lt;strong>多个 JVM 进程共享同一份资源&lt;/strong>的话，使用&lt;strong>本地锁就没办法实现&lt;/strong>资源的互斥访问了。于是，&lt;strong>分布式锁&lt;/strong> 就诞生了。&lt;/p>
+&lt;p>举个例子：系统的订单服务一共部署了 3 份，都对外提供服务。用户下订单之前需要检查库存，为了防止超卖，这里需要加锁以实现对检查库存操作的同步访问。由于订单服务位于不同的 JVM 进程中，本地锁在这种情况下就没办法正常工作了。我们需要用到分布式锁，这样的话，即使多个线程&lt;strong>不在同一个 JVM 进程&lt;/strong>中也能&lt;strong>获取到同一把锁&lt;/strong>，进而实现&lt;strong>共享资源的互斥访问&lt;/strong>。&lt;/p>
+&lt;p>下面是我对分布式锁画的一张示意图。&lt;/p>
+&lt;p>&lt;a href="https://github.com/Snailclimb/JavaGuide/blob/main/docs/distributed-system/images/distributed-lock/distributed-lock.png">&lt;img src="img/ly-20241212142031903.png" alt="分布式锁" />&lt;/a>&lt;/p>
+&lt;p>从图中可以看出，这些独立的进程中的线程访问共享资源是互斥的，&lt;strong>同一时刻只有一个线程可以获取到分布式锁访问共享资源&lt;/strong>。&lt;/p>
+&lt;p>一个最基本的分布式锁需要满足：&lt;/p>
+&lt;ul>
+&lt;li>&lt;strong>互斥&lt;/strong> ：任意一个时刻，锁只能被一个线程持有；&lt;/li>
+&lt;li>&lt;strong>高可用&lt;/strong> ：锁服务是高&lt;strong>可用&lt;/strong>的。并且，&lt;strong>即使客户端的释放锁的代码逻辑出现问题(这里说的是异常，不是说代码写的有问题)&lt;/strong>，锁最终&lt;strong>一定还是会被释放&lt;/strong>，&lt;strong>不会影响其他线程&lt;/strong>对共享资源的访问。&lt;/li>
+&lt;li>&lt;strong>可重入&lt;/strong>：&lt;strong>(同)一个节点&lt;/strong>获取了锁之后，还可以&lt;strong>再次&lt;/strong>获取锁。&lt;/li>
+&lt;/ul>
+&lt;p>通常情况下，我们一般会选择基于 &lt;strong>Redis&lt;/strong> 或者 &lt;strong>ZooKeeper&lt;/strong> 实现分布式锁，Redis 用的要更多一点，我这里也以 Redis 为例介绍分布式锁的实现。&lt;/p>
+&lt;h2 id="基于-redis-实现分布式锁">
+ 基于 Redis 实现分布式锁
+ &lt;a class="anchor" href="#%e5%9f%ba%e4%ba%8e-redis-%e5%ae%9e%e7%8e%b0%e5%88%86%e5%b8%83%e5%bc%8f%e9%94%81">#&lt;/a>
+&lt;/h2>
+&lt;h3 id="如何基于-redis-实现一个最简易的分布式锁">
+ 如何基于 Redis 实现一个最简易的分布式锁？
+ &lt;a class="anchor" href="#%e5%a6%82%e4%bd%95%e5%9f%ba%e4%ba%8e-redis-%e5%ae%9e%e7%8e%b0%e4%b8%80%e4%b8%aa%e6%9c%80%e7%ae%80%e6%98%93%e7%9a%84%e5%88%86%e5%b8%83%e5%bc%8f%e9%94%81">#&lt;/a>
+&lt;/h3>
+&lt;p>不论是实现&lt;strong>锁(本地)&lt;strong>还是&lt;/strong>分布式锁&lt;/strong>，核心都在于**“互斥”**。&lt;/p>
+&lt;p>在 Redis 中， &lt;code>SETNX&lt;/code> 命令是可以帮助我们实现互斥。&lt;code>SETNX&lt;/code> 即 &lt;strong>SET&lt;/strong> if &lt;strong>N&lt;/strong>ot e&lt;strong>X&lt;/strong>ists (对应 Java 中的 &lt;code>setIfAbsent&lt;/code> 方法)，如果 key 不存在的话，才会设置 key 的值。如果 key 已经存在， &lt;code>SETNX&lt;/code> 啥也不做。&lt;/p></description></item><item><title>分布式id</title><link>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/lydly_distributed_system/ly02ly_distributed-id/</link><pubDate>Sat, 11 Feb 2023 13:00:31 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/lydly_distributed_system/ly02ly_distributed-id/</guid><description>&lt;blockquote>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;h2 id="分布式-id-介绍">
+ 分布式 ID 介绍
+ &lt;a class="anchor" href="#%e5%88%86%e5%b8%83%e5%bc%8f-id-%e4%bb%8b%e7%bb%8d">#&lt;/a>
+&lt;/h2>
+&lt;h3 id="什么是-id">
+ 什么是 ID？
+ &lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af-id">#&lt;/a>
+&lt;/h3>
+&lt;p>日常开发中，我们需要对系统中的各种数据使用 ID 唯一表示，比如用户 ID 对应且仅对应一个人，商品 ID 对应且仅对应一件商品，订单 ID 对应且仅对应一个订单。&lt;/p>
+&lt;p>我们现实生活中也有各种 ID，比如身份证 ID 对应且仅对应一个人、地址 ID 对应且仅对应&lt;/p>
+&lt;p>简单来说，&lt;strong>ID 就是数据的唯一标识&lt;/strong>。&lt;/p>
+&lt;h3 id="什么是分布式-id">
+ 什么是分布式 ID？
+ &lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e5%88%86%e5%b8%83%e5%bc%8f-id">#&lt;/a>
+&lt;/h3>
+&lt;p>分布式 ID 是&lt;strong>分布式系统下的 ID&lt;/strong>。分布式 ID &lt;strong>不存在与现实生活中(属于技术上的问题，跟业务无关)&lt;/strong>，属于计算机系统中的一个概念。&lt;/p>
+&lt;p>我简单举一个&lt;strong>分库分表&lt;/strong>的例子。&lt;/p>
+&lt;p>我司的一个项目，使用的是单机 MySQL 。但是，没想到的是，项目上线一个月之后，随着使用人数越来越多，整个系统的数据量将越来越大。单机 MySQL 已经没办法支撑了，需要进行分库分表（推荐 &lt;strong>Sharding-JDBC&lt;/strong>）。&lt;/p>
+&lt;p>在分库之后， &lt;strong>数据遍布在不同服务器上的数据库&lt;/strong>，数据库的自增主键已经没办法满足生成的主键唯一了。&lt;strong>我们如何为不同的数据节点生成全局唯一主键呢？&lt;/strong>&lt;/p>
+&lt;p>这个时候就需要生成&lt;strong>分布式 ID&lt;/strong>了。&lt;/p>
+&lt;p>&lt;img src="img/ly-20241212142029621.png" alt="ly-20241212142029621" />&lt;/p>
+&lt;h3 id="分布式-id-需要满足哪些要求">
+ 分布式 ID 需要满足哪些要求?
+ &lt;a class="anchor" href="#%e5%88%86%e5%b8%83%e5%bc%8f-id-%e9%9c%80%e8%a6%81%e6%bb%a1%e8%b6%b3%e5%93%aa%e4%ba%9b%e8%a6%81%e6%b1%82">#&lt;/a>
+&lt;/h3>
+&lt;p>&lt;img src="img/ly-20241212142029864.png" alt="ly-20241212142029864" />&lt;/p>
+&lt;p>分布式 ID 作为分布式系统中必不可少的一环，很多地方都要用到分布式 ID。&lt;/p>
+&lt;p>一个最基本的分布式 ID 需要满足下面这些要求：&lt;/p>
+&lt;ul>
+&lt;li>&lt;strong>全局唯一&lt;/strong> ：ID 的&lt;strong>全局唯一性&lt;/strong>肯定是首先要满足的！&lt;/li>
+&lt;li>&lt;strong>高性能&lt;/strong> ： 分布式 ID 的&lt;strong>生成速度要快&lt;/strong>，对本地资源消耗要小。&lt;/li>
+&lt;li>&lt;strong>高可用&lt;/strong> ：生成分布式 ID 的服务要保证&lt;strong>可用性无限接近于 100%&lt;/strong>。&lt;/li>
+&lt;li>&lt;strong>方便易用&lt;/strong> ：拿来即用，&lt;strong>使用方便，快速接入&lt;/strong>！&lt;/li>
+&lt;/ul>
+&lt;p>除了这些之外，一个比较好的分布式 ID 还应保证：&lt;/p></description></item><item><title>api网关</title><link>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/lydly_distributed_system/ly01ly_api-gateway/</link><pubDate>Fri, 10 Feb 2023 22:26:59 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/lydly_distributed_system/ly01ly_api-gateway/</guid><description>&lt;blockquote>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;h2 id="什么是网关有什么用">
+ 什么是网关？有什么用？
+ &lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e7%bd%91%e5%85%b3%e6%9c%89%e4%bb%80%e4%b9%88%e7%94%a8">#&lt;/a>
+&lt;/h2>
+&lt;p>微服务背景下，一个系统被&lt;strong>拆分为多个服务&lt;/strong>，但是像&lt;strong>安全认证&lt;/strong>，&lt;strong>流量控制&lt;/strong>，&lt;strong>日志&lt;/strong>，&lt;strong>监控&lt;/strong>等功能是每个服务都需要的，没有网关的话，我们就需要在&lt;strong>每个服务&lt;/strong>中单独实现，这使得我们做了很多重复的事情并且没有一个&lt;strong>全局的视图来统一管理&lt;/strong>这些功能。&lt;/p>
+&lt;p>&lt;img src="img/ly-20241212142028983.png" alt="ly-20241212142028983.png" />&lt;/p>
+&lt;p>一般情况下，网关可以为我们提供&lt;strong>请求转发&lt;/strong>、&lt;strong>安全认证（身份/权限认证）&lt;/strong>、&lt;strong>流量控制&lt;/strong>、&lt;strong>负载均衡&lt;/strong>、&lt;strong>降级熔断&lt;/strong>、&lt;strong>日志&lt;/strong>、&lt;strong>监控&lt;/strong>等功能。&lt;/p>
+&lt;p>上面介绍了这么多功能，实际上，网关主要做了一件事情：&lt;strong>请求过滤&lt;/strong> 。&lt;/p>
+&lt;h2 id="有哪些常见的网关系统">
+ 有哪些常见的网关系统？
+ &lt;a class="anchor" href="#%e6%9c%89%e5%93%aa%e4%ba%9b%e5%b8%b8%e8%a7%81%e7%9a%84%e7%bd%91%e5%85%b3%e7%b3%bb%e7%bb%9f">#&lt;/a>
+&lt;/h2>
+&lt;h3 id="netflix-zuul">
+ Netflix Zuul
+ &lt;a class="anchor" href="#netflix-zuul">#&lt;/a>
+&lt;/h3>
+&lt;p>Zuul 是 Netflix 开发的一款提供&lt;strong>动态路由&lt;/strong>、&lt;strong>监控&lt;/strong>、&lt;strong>弹性&lt;/strong>、&lt;strong>安全&lt;/strong>的网关服务。&lt;/p>
+&lt;p>Zuul 主要通过&lt;strong>过滤器（类似于 AOP）来过滤请求&lt;/strong>，从而实现网关必备的各种功能。&lt;/p>
+&lt;p>&lt;img src="img/ly-20241212142029228.jpg" alt="Zuul架构" />&lt;/p>
+&lt;p>我们可以自定义过滤器来处理请求，并且，Zuul 生态本身就有很多现成的过滤器供我们使用。就比如限流可以直接用国外朋友写的 &lt;a href="https://github.com/marcosbarbero/spring-cloud-zuul-ratelimit">spring-cloud-zuul-ratelimit&lt;/a> (这里只是举例说明，一般是配合 hystrix 来做限流)：&lt;/p>
+&lt;pre tabindex="0">&lt;code>&amp;lt;dependency&amp;gt;
+ &amp;lt;groupId&amp;gt;org.springframework.cloud&amp;lt;/groupId&amp;gt;
+ &amp;lt;artifactId&amp;gt;spring-cloud-starter-netflix-zuul&amp;lt;/artifactId&amp;gt;
+&amp;lt;/dependency&amp;gt;
+&amp;lt;dependency&amp;gt;
+ &amp;lt;groupId&amp;gt;com.marcosbarbero.cloud&amp;lt;/groupId&amp;gt;
+ &amp;lt;artifactId&amp;gt;spring-cloud-zuul-ratelimit&amp;lt;/artifactId&amp;gt;
+ &amp;lt;version&amp;gt;2.2.0.RELEASE&amp;lt;/version&amp;gt;
+&amp;lt;/dependency&amp;gt;
+&lt;/code>&lt;/pre>&lt;p>Zuul 1.x &lt;strong>基于同步 IO，性能较差&lt;/strong>。Zuul 2.x &lt;strong>基于 Netty 实现了异步 IO&lt;/strong>，性能得到了大幅改进。&lt;/p>
+&lt;ul>
+&lt;li>Github 地址 ： &lt;a href="https://github.com/Netflix/zuul">https://github.com/Netflix/zuul&lt;/a>&lt;/li>
+&lt;li>官方 Wiki ： &lt;a href="https://github.com/Netflix/zuul/wiki">https://github.com/Netflix/zuul/wiki&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;h3 id="spring-cloud-gateway">
+ Spring Cloud Gateway
+ &lt;a class="anchor" href="#spring-cloud-gateway">#&lt;/a>
+&lt;/h3>
+&lt;p>SpringCloud Gateway 属于 Spring Cloud 生态系统中的网关，其诞生的目标是为了替代老牌网关 **Zuul **。准确点来说，应该是 &lt;strong>Zuul 1.x&lt;/strong>。SpringCloud Gateway 起步要比 Zuul 2.x 更早。&lt;/p></description></item></channel></rss>

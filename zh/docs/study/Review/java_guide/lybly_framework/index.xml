@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>框架 on 随记</title><link>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/lybly_framework/</link><description>Recent content in 框架 on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Thu, 09 Feb 2023 15:38:01 +0000</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/docs/study/Review/java_guide/lybly_framework/index.xml" rel="self" type="application/rss+xml"/><item><title>ConditionalOnClass实践</title><link>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/lybly_framework/conditional_on_class/</link><pubDate>Thu, 09 Feb 2023 15:38:01 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/lybly_framework/conditional_on_class/</guid><description>&lt;h1 id="两个测试方向">
+ 两个测试方向
+ &lt;a class="anchor" href="#%e4%b8%a4%e4%b8%aa%e6%b5%8b%e8%af%95%e6%96%b9%e5%90%91">#&lt;/a>
+&lt;/h1>
+&lt;h2 id="方向1两个maven项目">
+ 方向1：两个maven项目
+ &lt;a class="anchor" href="#%e6%96%b9%e5%90%911%e4%b8%a4%e4%b8%aamaven%e9%a1%b9%e7%9b%ae">#&lt;/a>
+&lt;/h2>
+&lt;blockquote>
+&lt;p>详见git上的 conditional_on_class_main 项目以及 conditional_on_class2 项目&lt;/p>
+&lt;/blockquote>
+&lt;ol>
+&lt;li>
+&lt;p>基础maven项目 conditional_on_class2&lt;br>
+pom文件&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-xml" data-lang="xml">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&amp;lt;?xml version=&amp;#34;1.0&amp;#34; encoding=&amp;#34;UTF-8&amp;#34;?&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">&amp;lt;project&lt;/span> &lt;span style="color:#a6e22e">xmlns=&lt;/span>&lt;span style="color:#e6db74">&amp;#34;http://maven.apache.org/POM/4.0.0&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">xmlns:xsi=&lt;/span>&lt;span style="color:#e6db74">&amp;#34;http://www.w3.org/2001/XMLSchema-instance&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">xsi:schemaLocation=&lt;/span>&lt;span style="color:#e6db74">&amp;#34;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd&amp;#34;&lt;/span>&lt;span style="color:#f92672">&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;modelVersion&amp;gt;&lt;/span>4.0.0&lt;span style="color:#f92672">&amp;lt;/modelVersion&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;groupId&amp;gt;&lt;/span>org.example&lt;span style="color:#f92672">&amp;lt;/groupId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;artifactId&amp;gt;&lt;/span>conditional_on_class_2&lt;span style="color:#f92672">&amp;lt;/artifactId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;version&amp;gt;&lt;/span>1.0-SNAPSHOT&lt;span style="color:#f92672">&amp;lt;/version&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">&amp;lt;/project&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>java类&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">package&lt;/span> com;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">LyReferenceImpl&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> String &lt;span style="color:#a6e22e">sayWord&lt;/span>() {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#e6db74">&amp;#34;hello one&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>简单的SpringBoot项目 conditional_on_class_main&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-xml" data-lang="xml">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&amp;lt;!--pom文件--&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&amp;lt;?xml version=&amp;#34;1.0&amp;#34; encoding=&amp;#34;UTF-8&amp;#34;?&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">&amp;lt;project&lt;/span> &lt;span style="color:#a6e22e">xmlns=&lt;/span>&lt;span style="color:#e6db74">&amp;#34;http://maven.apache.org/POM/4.0.0&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">xmlns:xsi=&lt;/span>&lt;span style="color:#e6db74">&amp;#34;http://www.w3.org/2001/XMLSchema-instance&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">xsi:schemaLocation=&lt;/span>&lt;span style="color:#e6db74">&amp;#34;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd&amp;#34;&lt;/span>&lt;span style="color:#f92672">&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;modelVersion&amp;gt;&lt;/span>4.0.0&lt;span style="color:#f92672">&amp;lt;/modelVersion&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;groupId&amp;gt;&lt;/span>org.example&lt;span style="color:#f92672">&amp;lt;/groupId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;artifactId&amp;gt;&lt;/span>conditional_on_class_main&lt;span style="color:#f92672">&amp;lt;/artifactId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;version&amp;gt;&lt;/span>1.0-SNAPSHOT&lt;span style="color:#f92672">&amp;lt;/version&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;parent&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;groupId&amp;gt;&lt;/span>org.springframework.boot&lt;span style="color:#f92672">&amp;lt;/groupId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;artifactId&amp;gt;&lt;/span>spring-boot-starter-parent&lt;span style="color:#f92672">&amp;lt;/artifactId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;version&amp;gt;&lt;/span>2.7.8&lt;span style="color:#f92672">&amp;lt;/version&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;/parent&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;dependencies&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">&amp;lt;!--把1配置的bean引用进来--&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;dependency&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;groupId&amp;gt;&lt;/span>org.example&lt;span style="color:#f92672">&amp;lt;/groupId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;artifactId&amp;gt;&lt;/span>conditional_on_class_2&lt;span style="color:#f92672">&amp;lt;/artifactId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;version&amp;gt;&lt;/span>1.0-SNAPSHOT&lt;span style="color:#f92672">&amp;lt;/version&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;scope&amp;gt;&lt;/span>provided&lt;span style="color:#f92672">&amp;lt;/scope&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;optional&amp;gt;&lt;/span>true&lt;span style="color:#f92672">&amp;lt;/optional&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;/dependency&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;dependency&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;groupId&amp;gt;&lt;/span>org.springframework.boot&lt;span style="color:#f92672">&amp;lt;/groupId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;artifactId&amp;gt;&lt;/span>spring-boot-starter-web&lt;span style="color:#f92672">&amp;lt;/artifactId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;/dependency&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;/dependencies&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;build&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;plugins&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;plugin&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;groupId&amp;gt;&lt;/span>org.springframework.boot&lt;span style="color:#f92672">&amp;lt;/groupId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;artifactId&amp;gt;&lt;/span>spring-boot-maven-plugin&lt;span style="color:#f92672">&amp;lt;/artifactId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;configuration&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;excludes&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">&amp;lt;!-- 默认会将conditional_on_class_2 打包进去,现在会配置SayExist
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">						如果放开注释,那么会配置SayNotExist--&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">&amp;lt;!--&amp;lt;dependency&amp;gt;
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"> &amp;lt;groupId&amp;gt;org.example&amp;lt;/groupId&amp;gt;
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"> &amp;lt;artifactId&amp;gt;conditional_on_class_2&amp;lt;/artifactId&amp;gt;
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"> &amp;lt;/dependency&amp;gt;--&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;/excludes&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;jvmArguments&amp;gt;&lt;/span>-Dfile.encoding=UTF-8&lt;span style="color:#f92672">&amp;lt;/jvmArguments&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;/configuration&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;executions&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;execution&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;goals&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;goal&amp;gt;&lt;/span>repackage&lt;span style="color:#f92672">&amp;lt;/goal&amp;gt;&lt;/span>&lt;span style="color:#75715e">&amp;lt;!--可以把依赖的包都打包到生成的Jar包中 --&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;/goals&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;/execution&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;/executions&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;/plugin&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;/plugins&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;/build&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">&amp;lt;/project&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//两个配置类 &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//配置类1&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">package&lt;/span> com.config;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">import&lt;/span> com.service.ISay;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">import&lt;/span> com.service.SayExist;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">import&lt;/span> org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">import&lt;/span> org.springframework.context.annotation.Bean;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">import&lt;/span> org.springframework.context.annotation.Configuration;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">@Configuration&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//不要放在方法里面,否则会报错&amp;#34;java.lang.ArrayStoreException: sun.reflect.annotation.TypeNotPresentExceptionProxy&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">@ConditionalOnClass&lt;/span>(value &lt;span style="color:#f92672">=&lt;/span> com.&lt;span style="color:#a6e22e">LyReferenceImpl&lt;/span>.&lt;span style="color:#a6e22e">class&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">ExistConfiguration&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">@Bean&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> ISay &lt;span style="color:#a6e22e">getISay1&lt;/span>(){
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> SayExist();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//配置类2&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">package&lt;/span> com.config;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">import&lt;/span> com.service.ISay;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">import&lt;/span> com.service.SayNotExist;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">import&lt;/span> org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">import&lt;/span> org.springframework.context.annotation.Bean;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">import&lt;/span> org.springframework.context.annotation.Configuration;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">@Configuration&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">@ConditionalOnMissingClass&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;com.LyReferenceImpl&amp;#34;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">NotExistConfiguration&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">@Bean&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> ISay &lt;span style="color:#a6e22e">getISay1&lt;/span>(){
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> SayNotExist();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;/ol>
+&lt;h2 id="方向23个maven项目建议用这个理解">
+ 方向2：3个maven项目(建议用这个理解)
+ &lt;a class="anchor" href="#%e6%96%b9%e5%90%9123%e4%b8%aamaven%e9%a1%b9%e7%9b%ae%e5%bb%ba%e8%ae%ae%e7%94%a8%e8%bf%99%e4%b8%aa%e7%90%86%e8%a7%a3">#&lt;/a>
+&lt;/h2>
+&lt;blockquote>
+&lt;p>注意，这里可能还漏了一个问题，那就是 这个conditional_on_class1 的configuration之所以能够被自动装配，是因为和 conditional_on_class_main1的Application类是同一个包，所以不用特殊处理。如果是其他包名的话，那么是需要用到spring boot的自动装配机制的：在conditional_on_class1 工程的 resources 包下创建&lt;code>META-INF/spring.factories&lt;/code>，并写上Config类的全类名&lt;/p></description></item><item><title>SpringBoot自动装配原理</title><link>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/lybly_framework/ly05ly_springboot-auto-assembly/</link><pubDate>Thu, 09 Feb 2023 10:37:36 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/lybly_framework/ly05ly_springboot-auto-assembly/</guid><description>&lt;blockquote>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;p>每次问到 Spring Boot， 面试官非常喜欢问这个问题：“讲述一下 SpringBoot 自动装配原理？”。&lt;/p>
+&lt;p>我觉得我们可以从以下几个方面回答：&lt;/p>
+&lt;ol>
+&lt;li>什么是 &lt;strong>SpringBoot 自动装配&lt;/strong>？&lt;/li>
+&lt;li>SpringBoot 是&lt;strong>如何实现自动装配&lt;/strong>的？&lt;strong>如何实现按需加载&lt;/strong>？&lt;/li>
+&lt;li>&lt;strong>如何实现一个 Starter&lt;/strong>？&lt;/li>
+&lt;/ol>
+&lt;p>篇幅问题，这篇文章并没有深入，小伙伴们也可以直接使用 debug 的方式去看看 SpringBoot 自动装配部分的源代码。&lt;/p>
+&lt;h2 id="前言">
+ 前言
+ &lt;a class="anchor" href="#%e5%89%8d%e8%a8%80">#&lt;/a>
+&lt;/h2>
+&lt;p>使用过 Spring 的小伙伴，一定有被 XML 配置统治的恐惧。即使 Spring 后面引入了基于注解的配置，我们在开启某些 Spring 特性或者引入第三方依赖的时候，还是需要用 XML 或 Java 进行显式配置。&lt;/p>
+&lt;p>举个例子。没有 Spring Boot 的时候，我们写一个 RestFul Web 服务，还首先需要进行如下配置。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">@Configuration&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">RESTConfiguration&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">@Bean&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> View &lt;span style="color:#a6e22e">jsonTemplate&lt;/span>() {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> MappingJackson2JsonView view &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> MappingJackson2JsonView();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> view.&lt;span style="color:#a6e22e">setPrettyPrint&lt;/span>(&lt;span style="color:#66d9ef">true&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> view;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">@Bean&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> ViewResolver &lt;span style="color:#a6e22e">viewResolver&lt;/span>() {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> BeanNameViewResolver();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>spring&lt;span style="color:#f92672">-&lt;/span>servlet.&lt;span style="color:#a6e22e">xml&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">&amp;lt;&lt;/span>beans xmlns&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#e6db74">&amp;#34;http://www.springframework.org/schema/beans&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> xmlns:xsi&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#e6db74">&amp;#34;http://www.w3.org/2001/XMLSchema-instance&amp;#34;&lt;/span> xmlns:context&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#e6db74">&amp;#34;http://www.springframework.org/schema/context&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> xmlns:mvc&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#e6db74">&amp;#34;http://www.springframework.org/schema/mvc&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> xsi:schemaLocation&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#e6db74">&amp;#34;http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74"> http://www.springframework.org/schema/context/ http://www.springframework.org/schema/context/spring-context.xsd
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74"> http://www.springframework.org/schema/mvc/ http://www.springframework.org/schema/mvc/spring-mvc.xsd&amp;#34;&lt;/span>&lt;span style="color:#f92672">&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;&lt;/span>context:component&lt;span style="color:#f92672">-&lt;/span>scan base&lt;span style="color:#f92672">-&lt;/span>package&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#e6db74">&amp;#34;com.howtodoinjava.demo&amp;#34;&lt;/span> &lt;span style="color:#f92672">/&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;&lt;/span>mvc:annotation&lt;span style="color:#f92672">-&lt;/span>driven &lt;span style="color:#f92672">/&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;!--&lt;/span> JSON Support &lt;span style="color:#f92672">--&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;&lt;/span>bean name&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#e6db74">&amp;#34;viewResolver&amp;#34;&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">=&amp;#34;&lt;/span>&lt;span style="color:#a6e22e">org&lt;/span>.&lt;span style="color:#a6e22e">springframework&lt;/span>.&lt;span style="color:#a6e22e">web&lt;/span>.&lt;span style="color:#a6e22e">servlet&lt;/span>.&lt;span style="color:#a6e22e">view&lt;/span>.&lt;span style="color:#a6e22e">BeanNameViewResolver&lt;/span>&lt;span style="color:#e6db74">&amp;#34;/&amp;gt;
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74"> &amp;lt;bean name=&amp;#34;&lt;/span>jsonTemplate&lt;span style="color:#e6db74">&amp;#34; class=&amp;#34;&lt;/span>org.&lt;span style="color:#a6e22e">springframework&lt;/span>.&lt;span style="color:#a6e22e">web&lt;/span>.&lt;span style="color:#a6e22e">servlet&lt;/span>.&lt;span style="color:#a6e22e">view&lt;/span>.&lt;span style="color:#a6e22e">json&lt;/span>.&lt;span style="color:#a6e22e">MappingJackson2JsonView&lt;/span>&lt;span style="color:#e6db74">&amp;#34;/&amp;gt;
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">&amp;lt;/beans&amp;gt;
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>但是，Spring Boot 项目，我们只需要添加相关依赖，无需配置，通过启动下面的 &lt;code>main&lt;/code> 方法即可。&lt;/p></description></item><item><title>spring 设计模式</title><link>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/lybly_framework/ly04ly_spring-design-patterns/</link><pubDate>Wed, 08 Feb 2023 20:18:14 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/lybly_framework/ly04ly_spring-design-patterns/</guid><description>&lt;blockquote>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;p>“JDK 中用到了哪些设计模式? Spring 中用到了哪些设计模式? ”这两个问题，在面试中比较常见。&lt;/p>
+&lt;p>我在网上搜索了一下关于 Spring 中设计模式的讲解几乎都是千篇一律，而且大部分都年代久远。所以，花了几天时间自己总结了一下。&lt;/p>
+&lt;p>由于我的个人能力有限，文中如有任何错误各位都可以指出。另外，文章篇幅有限，对于设计模式以及一些源码的解读我只是一笔带过，这篇文章的主要目的是回顾一下 Spring 中的设计模式。&lt;/p>
+&lt;h2 id="控制反转ioc和依赖注入di">
+ 控制反转(IoC)和依赖注入(DI)
+ &lt;a class="anchor" href="#%e6%8e%a7%e5%88%b6%e5%8f%8d%e8%bd%acioc%e5%92%8c%e4%be%9d%e8%b5%96%e6%b3%a8%e5%85%a5di">#&lt;/a>
+&lt;/h2>
+&lt;p>&lt;strong>IoC(Inversion of Control,控制反转)&lt;/strong> 是 Spring 中一个非常非常重要的概念，它不是什么技术，而是一种&lt;strong>解耦的设计思想&lt;/strong>。IoC 的主要目的是借助于“第三方”(Spring 中的 IoC 容器) 实现&lt;strong>具有依赖关系的对象之间的解耦&lt;/strong>(IOC 容器管理对象，你只管使用即可)，从而降低代码之间的耦合度。&lt;/p>
+&lt;p>&lt;strong>IoC 是一个原则，而不是一个模式，以下模式（但不限于）实现了 IoC 原则。&lt;/strong>&lt;/p>
+&lt;p>&lt;img src="img/ly-20241212142011328.jpg" alt="ioc-patterns" />&lt;/p>
+&lt;p>&lt;strong>Spring IoC 容器就像是一个工厂一样，当我们需要创建一个对象的时候，只需要配置好配置文件/注解即可，完全不用考虑对象是如何被创建出来的。&lt;/strong> IoC 容器负责创建对象，将对象连接在一起，配置这些对象，并从创建中处理这些对象的整个生命周期，直到它们被完全销毁。&lt;/p>
+&lt;p>在实际项目中一个 Service 类如果有几百甚至上千个类作为它的底层，我们需要实例化这个 Service，你可能要每次都要搞清这个 Service 所有底层类的构造函数，这可能会把人逼疯。如果利用 IOC 的话，你&lt;strong>只需要配置好，然后在需要的地方引用&lt;/strong>就行了，这大大增加了项目的可维护性且降低了开发难度。&lt;/p>
+&lt;blockquote>
+&lt;p>关于 Spring IOC 的理解，推荐看这一下知乎的一个回答：https://www.zhihu.com/question/23277575/answer/169698662 ，非常不错。&lt;/p>
+&lt;/blockquote>
+&lt;p>&lt;strong>控制反转怎么理解呢?&lt;/strong> 举个例子：&amp;quot;&lt;strong>对象 a 依赖了对象 b，当对象 a 需要使用 对象 b 的时候必须自己去创建。但是当系统引入了 IOC 容器后， 对象 a 和对象 b 之前就失去了直接的联系。这个时候，当对象 a 需要使用 对象 b 的时候， 我们可以指定 IOC 容器去创建一个对象 b 注入到对象 a 中&lt;/strong>&amp;quot;。 对象 a 获得依赖对象 b 的过程,由&lt;strong>主动&lt;/strong>行为变为了&lt;strong>被动&lt;/strong>行为，控制权反转，这就是控制反转名字的由来。&lt;/p></description></item><item><title>Spring事务详情</title><link>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/lybly_framework/ly03ly_spring-transaction/</link><pubDate>Wed, 08 Feb 2023 16:08:16 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/lybly_framework/ly03ly_spring-transaction/</guid><description>&lt;blockquote>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;p>前段时间答应读者的 &lt;strong>Spring 事务&lt;/strong> 分析总结终于来了。这部分内容比较重要，不论是对于工作还是面试，但是网上比较好的参考资料比较少。&lt;/p>
+&lt;h2 id="什么是事务">
+ 什么是事务？
+ &lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e4%ba%8b%e5%8a%a1">#&lt;/a>
+&lt;/h2>
+&lt;p>&lt;strong>事务是逻辑上的一组操作，要么都执行，要么都不执行。&lt;/strong>&lt;/p>
+&lt;p>相信大家应该都能背上面这句话了，下面我结合我们日常的真实开发来谈一谈。&lt;/p>
+&lt;p>我们系统的&lt;strong>每个业务方法&lt;/strong>可能包括了&lt;strong>多个原子性的数据库操作&lt;/strong>，比如下面的 &lt;code>savePerson()&lt;/code> 方法中就有&lt;strong>两个&lt;/strong>原子性的数据库操作。&lt;strong>这些&lt;/strong>原子性的数据库&lt;strong>操作&lt;/strong>是&lt;strong>有依赖&lt;/strong>的，它们要么&lt;strong>都执行&lt;/strong>，要不就&lt;strong>都不执行&lt;/strong>。&lt;/p>
+&lt;pre tabindex="0">&lt;code>	public void savePerson() {
+		personDao.save(person);
+		personDetailDao.save(personDetail);
+	}
+&lt;/code>&lt;/pre>&lt;p>另外，需要格外注意的是：&lt;strong>事务能否生效数据库引擎是否支持事务是关键。比如常用的 MySQL 数据库默认使用支持事务的 &lt;code>innodb&lt;/code>引擎。但是，如果把数据库引擎变为 &lt;code>myisam&lt;/code>，那么程序也就不再支持事务了！&lt;/strong>&lt;/p>
+&lt;p>事务最经典也经常被拿出来说例子就是转账了。假如小明要给小红转账 1000 元，这个转账会涉及到两个关键操作就是：&lt;/p>
+&lt;blockquote>
+&lt;ol>
+&lt;li>将小明的余额减少 1000 元。&lt;/li>
+&lt;li>将小红的余额增加 1000 元。&lt;/li>
+&lt;/ol>
+&lt;/blockquote>
+&lt;p>万一在这两个操作之间突然出现错误比如银行系统崩溃或者网络故障，导致小明余额减少而小红的余额没有增加，这样就不对了。事务就是保证这两个关键操作要么都成功，要么都要失败。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">OrdersService&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">private&lt;/span> AccountDao accountDao;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">setOrdersDao&lt;/span>(AccountDao accountDao) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">this&lt;/span>.&lt;span style="color:#a6e22e">accountDao&lt;/span> &lt;span style="color:#f92672">=&lt;/span> accountDao;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">@Transactional&lt;/span>(propagation &lt;span style="color:#f92672">=&lt;/span> Propagation.&lt;span style="color:#a6e22e">REQUIRED&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> isolation &lt;span style="color:#f92672">=&lt;/span> Isolation.&lt;span style="color:#a6e22e">DEFAULT&lt;/span>, readOnly &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">false&lt;/span>, timeout &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#f92672">-&lt;/span>1)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">accountMoney&lt;/span>() {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">//小红账户多1000&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		accountDao.&lt;span style="color:#a6e22e">addMoney&lt;/span>(1000,xiaohong);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//模拟突然出现的异常，比如银行中可能为突然停电等等&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">//如果没有配置事务管理的话会造成，小红账户多了1000而小明账户没有少钱&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">int&lt;/span> i &lt;span style="color:#f92672">=&lt;/span> 10 &lt;span style="color:#f92672">/&lt;/span> 0;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//小王账户少1000&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		accountDao.&lt;span style="color:#a6e22e">reduceMoney&lt;/span>(1000,xiaoming);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>另外，数据库事务的 &lt;strong>ACID&lt;/strong> 四大特性是事务的基础，下面简单来了解一下。&lt;/p></description></item><item><title>Spring/SpringBoot常用注解</title><link>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/lybly_framework/ly02ly_spring-annotations/</link><pubDate>Wed, 08 Feb 2023 14:56:32 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/lybly_framework/ly02ly_spring-annotations/</guid><description>&lt;blockquote>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;h3 id="0前言">
+ 0.前言
+ &lt;a class="anchor" href="#0%e5%89%8d%e8%a8%80">#&lt;/a>
+&lt;/h3>
+&lt;p>可以毫不夸张地说，这篇文章介绍的 Spring/SpringBoot 常用注解基本已经涵盖你工作中遇到的大部分常用的场景。对于每一个注解我都说了具体用法，掌握搞懂，使用 SpringBoot 来开发项目基本没啥大问题了！&lt;/p>
+&lt;p>&lt;strong>为什么要写这篇文章？&lt;/strong>&lt;/p>
+&lt;p>最近看到网上有一篇关于 SpringBoot 常用注解的文章被转载的比较多，我看了文章内容之后属实觉得质量有点低，并且有点会误导没有太多实际使用经验的人（这些人又占据了大多数）。所以，自己索性花了大概 两天时间简单总结一下了。&lt;/p>
+&lt;p>&lt;strong>因为我个人的能力和精力有限，如果有任何不对或者需要完善的地方，请帮忙指出！Guide 哥感激不尽！&lt;/strong>&lt;/p>
+&lt;h3 id="1-springbootapplication">
+ 1. &lt;code>@SpringBootApplication&lt;/code>
+ &lt;a class="anchor" href="#1-springbootapplication">#&lt;/a>
+&lt;/h3>
+&lt;p>这里先单独拎出&lt;code>@SpringBootApplication&lt;/code> 注解说一下，虽然我们一般不会主动去使用它。&lt;/p>
+&lt;p>&lt;em>Guide 哥：这个注解是 Spring Boot 项目的基石，创建 SpringBoot 项目之后会默认在主类加上。&lt;/em>&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">@SpringBootApplication&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">SpringSecurityJwtGuideApplication&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>(java.&lt;span style="color:#a6e22e">lang&lt;/span>.&lt;span style="color:#a6e22e">String&lt;/span>&lt;span style="color:#f92672">[]&lt;/span> args) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> SpringApplication.&lt;span style="color:#a6e22e">run&lt;/span>(SpringSecurityJwtGuideApplication.&lt;span style="color:#a6e22e">class&lt;/span>, args);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>我们可以把 &lt;code>@SpringBootApplication&lt;/code>看作是 &lt;code>@Configuration&lt;/code>、&lt;code>@EnableAutoConfiguration&lt;/code>、&lt;code>@ComponentScan&lt;/code> 注解的集合。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">package&lt;/span> org.springframework.boot.autoconfigure;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">@Target&lt;/span>(ElementType.&lt;span style="color:#a6e22e">TYPE&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">@Retention&lt;/span>(RetentionPolicy.&lt;span style="color:#a6e22e">RUNTIME&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">@Documented&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">@Inherited&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">@SpringBootConfiguration&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">@EnableAutoConfiguration&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">@ComponentScan&lt;/span>(excludeFilters &lt;span style="color:#f92672">=&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#a6e22e">@Filter&lt;/span>(type &lt;span style="color:#f92672">=&lt;/span> FilterType.&lt;span style="color:#a6e22e">CUSTOM&lt;/span>, classes &lt;span style="color:#f92672">=&lt;/span> TypeExcludeFilter.&lt;span style="color:#a6e22e">class&lt;/span>),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#a6e22e">@Filter&lt;/span>(type &lt;span style="color:#f92672">=&lt;/span> FilterType.&lt;span style="color:#a6e22e">CUSTOM&lt;/span>, classes &lt;span style="color:#f92672">=&lt;/span> AutoConfigurationExcludeFilter.&lt;span style="color:#a6e22e">class&lt;/span>) })
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#a6e22e">@interface&lt;/span> SpringBootApplication {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ......
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">package&lt;/span> org.springframework.boot;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">@Target&lt;/span>(ElementType.&lt;span style="color:#a6e22e">TYPE&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">@Retention&lt;/span>(RetentionPolicy.&lt;span style="color:#a6e22e">RUNTIME&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">@Documented&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">@Configuration&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#a6e22e">@interface&lt;/span> SpringBootConfiguration {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>根据 SpringBoot 官网，这三个注解的作用分别是：&lt;/p></description></item><item><title>spring 常见面试题总结</title><link>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/lybly_framework/ly01ly_spring-knowledge-and-questions-summary/</link><pubDate>Tue, 07 Feb 2023 16:48:03 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/lybly_framework/ly01ly_spring-knowledge-and-questions-summary/</guid><description>&lt;blockquote>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;p>这篇文章主要是想通过一些问题，加深大家对于 Spring 的理解，所以不会涉及太多的代码！&lt;/p>
+&lt;p>下面的很多问题我自己在使用 Spring 的过程中也并没有注意，自己也是临时查阅了很多资料和书籍补上的。网上也有一些很多关于 Spring 常见问题/面试题整理的文章，我感觉大部分都是互相 copy，而且很多问题也不是很好，有些回答也存在问题。所以，自己花了一周的业余时间整理了一下，希望对大家有帮助。&lt;/p>
+&lt;h2 id="spring-基础">
+ Spring 基础
+ &lt;a class="anchor" href="#spring-%e5%9f%ba%e7%a1%80">#&lt;/a>
+&lt;/h2>
+&lt;h3 id="什么是-spring-框架">
+ 什么是 Spring 框架?
+ &lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af-spring-%e6%a1%86%e6%9e%b6">#&lt;/a>
+&lt;/h3>
+&lt;p>Spring 是一款&lt;strong>开源&lt;/strong>的&lt;strong>轻量级 Java 开发框架&lt;/strong>，旨在提高开发人员的&lt;strong>开发效率&lt;/strong>以及系统的&lt;strong>可维护性&lt;/strong>。&lt;/p>
+&lt;p>我们一般说 Spring 框架指的都是 Spring Framework，它是很&lt;strong>多模块的集合&lt;/strong>，使用这些模块可以很方便地协助我们进行开发，比如说 Spring 支持 &lt;strong>IoC&lt;/strong>（&lt;strong>Inversion of Control:控制反转&lt;/strong>） 和 &lt;strong>AOP&lt;/strong>(&lt;strong>Aspect-Oriented Programming:面向切面编程&lt;/strong>)、可以很方便地&lt;strong>对数据库进行访问&lt;/strong>、可以很&lt;strong>方便地集成第三方组件&lt;/strong>（&lt;strong>电子邮件&lt;/strong>，&lt;strong>任务&lt;/strong>，&lt;strong>调度&lt;/strong>，缓存等等）、对&lt;strong>单元测试&lt;/strong>支持比较好、支持 &lt;strong>RESTful Java 应用程序&lt;/strong>的开发。&lt;/p>
+&lt;p>[&lt;img src="img/ly-20241212142008049.jpg" alt="img" />&lt;/p>
+&lt;p>Spring 最核心的思想就是不重新造轮子，&lt;strong>开箱即用&lt;/strong>，提高开发效率。&lt;/p>
+&lt;p>Spring 翻译过来就是春天的意思，可见其目标和使命就是为 Java 程序员带来春天啊！感动！&lt;/p>
+&lt;p>🤐 多提一嘴 ： &lt;strong>语言的流行通常需要一个杀手级的应用，Spring 就是 Java 生态的一个杀手级的应用框架。&lt;/strong>&lt;/p>
+&lt;p>Spring 提供的核心功能主要是 &lt;strong>IoC&lt;/strong> 和 &lt;strong>AOP&lt;/strong>。学习 Spring ，一定要把 IoC 和 AOP 的核心思想搞懂！&lt;/p>
+&lt;ul>
+&lt;li>Spring 官网：https://spring.io/&lt;/li>
+&lt;li>Github 地址： &lt;a href="https://github.com/spring-projects/spring-framework">https://github.com/spring-projects/spring-framework&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;h3 id="spring-包含的模块有哪些">
+ Spring 包含的模块有哪些？
+ &lt;a class="anchor" href="#spring-%e5%8c%85%e5%90%ab%e7%9a%84%e6%a8%a1%e5%9d%97%e6%9c%89%e5%93%aa%e4%ba%9b">#&lt;/a>
+&lt;/h3>
+&lt;p>&lt;strong>Spring4.x 版本&lt;/strong> ：&lt;/p></description></item></channel></rss>

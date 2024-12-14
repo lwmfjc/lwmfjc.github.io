@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Redis on 随记</title><link>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/database/Redis/</link><description>Recent content in Redis on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Mon, 27 Feb 2023 22:11:02 +0000</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/docs/study/Review/java_guide/database/Redis/index.xml" rel="self" type="application/rss+xml"/><item><title>redis问题图解</title><link>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/database/Redis/diagram/</link><pubDate>Mon, 27 Feb 2023 22:11:02 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/database/Redis/diagram/</guid><description>&lt;blockquote>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;ol>
+&lt;li>
+&lt;p>主从复制原理&lt;/p>
+&lt;p>&lt;img src="img/ly-20241212141920958.png" alt="主从复制原理" />&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>哨兵模式(简单)&lt;br>
+&lt;img src="img/ly-20241212141921249.png" alt="ly-20241212141921249" />&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>哨兵模式详解&lt;/p>
+&lt;blockquote>
+&lt;p>先配置&lt;strong>主从模式&lt;/strong>，再配置&lt;strong>哨兵模式&lt;/strong>&lt;/p>
+&lt;/blockquote>
+&lt;p>所有的哨兵 sentinel.conf 都是配置为监听master&amp;ndash;&amp;gt; 192.168.14.101，如果主机宕机，sentinel.conf 中的配置也会自动更改为选举后的&lt;img src="img/ly-20241212141921408.png" alt="ly-20241212141921408" />&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>Java客户端连接原理&lt;/p>
+&lt;blockquote>
+&lt;p>客户端是和Sentinel来进行交互的,通过Sentinel来获取真正的Redis节点信息,然后来操作.实际工作时,Sentinel 内部维护了一个主题队列,用来保存Redis的节点信息,并实时更新,客户端订阅了这个主题,然后实时的去获取这个队列的Redis节点信息.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/**
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">代码相对比较简单
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">**/&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//1.设置sentinel 各个节点集合&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Set&lt;span style="color:#f92672">&amp;lt;&lt;/span>String&lt;span style="color:#f92672">&amp;gt;&lt;/span> sentinelSet &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> HashSet&lt;span style="color:#f92672">&amp;lt;&amp;gt;&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>sentinelSet.&lt;span style="color:#a6e22e">add&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;192.168.14.101:26379&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>sentinelSet.&lt;span style="color:#a6e22e">add&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;192.168.14.102:26380&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>sentinelSet.&lt;span style="color:#a6e22e">add&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;192.168.14.103:26381&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//2.设置jedispool 连接池配置文件&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>JedisPoolConfig config &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> JedisPoolConfig();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>config.&lt;span style="color:#a6e22e">setMaxTotal&lt;/span>(10);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>config.&lt;span style="color:#a6e22e">setMaxWaitMillis&lt;/span>(1000);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//3.设置mastername,sentinelNode集合,配置文件,Redis登录密码&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>JedisSentinelPool jedisSentinelPool &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> JedisSentinelPool(&lt;span style="color:#e6db74">&amp;#34;mymaster&amp;#34;&lt;/span>,sentinelSet,config,&lt;span style="color:#e6db74">&amp;#34;123&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Jedis jedis &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">null&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">try&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> jedis &lt;span style="color:#f92672">=&lt;/span> jedisSentinelPool.&lt;span style="color:#a6e22e">getResource&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">//获取Redis中key=hello的值&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> String value &lt;span style="color:#f92672">=&lt;/span> jedis.&lt;span style="color:#a6e22e">get&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;hello&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> System.&lt;span style="color:#a6e22e">out&lt;/span>.&lt;span style="color:#a6e22e">println&lt;/span>(value);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>} &lt;span style="color:#66d9ef">catch&lt;/span> (Exception e) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> e.&lt;span style="color:#a6e22e">printStackTrace&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>} &lt;span style="color:#66d9ef">finally&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span>(jedis &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#66d9ef">null&lt;/span>){
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> jedis.&lt;span style="color:#a6e22e">close&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/blockquote>
+&lt;p>&lt;img src="img/ly-20241212141921579.png" alt="ly-20241212141921579" />&lt;/p></description></item><item><title>3种常用的缓存读写策略详解</title><link>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/database/Redis/ly0703ly3-commonly-used-cache-read-and-write-strategies/</link><pubDate>Fri, 24 Feb 2023 09:31:52 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/database/Redis/ly0703ly3-commonly-used-cache-read-and-write-strategies/</guid><description>&lt;blockquote>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;p>看到很多小伙伴简历上写了“&lt;strong>熟练使用缓存&lt;/strong>”，但是被我问到“&lt;strong>缓存常用的3种读写策略&lt;/strong>”的时候却一脸懵逼。&lt;/p>
+&lt;p>在我看来，造成这个问题的原因是我们在学习 Redis 的时候，可能只是简单了写一些 Demo，并没有去关注缓存的读写策略，或者说压根不知道这回事。&lt;/p>
+&lt;p>但是，搞懂3种常见的缓存读写策略对于实际工作中使用缓存以及面试中被问到缓存都是非常有帮助的！&lt;/p>
+&lt;p>&lt;strong>下面介绍到的三种模式各有优劣，不存在最佳模式，根据具体的业务场景选择适合自己的缓存读写模式。&lt;/strong>&lt;/p>
+&lt;h3 id="cache-aside-pattern旁路缓存模式">
+ Cache Aside Pattern（旁路缓存模式）
+ &lt;a class="anchor" href="#cache-aside-pattern%e6%97%81%e8%b7%af%e7%bc%93%e5%ad%98%e6%a8%a1%e5%bc%8f">#&lt;/a>
+&lt;/h3>
+&lt;p>&lt;strong>Cache Aside Pattern 是我们平时使用比较多的一个缓存读写模式，比较适合读请求比较多的场景。&lt;/strong>&lt;/p>
+&lt;p>Cache Aside Pattern 中服务端需要同时维系 db 和 cache，并且是&lt;strong>以 db 的结果为准&lt;/strong>。&lt;/p>
+&lt;p>下面我们来看一下这个策略模式下的缓存读写步骤。&lt;/p>
+&lt;p>&lt;strong>写&lt;/strong> ：&lt;/p>
+&lt;ul>
+&lt;li>先更新 db&lt;/li>
+&lt;li>然后直接删除 cache 。&lt;/li>
+&lt;/ul>
+&lt;p>简单画了一张图帮助大家理解写的步骤。&lt;/p>
+&lt;p>&lt;img src="img/ly-20241212141916648.jpg" alt="img" />&lt;/p>
+&lt;p>&lt;strong>读&lt;/strong> :&lt;/p>
+&lt;ul>
+&lt;li>从 cache 中读取数据，读取到就直接返回&lt;/li>
+&lt;li>cache 中读取不到的话，就从 db 中读取数据返回&lt;/li>
+&lt;li>再把数据放到 cache 中。&lt;/li>
+&lt;/ul>
+&lt;p>简单画了一张图帮助大家理解读的步骤。&lt;/p>
+&lt;p>&lt;img src="img/ly-20241212141916935.png" alt="ly-20241212141916935" />&lt;/p>
+&lt;p>你仅仅了解了上面这些内容的话是远远不够的，我们还要搞懂其中的原理。&lt;/p>
+&lt;p>比如说面试官很可能会追问：“&lt;strong>在写数据的过程中，可以先删除 cache ，后更新 db 么？&lt;/strong>”&lt;/p>
+&lt;p>&lt;strong>答案：&lt;/strong> 那肯定是不行的！因为这样可能会造成 &lt;strong>数据库（db）和缓存（Cache）数据不一致&lt;/strong>的问题。&lt;/p>
+&lt;p>举例：请求 1 先写数据 A，请求 2 随后读数据 A 的话，就很有可能产生数据不一致性的问题。&lt;/p>
+&lt;p>这个过程可以简单描述为：&lt;/p>
+&lt;blockquote>
+&lt;p>请求 1 先把 cache 中的 A 数据删除 -&amp;gt; 请求 2 从 db 中读取数据【&lt;strong>此时请求2把脏数据(对于请求1来说是)更新到缓存去了&lt;/strong>】-&amp;gt;请求 1 再把 db 中的 A 数据更新，即请求1的操作非原子&lt;/p></description></item><item><title>redis内存碎片</title><link>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/database/Redis/ly0704lyredis-memory-fragmentation/</link><pubDate>Fri, 24 Feb 2023 09:26:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/database/Redis/ly0704lyredis-memory-fragmentation/</guid><description>&lt;blockquote>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;h2 id="什么是内存碎片">
+ 什么是内存碎片?
+ &lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e5%86%85%e5%ad%98%e7%a2%8e%e7%89%87">#&lt;/a>
+&lt;/h2>
+&lt;p>你可以将内存碎片简单地理解为那些&lt;strong>不可用的空闲内存&lt;/strong>。&lt;/p>
+&lt;p>举个例子：操作系统为你分配了 32 字节的连续内存空间，而你存储数据实际只需要使用 24 字节内存空间，那这多余出来的 8 字节内存空间如果后续没办法再被分配存储其他数据的话，就可以被称为内存碎片。&lt;/p>
+&lt;p>&lt;img src="img/ly-20241212141917438.png" alt="ly-20241212141917438" />&lt;/p>
+&lt;p>Redis 内存碎片虽然不会影响 Redis 性能，但是会&lt;strong>增加内存消耗&lt;/strong>。&lt;/p>
+&lt;h2 id="为什么会有-redis-内存碎片">
+ 为什么会有 Redis 内存碎片?
+ &lt;a class="anchor" href="#%e4%b8%ba%e4%bb%80%e4%b9%88%e4%bc%9a%e6%9c%89-redis-%e5%86%85%e5%ad%98%e7%a2%8e%e7%89%87">#&lt;/a>
+&lt;/h2>
+&lt;p>Redis 内存碎片产生比较常见的 2 个原因：&lt;/p>
+&lt;p>&lt;strong>1、Redis 存储存储数据的时候向操作系统申请的内存空间可能会大于数据实际需要的存储空间。&lt;/strong>&lt;/p>
+&lt;p>以下是这段 Redis 官方的原话：&lt;/p>
+&lt;blockquote>
+&lt;p>To store user keys, Redis allocates at most as much memory as the &lt;code>maxmemory&lt;/code> setting enables (however there are small extra allocations possible).&lt;/p>
+&lt;/blockquote>
+&lt;p>Redis 使用 &lt;code>zmalloc&lt;/code> 方法(Redis 自己实现的内存分配方法)进行内存分配的时候，除了要分配 &lt;code>size&lt;/code> 大小的内存之外，还会多分配 &lt;code>PREFIX_SIZE&lt;/code> 大小的内存。&lt;/p>
+&lt;p>&lt;code>zmalloc&lt;/code> 方法源码如下（源码地址：https://github.com/antirez/redis-tools/blob/master/zmalloc.c）：&lt;/p>
+&lt;pre tabindex="0">&lt;code>void *zmalloc(size_t size) {
+ // 分配指定大小的内存
+ void *ptr = malloc(size+PREFIX_SIZE);
+ if (!ptr) zmalloc_oom_handler(size);
+#ifdef HAVE_MALLOC_SIZE
+ update_zmalloc_stat_alloc(zmalloc_size(ptr));
+ return ptr;
+#else
+ *((size_t*)ptr) = size;
+ update_zmalloc_stat_alloc(size+PREFIX_SIZE);
+ return (char*)ptr+PREFIX_SIZE;
+#endif
+}
+&lt;/code>&lt;/pre>&lt;p>另外，Redis 可以使用&lt;strong>多种内存分配器&lt;/strong>来分配内存（ &lt;strong>libc&lt;/strong>、&lt;strong>jemalloc&lt;/strong>、&lt;strong>tcmalloc&lt;/strong>），默认使用 &lt;a href="https://github.com/jemalloc/jemalloc">jemalloc&lt;/a>，而 jemalloc 按照一系列固定的大小（8 字节、16 字节、32 字节&amp;hellip;&amp;hellip;）来分配内存的。jemalloc 划分的内存单元如下图所示：&lt;/p></description></item><item><title>redis特殊数据结构</title><link>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/database/Redis/ly0702lyredis-spec-data-structure/</link><pubDate>Thu, 23 Feb 2023 23:02:58 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/database/Redis/ly0702lyredis-spec-data-structure/</guid><description>&lt;blockquote>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;p>除了 5 种基本的数据结构之外，Redis 还支持 3 种特殊的数据结构 ：&lt;strong>Bitmap&lt;/strong>、&lt;strong>HyperLogLog&lt;/strong>、&lt;strong>GEO&lt;/strong>。&lt;/p>
+&lt;h2 id="bitmap">
+ Bitmap
+ &lt;a class="anchor" href="#bitmap">#&lt;/a>
+&lt;/h2>
+&lt;h3 id="介绍">
+ 介绍
+ &lt;a class="anchor" href="#%e4%bb%8b%e7%bb%8d">#&lt;/a>
+&lt;/h3>
+&lt;p>Bitmap 存储的是连续的二进制数字（0 和 1），通过 Bitmap, &lt;strong>只需要一个 bit 位来表示某个元素对应的值&lt;/strong>或者&lt;strong>状态&lt;/strong>，key 就是对应元素本身 。我们知道 8 个 bit 可以组成一个 byte，所以 Bitmap 本身会极大的节省储存空间。&lt;/p>
+&lt;p>你可以将 Bitmap 看作是一个&lt;strong>存储二进制数字（0 和 1）的数组&lt;/strong>，数组中每个元素的下标叫做 offset（偏移量）。&lt;/p>
+&lt;p>&lt;a href="https://camo.githubusercontent.com/1c1ce8351556fe9727cadfd385fdbd6f449d92a174bbd65db5383791fec05a13/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f64617461626173652f72656469732f696d6167652d32303232303732303139343135343133332e706e67">&lt;img src="https://camo.githubusercontent.com/1c1ce8351556fe9727cadfd385fdbd6f449d92a174bbd65db5383791fec05a13/68747470733a2f2f67756964652d626c6f672d696d616765732e6f73732d636e2d7368656e7a68656e2e616c6979756e63732e636f6d2f6769746875622f6a61766167756964652f64617461626173652f72656469732f696d6167652d32303232303732303139343135343133332e706e67" alt="img" />&lt;/a>&lt;/p>
+&lt;h3 id="常用命令">
+ 常用命令
+ &lt;a class="anchor" href="#%e5%b8%b8%e7%94%a8%e5%91%bd%e4%bb%a4">#&lt;/a>
+&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>命令&lt;/th>
+ &lt;th>介绍&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>SETBIT key offset value&lt;/td>
+ &lt;td>设置指定 offset 位置的值&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>GETBIT key offset&lt;/td>
+ &lt;td>获取指定 offset 位置的值&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>BITCOUNT key start end&lt;/td>
+ &lt;td>获取 start 和 end 之前值为 1 的元素个数&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>BITOP operation destkey key1 key2 &amp;hellip;&lt;/td>
+ &lt;td>对一个或多个 Bitmap 进行运算，可用运算符有 AND, OR, XOR 以及 NOT&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;p>&lt;strong>Bitmap 基本操作演示&lt;/strong> ：&lt;/p></description></item><item><title>redis基本数据结构</title><link>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/database/Redis/ly0701lyredis-base-data-structures/</link><pubDate>Thu, 23 Feb 2023 14:22:58 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/database/Redis/ly0701lyredis-base-data-structures/</guid><description>&lt;blockquote>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;p>Redis 共有 5 种基本数据结构：&lt;strong>String&lt;/strong>（字符串）、&lt;strong>List&lt;/strong>（列表）、&lt;strong>Set&lt;/strong>（集合）、&lt;strong>Hash&lt;/strong>（散列）、&lt;strong>Zset&lt;/strong>（有序集合）。&lt;/p>
+&lt;p>这 5 种数据结构是直接提供给用户使用的，是数据的保存形式，其底层实现主要依赖这 8 种数据结构：简单动态字符串（&lt;strong>SDS&lt;/strong>）、&lt;strong>LinkedList&lt;/strong>（双向链表）、&lt;strong>Hash Table&lt;/strong>（哈希表）、&lt;strong>SkipList&lt;/strong>（跳跃表）、&lt;strong>Intset&lt;/strong>（整数集合）、&lt;strong>ZipList&lt;/strong>（压缩列表）、&lt;strong>QuickList&lt;/strong>（快速列表）。&lt;/p>
+&lt;p>Redis 基本数据结构的底层数据结构实现如下：&lt;/p>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>String&lt;/th>
+ &lt;th>List&lt;/th>
+ &lt;th>Hash&lt;/th>
+ &lt;th>Set&lt;/th>
+ &lt;th>Zset&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>SDS&lt;/td>
+ &lt;td>LinkedList/ZipList/QuickList&lt;/td>
+ &lt;td>Hash Table、ZipList&lt;/td>
+ &lt;td>ZipList、Intset&lt;/td>
+ &lt;td>ZipList、SkipList&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;p>Redis 3.2 之前，List 底层实现是 LinkedList 或者 ZipList。 Redis 3.2 之后，引入了 LinkedList 和 ZipList 的结合 QuickList，List 的底层实现变为 QuickList。&lt;/p>
+&lt;p>你可以在 Redis 官网上找到 Redis 数据结构非常详细的介绍：&lt;/p>
+&lt;ul>
+&lt;li>&lt;a href="https://redis.com/redis-enterprise/data-structures/">Redis Data Structures&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://redis.io/docs/manual/data-types/data-types-tutorial/">Redis Data types tutorial&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;p>未来随着 Redis 新版本的发布，可能会有新的数据结构出现，通过查阅 Redis 官网对应的介绍，你总能获取到最靠谱的信息。&lt;/p>
+&lt;p>&lt;img src="img/ly-20241212141914862.png" alt="ly-20241212141914862" />&lt;/p>
+&lt;h2 id="string字符串">
+ String（字符串）
+ &lt;a class="anchor" href="#string%e5%ad%97%e7%ac%a6%e4%b8%b2">#&lt;/a>
+&lt;/h2>
+&lt;h3 id="介绍">
+ 介绍
+ &lt;a class="anchor" href="#%e4%bb%8b%e7%bb%8d">#&lt;/a>
+&lt;/h3>
+&lt;p>String 是 Redis 中最简单同时也是最常用的一个数据结构。&lt;/p></description></item><item><title>redis面试题02</title><link>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/database/Redis/ly0706lyredis-questions-02/</link><pubDate>Thu, 23 Feb 2023 11:16:04 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/database/Redis/ly0706lyredis-questions-02/</guid><description>&lt;blockquote>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;h2 id="redis-事务">
+ Redis 事务
+ &lt;a class="anchor" href="#redis-%e4%ba%8b%e5%8a%a1">#&lt;/a>
+&lt;/h2>
+&lt;h3 id="如何使用-redis-事务">
+ 如何使用 Redis 事务？
+ &lt;a class="anchor" href="#%e5%a6%82%e4%bd%95%e4%bd%bf%e7%94%a8-redis-%e4%ba%8b%e5%8a%a1">#&lt;/a>
+&lt;/h3>
+&lt;p>Redis 可以通过 &lt;strong>&lt;code>MULTI&lt;/code>，&lt;code>EXEC&lt;/code>，&lt;code>DISCARD&lt;/code> 和 &lt;code>WATCH&lt;/code>&lt;/strong> 等命令来实现事务(transaction)功能。&lt;/p>
+&lt;pre tabindex="0">&lt;code>&amp;gt; MULTI
+OK
+&amp;gt; SET PROJECT &amp;#34;JavaGuide&amp;#34;
+QUEUED
+&amp;gt; GET PROJECT
+QUEUED
+&amp;gt; EXEC
+1) OK
+2) &amp;#34;JavaGuide&amp;#34;
+&lt;/code>&lt;/pre>&lt;p>&lt;a href="https://redis.io/commands/multi">&lt;code>MULTI&lt;/code>&lt;/a> 命令后可以输入多个命令，Redis 不会立即执行这些命令，而是将它们放到队列，当调用了 &lt;a href="https://redis.io/commands/exec">&lt;code>EXEC&lt;/code>&lt;/a> 命令后，再执行所有的命令。&lt;/p>
+&lt;p>这个过程是这样的：&lt;/p>
+&lt;ol>
+&lt;li>开始事务（&lt;code>MULTI&lt;/code>）；&lt;/li>
+&lt;li>命令入队(批量操作 Redis 的命令，先进先出（FIFO）的顺序执行)；&lt;/li>
+&lt;li>执行事务(&lt;code>EXEC&lt;/code>)。&lt;/li>
+&lt;/ol>
+&lt;p>你也可以通过 &lt;a href="https://redis.io/commands/discard">&lt;code>DISCARD&lt;/code>&lt;/a> 命令取消一个事务，它会清空事务队列中保存的所有命令。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>&amp;gt; MULTI
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>OK
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&amp;gt; SET PROJECT &lt;span style="color:#e6db74">&amp;#34;JavaGuide&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>QUEUED
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&amp;gt; GET PROJECT
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>QUEUED
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&amp;gt; DISCARD
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>OK
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>你可以通过&lt;a href="https://redis.io/commands/watch">&lt;code>WATCH&lt;/code>&lt;/a> 命令监听指定的 Key，当调用 &lt;code>EXEC&lt;/code> 命令执行事务时，如果一个被 &lt;code>WATCH&lt;/code> 命令监视的 Key 被 &lt;strong>其他客户端/Session&lt;/strong> 修改的话，整个事务都不会被执行。&lt;/p></description></item><item><title>redis面试题01</title><link>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/database/Redis/ly0705lyredis-questions-01/</link><pubDate>Wed, 22 Feb 2023 11:31:11 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/study/Review/java_guide/database/Redis/ly0705lyredis-questions-01/</guid><description>&lt;blockquote>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;h2 id="redis-基础">
+ Redis 基础
+ &lt;a class="anchor" href="#redis-%e5%9f%ba%e7%a1%80">#&lt;/a>
+&lt;/h2>
+&lt;h3 id="什么是-redis">
+ 什么是 Redis？
+ &lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af-redis">#&lt;/a>
+&lt;/h3>
+&lt;p>&lt;a href="https://redis.io/">Redis&lt;/a> 是一个基于 C 语言开发的开源数据库（BSD 许可），与传统数据库不同的是 Redis 的数据是存在&lt;strong>内存&lt;/strong>中的（内存数据库），&lt;strong>读写&lt;/strong>速度非常&lt;strong>快&lt;/strong>，被广泛应用于&lt;strong>缓存方向&lt;/strong>。并且，Redis 存储的是 &lt;strong>KV 键值对&lt;/strong>数据。&lt;/p>
+&lt;p>为了满足不同的业务场景，Redis 内置了多种数据类型实现（比如 &lt;strong>String&lt;/strong>、&lt;strong>Hash&lt;/strong>、【&lt;strong>List&lt;/strong>、&lt;strong>Set&lt;/strong>、】&lt;strong>Sorted Set&lt;/strong>、&lt;strong>Bitmap&lt;/strong>）。并且，Redis 还支持&lt;strong>事务&lt;/strong> 、&lt;strong>持久化&lt;/strong>、&lt;strong>Lua 脚本&lt;/strong>、多种开箱即用的&lt;strong>集群&lt;/strong>方案（&lt;strong>Redis Sentinel&lt;/strong>、&lt;strong>Redis Cluster&lt;/strong>）。&lt;/p>
+&lt;p>Redis 没有外部依赖，Linux 和 OS X 是 Redis 开发和测试最多的两个操作系统，官方推荐生产环境使用 Linux 部署 Redis。&lt;/p>
+&lt;p>个人学习的话，你可以自己本机安装 Redis 或者通过 Redis 官网提供的&lt;a href="https://try.redis.io/">在线 Redis 环境&lt;/a>来实际体验 Redis。&lt;/p>
+&lt;p>&lt;img src="img/ly-20241212141918257.png" alt="ly-20241212141918257" />&lt;/p>
+&lt;p>全世界有非常多的网站使用到了 Redis ，&lt;a href="https://techstacks.io/">techstacks.io&lt;/a> 专门维护了一个&lt;a href="https://techstacks.io/tech/redis">使用 Redis 的热门站点列表&lt;/a> ，感兴趣的话可以看看。&lt;/p>
+&lt;h3 id="redis-为什么这么快">
+ Redis 为什么这么快？
+ &lt;a class="anchor" href="#redis-%e4%b8%ba%e4%bb%80%e4%b9%88%e8%bf%99%e4%b9%88%e5%bf%ab">#&lt;/a>
+&lt;/h3>
+&lt;p>Redis 内部做了非常多的性能优化，比较重要的主要有下面 3 点：&lt;/p>
+&lt;ul>
+&lt;li>Redis 基于&lt;strong>内存&lt;/strong>，内存的访问速度是磁盘的上千倍；&lt;/li>
+&lt;li>Redis &lt;strong>基于 Reactor 模式&lt;/strong>设计开发了一套&lt;strong>高效的事件处理模型&lt;/strong>，主要是&lt;strong>单线程事件循环&lt;/strong>和 &lt;strong>IO 多路复用&lt;/strong>（Redis 线程模式后面会详细介绍到）；&lt;/li>
+&lt;li>Redis 内置了多种&lt;strong>优化过后的数据结构&lt;/strong>实现，性能非常高。&lt;/li>
+&lt;/ul>
+&lt;p>下面这张图片总结的挺不错的，分享一下，出自 &lt;a href="https://twitter.com/alexxubyte/status/1498703822528544770">Why is Redis so fast?&lt;/a> 。&lt;/p></description></item></channel></rss>
