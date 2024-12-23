@@ -1,4 +1,122 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>介绍 on 随记</title><link>https://lwmfjc.github.io/zh/</link><description>Recent content in 介绍 on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Mon, 23 Dec 2024 12:12:45 +0800</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/index.xml" rel="self" type="application/rss+xml"/><item><title>11-</title><link>https://lwmfjc.github.io/zh/docs/study/Linux/SHELLlearnLinuxTV_/11-/</link><pubDate>Mon, 23 Dec 2024 12:12:45 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/study/Linux/SHELLlearnLinuxTV_/11-/</guid><description>&lt;blockquote>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>介绍 on 随记</title><link>https://lwmfjc.github.io/zh/</link><description>Recent content in 介绍 on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Mon, 23 Dec 2024 21:03:03 +0800</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/index.xml" rel="self" type="application/rss+xml"/><item><title>12-x</title><link>https://lwmfjc.github.io/zh/docs/study/Linux/SHELLlearnLinuxTV_/12-x/</link><pubDate>Mon, 23 Dec 2024 21:03:03 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/study/Linux/SHELLlearnLinuxTV_/12-x/</guid><description>&lt;h1 id="functions-函数">
+ functions 函数
+ &lt;a class="anchor" href="#functions-%e5%87%bd%e6%95%b0">#&lt;/a>
+&lt;/h1>
+&lt;p>以&lt;code>update&lt;/code>这个脚本为基础编改&lt;br>
+作用&lt;/p>
+&lt;ul>
+&lt;li>减少重复代码&lt;/li>
+&lt;/ul>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#!/bin/bash
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>release_file&lt;span style="color:#f92672">=&lt;/span>/etc/os-release
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>logfile&lt;span style="color:#f92672">=&lt;/span>/var/log/updater.log
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>errorlog&lt;span style="color:#f92672">=&lt;/span>/var/log/updater_errors.log
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>check_exit_status&lt;span style="color:#f92672">(){&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#f92672">[&lt;/span> $? -ne &lt;span style="color:#ae81ff">0&lt;/span> &lt;span style="color:#f92672">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">then&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> echo &lt;span style="color:#e6db74">&amp;#34;An error occured,please check the &lt;/span>$errorlog&lt;span style="color:#e6db74"> file.&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">fi&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">if&lt;/span> grep -q &lt;span style="color:#e6db74">&amp;#34;Arch&amp;#34;&lt;/span> $release_file 
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">then&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> sudo pacman -Syu 1&amp;gt;&amp;gt;$logfile 2&amp;gt;&amp;gt;$errorlog
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> check_exit_status
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">fi&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">if&lt;/span> grep -q &lt;span style="color:#e6db74">&amp;#34;Ubuntu&amp;#34;&lt;/span> $release_file &lt;span style="color:#f92672">||&lt;/span> grep -q &lt;span style="color:#e6db74">&amp;#34;Debian&amp;#34;&lt;/span> $release_file 
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">then&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> sudo apt update 1&amp;gt;&amp;gt;$logfile 2&amp;gt;&amp;gt;$errorlog
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> check_exit_status
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">#默认yes&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> sudo apt dist-upgrade -y 1&amp;gt;&amp;gt;$logfile 2&amp;gt;&amp;gt;$errorlog
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> check_exit_status
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">fi&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h1 id="casestatements">
+ CaseStatements
+ &lt;a class="anchor" href="#casestatements">#&lt;/a>
+&lt;/h1>
+&lt;h2 id="脚本">
+ 脚本
+ &lt;a class="anchor" href="#%e8%84%9a%e6%9c%ac">#&lt;/a>
+&lt;/h2>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>╭─ ~/shellTest ly@vmmin 22:32:52
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>╰─❯ cat ./13myscript_cls.sh 
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#!/bin/bash&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>finished&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">0&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">while&lt;/span> &lt;span style="color:#f92672">[&lt;/span> $finished -ne &lt;span style="color:#ae81ff">1&lt;/span> &lt;span style="color:#f92672">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">do&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> echo &lt;span style="color:#e6db74">&amp;#34;What is your favorite Linux distribution?&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> echo &lt;span style="color:#e6db74">&amp;#34;1 - Arch&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> echo &lt;span style="color:#e6db74">&amp;#34;2 - CentOS&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> echo &lt;span style="color:#e6db74">&amp;#34;3 - Debian&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> echo &lt;span style="color:#e6db74">&amp;#34;4 - Mint&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> echo &lt;span style="color:#e6db74">&amp;#34;5 - Something else..&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> echo &lt;span style="color:#e6db74">&amp;#34;6 - exit&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> read distro;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">case&lt;/span> $distro in 
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 1&lt;span style="color:#f92672">)&lt;/span> echo &lt;span style="color:#e6db74">&amp;#34;Arch is xxx&amp;#34;&lt;/span>;;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 2&lt;span style="color:#f92672">)&lt;/span> echo &lt;span style="color:#e6db74">&amp;#34;CentOS is xbxxx&amp;#34;&lt;/span>;;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 3&lt;span style="color:#f92672">)&lt;/span> echo &lt;span style="color:#e6db74">&amp;#34;Debian is bbbxx&amp;#34;&lt;/span>;;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 4&lt;span style="color:#f92672">)&lt;/span> echo &lt;span style="color:#e6db74">&amp;#34;Mint is xxxxsss&amp;#34;&lt;/span>;;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 5&lt;span style="color:#f92672">)&lt;/span> echo &lt;span style="color:#e6db74">&amp;#34;Something els.xxxxx&amp;#34;&lt;/span>;;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 6&lt;span style="color:#f92672">)&lt;/span> finished&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">1&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> echo &lt;span style="color:#e6db74">&amp;#34;now will exit&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ;;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> *&lt;span style="color:#f92672">)&lt;/span> echo &lt;span style="color:#e6db74">&amp;#34;you didn&amp;#39;t enter an xxxx choice.&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">esac&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">done&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>echo &lt;span style="color:#e6db74">&amp;#34;Thanks for using this script.&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="脚本执行">
+ 脚本执行
+ &lt;a class="anchor" href="#%e8%84%9a%e6%9c%ac%e6%89%a7%e8%a1%8c">#&lt;/a>
+&lt;/h2>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>╭─ ~/shellTest ly@vmmin 22:32:11
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>╰─❯ ./13myscript_cls.sh 
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>What is your favorite Linux distribution?
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">1&lt;/span> - Arch
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">2&lt;/span> - CentOS
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">3&lt;/span> - Debian
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">4&lt;/span> - Mint
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">5&lt;/span> - Something &lt;span style="color:#66d9ef">else&lt;/span>..
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">6&lt;/span> - exit
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">3&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Debian is bbbxx
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>What is your favorite Linux distribution?
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">1&lt;/span> - Arch
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">2&lt;/span> - CentOS
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">3&lt;/span> - Debian
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">4&lt;/span> - Mint
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">5&lt;/span> - Something &lt;span style="color:#66d9ef">else&lt;/span>..
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">6&lt;/span> - exit
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>u
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>you didn&lt;span style="color:#960050;background-color:#1e0010">&amp;#39;&lt;/span>t enter an xxxx choice.
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>What is your favorite Linux distribution?
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">1&lt;/span> - Arch
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">2&lt;/span> - CentOS
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">3&lt;/span> - Debian
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">4&lt;/span> - Mint
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">5&lt;/span> - Something &lt;span style="color:#66d9ef">else&lt;/span>..
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">6&lt;/span> - exit
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">6&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>now will exit
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Thanks &lt;span style="color:#66d9ef">for&lt;/span> using this script. 
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h1 id="schedulejobs">
+ ScheduleJobs
+ &lt;a class="anchor" href="#schedulejobs">#&lt;/a>
+&lt;/h1>
+&lt;h2 id="作用">
+ 作用
+ &lt;a class="anchor" href="#%e4%bd%9c%e7%94%a8">#&lt;/a>
+&lt;/h2>
+&lt;p>脚本在特定时间运行&lt;/p></description></item><item><title>11DataStreams</title><link>https://lwmfjc.github.io/zh/docs/study/Linux/SHELLlearnLinuxTV_/11DataStreams/</link><pubDate>Mon, 23 Dec 2024 12:12:45 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/study/Linux/SHELLlearnLinuxTV_/11DataStreams/</guid><description>&lt;blockquote>
 &lt;p>&lt;strong>下面的输出中，涉及到标准输出的，有十几行的那些，只列举了其中四五行&lt;/strong>&lt;/p>
 &lt;/blockquote>
 &lt;h1 id="概念">
