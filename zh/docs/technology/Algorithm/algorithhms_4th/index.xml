@@ -1,0 +1,1560 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>_算法(第四版)_ on 随记</title><link>https://lwmfjc.github.io/zh/docs/technology/Algorithm/algorithhms_4th/</link><description>Recent content in _算法(第四版)_ on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Sun, 12 Jun 2022 22:09:27 +0000</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/docs/technology/Algorithm/algorithhms_4th/index.xml" rel="self" type="application/rss+xml"/><item><title>算法红皮书 3.2.1</title><link>https://lwmfjc.github.io/zh/docs/technology/Algorithm/algorithhms_4th/3.2.1/</link><pubDate>Sun, 12 Jun 2022 22:09:27 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Algorithm/algorithhms_4th/3.2.1/</guid><description>&lt;h2 id="二叉查找树">
+ 二叉查找树
+ &lt;a class="anchor" href="#%e4%ba%8c%e5%8f%89%e6%9f%a5%e6%89%be%e6%a0%91">#&lt;/a>
+&lt;/h2>
+&lt;ul>
+&lt;li>
+&lt;p>使用每个结点含有两个链接（链表中每个结点只含有一个链接）的二叉查找树来高效地实现符号表&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>该数据结构由结点组成，结点包含的链接可以为空(null)或者指向其他结点&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;blockquote>
+&lt;p>一棵二叉查找树（BST）是一棵二叉树，其中每个结点都含有一个Comparable 的键（以
+及相关联的值）且每个结点的键都大于其左子树中的任意结点的键而小于右子树的任意结点的键。&lt;/p>
+&lt;/blockquote>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;img src="img/ly-20241212142101353.png" alt="ly-20241212142101353" />&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="基本实现">
+ 基本实现
+ &lt;a class="anchor" href="#%e5%9f%ba%e6%9c%ac%e5%ae%9e%e7%8e%b0">#&lt;/a>
+&lt;/h3>
+&lt;ul>
+&lt;li>
+&lt;p>数据表示&lt;/p>
+&lt;ul>
+&lt;li>每个结点都含有一个键、一个值、一条左链接、一条右链接和一个结点计数器
+左链接指向一棵由小于该结点的所有键组成的二叉查找树，右链接指向一棵由大于该节点的所有键组成的二叉查找树，变量N给出了以该结点为根的子树的结点总数&lt;/li>
+&lt;li>对于任意节点总是成立
+size(x)=size(x.left)+size(x.right)+1&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>多棵二叉查找树表示同一组有序的键来实现构建和使用二叉查找树的高校算法
+&lt;img src="img/ly-20241212142101579.png" alt="ly-20241212142101579" />&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>查找&lt;/p>
+&lt;ul>
+&lt;li>在符号表中查找一个键可能得到两种结果：如果含有该键的结点存在表中，我们的查找就命中了，然后返回值；否则查找未命中（返回null)&lt;/li>
+&lt;li>递归：如果树是空的，则查找未命中；如果被查找的键和根节点的键相等，查找命中，否则在适当的子树中查找：如果被查找的键较小就选择左子树，否则选择右子树&lt;/li>
+&lt;li>下面的get()方法，第一个参数是一个结点（子树根节点），第二个参数是被查找的键，代码会保证只有该结点所表示的子树才会含有和被查找的键相等的结点&lt;/li>
+&lt;li>从根结点开始，在每个结点中查找的进程都会递归地在它的一个子结点上展开，因此一次查找也就定义了树的一条路径。对于命中的查找，路径在含有被查找的键的结点处结束。对于未命中的查找，路径的终点是一个空链接
+&lt;img src="img/ly-20241212142101684.png" alt="ly-20241212142101684" />&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>基于二叉查找树的符号表&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">BST&lt;/span>&lt;span style="color:#f92672">&amp;lt;&lt;/span>Key &lt;span style="color:#66d9ef">extends&lt;/span> Comparable&lt;span style="color:#f92672">&amp;lt;&lt;/span>Key&lt;span style="color:#f92672">&amp;gt;&lt;/span>, Value&lt;span style="color:#f92672">&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">private&lt;/span> Node root;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">// 二叉查找树的根结点&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">private&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">Node&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">private&lt;/span> Key key;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">// 键&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">private&lt;/span> Value val;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">// 值&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">private&lt;/span> Node left, right;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">// 指向子树的链接&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">private&lt;/span> &lt;span style="color:#66d9ef">int&lt;/span> N;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">// 以该结点为根的子树中的结点总数&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#a6e22e">Node&lt;/span>(Key key, Value val, &lt;span style="color:#66d9ef">int&lt;/span> N)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#66d9ef">this&lt;/span>.&lt;span style="color:#a6e22e">key&lt;/span> &lt;span style="color:#f92672">=&lt;/span> key;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#66d9ef">this&lt;/span>.&lt;span style="color:#a6e22e">val&lt;/span> &lt;span style="color:#f92672">=&lt;/span> val;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#66d9ef">this&lt;/span>.&lt;span style="color:#a6e22e">N&lt;/span> &lt;span style="color:#f92672">=&lt;/span> N;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">size&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">return&lt;/span> size(root);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">private&lt;/span> &lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">size&lt;/span>(Node x)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">if&lt;/span> (x &lt;span style="color:#f92672">==&lt;/span> &lt;span style="color:#66d9ef">null&lt;/span>) &lt;span style="color:#66d9ef">return&lt;/span> 0; &lt;span style="color:#66d9ef">else&lt;/span> &lt;span style="color:#66d9ef">return&lt;/span> x.&lt;span style="color:#a6e22e">N&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">public&lt;/span> Value &lt;span style="color:#a6e22e">get&lt;/span>(Key key)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">// 请见算法3.3（续1）&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">put&lt;/span>(Key key, Value val)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">// 请见算法3.3（续1）&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">// max()、min()、floor()、ceiling()方法请见算法3.3（续2）&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">// select()、rank()方法请见算法3.3（续3）&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">// delete()、deleteMin()、deleteMax()方法请见算法3.3（续4）&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">// keys()方法请见算法3.3（续5）&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;ul>
+&lt;li>每个Node 对象都是一棵含有N 个结点的子树的根结点，它的左链接指向一棵由小于该结点的所有键组成的二叉查找树，右链接指向一棵由大于该结点的所有键组成的二叉查找
+树。root 变量指向二叉查找树的根结点Node 对象（这棵树包含了符号表中的所有键值对）&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>二叉查找树的查找和排序方法的实现&lt;/p></description></item><item><title>算法红皮书 3.1.1-3.1.7</title><link>https://lwmfjc.github.io/zh/docs/technology/Algorithm/algorithhms_4th/3.1.1-3.1.7/</link><pubDate>Tue, 31 May 2022 23:52:57 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Algorithm/algorithhms_4th/3.1.1-3.1.7/</guid><description>&lt;h1 id="查找">
+ 查找
+ &lt;a class="anchor" href="#%e6%9f%a5%e6%89%be">#&lt;/a>
+&lt;/h1>
+&lt;ul>
+&lt;li>
+&lt;p>经典查找算法&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>用&lt;strong>符号表&lt;/strong>这个词来描述抽象的表格，将信息（值）存储在其中，然后按照指定的&lt;strong>键&lt;/strong>来获取这些信息&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>符号表也被称为&lt;strong>字典&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>在英语字典里，键就是单词，值就是单词对应的定义、发音和词源&lt;/li>
+&lt;li>符号表有时又叫索引&lt;/li>
+&lt;li>在一本书的索引中，键就是术语，而值就是书中该术语出现的所有页码&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>下面学习三种经典的数据类型：二叉查找树、红黑树和散列表&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h2 id="符号表">
+ 符号表
+ &lt;a class="anchor" href="#%e7%ac%a6%e5%8f%b7%e8%a1%a8">#&lt;/a>
+&lt;/h2>
+&lt;ul>
+&lt;li>
+&lt;p>符号表最主要的目的是将&lt;strong>键&lt;/strong>和&lt;strong>值&lt;/strong>联系起来&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>用例能够将一个键值对插入符号表并希望在之后能够从符号表的所有键值对中按照键直接找到相对应的值&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;blockquote>
+&lt;p>符号表是一种存储键值对的数据结构，支持两种操作：&lt;strong>插入&lt;/strong>(put)，即将一组新的键值对存入表中；查找(get)，即根据给定的键得到相应的值&lt;/p>
+&lt;/blockquote>
+&lt;/li>
+&lt;li>
+&lt;p>典型的符号表应用
+&lt;img src="img/ly-20241212142100034.png" alt="ly-20241212142100034" />&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="api">
+ API
+ &lt;a class="anchor" href="#api">#&lt;/a>
+&lt;/h3>
+&lt;ul>
+&lt;li>
+&lt;p>符号表是一种&lt;strong>典型的数据类型&lt;/strong> ：代表着一组定义清晰的值及相应的操作。使用应用程序编程接口（API）来精确地定义这些操作
+一种简单的泛型符号表API ST(Symbol Table)
+&lt;img src="img/ly-20241212142100261.png" alt="ly-20241212142100261" />&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>泛型
+对于符号表，我们通过明确地指定查找时键和值的类型来区分它们的不同角色【key和value】&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>重复的键&lt;/p>
+&lt;ul>
+&lt;li>这里假设每个键只对应着一个值（表中不允许重复值）&lt;/li>
+&lt;li>当用例代码向表中存入的键值对和表中已有的键（及关联的值）冲突时，新的值会替代旧的值&lt;/li>
+&lt;li>上述定义了关联数组的抽象形式，可以将符号表想象成数组，键即索引，值即数组中的值&lt;/li>
+&lt;li>在一个关联数组中，键可以是任意类型，但我们仍然可以用它来快速访问数组的值&lt;/li>
+&lt;li>非Java使用st[key]来替代st.get(key)，用st[key]=val来替代st.put(key,val)&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>键不能为空&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>值不能为空（因为规定当键不存在时get()返回空）
+当值为空表示删除&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>删除操作&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>延时删除，先将键对应的值置空，之后在某个时刻删除所有值为空的键&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>即时删除，立即从表中删除指定的键
+put实现的开头：&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">if&lt;/span>(val &lt;span style="color:#f92672">==&lt;/span> &lt;span style="color:#66d9ef">null&lt;/span>){
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> delete(key);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>便捷方法
+&lt;img src="img/ly-20241212142100362.png" alt="ly-20241212142100362" />&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>迭代
+在API第一行加上&lt;code>implements Iterable&amp;lt;Key&amp;gt;&lt;/code> ，所有实现都包含iterator()方法来实现hasNext()和next()方法的迭代器；这里采用另一种方式：定义keys返回一个&lt;code>Iterable&amp;lt;Key&amp;gt;&lt;/code>对象以方便便利所有的键，且允许遍历一部分&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>键的等价性
+自定义的键需要重写equals()方法；且最好使用不可变数据类型作为键&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="有序符号表">
+ 有序符号表
+ &lt;a class="anchor" href="#%e6%9c%89%e5%ba%8f%e7%ac%a6%e5%8f%b7%e8%a1%a8">#&lt;/a>
+&lt;/h3>
+&lt;ul>
+&lt;li>一种有序的泛型符号表的API
+&lt;img src="img/ly-20241212142100464.png" alt="ly-20241212142100464" />&lt;/li>
+&lt;li>最大值和最小值、向下取整和向上取整、排名和选择&lt;/li>
+&lt;li>对于0到size()-1的所有i都有i==rank(select(i))，且所有的键都满足key == select(rank(key))&lt;/li>
+&lt;li>范围查找&lt;/li>
+&lt;li>例外情况
+当一个方法需要返回一个键但表中没有合适的键可以返回时，我们约定抛出一个异常&lt;/li>
+&lt;li>有序符号表中冗余有序性方法的默认实现
+&lt;img src="img/ly-20241212142100610.png" alt="ly-20241212142100610" />&lt;/li>
+&lt;li>所有Comparable类型中compareTo()方法和equals()方法的一致性&lt;/li>
+&lt;li>★★成本模型
+在学习符号表的实现时，我们会统计&lt;strong>比较的次数&lt;/strong>（等价性测试或是键的相互比较），在内循环**不进行比较（极少）**的情况下，我们会统计数组的访问次数&lt;/li>
+&lt;/ul>
+&lt;h3 id="用例举例">
+ 用例举例
+ &lt;a class="anchor" href="#%e7%94%a8%e4%be%8b%e4%b8%be%e4%be%8b">#&lt;/a>
+&lt;/h3>
+&lt;p>如何使用&lt;/p></description></item><item><title>算法红皮书 2.5</title><link>https://lwmfjc.github.io/zh/docs/technology/Algorithm/algorithhms_4th/2.5/</link><pubDate>Sun, 29 May 2022 22:20:39 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Algorithm/algorithhms_4th/2.5/</guid><description>&lt;ul>
+&lt;li>排序如此有用的原因是，在有序的数组中查找一个元素，要比在一个无序的数组中查找简单得多&lt;/li>
+&lt;li>通用排序算法是最重要的&lt;/li>
+&lt;li>算法思想虽然简单，但是适用领域广泛&lt;/li>
+&lt;/ul>
+&lt;h2 id="将各种数据排序">
+ 将各种数据排序
+ &lt;a class="anchor" href="#%e5%b0%86%e5%90%84%e7%a7%8d%e6%95%b0%e6%8d%ae%e6%8e%92%e5%ba%8f">#&lt;/a>
+&lt;/h2>
+&lt;ul>
+&lt;li>
+&lt;p>Java的约定使得我们能够利用Java的回调机制将任意实现Comparable接口的数据类型排序&lt;/p>
+&lt;ul>
+&lt;li>我们的代码直接能够将String、Integer、Double 和一些其他例如File 和URL 类型的数组排序，因为它们都实现了Comparable 接口&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>交易事务
+商业数据的处理，设想一家互联网商业公司为每笔交易记录都保存了所有的相关信息&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">compareTo&lt;/span>(Transaction that)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#66d9ef">this&lt;/span>.&lt;span style="color:#a6e22e">when&lt;/span>.&lt;span style="color:#a6e22e">compareTo&lt;/span>(that.&lt;span style="color:#a6e22e">when&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>指针排序
+我们使用的方法在经典教材中被称为&lt;strong>指针排序&lt;/strong>，因为我们只处理元素的引用而不移动数据本身&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>不可变的键
+用不可变的数据类型作为键，比如String、Integer、Double和File等&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>廉价的交换&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>使用引用的另一个好处是不必移动整个元素对于几乎任意大小的元素，使用引用使得在一般情况下交换的成本和比较的成本几乎相同（代价是需要额外的空间存储这些引用）&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>研究将数字排序的算法性能的一种方法就是观察其所需的比较和交换总数，因为这里隐式地假设了比较和交换的成本是相同的&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>多种排序方法&lt;/p>
+&lt;ul>
+&lt;li>根据情况将一组对象按照不同的方式排序。Java 的Comparator 接口允许我们在一个类之中实现多种排序方法&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>多键数组&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>一个元素的多种属性都可能被用作排序的键&lt;/p>
+&lt;ul>
+&lt;li>我们可以定义多种比较器，要将Transaction 对象的数组按照时间排序可以调用：
+Insertion.sort(a, new Transaction.WhenOrder())
+或者这样来按照金额排序：
+Insertion.sort(a, new Transaction.HowMuchOrder())&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>使用Comparator的插入排序&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">sort&lt;/span>(Object&lt;span style="color:#f92672">[]&lt;/span> a, Comparator c)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">int&lt;/span> N &lt;span style="color:#f92672">=&lt;/span> a.&lt;span style="color:#a6e22e">length&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">for&lt;/span> (&lt;span style="color:#66d9ef">int&lt;/span> i &lt;span style="color:#f92672">=&lt;/span> 1; i &lt;span style="color:#f92672">&amp;lt;&lt;/span> N; i&lt;span style="color:#f92672">++&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">for&lt;/span> (&lt;span style="color:#66d9ef">int&lt;/span> j &lt;span style="color:#f92672">=&lt;/span> i; j &lt;span style="color:#f92672">&amp;gt;&lt;/span> 0 &lt;span style="color:#f92672">&amp;amp;&amp;amp;&lt;/span> less(Comparator, a&lt;span style="color:#f92672">[&lt;/span>j&lt;span style="color:#f92672">]&lt;/span>, a&lt;span style="color:#f92672">[&lt;/span>j&lt;span style="color:#f92672">-&lt;/span>1&lt;span style="color:#f92672">]&lt;/span>); j&lt;span style="color:#f92672">--&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	exch(a, j, j&lt;span style="color:#f92672">-&lt;/span>1);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">private&lt;/span> &lt;span style="color:#66d9ef">static&lt;/span> Boolean &lt;span style="color:#a6e22e">less&lt;/span>(Comparator c, Object v, Object w)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">return&lt;/span> c.&lt;span style="color:#a6e22e">compare&lt;/span>(v, w) &lt;span style="color:#f92672">&amp;lt;&lt;/span> 0;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">private&lt;/span> &lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">exch&lt;/span>(Object&lt;span style="color:#f92672">[]&lt;/span> a, &lt;span style="color:#66d9ef">int&lt;/span> i, &lt;span style="color:#66d9ef">int&lt;/span> j)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	Object t &lt;span style="color:#f92672">=&lt;/span> a&lt;span style="color:#f92672">[&lt;/span>i&lt;span style="color:#f92672">]&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	a&lt;span style="color:#f92672">[&lt;/span>i&lt;span style="color:#f92672">]&lt;/span> &lt;span style="color:#f92672">=&lt;/span> a&lt;span style="color:#f92672">[&lt;/span>j&lt;span style="color:#f92672">]&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	a&lt;span style="color:#f92672">[&lt;/span>j&lt;span style="color:#f92672">]&lt;/span> &lt;span style="color:#f92672">=&lt;/span> t;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>使用比较器实现优先队列&lt;/p></description></item><item><title>算法红皮书 2.4</title><link>https://lwmfjc.github.io/zh/docs/technology/Algorithm/algorithhms_4th/2.4/</link><pubDate>Fri, 27 May 2022 22:43:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Algorithm/algorithhms_4th/2.4/</guid><description>&lt;h1 id="优先队列">
+ 优先队列
+ &lt;a class="anchor" href="#%e4%bc%98%e5%85%88%e9%98%9f%e5%88%97">#&lt;/a>
+&lt;/h1>
+&lt;ul>
+&lt;li>有些情况下，不需要要求处理的元素全部有序，只要求每次都处理键值最大的元素，然后再收集更多的元素，然后再处理键值最大的元素&lt;/li>
+&lt;li>需要一种数据结构，支持操作：删除最大元素和插入元素，这种数据类型叫做优先队列&lt;/li>
+&lt;li>优先队列的基本表现形式：其一或两种操作都能在线性时间内完成&lt;/li>
+&lt;li>基于&lt;strong>二叉堆数据结构&lt;/strong>的优先队列，用数组保存元素并按照一定条件排序，以实现高效的删除最大元素和插入元素&lt;/li>
+&lt;/ul>
+&lt;h2 id="api">
+ API
+ &lt;a class="anchor" href="#api">#&lt;/a>
+&lt;/h2>
+&lt;ul>
+&lt;li>
+&lt;p>抽象数据类型，最重要的操作是删除最大元素和插入元素 delMax()和insert()&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>用“最大元素”代替“最大键值”或是“键值最大的元素”&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>泛型优先队列的API
+&lt;img src="img/ly-20241212142058095.png" alt="ly-20241212142058095" />&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>优先队列的调用示例
+从N各输入中找到最大的M各元素所需成本
+&lt;img src="img/ly-20241212142058324.png" alt="ly-20241212142058324" />&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>优先队列的用例
+pq里面最多放5个，当大于5个的时候，就从中剔除1个&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">TopM&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>(String&lt;span style="color:#f92672">[]&lt;/span> args)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">// 打印输入流中最大的M行&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">int&lt;/span> M &lt;span style="color:#f92672">=&lt;/span> Integer.&lt;span style="color:#a6e22e">parseint&lt;/span>(args&lt;span style="color:#f92672">[&lt;/span>0&lt;span style="color:#f92672">]&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		MinPQ&lt;span style="color:#f92672">&amp;lt;&lt;/span>Transaction&lt;span style="color:#f92672">&amp;gt;&lt;/span> pq &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> MinPQ&lt;span style="color:#f92672">&amp;lt;&lt;/span>Transaction&lt;span style="color:#f92672">&amp;gt;&lt;/span>(M&lt;span style="color:#f92672">+&lt;/span>1);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">while&lt;/span> (StdIn.&lt;span style="color:#a6e22e">hasNextLine&lt;/span>())
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#75715e">// 为下一行输入创建一个元素并放入优先队列中&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			pq.&lt;span style="color:#a6e22e">insert&lt;/span>(&lt;span style="color:#66d9ef">new&lt;/span> Transaction(StdIn.&lt;span style="color:#a6e22e">readLine&lt;/span>()));
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#66d9ef">if&lt;/span> (pq.&lt;span style="color:#a6e22e">size&lt;/span>() &lt;span style="color:#f92672">&amp;gt;&lt;/span> M)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			 pq.&lt;span style="color:#a6e22e">delMin&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#75715e">// 如果优先队列中存在M+1个元素则删除其中最小的元素&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">// 最大的M个元素都在优先队列中&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		Stack&lt;span style="color:#f92672">&amp;lt;&lt;/span>Transaction&lt;span style="color:#f92672">&amp;gt;&lt;/span> stack &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> Stack&lt;span style="color:#f92672">&amp;lt;&lt;/span>Transaction&lt;span style="color:#f92672">&amp;gt;&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">while&lt;/span> (&lt;span style="color:#f92672">!&lt;/span>pq.&lt;span style="color:#a6e22e">isEmpty&lt;/span>()) stack.&lt;span style="color:#a6e22e">push&lt;/span>(pq.&lt;span style="color:#a6e22e">delMin&lt;/span>());
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">for&lt;/span> (Transaction t : stack) StdOut.&lt;span style="color:#a6e22e">println&lt;/span>(t);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>应用
+&lt;img src="img/ly-20241212142058429.png" alt="ly-20241212142058429" />&lt;/p></description></item><item><title>算法红皮书 2.1.2-2.1.3</title><link>https://lwmfjc.github.io/zh/docs/technology/Algorithm/algorithhms_4th/2.1.2-2.1.3/</link><pubDate>Sat, 23 Apr 2022 15:54:21 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Algorithm/algorithhms_4th/2.1.2-2.1.3/</guid><description>&lt;h1 id="排序">
+ 排序
+ &lt;a class="anchor" href="#%e6%8e%92%e5%ba%8f">#&lt;/a>
+&lt;/h1>
+&lt;h2 id="初级排序算法">
+ 初级排序算法
+ &lt;a class="anchor" href="#%e5%88%9d%e7%ba%a7%e6%8e%92%e5%ba%8f%e7%ae%97%e6%b3%95">#&lt;/a>
+&lt;/h2>
+&lt;h3 id="选择排序">
+ 选择排序
+ &lt;a class="anchor" href="#%e9%80%89%e6%8b%a9%e6%8e%92%e5%ba%8f">#&lt;/a>
+&lt;/h3>
+&lt;ul>
+&lt;li>
+&lt;p>命题A。对于长度为N 的数组，选择排序需要大约 N^2/2 次比较和N 次交换。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>代码&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">Selection&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">sort&lt;/span>(Comparable&lt;span style="color:#f92672">[]&lt;/span> a)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">// 将a[]按升序排列&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">int&lt;/span> N &lt;span style="color:#f92672">=&lt;/span> a.&lt;span style="color:#a6e22e">length&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">// 数组长度&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">for&lt;/span> (&lt;span style="color:#66d9ef">int&lt;/span> i &lt;span style="color:#f92672">=&lt;/span> 0; i &lt;span style="color:#f92672">&amp;lt;&lt;/span> N; i&lt;span style="color:#f92672">++&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#75715e">// 将a[i]和a[i+1..N]中最小的元素交换&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#66d9ef">int&lt;/span> min &lt;span style="color:#f92672">=&lt;/span> i;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#75715e">// 最小元素的索引&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#66d9ef">for&lt;/span> (&lt;span style="color:#66d9ef">int&lt;/span> j &lt;span style="color:#f92672">=&lt;/span> i&lt;span style="color:#f92672">+&lt;/span>1; j &lt;span style="color:#f92672">&amp;lt;&lt;/span> N; j&lt;span style="color:#f92672">++&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#66d9ef">if&lt;/span> (less(a&lt;span style="color:#f92672">[&lt;/span>j&lt;span style="color:#f92672">]&lt;/span>, a&lt;span style="color:#f92672">[&lt;/span>min&lt;span style="color:#f92672">]&lt;/span>)) min &lt;span style="color:#f92672">=&lt;/span> j;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			exch(a, i, min);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">// less()、exch()、isSorted()和main()方法见“排序算法类模板”&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>特点&lt;/p>
+&lt;ul>
+&lt;li>运行时间与输入无关，即输入数据的初始状态（比如是否已排序好等等）不影响排序时间&lt;/li>
+&lt;li>数据移动是最少的（只使用了N次交换，交换次数和数组的大小是线性关系&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="插入排序">
+ 插入排序
+ &lt;a class="anchor" href="#%e6%8f%92%e5%85%a5%e6%8e%92%e5%ba%8f">#&lt;/a>
+&lt;/h3>
+&lt;ul>
+&lt;li>
+&lt;p>命题B。对于随机排列的长度为N 且主键不重复的数组，平均情况下插入排序需要～ N^2/4 次比较以及～ N^2/4 次交换。最坏情况下需要～ N^2/2 次比较和～ N^2/2 次交换，最好情况下需要N-1次比较和0 次交换。&lt;/p></description></item><item><title>算法红皮书 2.1.1</title><link>https://lwmfjc.github.io/zh/docs/technology/Algorithm/algorithhms_4th/2.1.1/</link><pubDate>Wed, 13 Apr 2022 22:43:21 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Algorithm/algorithhms_4th/2.1.1/</guid><description>&lt;h1 id="排序">
+ 排序
+ &lt;a class="anchor" href="#%e6%8e%92%e5%ba%8f">#&lt;/a>
+&lt;/h1>
+&lt;p>排序就是将一组对象按照某种逻辑顺序重新排序的过程&lt;/p>
+&lt;ul>
+&lt;li>对排序算法的分析有助于理解本书中比较算法性能的方法&lt;/li>
+&lt;li>类似技术能解决其他类型问题&lt;/li>
+&lt;li>排序算法常常是我们解决其他问题的第一步&lt;/li>
+&lt;/ul>
+&lt;h2 id="初级排序算法">
+ 初级排序算法
+ &lt;a class="anchor" href="#%e5%88%9d%e7%ba%a7%e6%8e%92%e5%ba%8f%e7%ae%97%e6%b3%95">#&lt;/a>
+&lt;/h2>
+&lt;ul>
+&lt;li>熟悉术语及技巧&lt;/li>
+&lt;li>某些情况下初级算法更有效&lt;/li>
+&lt;li>有助于改进复杂算法的效率&lt;/li>
+&lt;/ul>
+&lt;h3 id="游戏规则">
+ 游戏规则
+ &lt;a class="anchor" href="#%e6%b8%b8%e6%88%8f%e8%a7%84%e5%88%99">#&lt;/a>
+&lt;/h3>
+&lt;ul>
+&lt;li>
+&lt;p>主要关注重新排序&lt;strong>数组元素&lt;/strong>的算法，每个元素都会有一个&lt;strong>主键&lt;/strong>&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>排序后索引较大的主键大于索引较小的主键&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>一般情况下排序算法通过两个方法操作数据，less()进行比较，exch()进行交换&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>排序算法类的模板&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">Example&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">sort&lt;/span>(Comparable&lt;span style="color:#f92672">[]&lt;/span> a)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">/* 请见算法2.1、算法2.2、算法2.3、算法2.4、算法2.5或算法2.7*/&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">private&lt;/span> &lt;span style="color:#66d9ef">static&lt;/span> Boolean &lt;span style="color:#a6e22e">less&lt;/span>(Comparable v, Comparable w)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">return&lt;/span> v.&lt;span style="color:#a6e22e">compareTo&lt;/span>(w) &lt;span style="color:#f92672">&amp;lt;&lt;/span> 0;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">private&lt;/span> &lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">exch&lt;/span>(Comparable&lt;span style="color:#f92672">[]&lt;/span> a, &lt;span style="color:#66d9ef">int&lt;/span> i, &lt;span style="color:#66d9ef">int&lt;/span> j)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		Comparable t &lt;span style="color:#f92672">=&lt;/span> a&lt;span style="color:#f92672">[&lt;/span>i&lt;span style="color:#f92672">]&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		a&lt;span style="color:#f92672">[&lt;/span>i&lt;span style="color:#f92672">]&lt;/span> &lt;span style="color:#f92672">=&lt;/span> a&lt;span style="color:#f92672">[&lt;/span>j&lt;span style="color:#f92672">]&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		a&lt;span style="color:#f92672">[&lt;/span>j&lt;span style="color:#f92672">]&lt;/span> &lt;span style="color:#f92672">=&lt;/span> t;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">private&lt;/span> &lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">show&lt;/span>(Comparable&lt;span style="color:#f92672">[]&lt;/span> a)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">// 在单行中打印数组&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">for&lt;/span> (&lt;span style="color:#66d9ef">int&lt;/span> i &lt;span style="color:#f92672">=&lt;/span> 0; i &lt;span style="color:#f92672">&amp;lt;&lt;/span> a.&lt;span style="color:#a6e22e">length&lt;/span>; i&lt;span style="color:#f92672">++&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		StdOut.&lt;span style="color:#a6e22e">print&lt;/span>(a&lt;span style="color:#f92672">[&lt;/span>i&lt;span style="color:#f92672">]&lt;/span> &lt;span style="color:#f92672">+&lt;/span> &lt;span style="color:#e6db74">&amp;#34; &amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		StdOut.&lt;span style="color:#a6e22e">println&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">static&lt;/span> Boolean &lt;span style="color:#a6e22e">isSorted&lt;/span>(Comparable&lt;span style="color:#f92672">[]&lt;/span> a)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">// 测试数组元素是否有序&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">for&lt;/span> (&lt;span style="color:#66d9ef">int&lt;/span> i &lt;span style="color:#f92672">=&lt;/span> 1; i &lt;span style="color:#f92672">&amp;lt;&lt;/span> a.&lt;span style="color:#a6e22e">length&lt;/span>; i&lt;span style="color:#f92672">++&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">if&lt;/span> (less(a&lt;span style="color:#f92672">[&lt;/span>i&lt;span style="color:#f92672">]&lt;/span>, a&lt;span style="color:#f92672">[&lt;/span>i&lt;span style="color:#f92672">-&lt;/span>1&lt;span style="color:#f92672">]&lt;/span>)) &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#66d9ef">false&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#66d9ef">true&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>(String&lt;span style="color:#f92672">[]&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	args)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">// 从标准输入读取字符串，将它们排序并输出&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		String&lt;span style="color:#f92672">[]&lt;/span> a &lt;span style="color:#f92672">=&lt;/span> In.&lt;span style="color:#a6e22e">readStrings&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		sort(a);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">assert&lt;/span> isSorted(a);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		show(a);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;ul>
+&lt;li>
+&lt;p>使用&lt;/p></description></item><item><title>算法红皮书 1.5.1-1.5.3</title><link>https://lwmfjc.github.io/zh/docs/technology/Algorithm/algorithhms_4th/1.5.1-1.5.3/</link><pubDate>Sat, 09 Apr 2022 08:01:47 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Algorithm/algorithhms_4th/1.5.1-1.5.3/</guid><description>&lt;h2 id="案例研究union-find-算法">
+ 案例研究：union-find 算法
+ &lt;a class="anchor" href="#%e6%a1%88%e4%be%8b%e7%a0%94%e7%a9%b6union-find-%e7%ae%97%e6%b3%95">#&lt;/a>
+&lt;/h2>
+&lt;ul>
+&lt;li>设计和分析算法的基本方法
+&lt;ul>
+&lt;li>优秀的算法能解决实际问题&lt;/li>
+&lt;li>高效的算法也可以很简单&lt;/li>
+&lt;li>理解某个实现的性能特点是一项有趣的挑战&lt;/li>
+&lt;li>在解决同一个问题的多种算法间选择，科学方法是一种重要工具&lt;/li>
+&lt;li>迭代式改进能让算法效率越来越高&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="动态连通性">
+ 动态连通性
+ &lt;a class="anchor" href="#%e5%8a%a8%e6%80%81%e8%bf%9e%e9%80%9a%e6%80%a7">#&lt;/a>
+&lt;/h3>
+&lt;ul>
+&lt;li>从输入中读取整数对p q，如果已知的所有整数对都不能说明p,q相连，就打印出pq&lt;/li>
+&lt;li>网络：整个程序能够判定是否需要在pq之间架设一条新的连接才能进行通信&lt;/li>
+&lt;li>变量名等价性（即指向同一个对象的多个引用）&lt;/li>
+&lt;li>数学集合：在处理一个整数对pq时，我们是在判断它们是否属于相同的集合&lt;/li>
+&lt;li>本节中，将对象称为&lt;strong>触点&lt;/strong>，整数对称为&lt;strong>连接&lt;/strong>，等价类称为&lt;strong>连通分量&lt;/strong>或是&lt;strong>简称分量&lt;/strong>&lt;/li>
+&lt;li>连通性 问题只要求我们的程序能够判别给定的整数对pq是否相连，并没有要求给两者之间的通路上的所有连接&lt;/li>
+&lt;li>union-find算法的API&lt;br>
+&lt;img src="img/ly-20241212142056628.png" alt="ly-20241212142056628" />&lt;/li>
+&lt;li>数据结构和算法的设计影响到算法的效率&lt;/li>
+&lt;/ul>
+&lt;h3 id="实现">
+ 实现
+ &lt;a class="anchor" href="#%e5%ae%9e%e7%8e%b0">#&lt;/a>
+&lt;/h3>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">UF&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">private&lt;/span> &lt;span style="color:#66d9ef">int&lt;/span>&lt;span style="color:#f92672">[]&lt;/span>	id;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">/* 分量id（以触点作为索引） */&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">private&lt;/span> &lt;span style="color:#66d9ef">int&lt;/span>	count;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">/* 分量数量 */&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#a6e22e">UF&lt;/span>( &lt;span style="color:#66d9ef">int&lt;/span> N )
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">/* 初始化分量id数组 */&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		count	&lt;span style="color:#f92672">=&lt;/span> N;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		id	&lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> &lt;span style="color:#66d9ef">int&lt;/span>&lt;span style="color:#f92672">[&lt;/span>N&lt;span style="color:#f92672">]&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">for&lt;/span> ( &lt;span style="color:#66d9ef">int&lt;/span> i &lt;span style="color:#f92672">=&lt;/span> 0; i &lt;span style="color:#f92672">&amp;lt;&lt;/span> N; i&lt;span style="color:#f92672">++&lt;/span> )
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>					id&lt;span style="color:#f92672">[&lt;/span>i&lt;span style="color:#f92672">]&lt;/span> &lt;span style="color:#f92672">=&lt;/span> i;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">count&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">return&lt;/span>(count);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">public&lt;/span> Boolean &lt;span style="color:#a6e22e">connected&lt;/span>( &lt;span style="color:#66d9ef">int&lt;/span> p, &lt;span style="color:#66d9ef">int&lt;/span> q )
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">return&lt;/span>(find( p ) &lt;span style="color:#f92672">==&lt;/span> find( q ) );
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">find&lt;/span>( &lt;span style="color:#66d9ef">int&lt;/span> p )
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">union&lt;/span>( &lt;span style="color:#66d9ef">int&lt;/span> p, &lt;span style="color:#66d9ef">int&lt;/span> q )
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">/* 请见1.5.2.1节用例（quick-find）、1.5.2.3节用例（quick-union）和算法1.5（加权quick-union） */&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>( String&lt;span style="color:#f92672">[]&lt;/span> args )
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">/* 解决由StdIn得到的动态连通性问题 */&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">int&lt;/span>	N	&lt;span style="color:#f92672">=&lt;/span> StdIn.&lt;span style="color:#a6e22e">readint&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">/* 读取触点数量 */&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		UF	uf	&lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> UF( N );
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">/* 初始化N个分量 */&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">while&lt;/span> ( &lt;span style="color:#f92672">!&lt;/span>StdIn.&lt;span style="color:#a6e22e">isEmpty&lt;/span>() )
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>				{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#66d9ef">int&lt;/span>	p	&lt;span style="color:#f92672">=&lt;/span> StdIn.&lt;span style="color:#a6e22e">readint&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#66d9ef">int&lt;/span>	q	&lt;span style="color:#f92672">=&lt;/span> StdIn.&lt;span style="color:#a6e22e">readint&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#75715e">/* 读取整数对 */&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#66d9ef">if&lt;/span> ( uf.&lt;span style="color:#a6e22e">connected&lt;/span>( p, q ) )
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>							&lt;span style="color:#66d9ef">continue&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#75715e">/* 如果已经连通则忽略 */&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			uf.&lt;span style="color:#a6e22e">union&lt;/span>( p, q );
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#75715e">/* 归并分量 */&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			StdOut.&lt;span style="color:#a6e22e">println&lt;/span>( p &lt;span style="color:#f92672">+&lt;/span> &lt;span style="color:#e6db74">&amp;#34; &amp;#34;&lt;/span> &lt;span style="color:#f92672">+&lt;/span> q );
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#75715e">/* 打印连接 */&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		StdOut.&lt;span style="color:#a6e22e">println&lt;/span>( uf.&lt;span style="color:#a6e22e">count&lt;/span>() &lt;span style="color:#f92672">+&lt;/span> &lt;span style="color:#e6db74">&amp;#34;components&amp;#34;&lt;/span> );
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>union-find的成本模型：union-find API的各种算法，统计的是&lt;strong>数组的访问次数&lt;/strong>，不论读写&lt;/p></description></item><item><title>算法红皮书 1.4.1-1.4.10</title><link>https://lwmfjc.github.io/zh/docs/technology/Algorithm/algorithhms_4th/1.4.1-1.4.10/</link><pubDate>Thu, 07 Apr 2022 11:00:21 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Algorithm/algorithhms_4th/1.4.1-1.4.10/</guid><description>&lt;h2 id="算法分析">
+ 算法分析
+ &lt;a class="anchor" href="#%e7%ae%97%e6%b3%95%e5%88%86%e6%9e%90">#&lt;/a>
+&lt;/h2>
+&lt;p>使用&lt;strong>数学分析&lt;/strong>为算法成本建立简洁的模型，并使用实验数据验证这些模型&lt;/p>
+&lt;h3 id="科学方法">
+ 科学方法
+ &lt;a class="anchor" href="#%e7%a7%91%e5%ad%a6%e6%96%b9%e6%b3%95">#&lt;/a>
+&lt;/h3>
+&lt;ul>
+&lt;li>观察、假设、预测、观察并核实预测、反复确认预测和观察&lt;/li>
+&lt;li>原则：实验可重现&lt;/li>
+&lt;/ul>
+&lt;h3 id="观察">
+ 观察
+ &lt;a class="anchor" href="#%e8%a7%82%e5%af%9f">#&lt;/a>
+&lt;/h3>
+&lt;ul>
+&lt;li>
+&lt;p>计算性任务的困难程度可以用&lt;strong>问题的规模&lt;/strong>来衡量&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>问题规模可以是输入的大小或某个命令行参数的值&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>研究问题规模和运行时间的关系&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>使用计时器得到大概的运行时间
+&lt;img src="img/ly-20241212142054451.png" alt="ly-20241212142054451" />&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>典型用例&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>(String&lt;span style="color:#f92672">[]&lt;/span> args) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">int&lt;/span> N &lt;span style="color:#f92672">=&lt;/span> Integer.&lt;span style="color:#a6e22e">parseInt&lt;/span>(args&lt;span style="color:#f92672">[&lt;/span>0&lt;span style="color:#f92672">]&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">int&lt;/span>&lt;span style="color:#f92672">[]&lt;/span> a &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> &lt;span style="color:#66d9ef">int&lt;/span>&lt;span style="color:#f92672">[&lt;/span>N&lt;span style="color:#f92672">]&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">for&lt;/span> (&lt;span style="color:#66d9ef">int&lt;/span> i &lt;span style="color:#f92672">=&lt;/span> 0; i &lt;span style="color:#f92672">&amp;lt;&lt;/span> N; i&lt;span style="color:#f92672">++&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> a&lt;span style="color:#f92672">[&lt;/span>i&lt;span style="color:#f92672">]&lt;/span> &lt;span style="color:#f92672">=&lt;/span> StdRandom.&lt;span style="color:#a6e22e">uniform&lt;/span>(&lt;span style="color:#f92672">-&lt;/span>1000000, 1000000);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> Stopwatch timer &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> Stopwatch();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">int&lt;/span> cnt &lt;span style="color:#f92672">=&lt;/span> ThreeSum.&lt;span style="color:#a6e22e">count&lt;/span>(a);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">double&lt;/span> time &lt;span style="color:#f92672">=&lt;/span> timer.&lt;span style="color:#a6e22e">elapsedTime&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> StdOut.&lt;span style="color:#a6e22e">println&lt;/span>(cnt &lt;span style="color:#f92672">+&lt;/span> &lt;span style="color:#e6db74">&amp;#34; triples &amp;#34;&lt;/span> &lt;span style="color:#f92672">+&lt;/span> time &lt;span style="color:#f92672">+&lt;/span> &lt;span style="color:#e6db74">&amp;#34; seconds&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>使用方法
+&lt;img src="img/ly-20241212142054686.png" alt="ly-20241212142054686" />&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>数据类型的实现&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">Stopwatch&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">private&lt;/span> &lt;span style="color:#66d9ef">final&lt;/span> &lt;span style="color:#66d9ef">long&lt;/span> start;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#a6e22e">Stopwatch&lt;/span>() {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> start &lt;span style="color:#f92672">=&lt;/span> System.&lt;span style="color:#a6e22e">currentTimeMillis&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">double&lt;/span> &lt;span style="color:#a6e22e">elapsedTime&lt;/span>() {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">long&lt;/span> now &lt;span style="color:#f92672">=&lt;/span> System.&lt;span style="color:#a6e22e">currentTimeMillis&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> (now &lt;span style="color:#f92672">-&lt;/span> start) &lt;span style="color:#f92672">/&lt;/span> 1000.&lt;span style="color:#a6e22e">0&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="数学模型">
+ 数学模型
+ &lt;a class="anchor" href="#%e6%95%b0%e5%ad%a6%e6%a8%a1%e5%9e%8b">#&lt;/a>
+&lt;/h3>
+&lt;ul>
+&lt;li>
+&lt;p>程序运行的总时间主要和两点有关：执行每条语句的耗时；执行每条语句的频率&lt;/p></description></item><item><title>算法红皮书1.3.3.1-1.3.4</title><link>https://lwmfjc.github.io/zh/docs/technology/Algorithm/algorithhms_4th/1.3.3.1-1.3.4/</link><pubDate>Wed, 06 Apr 2022 23:00:44 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Algorithm/algorithhms_4th/1.3.3.1-1.3.4/</guid><description>&lt;h2 id="背包队列和栈">
+ 背包、队列和栈
+ &lt;a class="anchor" href="#%e8%83%8c%e5%8c%85%e9%98%9f%e5%88%97%e5%92%8c%e6%a0%88">#&lt;/a>
+&lt;/h2>
+&lt;h3 id="链表">
+ 链表
+ &lt;a class="anchor" href="#%e9%93%be%e8%a1%a8">#&lt;/a>
+&lt;/h3>
+&lt;ul>
+&lt;li>链表是一种递归的数据结构，它或者为空(null)，或者是一个指向一个结点（node）的引用，该节点含有一个泛型的元素和一个指向另一条链表的引用。&lt;/li>
+&lt;/ul>
+&lt;h4 id="结点记录">
+ 结点记录
+ &lt;a class="anchor" href="#%e7%bb%93%e7%82%b9%e8%ae%b0%e5%bd%95">#&lt;/a>
+&lt;/h4>
+&lt;ul>
+&lt;li>
+&lt;p>使用嵌套类定义结点的抽象数据类型&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">private&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">Node&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	Item item;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	Node next;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;ul>
+&lt;li>该类没有其它任何方法，且会在代码中直接引用实例变量，这种类型的变量称为记录&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h4 id="构造链表">
+ 构造链表
+ &lt;a class="anchor" href="#%e6%9e%84%e9%80%a0%e9%93%be%e8%a1%a8">#&lt;/a>
+&lt;/h4>
+&lt;ul>
+&lt;li>需要一个Node类型的变量，保证它的值是null或者指向另一个Node对象的next域指向了另一个链表&lt;/li>
+&lt;li>如下图
+&lt;img src="img/ly-20241212142053630.png" alt="ly-20241212142053630" />&lt;/li>
+&lt;li>链表表示的是一列元素&lt;/li>
+&lt;li>链式结构在本书中的可视化表示
+长方形表示对象；实例变量的值写在长方形中；用指向被引用对象的箭头表示引用关系&lt;/li>
+&lt;li>术语&lt;strong>链接&lt;/strong>表示对结点的引用&lt;/li>
+&lt;/ul>
+&lt;h4 id="在表头插入结点">
+ 在表头插入结点
+ &lt;a class="anchor" href="#%e5%9c%a8%e8%a1%a8%e5%a4%b4%e6%8f%92%e5%85%a5%e7%bb%93%e7%82%b9">#&lt;/a>
+&lt;/h4>
+&lt;ul>
+&lt;li>
+&lt;p>在首结点为first 的给定链表开头插入字符串not，我们先将first 保存在oldfirst 中，
+然后将一个新结点赋予first，并将它的item 域设为not，next 域设为oldfirst&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>时间复杂度为O(1)&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>如图
+&lt;img src="img/ly-20241212142053870.png" alt="ly-20241212142053870" />&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h4 id="从表头删除结点">
+ 从表头删除结点
+ &lt;a class="anchor" href="#%e4%bb%8e%e8%a1%a8%e5%a4%b4%e5%88%a0%e9%99%a4%e7%bb%93%e7%82%b9">#&lt;/a>
+&lt;/h4>
+&lt;ul>
+&lt;li>
+&lt;p>将first指向first.next&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>原先的结点称为孤儿，Java的内存管理系统最终将回收它所占用的内存&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>如图
+&lt;img src="img/ly-20241212142053982.png" alt="ly-20241212142053982" />&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h4 id="在表尾插入结点">
+ 在表尾插入结点
+ &lt;a class="anchor" href="#%e5%9c%a8%e8%a1%a8%e5%b0%be%e6%8f%92%e5%85%a5%e7%bb%93%e7%82%b9">#&lt;/a>
+&lt;/h4>
+&lt;ul>
+&lt;li>
+&lt;p>每个修改链表的操作都需要增加检查是否要修改该变量（以及做出相应修改）的代码&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>例如，当删除链表首结点时可能改变指向链表的尾结点的引用，因为链表中只有一个结点时它既是首结点又是尾结点&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>如图
+&lt;img src="img/ly-20241212142054097.png" alt="ly-20241212142054097" />&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h4 id="其他位置的插入和删除操作">
+ 其他位置的插入和删除操作
+ &lt;a class="anchor" href="#%e5%85%b6%e4%bb%96%e4%bd%8d%e7%bd%ae%e7%9a%84%e6%8f%92%e5%85%a5%e5%92%8c%e5%88%a0%e9%99%a4%e6%93%8d%e4%bd%9c">#&lt;/a>
+&lt;/h4>
+&lt;p>删除指定结点；在指定节点插入新结点&lt;/p>
+&lt;ul>
+&lt;li>需要将链表尾结点的前一个节点中的链接（它指向的是last）值改为null&lt;/li>
+&lt;li>为了找到指向last的结点，需要遍历链表，时间复杂度为O(n)&lt;/li>
+&lt;li>实现任意插入和删除操作的标准解决方案是&lt;strong>双向链表&lt;/strong>&lt;/li>
+&lt;/ul>
+&lt;h4 id="遍历">
+ 遍历
+ &lt;a class="anchor" href="#%e9%81%8d%e5%8e%86">#&lt;/a>
+&lt;/h4>
+&lt;ul>
+&lt;li>
+&lt;p>将x初始化为链表首结点，然后通过x.item访问和x相关联的元素，并将x设为x.next来访问链表中的下一个结点，知道x=null(没有下一个结点了，到达链表结尾)&lt;/p></description></item><item><title>算法红皮书 1.3.1.1-1.3.2.5</title><link>https://lwmfjc.github.io/zh/docs/technology/Algorithm/algorithhms_4th/1.3.1.1-1.3.2.5/</link><pubDate>Tue, 22 Mar 2022 13:51:26 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Algorithm/algorithhms_4th/1.3.1.1-1.3.2.5/</guid><description>&lt;h2 id="背包队列和栈">
+ 背包、队列和栈
+ &lt;a class="anchor" href="#%e8%83%8c%e5%8c%85%e9%98%9f%e5%88%97%e5%92%8c%e6%a0%88">#&lt;/a>
+&lt;/h2>
+&lt;ul>
+&lt;li>数据类型的值就是一组对象的集合，所有操作都是关于添加、删除或是访问集合中的对象&lt;/li>
+&lt;li>本章将学习三种数据类型：背包Bag、队列Queue、栈Stack
+&lt;ul>
+&lt;li>对集合中的对象的表示方式直接影响各种操作的效率&lt;/li>
+&lt;li>介绍泛型和迭代&lt;/li>
+&lt;li>介绍并说明链式数据结构的重要性(链表)&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="api">
+ API
+ &lt;a class="anchor" href="#api">#&lt;/a>
+&lt;/h3>
+&lt;ul>
+&lt;li>
+&lt;p>泛型可迭代的基础集合数据类型的API&lt;/p>
+&lt;ul>
+&lt;li>背包&lt;br>
+&lt;img src="img/ly-20241212142051025.png" alt="ly-20241212142051025" />&lt;/li>
+&lt;li>队列(先进先出FIFO)&lt;br>
+&lt;img src="img/ly-20241212142051259.png" alt="ly-20241212142051259" />&lt;/li>
+&lt;li>下压(后进先出,LIFO)栈
+&lt;img src="img/ly-20241212142051367.png" alt="ly-20241212142051367" />&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>泛型&lt;/p>
+&lt;ul>
+&lt;li>泛型，参数化类型&lt;/li>
+&lt;li>在每份API 中，类名后的&lt;code>&amp;lt;Item&amp;gt; &lt;/code>记号将Item 定义为一个类型参数，它是一个象征性的占位符，表示的是用例将会使用的某种具体数据类型&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>自动装箱&lt;/p>
+&lt;ul>
+&lt;li>用来处理原始类型&lt;/li>
+&lt;li>Boolean、Byte、Character、Double、Float、Integer、Long 和Short 分别对应着boolean、byte、char、double、float、int、long 和short&lt;/li>
+&lt;li>自动将一个原始数据类型转换为一个封装类型称为自动装箱，自动将一个封装类型转换为一个原始数据类型被称为自动拆箱&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>可迭代的集合类型&lt;/p>
+&lt;ul>
+&lt;li>迭代访问集合中的所有元素&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>背包是一种不支持从中删除元素的集合数据类型&amp;ndash;帮助用例收集元素并迭代遍历所有收集到的元素（&lt;strong>无序遍历&lt;/strong>）&lt;/p>
+&lt;ul>
+&lt;li>典型用例，计算标准差&lt;br>
+&lt;img src="./1.3.1.1-1.3.2.5/1648014765406.png" alt="" />&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>先进先出队列&lt;/p>
+&lt;ul>
+&lt;li>是一种基于先进先出(FIFO)策略的集合类型&lt;/li>
+&lt;li>使用队列的主要原因：集合保存元素的同时保存它们的相对顺序&lt;/li>
+&lt;li>如图&lt;br>
+&lt;img src="img/ly-20241212142051478.png" alt="ly-20241212142051478" />&lt;/li>
+&lt;li>Queue用例(先进先出) &lt;br>
+&lt;img src="img/ly-20241212142051591.png" alt="ly-20241212142051591" />&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>下压栈&lt;/p>
+&lt;ul>
+&lt;li>简称栈，是一种基于后进先出LIFO策略的集合类型&lt;/li>
+&lt;li>比如，收邮件等，如图&lt;br>
+&lt;img src="img/ly-20241212142051703.png" alt="ly-20241212142051703" />&lt;/li>
+&lt;li>Stack的用例&lt;br>
+&lt;img src="img/ly-20241212142051815.png" alt="ly-20241212142051815" />&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>用栈解决算数表达式的问题&lt;br>
+（双栈算数表达式求值算法）&lt;br>
+&lt;img src="img/ly-20241212142051919.png" alt="ly-20241212142051919" />&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="集合类数据类型的实现">
+ 集合类数据类型的实现
+ &lt;a class="anchor" href="#%e9%9b%86%e5%90%88%e7%b1%bb%e6%95%b0%e6%8d%ae%e7%b1%bb%e5%9e%8b%e7%9a%84%e5%ae%9e%e7%8e%b0">#&lt;/a>
+&lt;/h3>
+&lt;ul>
+&lt;li>
+&lt;p>定容栈，表示容量固定的字符串栈的抽象数据类型&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>只能处理String值，支持push和pop&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>抽象数据类型&lt;br>
+&lt;img src="img/ly-20241212142052029.png" alt="ly-20241212142052029" />&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>测试用例&lt;/p>
+&lt;p>&lt;img src="img/ly-20241212142052135.png" alt="ly-20241212142052135" />&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>使用方法&lt;br>
+&lt;img src="img/ly-20241212142052243.png" alt="ly-20241212142052243" />&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>数据类型的实现&lt;br>
+&lt;img src="img/ly-20241212142052353.png" alt="ly-20241212142052353" />&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>泛型&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>public class FixedCapacityStack&amp;lt;Item&amp;gt;&lt;/code>&lt;/li>
+&lt;li>由于不允许直接创建泛型数组，所以 &lt;del>a =new Item[cap]&lt;/del> 不允许，应该改为&lt;br>
+a=(Item[])new Object[cap];&lt;/li>
+&lt;li>泛型定容栈的抽象数据类型&lt;br>
+&lt;img src="img/ly-20241212142052474.png" alt="ly-20241212142052474" />&lt;/li>
+&lt;li>测试用例&lt;br>
+&lt;img src="img/ly-20241212142052593.png" alt="ly-20241212142052593" />&lt;/li>
+&lt;li>使用方法&lt;br>
+&lt;img src="img/ly-20241212142052746.png" alt="ly-20241212142052746" />&lt;/li>
+&lt;li>数据类型的实现&lt;br>
+&lt;img src="img/ly-20241212142052865.png" alt="ly-20241212142052865" />&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>调整数组大小&lt;/p></description></item><item><title>算法红皮书 1.2.1-1.2.5</title><link>https://lwmfjc.github.io/zh/docs/technology/Algorithm/algorithhms_4th/1.2.1-1.2.5/</link><pubDate>Tue, 22 Feb 2022 13:49:50 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Algorithm/algorithhms_4th/1.2.1-1.2.5/</guid><description>&lt;h2 id="数据抽象">
+ 数据抽象
+ &lt;a class="anchor" href="#%e6%95%b0%e6%8d%ae%e6%8a%bd%e8%b1%a1">#&lt;/a>
+&lt;/h2>
+&lt;p>&lt;em>&lt;strong>数据类型&lt;/strong>&lt;/em>指的是一组值和一组对这些值的操作的集合&lt;/p>
+&lt;ul>
+&lt;li>定义和使用数据类型的过程，也被称为数据抽象&lt;/li>
+&lt;li>Java编程的基础是使用class关键字构造被称为&lt;em>&lt;strong>引用类型&lt;/strong>&lt;/em>的数据类型，也称面向对象编程&lt;/li>
+&lt;li>定义自己的数据类型来抽象任意对象&lt;/li>
+&lt;li>抽象数据类型（ADT）是一种能够对使用者隐藏数据表示的数据类型&lt;/li>
+&lt;li>抽象数据类型将数据和函数的实现相关联，将数据的表示方式隐藏起来&lt;/li>
+&lt;li>抽象数据类型使用时，关注API描述的操作上而不会去关心数据的表示；实现抽象数据类型时，关注数据本身并将实现对数据的各种操作&lt;/li>
+&lt;li>研究同一个问题的不同算法的主要原因是他们的性能不同&lt;/li>
+&lt;/ul>
+&lt;h3 id="使用抽象数据类型">
+ 使用抽象数据类型
+ &lt;a class="anchor" href="#%e4%bd%bf%e7%94%a8%e6%8a%bd%e8%b1%a1%e6%95%b0%e6%8d%ae%e7%b1%bb%e5%9e%8b">#&lt;/a>
+&lt;/h3>
+&lt;ul>
+&lt;li>使用一种数据类型并不一定非得知道它是如何实现的&lt;/li>
+&lt;li>使用Counter(计数器)的简单数据类型的程序，操作有
+&lt;ul>
+&lt;li>创建对象并初始化为0&lt;/li>
+&lt;li>当前值加1&lt;/li>
+&lt;li>获取当前值&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>场景，用于电子计票&lt;/li>
+&lt;li>抽象数据类型的API(应用程序编程接口)
+&lt;ul>
+&lt;li>API用来说明抽象数据类型的行为&lt;/li>
+&lt;li>将列出所有构造函数和实例方法(即操作)&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>计算器的API&lt;br>
+&lt;img src="img/ly-20241212142048962.png" alt="" />&lt;/li>
+&lt;li>继承的方法
+&lt;ul>
+&lt;li>所有数据类型都会继承toString()方法&lt;/li>
+&lt;li>Java会在用+运算符将任意数据类型的值和String值连接时调用toString()&lt;/li>
+&lt;li>默认实现：返回该数据类型值的内存地址&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>用例代码
+&lt;ul>
+&lt;li>可以在用例代码中，声明变量、创建对象来保存数据类型的值并允许通过实例方法来操作它们&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>对象
+&lt;ul>
+&lt;li>对象是能够承载数据类型的值的实体&lt;/li>
+&lt;li>对象三大特性：状态、标识和行为
+&lt;ul>
+&lt;li>状态：数据类型中的值&lt;/li>
+&lt;li>标识：在内存中的地址&lt;/li>
+&lt;li>行为：数据类型的操作&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>Java使用&amp;quot;引用类型&amp;quot;和原始数据类型区别&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>创建对象
+&lt;ul>
+&lt;li>每种数据类型中的值都存储于一个对象中&lt;/li>
+&lt;li>构造函数总是返回他的数据类型的对象的引用&lt;/li>
+&lt;li>使用new()，会为新的对象分配内存空间，调用构造函数初始化对象中的值，返回该对象的一个引用&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>抽象数据类型向用例隐藏了值的表示细节&lt;/li>
+&lt;li>实例方法：参数按值传递&lt;/li>
+&lt;li>方法每次触发都和一个对象相关&lt;/li>
+&lt;li>静态方法的主要作用是实现函数；非静态(实例)方法的主要作用是实现数据类型的操作&lt;/li>
+&lt;li>使用对象&lt;br>
+开发某种数据类型的用例
+&lt;ul>
+&lt;li>声明该类型的变量，以引用对象&lt;/li>
+&lt;li>使用new触发能够创建该类型的对象的一个构造函数&lt;/li>
+&lt;li>使用变量名调用实例方法&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>赋值语句(对象赋值)
+&lt;ul>
+&lt;li>别名：两个变量同时指向同一个对象&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>将对象作为参数
+&lt;ul>
+&lt;li>Java将参数值的一个副本从调用端传递给了方法，这种方式称为按值传递&lt;/li>
+&lt;li>当使用引用类型作为参数时我们创建的都是别名，这种约定会传递引用的值(复制引用)，也就是传递对象的引用&lt;/li>
+&lt;li>虽然无法改变原始的引用(将原变量指向另一个Counter对象)，但能够改变该对象的值&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>将对象作为返回值
+&lt;ul>
+&lt;li>由于Java只由一个返回值，有了对象实际上就能返回多个值&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>数组也是对象
+&lt;ul>
+&lt;li>将数组传递给一个方法或是将一个数组变量放在赋值语句的右侧时，我们都是在创建数组引用的一个副本，而非数组的副本&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>对象的数组&lt;br>
+创建一个对象的数组
+&lt;ul>
+&lt;li>使用方括号语法调用数组的构造函数创建数组&lt;/li>
+&lt;li>对于每个数组元素调用它的构造函数创建相应的对象&lt;br>
+如下图&lt;br>
+&lt;img src="img/ly-20241212142049192.png" alt="" />&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>运用数据抽象的思想编写代码(定义和使用数据类型，将数据类型的值封装在对象中)的方式称为面向对象编程&lt;/li>
+&lt;li>总结
+&lt;ul>
+&lt;li>数据类型指的是一组值和一组对值的操作的集合&lt;/li>
+&lt;li>我们会在数据类型的Java类中编写用理&lt;/li>
+&lt;li>对象是能够存储任意该数据类型的值的实体&lt;/li>
+&lt;li>对象有三个关键性质：状态、标识和行为&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="抽象数据类型举例">
+ 抽象数据类型举例
+ &lt;a class="anchor" href="#%e6%8a%bd%e8%b1%a1%e6%95%b0%e6%8d%ae%e7%b1%bb%e5%9e%8b%e4%b8%be%e4%be%8b">#&lt;/a>
+&lt;/h3>
+&lt;ul>
+&lt;li>本书中将会用到或开发的所有数据类型
+&lt;ul>
+&lt;li>java.lang.*&lt;/li>
+&lt;li>Java标准库中的抽象数据类型，需要import，比如java.io、java.net等&lt;/li>
+&lt;li>I/O处理嘞抽象数据类型,StdIn和StdOut&lt;/li>
+&lt;li>面向数据类抽象数据类型，计算机和和信息处理&lt;/li>
+&lt;li>集合类抽象数据类型，主要是为了简化对同一类型的一组数据的操作，包括Bag、Stack和Queue，PQ(优先队列)、ST(符号表)、SET(集合)&lt;/li>
+&lt;li>面向操作的抽象数据类型(用来分析各种算法)&lt;/li>
+&lt;li>图算法相关的抽象数据类型，用来封装各种图的表示的面向数据的抽象数据类型，和一些提供图的处理算法的面向操作的抽象数据类型&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>几何对象(画图(图形)的)[跳过]&lt;/li>
+&lt;li>信息处理
+&lt;ul>
+&lt;li>抽象数据类型是组织信息的一种自然方式&lt;/li>
+&lt;li>定义和真实世界中的物体相对应的对象&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>字符串
+&lt;ul>
+&lt;li>java的String&lt;/li>
+&lt;li>一个String值是一串可以由索引访问的char值&lt;/li>
+&lt;li>有了String类型可以写出清晰干净的用例代码而无需关心字符串的表示方式&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="抽象数据类型的实现">
+ 抽象数据类型的实现
+ &lt;a class="anchor" href="#%e6%8a%bd%e8%b1%a1%e6%95%b0%e6%8d%ae%e7%b1%bb%e5%9e%8b%e7%9a%84%e5%ae%9e%e7%8e%b0">#&lt;/a>
+&lt;/h3>
+&lt;ul>
+&lt;li>使用Java的类(class)实现抽象数据类型并将所有代码放入一个和类名相同并带有.java扩展名的文件&lt;/li>
+&lt;li>如下图&lt;br>
+&lt;img src="img/ly-20241212142049302.png" alt="" />&lt;/li>
+&lt;li>实例变量&lt;br>
+用来定义数据类型的值(每个对象的状态)&lt;/li>
+&lt;li>构造函数
+&lt;ul>
+&lt;li>每个Java类都至少有一个构造函数以创建一个对象的标识&lt;/li>
+&lt;li>每个构造函数将创建一个对象并向调用者返回一个该对象的引用&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>实例方法
+&lt;ul>
+&lt;li>如图&lt;br>
+&lt;img src="img/ly-20241212142049410.png" alt="" />&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>作用域
+&lt;ul>
+&lt;li>参数变量、局部变量、实例变量&lt;/li>
+&lt;li>范围(如图)&lt;br>
+&lt;img src="img/ly-20241212142049527.png" alt="" />&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>API、用例与实现
+&lt;ul>
+&lt;li>我们要学习的每个抽象数据类型的实现，都会是一个含有若干私有实例变量、构造函数、实例方法和一个测试用例的Java类&lt;/li>
+&lt;li>用例和实现分离(一般将用例独立成含有静态方法main()的类)&lt;/li>
+&lt;li>做法如下
+&lt;ul>
+&lt;li>定义一份API，APi的作用是将使用和实现分离，以实现模块化编程&lt;/li>
+&lt;li>用一个Java类&lt;strong>实现&lt;/strong>API的定义&lt;/li>
+&lt;li>实现多个测试用例来验证前两步做出的设计决定&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>例子如下
+&lt;ul>
+&lt;li>API&lt;br>
+&lt;img src="img/ly-20241212142049645.png" alt="" />&lt;/li>
+&lt;li>典型用例&lt;br>
+&lt;img src="img/ly-20241212142049754.png" alt="" />&lt;/li>
+&lt;li>数据类型的实现&lt;br>
+&lt;img src="img/ly-20241212142049860.png" alt="" />&lt;/li>
+&lt;li>使用方法(执行程序)&lt;br>
+&lt;img src="img/ly-20241212142049969.png" alt="" />&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="更多抽象数据类型的实现">
+ 更多抽象数据类型的实现
+ &lt;a class="anchor" href="#%e6%9b%b4%e5%a4%9a%e6%8a%bd%e8%b1%a1%e6%95%b0%e6%8d%ae%e7%b1%bb%e5%9e%8b%e7%9a%84%e5%ae%9e%e7%8e%b0">#&lt;/a>
+&lt;/h3>
+&lt;ul>
+&lt;li>日期
+&lt;ul>
+&lt;li>两种实现方式&lt;br>
+&lt;img src="img/ly-20241212142050078.png" alt="" />&lt;/li>
+&lt;li>本书反复出现的主题，即理解各种实现对空间和时间的需求&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>维护多个实现
+&lt;ul>
+&lt;li>比较同一份API的两种实现在同一个用例中的性能表现，需要下面非正式的命名约定
+&lt;ul>
+&lt;li>使用前缀的描述性修饰符，比如BasicDate和SmallDate,以及是否合法的SmartDate&lt;/li>
+&lt;li>适合大多数用力的需求的实现，比如Date&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>累加器&lt;/li>
+&lt;/ul>
+&lt;h3 id="数据类型的设计">
+ 数据类型的设计
+ &lt;a class="anchor" href="#%e6%95%b0%e6%8d%ae%e7%b1%bb%e5%9e%8b%e7%9a%84%e8%ae%be%e8%ae%a1">#&lt;/a>
+&lt;/h3>
+&lt;ul>
+&lt;li>抽象数据类型是一种向用例隐藏内部表示的数据类型
+&lt;ul>
+&lt;li>封装(数据封装)&lt;/li>
+&lt;li>设计APi&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>算法与抽象数据类型
+&lt;ul>
+&lt;li>能够准确地说明一个算法的目的及其他程序应该如何使用该算法&lt;/li>
+&lt;li>每个Java程序都是一组静态方法和(或)一种数据类型的实现的集合&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>本书中关注的是抽象数据类型的实现中的操作和向用例隐藏其中的数据表示&lt;/li>
+&lt;li>例子，将二分法封装
+&lt;ul>
+&lt;li>API&lt;br>
+&lt;img src="img/ly-20241212142050191.png" alt="" />&lt;/li>
+&lt;li>典型的用例&lt;br>
+&lt;img src="img/ly-20241212142050300.png" alt="" />&lt;/li>
+&lt;li>数据类型的实现&lt;br>
+&lt;img src="img/ly-20241212142050413.png" alt="" />&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>接口继承
+&lt;ul>
+&lt;li>Java语言为定义对象之间的关系提供了支持，称为接口&lt;/li>
+&lt;li>接口继承使得我们的程序能够通过调用接口中的方法操作实现该接口的任意类型的对象&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>本书中使用到的接口&lt;br>
+&lt;img src="img/ly-20241212142050528.png" alt="" />&lt;/li>
+&lt;li>继承
+&lt;ul>
+&lt;li>由Object类继承得到的方法&lt;br>
+&lt;img src="img/ly-20241212142050645.png" alt="" />&lt;/li>
+&lt;li>继承toString()并自定义&lt;/li>
+&lt;li>封装类型(内置的引用类型，包括Boolean、Byte、Character、Double、Float、Integer、Long和Short)&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>等价性
+&lt;ul>
+&lt;li>如图&lt;br>
+&lt;img src="img/ly-20241212142050756.png" alt="" />&lt;/li>
+&lt;li>例子，在Date中重写equals&lt;br>
+&lt;img src="img/ly-20241212142050900.png" alt="" />&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>内存管理&lt;br>
+Java具有自动内存管理，通过记录孤儿对象并将它们的内存释放到内存池中&lt;/li>
+&lt;li>不可变性&lt;br>
+使用final保证数据不可变&lt;br>
+使用final修饰的引用类型，不能再引用(指向)其他对象，但对象本身的值可改变&lt;/li>
+&lt;li>契约式设计
+&lt;ul>
+&lt;li>Java语言能够在程序运行时检测程序状态&lt;/li>
+&lt;li>异常(Exception)+断言(Assertion)&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>异常与错误&lt;br>
+允许抛出异常或抛出错误&lt;/li>
+&lt;li>断言&lt;br>
+程序不应该依赖断言&lt;/li>
+&lt;/ul>
+&lt;h3 id="end">
+ End
+ &lt;a class="anchor" href="#end">#&lt;/a>
+&lt;/h3></description></item><item><title>算法红皮书 1.1.6-1.1.11</title><link>https://lwmfjc.github.io/zh/docs/technology/Algorithm/algorithhms_4th/1.1.6-1.1.11/</link><pubDate>Tue, 22 Feb 2022 09:55:11 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Algorithm/algorithhms_4th/1.1.6-1.1.11/</guid><description>&lt;h2 id="基础编程模型">
+ 基础编程模型
+ &lt;a class="anchor" href="#%e5%9f%ba%e7%a1%80%e7%bc%96%e7%a8%8b%e6%a8%a1%e5%9e%8b">#&lt;/a>
+&lt;/h2>
+&lt;h3 id="静态方法">
+ 静态方法
+ &lt;a class="anchor" href="#%e9%9d%99%e6%80%81%e6%96%b9%e6%b3%95">#&lt;/a>
+&lt;/h3>
+&lt;ul>
+&lt;li>本书中所有的Java程序要么是数据类型的定义，要么是一个静态方法库&lt;/li>
+&lt;li>当讨论静态方法和实体方法共有的属性时，我们会使用不加定语的方法一词&lt;/li>
+&lt;li>方法需要参数(某种数据类型的值)并根据参数计算出某种数据类型的返回值(例如数学函数的结果)或者产生某种副作用(例如打印一个值)&lt;/li>
+&lt;li>静态方法由签名(public static 以及函数的返回值,方法名及一串参数)和函数体组成&lt;/li>
+&lt;li>调用静态方法(写出方法名并在后面的括号中列出数值)&lt;/li>
+&lt;li>方法的性质
+&lt;ul>
+&lt;li>方法的参数按值传递，方法中使用的参数变量能够引用调用者的参数并改变其内容(只是不能改变&lt;em>&lt;strong>原数组变量&lt;/strong>&lt;/em>本身)&lt;/li>
+&lt;li>方法名可以被重载&lt;/li>
+&lt;li>方法只能返回一个值，但能包含多个返回语句&lt;/li>
+&lt;li>方法可以产生副作用&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>递归：方法可以调用自己
+可以使用数学归纳法证明所解释算法的正确性,编写递归重要的三点
+&lt;ul>
+&lt;li>递归总有一个最简单的情况(方法第一条总包含return的条件语句)&lt;/li>
+&lt;li>递归调用总是去尝试解决一个规模更小的子问题&lt;/li>
+&lt;li>递归调用的父问题和尝试解决的子问题之间不应该由交集
+如下图中，两个子问题各自操作的数组部分是不同的&lt;br>
+&lt;img src="img/ly-20241212142047263.png" alt="" />&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>基础编程模型
+&lt;ul>
+&lt;li>静态方法库是定义在一个Java类中的一组静态方法&lt;/li>
+&lt;li>Java开发的基本模式是编写一个静态方法库(包含一个main()方法)类完成一个任务&lt;/li>
+&lt;li>在本书中，当我们提到用于执行一项人物的Java程序时，我们指的就是用这种模式开发的代码(还包括对数据类型的定义)&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>模块化编程
+&lt;ul>
+&lt;li>通过静态方法库实现了模块化编程&lt;/li>
+&lt;li>一个库中的静态方法也能够调用另一个库中定义的静态方法&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>单元测试
+&lt;ul>
+&lt;li>Java编程最佳实践之一就是每个静态方法库中都包含一个main()函数来测试库中所有的方法&lt;/li>
+&lt;li>本书中使用main()来说明模块的功能并将测试用例留作练习&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>外部库
+&lt;ul>
+&lt;li>系统标准库 java.lang.*:包括Math库;String和StringBuilder库&lt;/li>
+&lt;li>导入的系统库 java.util.Arrays&lt;/li>
+&lt;li>本书中其他库&lt;/li>
+&lt;li>本书使用了作者开发的标准库Std*&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="api">
+ API
+ &lt;a class="anchor" href="#api">#&lt;/a>
+&lt;/h3>
+&lt;ul>
+&lt;li>模块化编程重要组成部分，记录库方法的用法并供其他人参考的文档&lt;/li>
+&lt;li>会统一使用应用程序编程接口API的方法列出每个库方法、签名及简述&lt;/li>
+&lt;li>用例(调用另一个库中的方法的程序)，实现(实现了某个API方法的Java代码)&lt;/li>
+&lt;li>作者自己的两个库，一个扩展Math.random(),一个支持各种统计
+&lt;ul>
+&lt;li>随机静态方法库(StdRandom)的API&lt;br>
+&lt;img src="img/ly-20241212142047502.png" alt="" />&lt;/li>
+&lt;li>数据分析方法库(StdStats)的API&lt;br>
+&lt;img src="img/ly-20241212142047617.png" alt="" />&lt;/li>
+&lt;li>StdRandom库中的静态方法的实现
+&lt;img src="img/ly-20241212142047730.png" alt="" />&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>编写自己的库
+&lt;ul>
+&lt;li>编写用例，实现中将计算过程分解&lt;/li>
+&lt;li>明确静态方法库和与之对应的API&lt;/li>
+&lt;li>实现API和一个能够对方法进行独立测试的main()函数&lt;/li>
+&lt;li>API的目的是将调用和实现分离&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="字符串">
+ 字符串
+ &lt;a class="anchor" href="#%e5%ad%97%e7%ac%a6%e4%b8%b2">#&lt;/a>
+&lt;/h3>
+&lt;ul>
+&lt;li>字符串拼接，使用 +&lt;/li>
+&lt;li>类型转换(将用户从键盘输入的内容转换成相应数据类型的值以及将各种数据类型的值转换成能够在屏幕上显示的值)&lt;br>
+&lt;img src="img/ly-20241212142047840.png" alt="" />&lt;/li>
+&lt;li>如果数字跟在+后面，那么会将数据类型的值自动转换为字符串&lt;/li>
+&lt;li>命令行参数
+&lt;ul>
+&lt;li>Java中字符串的存在，使程序能够接收到从命令行传递来的信息&lt;/li>
+&lt;li>当输入命令java和一个库名及一系列字符串后，Java系统会调用库的main()方法并将后面的一系列字符串变成一个数组作为参数传递给它&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="输入输出">
+ 输入输出
+ &lt;a class="anchor" href="#%e8%be%93%e5%85%a5%e8%be%93%e5%87%ba">#&lt;/a>
+&lt;/h3>
+&lt;ul>
+&lt;li>Java程序可以从&lt;em>&lt;strong>命令行参数&lt;/strong>&lt;/em>或者一个名为&lt;em>&lt;strong>标准输入流&lt;/strong>&lt;/em>的抽象字符流中获得输入，并将输出写入另一个名为标准输出流的字符流中&lt;/li>
+&lt;li>默认情况下，命令行参数、标准输入和标准输出是和应用程序绑定的，而应用程序是由能够接受命令输入的操作系统或是开发环境所支持&lt;/li>
+&lt;li>使用终端来指代这个应用程序提供的供输入和显示的窗口,如图&lt;br>
+&lt;img src="img/ly-20241212142047952.png" alt="" />&lt;/li>
+&lt;li>命令和参数
+&lt;ul>
+&lt;li>终端窗口包含一个提示符，通过它我们能够向操作系统输入命令和参数&lt;/li>
+&lt;li>操作系统常用命令&lt;br>
+&lt;img src="img/ly-20241212142048067.png" alt="" />&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>标准输出
+&lt;ul>
+&lt;li>StdOut库的作用是支持标准输出&lt;/li>
+&lt;li>标准输出库的静态方法的API&lt;br>
+&lt;img src="img/ly-20241212142048178.png" alt="" />&lt;/li>
+&lt;li>格式化输出 字符%并紧跟一个字符表示的转换代码(包括d,f和s)。%和转换代码之间可以插入证书表示值的宽度，且转换后会在字符串左边添加空格以达到需要的宽度。负数表示空格从右边加&lt;/li>
+&lt;li>宽度后用小数点及数值可以指定精度(或String字符串所截取的长度)&lt;/li>
+&lt;li>格式中转换代码和对应参数的数据类型必须匹配
+&lt;img src="img/ly-20241212142048287.png" alt="" />&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>标准输入
+&lt;ul>
+&lt;li>StdIn库从标准输入流中获取数据，然后将标准输出定向到终端窗口&lt;/li>
+&lt;li>标准输入流最重要的特点，这些值会在程序读取后消失&lt;/li>
+&lt;li>例子&lt;br>
+&lt;img src="img/ly-20241212142048398.png" alt="" />&lt;/li>
+&lt;li>标准输入库中的静态方法API&lt;br>
+&lt;img src="img/ly-20241212142048512.png" alt="" />&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>重定向和管道
+&lt;ul>
+&lt;li>将标准输出重定向到一个文件
+&lt;pre tabindex="0">&lt;code>java RandomSeq 1000 100.0 200.0 &amp;gt; data.txt
+&lt;/code>&lt;/pre>&lt;/li>
+&lt;li>从文件而不是终端应用程序中读取数据
+&lt;pre tabindex="0">&lt;code>java Average &amp;lt; data.txt
+&lt;/code>&lt;/pre>&lt;/li>
+&lt;li>将一个程序的输出重定向为另一个程序的输入，叫做管道
+&lt;pre tabindex="0">&lt;code>java RandomSeq 1000 100.0 200.0 | java Average
+&lt;/code>&lt;/pre>&lt;ul>
+&lt;li>突破了我们能够处理的输入输出流的长度限制&lt;/li>
+&lt;li>即使计算机没有足够的空间来存储十亿个数，&lt;/li>
+&lt;li>我们仍然可以将例子中的1000 换成1 000 000 000 （当然我们还是需要一些时间来处理它们）。当RandomSeq 调用StdOut.println() 时，它就向输出流的末尾添加了一个字符串；当Average 调用StdIn.readInt() 时，它就从输入流的开头删除了一个字符串。这些动作发生的实际顺序取决于操作系统&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>命令行的重定向及管道&lt;br>
+&lt;img src="img/ly-20241212142048626.png" alt="" />&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>基于文件的输入输出&lt;/li>
+&lt;li>In和Out库提供了一些静态方法,来实现向文件中写入或从文件中读取一个原始数据类型的数组的抽象&lt;/li>
+&lt;li>用于读取和写入数组的静态方法的API&lt;br>
+&lt;img src="img/ly-20241212142048736.png" alt="" />&lt;/li>
+&lt;li>标准绘图库(基本方法和控制方法)&amp;ndash;这里跳过&lt;/li>
+&lt;/ul>
+&lt;h3 id="二分查找">
+ 二分查找
+ &lt;a class="anchor" href="#%e4%ba%8c%e5%88%86%e6%9f%a5%e6%89%be">#&lt;/a>
+&lt;/h3>
+&lt;ul>
+&lt;li>如图，在终端接收需要判断的数字，如果不存在于白名单(文件中的int数组)中则输出&lt;/li>
+&lt;li>开发用例以及使用测试文件(数组长度很大的白名单)&lt;/li>
+&lt;li>模拟实际情况来展示当前算法的必要性，比如
+&lt;ul>
+&lt;li>将客户的账号保存在一个文件中，我们称它为白名单；&lt;/li>
+&lt;li>从标准输入中得到每笔交易的账号；&lt;/li>
+&lt;li>使用这个测试用例在标准输出中打印所有与任何客户无关的账号，公司很可能拒绝此类交易。
+&lt;img src="img/ly-20241212142048842.png" alt="" />&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>使用顺序查找
+&lt;pre tabindex="0">&lt;code>public static int rank(int key, int[] a)
+{
+ for (int i = 0; i &amp;lt; a.length; i++)
+ if (a[i] == key) return i;
+ return -1;
+}
+&lt;/code>&lt;/pre>&lt;/li>
+&lt;li>当处理大量输入的时候，顺序查找的效率极其低&lt;/li>
+&lt;/ul>
+&lt;h3 id="展望">
+ 展望
+ &lt;a class="anchor" href="#%e5%b1%95%e6%9c%9b">#&lt;/a>
+&lt;/h3>
+&lt;ul>
+&lt;li>下一节，鼓励使用数据抽象，或称面向对象编程，而不是操作预定义的数据类型的静态方法&lt;/li>
+&lt;li>使用数据抽象的好处
+&lt;ul>
+&lt;li>复用性&lt;/li>
+&lt;li>链式数据结构比数组更灵活&lt;/li>
+&lt;li>可以准确地定义锁面对的算法问题&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="11-end">
+ 1.1 End
+ &lt;a class="anchor" href="#11-end">#&lt;/a>
+&lt;/h3></description></item><item><title>算法红皮书 1.1.1-1.1.5</title><link>https://lwmfjc.github.io/zh/docs/technology/Algorithm/algorithhms_4th/1.1.1-1.1.5/</link><pubDate>Mon, 21 Feb 2022 16:53:04 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Algorithm/algorithhms_4th/1.1.1-1.1.5/</guid><description>&lt;h2 id="基础编程模型">
+ 基础编程模型
+ &lt;a class="anchor" href="#%e5%9f%ba%e7%a1%80%e7%bc%96%e7%a8%8b%e6%a8%a1%e5%9e%8b">#&lt;/a>
+&lt;/h2>
+&lt;h3 id="java程序的基本结构">
+ Java程序的基本结构
+ &lt;a class="anchor" href="#java%e7%a8%8b%e5%ba%8f%e7%9a%84%e5%9f%ba%e6%9c%ac%e7%bb%93%e6%9e%84">#&lt;/a>
+&lt;/h3>
+&lt;ul>
+&lt;li>本书学习算法的方法：用Java编程语言编写的程序来实现算法(相比用自然语言有很多优势)&lt;/li>
+&lt;li>劣势：编程语言特定，使算法的思想和实现细节变得困难(所以本书尽量使用大部分语言都必须的语法)&lt;/li>
+&lt;li>把描述和实现算法所用到的语言特性、软件库和操作系统特定总称为基础编程模型&lt;/li>
+&lt;li>Java程序的基本结构
+&lt;ul>
+&lt;li>
+&lt;p>一段Java程序或者是一个静态方法库，或者定义了一个数据类型，需要用到的语法&lt;/p>
+&lt;ul>
+&lt;li>原始数据类型(在计算机中精确地定义整数浮点数布尔值等)&lt;/li>
+&lt;li>语句(创建变量并赋值，控制运行流程或引发副作用来进行计算，包括声明、赋值、条件、循环、调用和返回)&lt;/li>
+&lt;li>数组(多个同种数据类型值的集合)&lt;/li>
+&lt;li>静态方法(封装并重用代码)&lt;/li>
+&lt;li>字符串(一连串的字符，内置一些对他们的操作)&lt;/li>
+&lt;li>标准输入/输出(是程序与外界联系的桥梁)&lt;/li>
+&lt;li>数据抽象(数据抽象封装和重用代码，可以定义非原始数据类型，进而面向对象编程)&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>把这种输入命令执行程序的环境称为 虚拟终端&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>要执行一条Java程序，需要先用javac命令编译，然后用java命令运行，比如下面的文件，需要使用命令&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>javac BinarySearch.java
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>java BinarySearch 
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;img src="img/ly-20241212142046412.png" alt="" />&lt;br>
+&lt;img src="img/ly-20241212142046572.png" alt="" />&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="原始数据类型与表达式">
+ 原始数据类型与表达式
+ &lt;a class="anchor" href="#%e5%8e%9f%e5%a7%8b%e6%95%b0%e6%8d%ae%e7%b1%bb%e5%9e%8b%e4%b8%8e%e8%a1%a8%e8%be%be%e5%bc%8f">#&lt;/a>
+&lt;/h3>
+&lt;ul>
+&lt;li>数据类型就是一组数据和其所能进行的操作的集合&lt;/li>
+&lt;li>Java中最基础的数据类型(整型int，双精度实数类型double,布尔值boolean,字符型char)&lt;/li>
+&lt;li>Java程序控制用标识符命名的变量&lt;/li>
+&lt;li>对于原始类型，用标识符引用变量，+-*/指定操作，用字面量来表示值(如1或3.14),用表达式表示对值的操作( 表达式:(x+2.334)/2 )&lt;/li>
+&lt;li>只要能够指定值域和在此值域上的操作，就能定义一个数据类型(很像数学上函数的定义)&lt;/li>
+&lt;li>+-*/是被重载过的&lt;/li>
+&lt;li>运算产生的数据的数据类型和参与运算的数据的数据类型是相同的(5/3=1,5.0/3.0=1.6667等)&lt;/li>
+&lt;li>如下图(图歪了亿点点..)
+&lt;img src="img/ly-20241212142046692.png" alt="" />&lt;/li>
+&lt;li>表达式&lt;/li>
+&lt;li>表达式具有优先级，Java使用的是中缀表达式(一个字面量紧接运算符，然后是另一个字面量)。逻辑运算中优先级 ! &amp;amp;&amp;amp; || ,运算符中 * / % 高于+ - 。括号能改变这些规则。代码中尽量使用括号消除对优先级的依赖&lt;/li>
+&lt;li>类型转换
+&lt;ul>
+&lt;li>数值会自动提升为高级数据类型，如1+2.5 1会被先转为double 1.0，值也为double的3.5&lt;/li>
+&lt;li>强转(把类型名放在括号里讲其转换为括号中的类型) 讲高级数据类型转为低级可能会导致精度的缺失，尽量少使用&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>比较
+&lt;ul>
+&lt;li>==、!=、&amp;lt;、&amp;lt;=、&amp;gt;、&amp;gt;=，这些运算符称为 混合类型运算符，因为结果是布尔型而不是参与比较的数据类型&lt;/li>
+&lt;li>结果是布尔型的表达式称为布尔表达式&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>其他原始类型(int为32位，double为64位)
+&lt;ul>
+&lt;li>long,64位整数&lt;/li>
+&lt;li>short,16位整数&lt;/li>
+&lt;li>char,16位字符&lt;/li>
+&lt;li>byte,8位整数&lt;/li>
+&lt;li>32位单精度实数,float&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="语句">
+ 语句
+ &lt;a class="anchor" href="#%e8%af%ad%e5%8f%a5">#&lt;/a>
+&lt;/h3>
+&lt;ul>
+&lt;li>语句用来创建和操作变量、对变量赋值并控制操作的执行流程&lt;/li>
+&lt;li>包括声明语句、赋值语句、条件语句、循环语句、调用和返回语句&lt;/li>
+&lt;li>声明：让一个变量名和一个类型在编译时关联起来&lt;/li>
+&lt;li>赋值：将(由一个表达式定义的)某个数据类型额值和一个变量关联起来&lt;/li>
+&lt;li>条件语句：
+&lt;pre tabindex="0">&lt;code>if (&amp;lt;boolean expression&amp;gt;) { &amp;lt;block statement&amp;gt; }
+&lt;/code>&lt;/pre>&lt;/li>
+&lt;li>循环语句
+&lt;pre tabindex="0">&lt;code>while(&amp;lt;boolean expression&amp;gt;) { &amp;lt;block statement&amp;gt; }
+&lt;/code>&lt;/pre>其中循环语句中的代码段称为循环体&lt;/li>
+&lt;li>break与continue语句
+&lt;ul>
+&lt;li>break，立即退出循环&lt;/li>
+&lt;li>continue，立即开始下一轮循环&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="简便记法">
+ 简便记法
+ &lt;a class="anchor" href="#%e7%ae%80%e4%be%bf%e8%ae%b0%e6%b3%95">#&lt;/a>
+&lt;/h3>
+&lt;ul>
+&lt;li>声明并初始化&lt;/li>
+&lt;li>隐式赋值
+&lt;ul>
+&lt;li>++i;&amp;ndash;i&lt;/li>
+&lt;li>i/=2;i+=1&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>单语句代码段(省略if/while代码段的花括号)&lt;/li>
+&lt;li>for语句
+&lt;pre tabindex="0">&lt;code>for(&amp;lt;initialize&amp;gt;;&amp;lt;boolean expression&amp;gt;;&amp;lt;increment&amp;gt;)
+{
+ &amp;lt;block statements&amp;gt;
+}
+&lt;/code>&lt;/pre>这段代码等价于后面的
+&lt;pre tabindex="0">&lt;code>&amp;lt;initialize&amp;gt;;
+while(&amp;lt;boolean expression&amp;gt;)
+{
+ &amp;lt;block statments&amp;gt;
+ &amp;lt;increment&amp;gt;;
+}
+&lt;/code>&lt;/pre>&lt;/li>
+&lt;li>java语句总结&lt;br>
+&lt;img src="img/ly-20241212142046803.png" alt="" />&lt;/li>
+&lt;/ul>
+&lt;h3 id="数组">
+ 数组
+ &lt;a class="anchor" href="#%e6%95%b0%e7%bb%84">#&lt;/a>
+&lt;/h3>
+&lt;ul>
+&lt;li>数组能够存储相同类型的多个数据&lt;/li>
+&lt;li>N个数组的数组编号为0至N-1；这种数组在Java中称为一维数组&lt;/li>
+&lt;li>创建并初始化数组
+&lt;ul>
+&lt;li>需要三个步骤，声明数组名字和类型，创建数组，初始化数组元素&lt;/li>
+&lt;li>声明并初始化一个数组&lt;br>
+&lt;img src="img/ly-20241212142046916.png" alt="" />&lt;/li>
+&lt;li>简化写法&lt;br>
+double[] a = new double[N];&lt;/li>
+&lt;li>使用数组(访问的索引小于0或者大于N-1时会抛出ArrayIndexOutOfBoundsException)&lt;/li>
+&lt;li>典型的数组处理代码&lt;br>
+&lt;img src="img/ly-20241212142047031.png" alt="" />&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>起别名
+&lt;ul>
+&lt;li>下面的情况并没有将数组新复制一份，而是a，b指向了同一个数组&lt;br>
+&lt;img src="img/ly-20241212142047141.png" alt="" />&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>二维数组
+&lt;ul>
+&lt;li>Java中二维数组就是一堆数组的数组&lt;/li>
+&lt;li>二维数组可以是参差不齐，比如a[0]=new double[5],a[1]=new double[6]之类&lt;/li>
+&lt;li>二维数组的创建及初始化
+&lt;pre tabindex="0">&lt;code>double[][] a;
+a = new double[M][N];
+for (int i = 0; i &amp;lt; M; i++)
+ for (int j = 0; j &amp;lt; N; j++)
+ a[i][j] = 0.0;
+&lt;/code>&lt;/pre>&lt;/li>
+&lt;li>精简后的代码
+double[][] a=new double[M][N];&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul></description></item></channel></rss>

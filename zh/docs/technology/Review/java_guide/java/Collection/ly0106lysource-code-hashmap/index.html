@@ -1,0 +1,503 @@
+<!doctype html><html lang=zh dir=ltr><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=description content="HashMap源码"><meta name=theme-color media="(prefers-color-scheme: light)" content="#ffffff"><meta name=theme-color media="(prefers-color-scheme: dark)" content="#343a40"><meta name=color-scheme content="light dark"><meta property="og:url" content="https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Collection/ly0106lysource-code-hashmap/"><meta property="og:site_name" content="随记"><meta property="og:title" content="HashMap源码"><meta property="og:description" content="HashMap源码"><meta property="og:locale" content="zh"><meta property="og:type" content="article"><meta property="article:section" content="docs"><meta property="article:published_time" content="2022-10-21T15:30:09+00:00"><meta property="article:modified_time" content="2022-10-21T15:30:09+00:00"><meta property="article:tag" content="复习"><meta property="article:tag" content="复习-JavaGuide"><meta property="article:tag" content="复习-JavaGuide-集合"><title>HashMap源码 | 随记</title>
+<link rel=icon href=/favicon.png><link rel=manifest href=/manifest.json><link rel=canonical href=https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Collection/ly0106lysource-code-hashmap/><link rel=stylesheet href=/book.min.139f5e11df71f5bba2b1247bd4b1313c3248d3a29ad3aabb5259e40af9e483a5.css integrity="sha256-E59eEd9x9buisSR71LExPDJI06Ka06q7UlnkCvnkg6U=" crossorigin=anonymous><script defer src=/fuse.min.js></script><script defer src=/zh.search.min.77710810d7aff0136f02822dfb5002486059ad2bc129094be08aecf885623571.js integrity="sha256-d3EIENev8BNvAoIt+1ACSGBZrSvBKQlL4Irs+IViNXE=" crossorigin=anonymous></script></head><body dir=ltr><input type=checkbox class="hidden toggle" id=menu-control>
+<input type=checkbox class="hidden toggle" id=toc-control><main class="container flex"><aside class=book-menu><div class=book-menu-content><nav><h2 class=book-brand><a class="flex align-center" href=/zh/><span>随记</span></a></h2><div class="book-search hidden"><input type=text id=book-search-input placeholder=搜索 aria-label=搜索 maxlength=64 data-hotkeys=s/><div class="book-search-spinner hidden"></div><ul id=book-search-results></ul></div><script>document.querySelector(".book-search").classList.remove("hidden")</script><ul><li class=book-section-flat><a href=/zh/docs/technology/>技术</a><ul><li><input type=checkbox id=section-1dd4601389ea65ef400f95373226aee0 class=toggle>
+<label for=section-1dd4601389ea65ef400f95373226aee0 class="flex justify-between"><a role=button>Linux</a></label><ul><li><input type=checkbox id=section-f8d8a779959a764d65613f11020c9a13 class=toggle>
+<label for=section-f8d8a779959a764d65613f11020c9a13 class="flex justify-between"><a role=button>Terminal Commands</a></label><ul><li><a href=/zh/docs/technology/Linux/Terminal-Commands/00-x/>0000-0000</a></li></ul></li><li><input type=checkbox id=section-eb3a110e9a221e46d625b63087e91152 class=toggle>
+<label for=section-eb3a110e9a221e46d625b63087e91152 class="flex justify-between"><a role=button>SHELL编程(learnLinuxTV)</a></label><ul><li><a href=/zh/docs/technology/Linux/SHELLlearnLinuxTV_/16-18/16-18/>16-18</a></li><li><a href=/zh/docs/technology/Linux/SHELLlearnLinuxTV_/12-15/>12-15</a></li><li><a href=/zh/docs/technology/Linux/SHELLlearnLinuxTV_/11DataStreams/>11DataStreams</a></li><li><a href=/zh/docs/technology/Linux/SHELLlearnLinuxTV_/07-10/>07-10</a></li><li><a href=/zh/docs/technology/Linux/SHELLlearnLinuxTV_/06ExitCode/>06ExitCode</a></li><li><a href=/zh/docs/technology/Linux/SHELLlearnLinuxTV_/05If/>05If</a></li><li><a href=/zh/docs/technology/Linux/SHELLlearnLinuxTV_/01-04/>01-04</a></li></ul></li><li><input type=checkbox id=section-bfc45dc929fcc1310a60f77e491b60d2 class=toggle>
+<label for=section-bfc45dc929fcc1310a60f77e491b60d2 class="flex justify-between"><a role=button>韩顺平老师_</a></label><ul><li><a href=/zh/docs/technology/Linux/hanshunping/52-x/>52-X</a></li><li><a href=/zh/docs/technology/Linux/hanshunping/40-51/>linux_韩老师_40-51</a></li><li><a href=/zh/docs/technology/Linux/hanshunping/28-39/>linux_韩老师_28-39</a></li><li><a href=/zh/docs/technology/Linux/hanshunping/21-27/>linux_韩老师_21-33</a></li><li><a href=/zh/docs/technology/Linux/hanshunping/12-20/>linux_韩老师_12-20</a></li><li><a href=/zh/docs/technology/Linux/hanshunping/07-11/>linux_韩老师_07-11</a></li><li><a href=/zh/docs/technology/Linux/hanshunping/01-06/>linux_韩老师_01-06</a></li></ul></li><li><a href=/zh/docs/technology/Linux/basic/>基本操作</a></li><li><a href=/zh/docs/technology/Linux/create_clone/>vmware上linux主机的安装和克隆</a></li></ul></li><li><input type=checkbox id=section-9f56b27db6873dfaab68a13a9088b050 class=toggle>
+<label for=section-9f56b27db6873dfaab68a13a9088b050 class="flex justify-between"><a role=button>Reg Exp</a></label><ul><li><input type=checkbox id=section-6da126b4a17fb67539c8fc56ed6827d9 class=toggle>
+<label for=section-6da126b4a17fb67539c8fc56ed6827d9 class="flex justify-between"><a role=button>基础(CoreySchafer)</a></label><ul><li><a href=/zh/docs/technology/RegExp/baseCoreySchafer/base/>基础</a></li></ul></li></ul></li><li><input type=checkbox id=section-f04eb05ff8f0dfbe9287eeb97b54a2b3 class=toggle>
+<label for=section-f04eb05ff8f0dfbe9287eeb97b54a2b3 class="flex justify-between"><a role=button>Hugo</a></label><ul><li><input type=checkbox id=section-c4f3bbcb281997edd8d8b0c9fd9cdb76 class=toggle>
+<label for=section-c4f3bbcb281997edd8d8b0c9fd9cdb76 class="flex justify-between"><a role=button>主题</a></label><ul><li><a href=/zh/docs/technology/Hugo/themes/PaperMod/01/>使用PaperMode</a></li></ul></li><li><input type=checkbox id=section-c73b582566a4e49b5b07f613bac566cf class=toggle>
+<label for=section-c73b582566a4e49b5b07f613bac566cf class="flex justify-between"><a role=button>基础(Giraffe学院)_</a></label><ul><li><a href=/zh/docs/technology/Hugo/GiraffeAcademy/advanced20-23/>hugo进阶学习20-23</a></li><li><a href=/zh/docs/technology/Hugo/GiraffeAcademy/advanced17-19/>hugo进阶学习17-19</a></li><li><a href=/zh/docs/technology/Hugo/GiraffeAcademy/advanced11-16/>hugo进阶学习11-15</a></li><li><a href=/zh/docs/technology/Hugo/GiraffeAcademy/advanced01-10/>hugo进阶学习01-10</a></li></ul></li></ul></li><li><input type=checkbox id=section-43be5f3c9fb2465efc746ae00240e4b3 class=toggle>
+<label for=section-43be5f3c9fb2465efc746ae00240e4b3 class="flex justify-between"><a role=button>Obsidian</a></label><ul><li><a href=/zh/docs/technology/Obsidian/border-theme/>border-theme背景图片问题</a></li><li><a href=/zh/docs/technology/Obsidian/obsidian-theme/>obsidian-theme</a></li><li><a href=/zh/docs/technology/Obsidian/plugin/>plugin</a></li></ul></li><li><input type=checkbox id=section-7123c56777444b2f7157631dd88ad8f6 class=toggle>
+<label for=section-7123c56777444b2f7157631dd88ad8f6 class="flex justify-between"><a role=button>Redis</a></label><ul><li><input type=checkbox id=section-653c4bfd6de0200aef700672dc46b623 class=toggle>
+<label for=section-653c4bfd6de0200aef700672dc46b623 class="flex justify-between"><a role=button>基础(尚硅谷)_</a></label><ul><li><a href=/zh/docs/technology/Redis/shangguigu_BV1Rv41177Af/19-A/>redis_尚硅谷_19-A</a></li><li><a href=/zh/docs/technology/Redis/shangguigu_BV1Rv41177Af/18/>redis_尚硅谷_18</a></li><li><a href=/zh/docs/technology/Redis/shangguigu_BV1Rv41177Af/12-17/>redis_尚硅谷_12-17</a></li><li><a href=/zh/docs/technology/Redis/shangguigu_BV1Rv41177Af/06-11/>redis_尚硅谷_06-11</a></li><li><a href=/zh/docs/technology/Redis/shangguigu_BV1Rv41177Af/01-05/>redis_尚硅谷_01-05</a></li></ul></li><li><a href=/zh/docs/technology/Redis/rsync-use/>rsync使用</a></li><li><a href=/zh/docs/technology/Redis/redis-cluster/>redis集群搭建</a></li></ul></li><li><input type=checkbox id=section-a94b8d7740a71c28fc6e0f89885b2468 class=toggle>
+<label for=section-a94b8d7740a71c28fc6e0f89885b2468 class="flex justify-between"><a role=button>Jvm</a></label><ul><li><input type=checkbox id=section-dacf512d642735207e9a681d5fb91053 class=toggle>
+<label for=section-dacf512d642735207e9a681d5fb91053 class="flex justify-between"><a role=button>_深入理解Java虚拟机_</a></label><ul><li><a href=/zh/docs/technology/JVM/understanding_the_jvm/03/>03垃圾收集器与内存分配策略</a></li></ul></li></ul></li><li><input type=checkbox id=section-d2e5dc71fe2274ddaa089e125f33ae58 class=toggle>
+<label for=section-d2e5dc71fe2274ddaa089e125f33ae58 class="flex justify-between"><a role=button>My SQL</a></label><ul><li><input type=checkbox id=section-55f24404ff04ecc51ca2539f0513db8f class=toggle>
+<label for=section-55f24404ff04ecc51ca2539f0513db8f class="flex justify-between"><a role=button>_MySQL是怎样运行的_</a></label><ul><li><a href=/zh/docs/technology/MySQL/how_mysql_run/07/>07B+数索引的使用</a></li><li><a href=/zh/docs/technology/MySQL/how_mysql_run/06/>06B+树索引</a></li><li><a href=/zh/docs/technology/MySQL/how_mysql_run/05/>05InnoDB数据页结构</a></li><li><a href=/zh/docs/technology/MySQL/how_mysql_run/04/>04InnoDB记录存储结构</a></li><li><a href=/zh/docs/technology/MySQL/how_mysql_run/03/>03字符集和比较规则</a></li><li><a href=/zh/docs/technology/MySQL/how_mysql_run/02/>02启动选项和系统变量</a></li><li><a href=/zh/docs/technology/MySQL/how_mysql_run/01/>01初识MySQL</a></li></ul></li><li><input type=checkbox id=section-71c340add51164b94f4c1b5254385b46 class=toggle>
+<label for=section-71c340add51164b94f4c1b5254385b46 class="flex justify-between"><a role=button>进阶(尚硅谷)_</a></label><ul><li><a href=/zh/docs/technology/MySQL/bl_sgg/96-00/>mysql高阶_sgg 96-00</a></li></ul></li></ul></li><li><input type=checkbox id=section-e8f515fe7fc71d283363385aa363c2dd class=toggle>
+<label for=section-e8f515fe7fc71d283363385aa363c2dd class="flex justify-between"><a role=button>其他</a></label><ul><li><a href=/zh/docs/technology/Other/kaoshi/>科目</a></li><li><a href=/zh/docs/technology/Other/pc_base/>电脑基础操作</a></li></ul></li><li><input type=checkbox id=section-f54112ca99b135fbc484938888b1f1a2 class=toggle checked>
+<label for=section-f54112ca99b135fbc484938888b1f1a2 class="flex justify-between"><a href=/zh/docs/technology/Review/>面试</a></label><ul><li><a href=/zh/docs/technology/Review/java_guide/>JavaGuide</a><ul><li><input type=checkbox id=section-aa443fde93c5c7ab0082fb8bc7a93cb7 class=toggle>
+<label for=section-aa443fde93c5c7ab0082fb8bc7a93cb7 class="flex justify-between"><a role=button>数据库</a></label><ul><li><input type=checkbox id=section-e7660273cef85dff1f39af04a42bd062 class=toggle>
+<label for=section-e7660273cef85dff1f39af04a42bd062 class="flex justify-between"><a role=button>MySQL</a></label><ul><li><a href=/zh/docs/technology/Review/java_guide/database/MySQL/ly0606lymysql-query-execution-plan/>mysql执行计划</a></li><li><a href=/zh/docs/technology/Review/java_guide/database/MySQL/ly0611lymysql-high-performance-optimization-specification-recommendations/>MySQL高性能优化规范建议总结</a></li><li><a href=/zh/docs/technology/Review/java_guide/database/MySQL/ly0610lymysql-questions-01/>MySQL常见面试题总结</a></li><li><a href=/zh/docs/technology/Review/java_guide/database/MySQL/ly0609lyindex-invalidation-caused-by-implicit-conversion/>MySQL中的隐式转换造成的索引失效</a></li><li><a href=/zh/docs/technology/Review/java_guide/database/MySQL/ly0608lysome-thoughts-on-database-storage-time/>MySQL数据库时间类型数据存储建议</a></li><li><a href=/zh/docs/technology/Review/java_guide/database/MySQL/ly0605lyhow-sql-executed-in-mysql/>SQL语句在MySQL中的执行过程</a></li><li><a href=/zh/docs/technology/Review/java_guide/database/MySQL/ly0604lyinnodb-implementation-of-mvcc/>innodb引擎对MVCC的实现</a></li><li><a href=/zh/docs/technology/Review/java_guide/database/MySQL/ly0603lytransaction-isolation-level/>MySQL事务隔离级别详解</a></li><li><a href=/zh/docs/technology/Review/java_guide/database/MySQL/ly0602lymysql-logs/>日志</a></li><li><a href=/zh/docs/technology/Review/java_guide/database/MySQL/ly0601lymysql-index/>索引</a></li></ul></li><li><input type=checkbox id=section-680d077436e58b0cad0a63ed8edb5f53 class=toggle>
+<label for=section-680d077436e58b0cad0a63ed8edb5f53 class="flex justify-between"><a role=button>Redis</a></label><ul><li><a href=/zh/docs/technology/Review/java_guide/database/Redis/diagram/>redis问题图解</a></li><li><a href=/zh/docs/technology/Review/java_guide/database/Redis/ly0703ly3-commonly-used-cache-read-and-write-strategies/>3种常用的缓存读写策略详解</a></li><li><a href=/zh/docs/technology/Review/java_guide/database/Redis/ly0704lyredis-memory-fragmentation/>redis内存碎片</a></li><li><a href=/zh/docs/technology/Review/java_guide/database/Redis/ly0702lyredis-spec-data-structure/>redis特殊数据结构</a></li><li><a href=/zh/docs/technology/Review/java_guide/database/Redis/ly0701lyredis-base-data-structures/>redis基本数据结构</a></li><li><a href=/zh/docs/technology/Review/java_guide/database/Redis/ly0706lyredis-questions-02/>redis面试题02</a></li><li><a href=/zh/docs/technology/Review/java_guide/database/Redis/ly0705lyredis-questions-01/>redis面试题01</a></li></ul></li><li><a href=/zh/docs/technology/Review/java_guide/database/ly0503lysql-question-01/>sql常见面试题总结01</a></li><li><a href=/zh/docs/technology/Review/java_guide/database/ly0504lysql-syntax-summary/>sql语法基础知识总结</a></li><li><a href=/zh/docs/technology/Review/java_guide/database/ly0502lycharactor-set/>字符集详解</a></li><li><a href=/zh/docs/technology/Review/java_guide/database/ly0501lybasis/>数据库基础</a></li></ul></li><li><input type=checkbox id=section-a1b717b4079938cc0efe574541b240b8 class=toggle>
+<label for=section-a1b717b4079938cc0efe574541b240b8 class="flex justify-between"><a role=button>系统设计</a></label><ul><li><input type=checkbox id=section-9eaf95f03abf595bfdf838c4b4cdb2ef class=toggle>
+<label for=section-9eaf95f03abf595bfdf838c4b4cdb2ef class="flex justify-between"><a role=button>安全</a></label><ul><li><a href=/zh/docs/technology/Review/java_guide/lycly_system-design/security/ly06ly_sentive-words-filter/>敏感词过滤方案总结</a></li><li><a href=/zh/docs/technology/Review/java_guide/lycly_system-design/security/ly05ly_design-of-authority-system/>权限系统设计详解</a></li><li><a href=/zh/docs/technology/Review/java_guide/lycly_system-design/security/ly04ly_sso-intro/>sso单点登录</a></li><li><a href=/zh/docs/technology/Review/java_guide/lycly_system-design/security/ly03ly_jwt-advantages-disadvantages/>jwt身份认证优缺点</a></li><li><a href=/zh/docs/technology/Review/java_guide/lycly_system-design/security/ly02ly_jwt-intro/>jwt-intro</a></li><li><a href=/zh/docs/technology/Review/java_guide/lycly_system-design/security/ly01ly_basis-of-authority-certification/>认证授权基础概念详解</a></li></ul></li><li><input type=checkbox id=section-79417049c90714c6ddbf18a3c3958148 class=toggle>
+<label for=section-79417049c90714c6ddbf18a3c3958148 class="flex justify-between"><a role=button>基础</a></label><ul><li><a href=/zh/docs/technology/Review/java_guide/lycly_system-design/basis/unit-test/>单元测试</a></li><li><a href=/zh/docs/technology/Review/java_guide/lycly_system-design/basis/refactoring/>代码重构指南</a></li><li><a href=/zh/docs/technology/Review/java_guide/lycly_system-design/basis/naming/>代码命名指南</a></li><li><a href=/zh/docs/technology/Review/java_guide/lycly_system-design/basis/software-engineering/>软件工程简明教程</a></li><li><a href=/zh/docs/technology/Review/java_guide/lycly_system-design/basis/restful/>restFul</a></li></ul></li><li><a href=/zh/docs/technology/Review/java_guide/lycly_system-design/web-real-time-message-push/>web-real-time-message-push</a></li><li><a href=/zh/docs/technology/Review/java_guide/lycly_system-design/schedule-task/>Java定时任务详解</a></li></ul></li><li><input type=checkbox id=section-0a9533f3005d615c696f74456e46d269 class=toggle>
+<label for=section-0a9533f3005d615c696f74456e46d269 class="flex justify-between"><a role=button>高可用</a></label><ul><li><a href=/zh/docs/technology/Review/java_guide/lyfly_high-availability/ly05ly_performance-test/>性能测试入门</a></li><li><a href=/zh/docs/technology/Review/java_guide/lyfly_high-availability/ly04ly_timout-and-retry/>超时&重试详解</a></li><li><a href=/zh/docs/technology/Review/java_guide/lyfly_high-availability/ly03ly_limit-request/>服务限流详解</a></li><li><a href=/zh/docs/technology/Review/java_guide/lyfly_high-availability/ly02ly_redundancy/>冗余设计</a></li><li><a href=/zh/docs/technology/Review/java_guide/lyfly_high-availability/ly01ly_high-availability-system-design/>高可用系统设计指南</a></li></ul></li><li><input type=checkbox id=section-e36f94f48e5027e7cbd39b7f7bbc249c class=toggle>
+<label for=section-e36f94f48e5027e7cbd39b7f7bbc249c class="flex justify-between"><a role=button>高性能</a></label><ul><li><input type=checkbox id=section-581624dd7aa25a150f706312689ba446 class=toggle>
+<label for=section-581624dd7aa25a150f706312689ba446 class="flex justify-between"><a role=button>RocketMQ</a></label><ul><li><a href=/zh/docs/technology/Review/java_guide/lyely_high-performance/message-mq/rocketmq-questions/>rocketmq常见面试题</a></li><li><a href=/zh/docs/technology/Review/java_guide/lyely_high-performance/message-mq/rocketmq-intro/>rocketmq介绍</a></li><li><a href=/zh/docs/technology/Review/java_guide/lyely_high-performance/message-mq/base/>message-queue</a></li></ul></li><li><a href=/zh/docs/technology/Review/java_guide/lyely_high-performance/ly02ly_cdn/>cdn</a></li><li><a href=/zh/docs/technology/Review/java_guide/lyely_high-performance/ly01ly_read-and-write-separation-and-library-subtable/>数据库读写分离&分库分表详解</a></li></ul></li><li><input type=checkbox id=section-a6916634f1b5324076467df4cc9ac3b5 class=toggle>
+<label for=section-a6916634f1b5324076467df4cc9ac3b5 class="flex justify-between"><a role=button>分布式系统</a></label><ul><li><input type=checkbox id=section-0c8e62b6137b614e01882e2a88ea5daf class=toggle>
+<label for=section-0c8e62b6137b614e01882e2a88ea5daf class="flex justify-between"><a role=button>基础</a></label><ul><li><a href=/zh/docs/technology/Review/java_guide/lydly_distributed_system/base/raft-algorithm/>raft算法</a></li><li><a href=/zh/docs/technology/Review/java_guide/lydly_distributed_system/base/paxos-algorithm/>paxos算法</a></li><li><a href=/zh/docs/technology/Review/java_guide/lydly_distributed_system/base/cap_base-theorem/>CAP&amp;BASE 理论</a></li></ul></li><li><a href=/zh/docs/technology/Review/java_guide/lydly_distributed_system/ly08ly_zookeeper-in-action/>zookeeper实战</a></li><li><a href=/zh/docs/technology/Review/java_guide/lydly_distributed_system/ly07ly_zookeeper-plus/>zookeeper进阶</a></li><li><a href=/zh/docs/technology/Review/java_guide/lydly_distributed_system/ly06ly_zookeeper-intro/>zookeeper介绍</a></li><li><a href=/zh/docs/technology/Review/java_guide/lydly_distributed_system/ly04ly_rpc-http/>rpc_http</a></li><li><a href=/zh/docs/technology/Review/java_guide/lydly_distributed_system/ly05ly_rpc-intro/>rpc基础及面试题</a></li><li><a href=/zh/docs/technology/Review/java_guide/lydly_distributed_system/ly03ly_distributed-lock/>分布式锁</a></li><li><a href=/zh/docs/technology/Review/java_guide/lydly_distributed_system/ly02ly_distributed-id/>分布式id</a></li><li><a href=/zh/docs/technology/Review/java_guide/lydly_distributed_system/ly01ly_api-gateway/>api网关</a></li></ul></li><li><input type=checkbox id=section-ce3cbb53c62f67624e4ab24a5a14298a class=toggle>
+<label for=section-ce3cbb53c62f67624e4ab24a5a14298a class="flex justify-between"><a role=button>框架</a></label><ul><li><input type=checkbox id=section-dbe480810d1877286936b38cdb5e9229 class=toggle>
+<label for=section-dbe480810d1877286936b38cdb5e9229 class="flex justify-between"><a role=button>MyBatis</a></label><ul><li><input type=checkbox id=section-30b916f2071579e2468767a2562433d9 class=toggle>
+<label for=section-30b916f2071579e2468767a2562433d9 class="flex justify-between"><a role=button>原理</a></label><ul><li><a href=/zh/docs/technology/Review/java_guide/lybly_framework/MyBatis/principle/mybatis-principle3/>Mybatis原理系列(3)</a></li><li><a href=/zh/docs/technology/Review/java_guide/lybly_framework/MyBatis/principle/mybatis-principle2/>Mybatis原理系列(2)</a></li><li><a href=/zh/docs/technology/Review/java_guide/lybly_framework/MyBatis/principle/mybatis-principle1/>Mybatis原理系列(1)</a></li></ul></li><li><a href=/zh/docs/technology/Review/java_guide/lybly_framework/MyBatis/MyBatis-interview/>Mybatis面试</a></li></ul></li><li><a href=/zh/docs/technology/Review/java_guide/lybly_framework/conditional_on_class/>ConditionalOnClass实践</a></li><li><a href=/zh/docs/technology/Review/java_guide/lybly_framework/ly05ly_springboot-auto-assembly/>SpringBoot自动装配原理</a></li><li><a href=/zh/docs/technology/Review/java_guide/lybly_framework/ly04ly_spring-design-patterns/>spring 设计模式</a></li><li><a href=/zh/docs/technology/Review/java_guide/lybly_framework/ly03ly_spring-transaction/>Spring事务详情</a></li><li><a href=/zh/docs/technology/Review/java_guide/lybly_framework/ly02ly_spring-annotations/>Spring/SpringBoot常用注解</a></li><li><a href=/zh/docs/technology/Review/java_guide/lybly_framework/ly01ly_spring-knowledge-and-questions-summary/>spring 常见面试题总结</a></li></ul></li><li><input type=checkbox id=section-1f6733a85e33dcc22aabbf820e3ef963 class=toggle>
+<label for=section-1f6733a85e33dcc22aabbf820e3ef963 class="flex justify-between"><a role=button>开发工具</a></label><ul><li><a href=/zh/docs/technology/Review/java_guide/lyaly_dev_tools/git/>git</a></li><li><a href=/zh/docs/technology/Review/java_guide/lyaly_dev_tools/maven/>maven</a></li></ul></li><li><input type=checkbox id=section-c01151f806b917cd0ecc4cffa72c3402 class=toggle checked>
+<label for=section-c01151f806b917cd0ecc4cffa72c3402 class="flex justify-between"><a role=button>Java基础</a></label><ul><li><input type=checkbox id=section-26625a0c4c0bffef02640966ca545537 class=toggle>
+<label for=section-26625a0c4c0bffef02640966ca545537 class="flex justify-between"><a role=button>并发</a></label><ul><li><a href=/zh/docs/technology/Review/java_guide/java/Concurrent/ly030301lyatomicpre/>Atomic预备知识</a></li><li><a href=/zh/docs/technology/Review/java_guide/java/Concurrent/ly0311lycompletablefuture-intro/>completablefuture-intro</a></li><li><a href=/zh/docs/technology/Review/java_guide/java/Concurrent/ly0310lythreadlocal/>ThreadLocal详解</a></li><li><a href=/zh/docs/technology/Review/java_guide/java/Concurrent/ly0309lyatomic-classes/>Atomic原子类介绍</a></li><li><a href=/zh/docs/technology/Review/java_guide/java/Concurrent/ly0308lyaqs-details/>aqs详解</a></li><li><a href=/zh/docs/technology/Review/java_guide/java/Concurrent/ly0307lyconcurrent-collections/>java常见并发容器</a></li><li><a href=/zh/docs/technology/Review/java_guide/java/Concurrent/ly0306lythread-pool-best/>线程池最佳实践</a></li><li><a href=/zh/docs/technology/Review/java_guide/java/Concurrent/ly0305lyjava-thread-pool/>java线程池详解</a></li><li><a href=/zh/docs/technology/Review/java_guide/java/Concurrent/ly0304lyjmm/>java内存模型</a></li><li><a href=/zh/docs/technology/Review/java_guide/java/Concurrent/ly0303lyconcurrent-03/>并发03</a></li><li><a href=/zh/docs/technology/Review/java_guide/java/Concurrent/ly03122lylock_escalation/>锁升级</a></li><li><a href=/zh/docs/technology/Review/java_guide/java/Concurrent/lock_escalation_deprecated2/>(该文弃用)锁升级</a></li><li><a href=/zh/docs/technology/Review/java_guide/java/Concurrent/lock_escalation_deprecated/>(该文弃用)锁升级</a></li><li><a href=/zh/docs/technology/Review/java_guide/java/Concurrent/ly03121lyobject-concurrent/>对象内存布局和对象头</a></li><li><a href=/zh/docs/technology/Review/java_guide/java/Concurrent/ly0302lyconcurrent-02/>并发02</a></li><li><a href=/zh/docs/technology/Review/java_guide/java/Concurrent/ly0301lyconcurrent-01/>并发01</a></li></ul></li><li><input type=checkbox id=section-8f747d8f024fbfe2b392a25696e01266 class=toggle>
+<label for=section-8f747d8f024fbfe2b392a25696e01266 class="flex justify-between"><a role=button>IO</a></label><ul><li><a href=/zh/docs/technology/Review/java_guide/java/IO/ly0203lyio-model/>io模型</a></li><li><a href=/zh/docs/technology/Review/java_guide/java/IO/ly0202lyio-design-patterns/>io设计模式</a></li><li><a href=/zh/docs/technology/Review/java_guide/java/IO/ly0201lyio/>io基础</a></li></ul></li><li><input type=checkbox id=section-7d26c3d37b0e4678a1ec776265992903 class=toggle checked>
+<label for=section-7d26c3d37b0e4678a1ec776265992903 class="flex justify-between"><a role=button>集合</a></label><ul><li><a href=/zh/docs/technology/Review/java_guide/java/Collection/ly0105lysource-code-concurrenthashmap/>ConcurrentHashMap源码</a></li><li><a href=/zh/docs/technology/Review/java_guide/java/Collection/ly0106lysource-code-hashmap/ class=active>HashMap源码</a></li><li><a href=/zh/docs/technology/Review/java_guide/java/Collection/ly0104lysource-code-ArrayList/>ArrayList源码</a></li><li><a href=/zh/docs/technology/Review/java_guide/java/Collection/ly0103lycollections-precautions-for-use/>集合使用注意事项</a></li><li><a href=/zh/docs/technology/Review/java_guide/java/Collection/ly0102lycollection_2/>集合_2</a></li><li><a href=/zh/docs/technology/Review/java_guide/java/Collection/ly0101lycollection_1/>集合_1</a></li></ul></li><li><input type=checkbox id=section-7027a9bc1d603892e7826da81b333f38 class=toggle>
+<label for=section-7027a9bc1d603892e7826da81b333f38 class="flex justify-between"><a role=button>基础</a></label><ul><li><a href=/zh/docs/technology/Review/java_guide/java/Basic/ly0011lysyntactic_sugar/>语法糖</a></li><li><a href=/zh/docs/technology/Review/java_guide/java/Basic/ly0010lyjava_spi/>java_spi</a></li><li><a href=/zh/docs/technology/Review/java_guide/java/Basic/ly0009lyunsafe_class/>unsafe类</a></li><li><a href=/zh/docs/technology/Review/java_guide/java/Basic/ly0008lybig_decimal/>big_decimal</a></li><li><a href=/zh/docs/technology/Review/java_guide/java/Basic/ly0007lyproxy_pattern/>Java代理模式</a></li><li><a href=/zh/docs/technology/Review/java_guide/java/Basic/ly0006lyreflex/>java-reflex</a></li><li><a href=/zh/docs/technology/Review/java_guide/java/Basic/ly0005lyserialize/>Java序列化详解</a></li><li><a href=/zh/docs/technology/Review/java_guide/java/Basic/ly0004lypassbyvalue/>为什么Java中只有值传递</a></li><li><a href=/zh/docs/technology/Review/java_guide/java/Basic/ly0003lyjava_guide_basic_3/>javaGuide基础3</a></li><li><a href=/zh/docs/technology/Review/java_guide/java/Basic/ly0002lyjava_guide_basic_2/>javaGuide基础2</a></li><li><a href=/zh/docs/technology/Review/java_guide/java/Basic/ly0001lyjava_guide_basic_1/>javaGuide基础1</a></li></ul></li><li><a href=/zh/docs/technology/Review/java_guide/java/JVM/ly0408lyjdk-monitoring-and-troubleshooting-tools/>jvm监控和故障处理工具 总结</a></li><li><a href=/zh/docs/technology/Review/java_guide/java/JVM/ly0406lyjvm-params/>jvm参数</a></li><li><a href=/zh/docs/technology/Review/java_guide/java/JVM/ly0403lyclass-structure/>类文件结构</a></li><li><a href=/zh/docs/technology/Review/java_guide/java/JVM/ly0405lyclassloader-detail/>类加载器详解</a></li><li><a href=/zh/docs/technology/Review/java_guide/java/JVM/ly0404lyclassloader-process/>类加载过程</a></li><li><a href=/zh/docs/technology/Review/java_guide/java/JVM/ly0402lygarbage-collection/>java垃圾回收</a></li><li><a href=/zh/docs/technology/Review/java_guide/java/JVM/ly0407lyjvm-intro/>jvm-intro</a></li><li><a href=/zh/docs/technology/Review/java_guide/java/JVM/ly0401lymemory-area/>memory-area</a></li></ul></li><li><input type=checkbox id=section-04d967d6579d47b35ececb3d233024f1 class=toggle>
+<label for=section-04d967d6579d47b35ececb3d233024f1 class="flex justify-between"><a role=button>计算机基础</a></label><ul><li><input type=checkbox id=section-316b43351a75a19ac6dec86ad1a48c45 class=toggle>
+<label for=section-316b43351a75a19ac6dec86ad1a48c45 class="flex justify-between"><a role=button>数据结构</a></label><ul><li><a href=/zh/docs/technology/Review/java_guide/cs_basics/data-structure/tree/>树</a></li><li><a href=/zh/docs/technology/Review/java_guide/cs_basics/data-structure/heap/>堆</a></li><li><a href=/zh/docs/technology/Review/java_guide/cs_basics/data-structure/graph/>图</a></li><li><a href=/zh/docs/technology/Review/java_guide/cs_basics/data-structure/linear-data-structure/>线性数据结构</a></li></ul></li></ul></li></ul></li><li><input type=checkbox id=section-09d19e9c6f50e4706fe8b6d358c441ce class=toggle>
+<label for=section-09d19e9c6f50e4706fe8b6d358c441ce class="flex justify-between"><a role=button>Ssm</a></label><ul><li><a href=/zh/docs/technology/Review/ssm/scope_transaction/>作用域及事务</a></li></ul></li><li><input type=checkbox id=section-11f3d4afcbd3591ad3ee5d79993e29d7 class=toggle>
+<label for=section-11f3d4afcbd3591ad3ee5d79993e29d7 class="flex justify-between"><a role=button>Java基础(尚硅谷)_</a></label><ul><li><a href=/zh/docs/technology/Review/basics/member_variables_and_local_variables/>成员变量与局部变量</a></li><li><a href=/zh/docs/technology/Review/basics/recursion_and_iteration/>递归与迭代</a></li><li><a href=/zh/docs/technology/Review/basics/method_parameter_passing_mechanism/>方法的参数传递机制</a></li><li><a href=/zh/docs/technology/Review/basics/class_and_instance_initialization/>类、实例初始化</a></li><li><a href=/zh/docs/technology/Review/basics/singleton_design_pattern/>单例设计模式</a></li><li><a href=/zh/docs/technology/Review/basics/self_incrementing_variable/>自增变量</a></li></ul></li></ul></li><li><input type=checkbox id=section-2fa8d2f95840b0143e19fcee5ee1ad97 class=toggle>
+<label for=section-2fa8d2f95840b0143e19fcee5ee1ad97 class="flex justify-between"><a role=button>SpringCloud</a></label><ul><li><input type=checkbox id=section-c8a8a7f47884d9b6be47c71f7ac9c83e class=toggle>
+<label for=section-c8a8a7f47884d9b6be47c71f7ac9c83e class="flex justify-between"><a role=button>基础(尚硅谷)_</a></label><ul><li><a href=/zh/docs/technology/springCloud/bl_zhouyang/base/>基础</a></li></ul></li></ul></li><li><input type=checkbox id=section-5057ba12f456498454476dc11b58648b class=toggle>
+<label for=section-5057ba12f456498454476dc11b58648b class="flex justify-between"><a role=button>Git</a></label><ul><li><input type=checkbox id=section-950cdebc38a9ca098189c3fa0102c810 class=toggle>
+<label for=section-950cdebc38a9ca098189c3fa0102c810 class="flex justify-between"><a role=button>基础(尚硅谷视频)_</a></label><ul><li><a href=/zh/docs/technology/Git/git_sgg/19-26/>19-26_git_尚硅谷</a></li><li><a href=/zh/docs/technology/Git/git_sgg/09-18/>09-18_git_尚硅谷</a></li><li><a href=/zh/docs/technology/Git/git_sgg/01-08/>01-08_git_尚硅谷</a></li></ul></li></ul></li><li><input type=checkbox id=section-d8f59257917ebff8da82fd22583ae10c class=toggle>
+<label for=section-d8f59257917ebff8da82fd22583ae10c class="flex justify-between"><a role=button>Maven</a></label><ul><li><input type=checkbox id=section-3557a7ceacd3cc2944407bceae9cdb4d class=toggle>
+<label for=section-3557a7ceacd3cc2944407bceae9cdb4d class="flex justify-between"><a role=button>进阶(动力节点)_</a></label><ul><li><a href=/zh/docs/technology/Maven/advance_dljd/01-21/>01-21 maven多模块管理_动力节点</a></li></ul></li><li><input type=checkbox id=section-1ebe9fbd5f37ad16b6c30982516d03c1 class=toggle>
+<label for=section-1ebe9fbd5f37ad16b6c30982516d03c1 class="flex justify-between"><a role=button>基础(动力节点)_</a></label><ul><li><a href=/zh/docs/technology/Maven/base_dljd/31-43/>31-43 maven基础_动力节点</a></li><li><a href=/zh/docs/technology/Maven/base_dljd/17-30/>17-30 maven基础_动力节点</a></li><li><a href=/zh/docs/technology/Maven/base_dljd/01-16/>01-16 maven基础_动力节点</a></li></ul></li></ul></li><li><input type=checkbox id=section-d2ff9acb1ec90bec89f165361ced2010 class=toggle>
+<label for=section-d2ff9acb1ec90bec89f165361ced2010 class="flex justify-between"><a role=button>算法</a></label><ul><li><input type=checkbox id=section-30bb60688a753351f347686aa0c1d0ca class=toggle>
+<label for=section-30bb60688a753351f347686aa0c1d0ca class="flex justify-between"><a role=button>_算法(第四版)_</a></label><ul><li><a href=/zh/docs/technology/Algorithm/algorithhms_4th/3.2.1/>算法红皮书 3.2.1</a></li><li><a href=/zh/docs/technology/Algorithm/algorithhms_4th/3.1.1-3.1.7/>算法红皮书 3.1.1-3.1.7</a></li><li><a href=/zh/docs/technology/Algorithm/algorithhms_4th/2.5/>算法红皮书 2.5</a></li><li><a href=/zh/docs/technology/Algorithm/algorithhms_4th/2.4/>算法红皮书 2.4</a></li><li><a href=/zh/docs/technology/Algorithm/algorithhms_4th/2.1.2-2.1.3/>算法红皮书 2.1.2-2.1.3</a></li><li><a href=/zh/docs/technology/Algorithm/algorithhms_4th/2.1.1/>算法红皮书 2.1.1</a></li><li><a href=/zh/docs/technology/Algorithm/algorithhms_4th/1.5.1-1.5.3/>算法红皮书 1.5.1-1.5.3</a></li><li><a href=/zh/docs/technology/Algorithm/algorithhms_4th/1.4.1-1.4.10/>算法红皮书 1.4.1-1.4.10</a></li><li><a href=/zh/docs/technology/Algorithm/algorithhms_4th/1.3.3.1-1.3.4/>算法红皮书1.3.3.1-1.3.4</a></li><li><a href=/zh/docs/technology/Algorithm/algorithhms_4th/1.3.1.1-1.3.2.5/>算法红皮书 1.3.1.1-1.3.2.5</a></li><li><a href=/zh/docs/technology/Algorithm/algorithhms_4th/1.2.1-1.2.5/>算法红皮书 1.2.1-1.2.5</a></li><li><a href=/zh/docs/technology/Algorithm/algorithhms_4th/1.1.6-1.1.11/>算法红皮书 1.1.6-1.1.11</a></li><li><a href=/zh/docs/technology/Algorithm/algorithhms_4th/1.1.1-1.1.5/>算法红皮书 1.1.1-1.1.5</a></li></ul></li></ul></li><li><input type=checkbox id=section-b414f13e51dbc5e90231aa49f06e7237 class=toggle>
+<label for=section-b414f13e51dbc5e90231aa49f06e7237 class="flex justify-between"><a role=button>My Batis Plus</a></label><ul><li><input type=checkbox id=section-4e717bc1448c52e86ed955c4be3f428c class=toggle>
+<label for=section-4e717bc1448c52e86ed955c4be3f428c class="flex justify-between"><a role=button>基础(尚硅谷)_</a></label><ul><li><a href=/zh/docs/technology/MyBatis-Plus/bl_sgg/40-57/>mybatis-plus-sgg-40-57</a></li><li><a href=/zh/docs/technology/MyBatis-Plus/bl_sgg/19-39/>mybatis-plus-sgg-19-39</a></li><li><a href=/zh/docs/technology/MyBatis-Plus/bl_sgg/12-18/>mybatis-plus-sgg-12-18</a></li><li><a href=/zh/docs/technology/MyBatis-Plus/bl_sgg/01-11/>mybatis-plus-sgg-01-11</a></li></ul></li><li><a href=/zh/docs/technology/MyBatis-Plus/official/hello/>官方的hello-world</a></li></ul></li><li><input type=checkbox id=section-1e5a67821c47d147a096480c75e0d7c4 class=toggle>
+<label for=section-1e5a67821c47d147a096480c75e0d7c4 class="flex justify-between"><a role=button>Flowable</a></label><ul><li><input type=checkbox id=section-e53ff6c199f2d0902ca5c483279f25b8 class=toggle>
+<label for=section-e53ff6c199f2d0902ca5c483279f25b8 class="flex justify-between"><a role=button>基础(波哥)_</a></label><ul><li><a href=/zh/docs/technology/Flowable/boge_blbl/03-others/>boge-03-其他</a></li><li><a href=/zh/docs/technology/Flowable/boge_blbl/02-advance_6/>boge-02-flowable进阶_6</a></li><li><a href=/zh/docs/technology/Flowable/boge_blbl/02-advance_5/>boge-02-flowable进阶_5</a></li><li><a href=/zh/docs/technology/Flowable/boge_blbl/02-advance_4/>boge-02-flowable进阶_4</a></li><li><a href=/zh/docs/technology/Flowable/boge_blbl/02-advance_3/>boge-02-flowable进阶_3</a></li><li><a href=/zh/docs/technology/Flowable/boge_blbl/02-advance_2/>boge-02-flowable进阶_2</a></li><li><a href=/zh/docs/technology/Flowable/boge_blbl/02-advance_1/>boge-02-flowable进阶_1</a></li><li><a href=/zh/docs/technology/Flowable/boge_blbl/01-base/>boge-01-flowable基础</a></li></ul></li><li><input type=checkbox id=section-6019d9043956834af14f96c2f7dcd5ca class=toggle>
+<label for=section-6019d9043956834af14f96c2f7dcd5ca class="flex justify-between"><a role=button>官方文档</a></label><ul><li><a href=/zh/docs/technology/Flowable/offical/05/>Flowable-05-spring-boot</a></li><li><a href=/zh/docs/technology/Flowable/offical/04/>Flowable-04-spring</a></li><li><a href=/zh/docs/technology/Flowable/offical/03/>Flowable-03-api</a></li><li><a href=/zh/docs/technology/Flowable/offical/02/>Flowable-02-Configuration</a></li><li><a href=/zh/docs/technology/Flowable/offical/01/>Flowable-01-GettingStarted</a></li></ul></li><li><a href=/zh/docs/technology/Flowable/zsx_design/01/>zsx_flowable_design01</a></li></ul></li><li><input type=checkbox id=section-bcdb1ad0996261fc1aba63e3b9c9a8e8 class=toggle>
+<label for=section-bcdb1ad0996261fc1aba63e3b9c9a8e8 class="flex justify-between"><a role=button>Rocket Mq</a></label><ul><li><input type=checkbox id=section-43a4f8091b9954bf8a9e95f6b71d2c49 class=toggle>
+<label for=section-43a4f8091b9954bf8a9e95f6b71d2c49 class="flex justify-between"><a role=button>基础(黑马)_</a></label><ul><li><a href=/zh/docs/technology/RocketMQ/heima/05advance/>05高级功能</a></li><li><a href=/zh/docs/technology/RocketMQ/heima/04case/>04案例</a></li><li><a href=/zh/docs/technology/RocketMQ/heima/03messagetype/>03收发消息</a></li><li><a href=/zh/docs/technology/RocketMQ/heima/02buildcluster/>02双主双从集群搭建</a></li><li><a href=/zh/docs/technology/RocketMQ/heima/01base/>01rocketmq学习</a></li></ul></li></ul></li></ul></li><li class=book-section-flat><a href=/zh/docs/problem/>问题解决</a><ul><li><input type=checkbox id=section-ab4f1dd893a7409a00858148e98c245c class=toggle>
+<label for=section-ab4f1dd893a7409a00858148e98c245c class="flex justify-between"><a role=button>Other</a></label><ul><li><a href=/zh/docs/problem/Other/01/>如何搜索</a></li></ul></li><li><input type=checkbox id=section-ef3324c710f7241c89fc009a5f576fbc class=toggle>
+<label for=section-ef3324c710f7241c89fc009a5f576fbc class="flex justify-between"><a role=button>Linux</a></label><ul><li><a href=/zh/docs/problem/Linux/20230919/>Linux操作符问题</a></li><li><a href=/zh/docs/problem/Linux/20230819/>Debian问题处理3</a></li><li><a href=/zh/docs/problem/Linux/20230817/>Debian问题处理2</a></li><li><a href=/zh/docs/problem/Linux/20230815/>Debian问题处理1</a></li><li><a href=/zh/docs/problem/Linux/20230803/>安卓手机及平板安装linuxDeploy的问题简记</a></li><li><a href=/zh/docs/problem/Linux/20230523/>zsh卸载后root无法登录及vm扩容centos7报错处理</a></li><li><a href=/zh/docs/problem/Linux/20221101/>post</a></li></ul></li><li><input type=checkbox id=section-9e8cd5fa8604e5d54ff445fe44d3ca85 class=toggle>
+<label for=section-9e8cd5fa8604e5d54ff445fe44d3ca85 class="flex justify-between"><a role=button>Jvm</a></label><ul><li><a href=/zh/docs/problem/JVM/20230526/>JDK代理和CGLIB代理</a></li><li><a href=/zh/docs/problem/JVM/2023052302/>linux中调试open jdk</a></li></ul></li><li><input type=checkbox id=section-a028a45b205904a783d0c60e8a184391 class=toggle>
+<label for=section-a028a45b205904a783d0c60e8a184391 class="flex justify-between"><a role=button>Hexo</a></label><ul><li><a href=/zh/docs/problem/Hexo/01/>hexo在线查看pdf</a></li></ul></li><li><input type=checkbox id=section-1c55bf7a5578a7de17cc1ee45681106b class=toggle>
+<label for=section-1c55bf7a5578a7de17cc1ee45681106b class="flex justify-between"><a role=button>Idea</a></label><ul><li><a href=/zh/docs/problem/Idea/01/>问题01</a></li></ul></li><li><input type=checkbox id=section-66dd985e53d8e0b78efdab983762411c class=toggle>
+<label for=section-66dd985e53d8e0b78efdab983762411c class="flex justify-between"><a role=button>Git</a></label><ul><li><a href=/zh/docs/problem/Git/01/>git使用ssh连不上</a></li></ul></li><li><input type=checkbox id=section-9440d21f7eb9f8cf7f45b16969ab18dc class=toggle>
+<label for=section-9440d21f7eb9f8cf7f45b16969ab18dc class="flex justify-between"><a role=button>Hugo</a></label><ul><li><a href=/zh/docs/problem/Hugo/p1/>hugo踩坑</a></li><li><a href=/zh/docs/problem/Hugo/01a/>图片测试(hugo踩坑)</a></li></ul></li></ul></li><li class=book-section-flat><a href=/zh/docs/life/>生活</a><ul><li><input type=checkbox id=section-c7f767205668758142bb8053263cc14f class=toggle>
+<label for=section-c7f767205668758142bb8053263cc14f class="flex justify-between"><a role=button>往日归档</a></label><ul><li><a href=/zh/docs/life/archive/20231026/>成就</a></li><li><a href=/zh/docs/life/archive/20231013/>沉没</a></li><li><a href=/zh/docs/life/archive/20230913/>鲇鱼后思</a></li><li><a href=/zh/docs/life/archive/20230912/>病愈 有感</a></li><li><a href=/zh/docs/life/archive/20220724/>人为什么要结婚(找对象)</a></li><li><a href=/zh/docs/life/archive/20220416/>《作酒》有感</a></li><li><a href=/zh/docs/life/archive/20121226/>2021年最后一个周日</a></li><li><a href=/zh/docs/life/archive/20231021/>沉沦</a></li></ul></li><li><a href=/zh/docs/life/dailyExcerpt/>每日摘抄</a></li><li><a href=/zh/docs/life/20240626/>知命不惧 日日自新</a></li><li><a href=/zh/docs/life/20231227/>起床临感</a></li><li><a href=/zh/docs/life/20231101/>20231101</a></li></ul></li><li class=book-section-flat><a href=/zh/docs/test/>测试</a><ul><li><a href=/zh/docs/test/hello2/>pdfTest</a></li></ul></li></ul><ul><li><a href=/zh/posts/>博客</a></li></ul></nav><script>(function(){var e=document.querySelector("aside .book-menu-content");addEventListener("beforeunload",function(){localStorage.setItem("menu.scrollTop",e.scrollTop)}),e.scrollTop=localStorage.getItem("menu.scrollTop")})()</script></div></aside><div class=book-page><header class=book-header><div class="flex align-center justify-between"><label for=menu-control><img src=/svg/menu.svg class=book-icon alt=Menu></label><h3>HashMap源码</h3><label for=toc-control><img src=/svg/toc.svg class=book-icon alt="Table of Contents"></label></div><aside class="hidden clearfix"><nav id=TableOfContents><ul><li><ul><li><a href=#hashmap简介>HashMap简介</a></li><li><a href=#底层数据结构分析>底层数据结构分析</a></li><li><a href=#hashmap源码分析>HashMap源码分析</a></li><li><a href=#hashmap常用方法测试>HashMap常用方法测试</a></li></ul></li></ul></nav></aside></header><article class="markdown book-article"><blockquote><p>转载自https://github.com/Snailclimb/JavaGuide （添加小部分笔记）感谢作者!</p></blockquote><h2 id=hashmap简介>HashMap简介
+<a class=anchor href=#hashmap%e7%ae%80%e4%bb%8b>#</a></h2><ul><li>HashMap用来存放<strong>键值对</strong>，基于哈希表的Map接口实现，是<strong>非线程安全</strong>的</li><li>可以存储null的key和value，但null作为键只能有一个</li><li>JDK8之前，HashMap由<strong>数组和链表</strong>组成，链表是为了解决哈希冲突而存在；JDK8之后，当链表大于阈值（默认8），则会选择<strong>转为红黑树</strong>（当数组长度大于64则进行转换，否则只是扩容），以<strong>减少搜索时间</strong></li><li>HashMap默认初始化大小为16，每次<strong>扩容为原容量2倍</strong>，且总是使用2的幂作为哈希表的大小</li></ul><h2 id=底层数据结构分析>底层数据结构分析
+<a class=anchor href=#%e5%ba%95%e5%b1%82%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84%e5%88%86%e6%9e%90>#</a></h2><ul><li><p>JDK8之前，HashMap底层是<strong>数组和链表</strong>，即<strong>链表散列</strong>；通过key的hashCode，经过扰动函数，获得hash值，然后再通过(n-1) & hash 判断当前元素存放位置（n指的是数组长度），如果当前位置存在元素，就判断元素与要存入的元素的hash值以及key是否相同，相同则覆盖，否则通过<strong>拉链法</strong>解决<br><img src=img/ly-20241212141931350.png alt=ly-20241212141931350></p><ul><li><p>扰动函数，即hash(Object key)方法</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=display:flex><span><span style=color:#75715e>//JDK1.8  </span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>static</span> <span style=color:#66d9ef>final</span> <span style=color:#66d9ef>int</span> <span style=color:#a6e22e>hash</span>(Object key) {
+</span></span><span style=display:flex><span>      <span style=color:#66d9ef>int</span> h;
+</span></span><span style=display:flex><span>      <span style=color:#75715e>// key.hashCode()：返回散列值也就是hashcode</span>
+</span></span><span style=display:flex><span>      <span style=color:#75715e>// ^ ：按位异或</span>
+</span></span><span style=display:flex><span>      <span style=color:#75715e>// &gt;&gt;&gt;:无符号右移，忽略符号位，空位都以0补齐</span>
+</span></span><span style=display:flex><span>      <span style=color:#66d9ef>return</span> (key <span style=color:#f92672>==</span> <span style=color:#66d9ef>null</span>) <span style=color:#f92672>?</span> 0 : (h <span style=color:#f92672>=</span> key.<span style=color:#a6e22e>hashCode</span>()) <span style=color:#f92672>^</span> (h <span style=color:#f92672>&gt;&gt;&gt;</span> 16);
+</span></span><span style=display:flex><span>  }
+</span></span></code></pre></div></li><li><p>JDK1.7</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=display:flex><span><span style=color:#75715e>//JDK1.7 , 则扰动了4次，性能较差</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>static</span> <span style=color:#66d9ef>int</span> <span style=color:#a6e22e>hash</span>(<span style=color:#66d9ef>int</span> h) {
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// This function ensures that hashCodes that differ only by</span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// constant multiples at each bit position have a bounded</span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// number of collisions (approximately 8 at default load factor).</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    h <span style=color:#f92672>^=</span> (h <span style=color:#f92672>&gt;&gt;&gt;</span> 20) <span style=color:#f92672>^</span> (h <span style=color:#f92672>&gt;&gt;&gt;</span> 12);
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> h <span style=color:#f92672>^</span> (h <span style=color:#f92672>&gt;&gt;&gt;</span> 7) <span style=color:#f92672>^</span> (h <span style=color:#f92672>&gt;&gt;&gt;</span> 4);
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div></li></ul></li><li><p>JDK1.8之后，当链表长度大于阈值（默认为 8）时，会首先调用 <code>treeifyBin()</code>方法。这个方法会根据 HashMap 数组来决定是否转换为红黑树。只有<strong>当数组长度大于或者等于 64</strong> 的情况下，才会执行转换红黑树操作，以减少搜索时间。<strong>否则，就是只是执行 <code>resize()</code> 方法对数组扩容</strong>。相关源码这里就不贴了，重点关注 <code>treeifyBin()</code>方法即可！</p><p><img src=img/ly-20241212141931588.png alt=ly-20241212141931588></p></li><li><p>HashMap一些属性</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>HashMap</span><span style=color:#f92672>&lt;</span>K,V<span style=color:#f92672>&gt;</span> <span style=color:#66d9ef>extends</span> AbstractMap<span style=color:#f92672>&lt;</span>K,V<span style=color:#f92672>&gt;</span> <span style=color:#66d9ef>implements</span> Map<span style=color:#f92672>&lt;</span>K,V<span style=color:#f92672>&gt;</span>, Cloneable, Serializable {
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// 序列号</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>final</span> <span style=color:#66d9ef>long</span> serialVersionUID <span style=color:#f92672>=</span> 362498820763181265L;
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// 默认的初始容量是16</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>final</span> <span style=color:#66d9ef>int</span> DEFAULT_INITIAL_CAPACITY <span style=color:#f92672>=</span> 1 <span style=color:#f92672>&lt;&lt;</span> 4;
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// 最大容量</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>final</span> <span style=color:#66d9ef>int</span> MAXIMUM_CAPACITY <span style=color:#f92672>=</span> 1 <span style=color:#f92672>&lt;&lt;</span> 30;
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// 默认的填充因子</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>final</span> <span style=color:#66d9ef>float</span> DEFAULT_LOAD_FACTOR <span style=color:#f92672>=</span> 0.<span style=color:#a6e22e>75f</span>;
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// 当桶(bucket)上的结点数大于这个值时会转成红黑树</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>final</span> <span style=color:#66d9ef>int</span> TREEIFY_THRESHOLD <span style=color:#f92672>=</span> 8;
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// 当桶(bucket)上的结点数小于这个值时树转链表</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>final</span> <span style=color:#66d9ef>int</span> UNTREEIFY_THRESHOLD <span style=color:#f92672>=</span> 6;
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// 桶中结构转化为红黑树对应的table的最小容量</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>final</span> <span style=color:#66d9ef>int</span> MIN_TREEIFY_CAPACITY <span style=color:#f92672>=</span> 64;
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// 存储元素的数组，总是2的幂次倍</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>transient</span> Node<span style=color:#f92672>&lt;</span>k,v<span style=color:#f92672>&gt;[]</span> table;
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// 存放具体元素的集</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>transient</span> Set<span style=color:#f92672>&lt;</span>map.<span style=color:#a6e22e>entry</span><span style=color:#f92672>&lt;</span>k,v<span style=color:#f92672>&gt;&gt;</span> entrySet;
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// 存放元素的个数，注意这个不等于数组的长度。</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>transient</span> <span style=color:#66d9ef>int</span> size;
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// 每次扩容和更改map结构的计数器</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>transient</span> <span style=color:#66d9ef>int</span> modCount;
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// 临界值(容量*填充因子) 当实际大小超过临界值时，会进行扩容</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>int</span> threshold;
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// 加载因子</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>final</span> <span style=color:#66d9ef>float</span> loadFactor;
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><ul><li><p>LoadFactor 加载因子</p><p>loadFactor 加载因子是控制数组存放数据的疏密程度，loadFactor 越<strong>趋近于 1</strong>，那么 数组中存放的数据(entry)【<strong>说的就是数组个数</strong>】也就越多**，也就<strong>越密</strong>，也就是会让<strong>链表的长度增加</strong>，loadFactor 越小，也就是趋近于 0，数组中存放的数据(entry)也就越少，也就越稀疏。</p><p><strong>loadFactor 太大导致查找元素效率低，太小导致数组的利用率低，存放的数据会很分散。loadFactor 的默认值为 0.75f 是官方给出的一个比较好的临界值</strong>。</p><p>给定的默认容量为 16，负载因子为 0.75。Map 在使用过程中不断的往里面存放数据，当数量达到了 <strong>16 * 0.75 = 12 就需要将当前 16 的容量进行扩容</strong>，而扩容这个过程涉及到 <strong>rehash</strong>、<strong>复制数据</strong>等操作，所以<strong>非常消耗性能</strong>。</p></li><li><p>threshold <code>threshold 英[ˈθreʃhəʊld]</code>
+<strong>threshold = capacity * loadFactor</strong>，即存放的元素Size 如果 > threshold ，即capacity * 0.75的时候，就要考虑扩容了</p></li></ul></li><li><p>Node类结点源码</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=display:flex><span><span style=color:#75715e>// 继承自 Map.Entry&lt;K,V&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>static</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>Node</span><span style=color:#f92672>&lt;</span>K,V<span style=color:#f92672>&gt;</span> <span style=color:#66d9ef>implements</span> Map.<span style=color:#a6e22e>Entry</span><span style=color:#f92672>&lt;</span>K,V<span style=color:#f92672>&gt;</span> {
+</span></span><span style=display:flex><span>       <span style=color:#66d9ef>final</span> <span style=color:#66d9ef>int</span> hash;<span style=color:#75715e>// 哈希值，存放元素到hashmap中时用来与其他元素hash值比较</span>
+</span></span><span style=display:flex><span>       <span style=color:#66d9ef>final</span> K key;<span style=color:#75715e>//键</span>
+</span></span><span style=display:flex><span>       V value;<span style=color:#75715e>//值</span>
+</span></span><span style=display:flex><span>       <span style=color:#75715e>// 指向下一个节点</span>
+</span></span><span style=display:flex><span>       Node<span style=color:#f92672>&lt;</span>K,V<span style=color:#f92672>&gt;</span> next;
+</span></span><span style=display:flex><span>       Node(<span style=color:#66d9ef>int</span> hash, K key, V value, Node<span style=color:#f92672>&lt;</span>K,V<span style=color:#f92672>&gt;</span> next) {
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>this</span>.<span style=color:#a6e22e>hash</span> <span style=color:#f92672>=</span> hash;
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>this</span>.<span style=color:#a6e22e>key</span> <span style=color:#f92672>=</span> key;
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>this</span>.<span style=color:#a6e22e>value</span> <span style=color:#f92672>=</span> value;
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>this</span>.<span style=color:#a6e22e>next</span> <span style=color:#f92672>=</span> next;
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>final</span> K <span style=color:#a6e22e>getKey</span>()        { <span style=color:#66d9ef>return</span> key; }
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>final</span> V <span style=color:#a6e22e>getValue</span>()      { <span style=color:#66d9ef>return</span> value; }
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>final</span> String <span style=color:#a6e22e>toString</span>() { <span style=color:#66d9ef>return</span> key <span style=color:#f92672>+</span> <span style=color:#e6db74>&#34;=&#34;</span> <span style=color:#f92672>+</span> value; }
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// 重写hashCode()方法</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>final</span> <span style=color:#66d9ef>int</span> <span style=color:#a6e22e>hashCode</span>() {
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>return</span> Objects.<span style=color:#a6e22e>hashCode</span>(key) <span style=color:#f92672>^</span> Objects.<span style=color:#a6e22e>hashCode</span>(value);
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>final</span> V <span style=color:#a6e22e>setValue</span>(V newValue) {
+</span></span><span style=display:flex><span>            V oldValue <span style=color:#f92672>=</span> value;
+</span></span><span style=display:flex><span>            value <span style=color:#f92672>=</span> newValue;
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>return</span> oldValue;
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// 重写 equals() 方法</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>final</span> <span style=color:#66d9ef>boolean</span> <span style=color:#a6e22e>equals</span>(Object o) {
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>if</span> (o <span style=color:#f92672>==</span> <span style=color:#66d9ef>this</span>)
+</span></span><span style=display:flex><span>                <span style=color:#66d9ef>return</span> <span style=color:#66d9ef>true</span>;
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>if</span> (o <span style=color:#66d9ef>instanceof</span> Map.<span style=color:#a6e22e>Entry</span>) {
+</span></span><span style=display:flex><span>                Map.<span style=color:#a6e22e>Entry</span><span style=color:#f92672>&lt;?</span>,<span style=color:#f92672>?&gt;</span> e <span style=color:#f92672>=</span> (Map.<span style=color:#a6e22e>Entry</span><span style=color:#f92672>&lt;?</span>,<span style=color:#f92672>?&gt;</span>)o;
+</span></span><span style=display:flex><span>                <span style=color:#66d9ef>if</span> (Objects.<span style=color:#a6e22e>equals</span>(key, e.<span style=color:#a6e22e>getKey</span>()) <span style=color:#f92672>&amp;&amp;</span>
+</span></span><span style=display:flex><span>                    Objects.<span style=color:#a6e22e>equals</span>(value, e.<span style=color:#a6e22e>getValue</span>()))
+</span></span><span style=display:flex><span>                    <span style=color:#66d9ef>return</span> <span style=color:#66d9ef>true</span>;
+</span></span><span style=display:flex><span>            }
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>return</span> <span style=color:#66d9ef>false</span>;
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>树节点类源码</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=display:flex><span><span style=color:#66d9ef>static</span> <span style=color:#66d9ef>final</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>TreeNode</span><span style=color:#f92672>&lt;</span>K,V<span style=color:#f92672>&gt;</span> <span style=color:#66d9ef>extends</span> LinkedHashMap.<span style=color:#a6e22e>Entry</span><span style=color:#f92672>&lt;</span>K,V<span style=color:#f92672>&gt;</span> {
+</span></span><span style=display:flex><span>        TreeNode<span style=color:#f92672>&lt;</span>K,V<span style=color:#f92672>&gt;</span> parent;  <span style=color:#75715e>// 父</span>
+</span></span><span style=display:flex><span>        TreeNode<span style=color:#f92672>&lt;</span>K,V<span style=color:#f92672>&gt;</span> left;    <span style=color:#75715e>// 左</span>
+</span></span><span style=display:flex><span>        TreeNode<span style=color:#f92672>&lt;</span>K,V<span style=color:#f92672>&gt;</span> right;   <span style=color:#75715e>// 右</span>
+</span></span><span style=display:flex><span>        TreeNode<span style=color:#f92672>&lt;</span>K,V<span style=color:#f92672>&gt;</span> prev;    <span style=color:#75715e>// needed to unlink next upon deletion</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>boolean</span> red;           <span style=color:#75715e>// 判断颜色</span>
+</span></span><span style=display:flex><span>        TreeNode(<span style=color:#66d9ef>int</span> hash, K key, V val, Node<span style=color:#f92672>&lt;</span>K,V<span style=color:#f92672>&gt;</span> next) {
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>super</span>(hash, key, val, next);
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// 返回根节点</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>final</span> TreeNode<span style=color:#f92672>&lt;</span>K,V<span style=color:#f92672>&gt;</span> <span style=color:#a6e22e>root</span>() {
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>for</span> (TreeNode<span style=color:#f92672>&lt;</span>K,V<span style=color:#f92672>&gt;</span> r <span style=color:#f92672>=</span> <span style=color:#66d9ef>this</span>, p;;) {
+</span></span><span style=display:flex><span>                <span style=color:#66d9ef>if</span> ((p <span style=color:#f92672>=</span> r.<span style=color:#a6e22e>parent</span>) <span style=color:#f92672>==</span> <span style=color:#66d9ef>null</span>)
+</span></span><span style=display:flex><span>                    <span style=color:#66d9ef>return</span> r;
+</span></span><span style=display:flex><span>                r <span style=color:#f92672>=</span> p;
+</span></span><span style=display:flex><span>       }
+</span></span></code></pre></div></li></ul><h2 id=hashmap源码分析>HashMap源码分析
+<a class=anchor href=#hashmap%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90>#</a></h2><ul><li><p>构造方法(4个，空参/Map/指定容量大小/容量大小及加载因子)</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=display:flex><span><span style=color:#75715e>// 默认构造函数。</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#a6e22e>HashMap</span>() {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>this</span>.<span style=color:#a6e22e>loadFactor</span> <span style=color:#f92672>=</span> DEFAULT_LOAD_FACTOR; <span style=color:#75715e>// all   other fields defaulted</span>
+</span></span><span style=display:flex><span>     }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>     <span style=color:#75715e>// 包含另一个“Map”的构造函数</span>
+</span></span><span style=display:flex><span>     <span style=color:#66d9ef>public</span> <span style=color:#a6e22e>HashMap</span>(Map<span style=color:#f92672>&lt;?</span> <span style=color:#66d9ef>extends</span> K, <span style=color:#f92672>?</span> <span style=color:#66d9ef>extends</span> V<span style=color:#f92672>&gt;</span> m) {
+</span></span><span style=display:flex><span>         <span style=color:#66d9ef>this</span>.<span style=color:#a6e22e>loadFactor</span> <span style=color:#f92672>=</span> DEFAULT_LOAD_FACTOR;
+</span></span><span style=display:flex><span>         putMapEntries(m, <span style=color:#66d9ef>false</span>);<span style=color:#75715e>//下面会分析到这个方法</span>
+</span></span><span style=display:flex><span>     }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>     <span style=color:#75715e>// 指定“容量大小”的构造函数</span>
+</span></span><span style=display:flex><span>     <span style=color:#66d9ef>public</span> <span style=color:#a6e22e>HashMap</span>(<span style=color:#66d9ef>int</span> initialCapacity) {
+</span></span><span style=display:flex><span>         <span style=color:#66d9ef>this</span>(initialCapacity, DEFAULT_LOAD_FACTOR);
+</span></span><span style=display:flex><span>     }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>     <span style=color:#75715e>// 指定“容量大小”和“加载因子”的构造函数</span>
+</span></span><span style=display:flex><span>     <span style=color:#66d9ef>public</span> <span style=color:#a6e22e>HashMap</span>(<span style=color:#66d9ef>int</span> initialCapacity, <span style=color:#66d9ef>float</span> loadFactor) {
+</span></span><span style=display:flex><span>         <span style=color:#66d9ef>if</span> (initialCapacity <span style=color:#f92672>&lt;</span> 0)
+</span></span><span style=display:flex><span>             <span style=color:#66d9ef>throw</span> <span style=color:#66d9ef>new</span> IllegalArgumentException(<span style=color:#e6db74>&#34;Illegal initial capacity: &#34;</span> <span style=color:#f92672>+</span> initialCapacity);
+</span></span><span style=display:flex><span>         <span style=color:#66d9ef>if</span> (initialCapacity <span style=color:#f92672>&gt;</span> MAXIMUM_CAPACITY)
+</span></span><span style=display:flex><span>             initialCapacity <span style=color:#f92672>=</span> MAXIMUM_CAPACITY;
+</span></span><span style=display:flex><span>         <span style=color:#66d9ef>if</span> (loadFactor <span style=color:#f92672>&lt;=</span> 0 <span style=color:#f92672>||</span> Float.<span style=color:#a6e22e>isNaN</span>(loadFactor))
+</span></span><span style=display:flex><span>             <span style=color:#66d9ef>throw</span> <span style=color:#66d9ef>new</span> IllegalArgumentException(<span style=color:#e6db74>&#34;Illegal load factor: &#34;</span> <span style=color:#f92672>+</span> loadFactor);
+</span></span><span style=display:flex><span>         <span style=color:#66d9ef>this</span>.<span style=color:#a6e22e>loadFactor</span> <span style=color:#f92672>=</span> loadFactor;
+</span></span><span style=display:flex><span>         <span style=color:#66d9ef>this</span>.<span style=color:#a6e22e>threshold</span> <span style=color:#f92672>=</span> tableSizeFor(initialCapacity);
+</span></span><span style=display:flex><span>     }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>//putMapEntries方法</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>final</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>putMapEntries</span>(Map<span style=color:#f92672>&lt;?</span> <span style=color:#66d9ef>extends</span> K, <span style=color:#f92672>?</span> <span style=color:#66d9ef>extends</span> V<span style=color:#f92672>&gt;</span> m, <span style=color:#66d9ef>boolean</span> evict) {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>int</span> s <span style=color:#f92672>=</span> m.<span style=color:#a6e22e>size</span>();
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> (s <span style=color:#f92672>&gt;</span> 0) {
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// 判断table是否已经初始化</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> (table <span style=color:#f92672>==</span> <span style=color:#66d9ef>null</span>) { <span style=color:#75715e>// pre-size</span>
+</span></span><span style=display:flex><span>            <span style=color:#75715e>// 未初始化，s为m的实际元素个数</span>
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>float</span> ft <span style=color:#f92672>=</span> ((<span style=color:#66d9ef>float</span>)s <span style=color:#f92672>/</span> loadFactor) <span style=color:#f92672>+</span> 1.<span style=color:#a6e22e>0F</span>;
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>int</span> t <span style=color:#f92672>=</span> ((ft <span style=color:#f92672>&lt;</span> (<span style=color:#66d9ef>float</span>)MAXIMUM_CAPACITY) <span style=color:#f92672>?</span>
+</span></span><span style=display:flex><span>                    (<span style=color:#66d9ef>int</span>)ft : MAXIMUM_CAPACITY);
+</span></span><span style=display:flex><span>            <span style=color:#75715e>// 计算得到的t大于阈值，则初始化阈值</span>
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>if</span> (t <span style=color:#f92672>&gt;</span> threshold)
+</span></span><span style=display:flex><span>                threshold <span style=color:#f92672>=</span> tableSizeFor(t);
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// 已初始化，并且m元素个数大于阈值，进行扩容处理</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>else</span> <span style=color:#66d9ef>if</span> (s <span style=color:#f92672>&gt;</span> threshold)
+</span></span><span style=display:flex><span>            resize();
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// 将m中的所有元素添加至HashMap中</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>for</span> (Map.<span style=color:#a6e22e>Entry</span><span style=color:#f92672>&lt;?</span> <span style=color:#66d9ef>extends</span> K, <span style=color:#f92672>?</span> <span style=color:#66d9ef>extends</span> V<span style=color:#f92672>&gt;</span> e : m.<span style=color:#a6e22e>entrySet</span>()) {
+</span></span><span style=display:flex><span>            K key <span style=color:#f92672>=</span> e.<span style=color:#a6e22e>getKey</span>();
+</span></span><span style=display:flex><span>            V value <span style=color:#f92672>=</span> e.<span style=color:#a6e22e>getValue</span>();
+</span></span><span style=display:flex><span>            putVal(hash(key), key, value, <span style=color:#66d9ef>false</span>, evict);
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div></li><li><p>put方法（<strong>对外只提供put</strong>，没有putVal)
+putVal方法添加元素分析</p><ul><li><p>如果定位到的数组位置没有元素直接插入</p></li><li><p>如果有，则比较key，如果key相同则覆盖，不同则判断是否是否是一个树节点，如果是就调用<code>e = ((TreeNode&lt;K,V>)p).putTreeVal(this, tab, hash, key, value)</code>将元素添加进入；如果不是，则遍历链表插入(链表尾部)
+<img src=img/ly-20241212141931762.png alt=ly-20241212141931762></p><ul><li></li></ul></li></ul></li></ul><pre><code>  ```java
+</code></pre><p>//源码
+public V put(K key, V value) {
+return putVal(hash(key), key, value, false, true);
+}</p><pre><code>  final V putVal(int hash, K key, V value, boolean onlyIfAbsent,
+                     boolean evict) {
+      Node&lt;K,V&gt;[] tab; Node&lt;K,V&gt; p; int n, i;
+      // table未初始化或者长度为0，进行扩容
+      if ((tab = table) == null || (n = tab.length) == 0)
+          n = (tab = resize()).length;
+      // (n - 1) &amp; hash 确定元素存放在哪个桶中，桶为空，新生成结点放入桶中(此时，这个结点是放在数组中)
+      if ((p = tab[i = (n - 1) &amp; hash]) == null)
+          tab[i] = newNode(hash, key, value, null);
+      // 桶中已经存在元素（处理hash冲突）
+      else {
+          Node&lt;K,V&gt; e; K k;
+          // 判断table[i]中的元素是否与插入的key一样，若相同那就直接使用插入的值p替换掉旧的值e。
+          if (p.hash == hash &amp;&amp;
+              ((k = p.key) == key || (key != null &amp;&amp; key.equals(k))))
+                  e = p;
+          // 判断插入的是否是红黑树节点
+          else if (p instanceof TreeNode)
+              // 放入树中
+              e = ((TreeNode&lt;K,V&gt;)p).putTreeVal(this, tab, hash, key, value);
+          // 不是红黑树节点则说明为链表结点
+          else {
+              // 在链表最末插入结点
+              for (int binCount = 0; ; ++binCount) {
+                  // 到达链表的尾部
+                  if ((e = p.next) == null) {
+                      // 在尾部插入新结点
+                      p.next = newNode(hash, key, value, null);
+                      // 结点数量达到阈值(默认为 8 )，执行 treeifyBin 方法
+                      // 这个方法会根据 HashMap 数组来决定是否转换为红黑树。
+                      // 只有当数组长度大于或者等于 64 的情况下，才会执行转换红黑树操作，以减少搜索时间。否则，就是只是对数组扩容。
+                      if (binCount &gt;= TREEIFY_THRESHOLD - 1) // -1 for 1st
+                          treeifyBin(tab, hash);
+                      // 跳出循环
+                      break;
+                  }
+                  // 判断链表中结点的key值与插入的元素的key值是否相等
+                  if (e.hash == hash &amp;&amp;
+                      ((k = e.key) == key || (key != null &amp;&amp; key.equals(k))))
+                      // 相等，跳出循环
+                      break;
+                  // 用于遍历桶中的链表，与前面的e = p.next组合，可以遍历链表
+                  p = e;
+              }
+          }
+          // 表示在桶中找到key值、hash值与插入元素相等的结点
+          if (e != null) {
+              // 记录e的value
+              V oldValue = e.value;
+              // onlyIfAbsent为false或者旧值为null
+              if (!onlyIfAbsent || oldValue == null)
+                  //用新值替换旧值
+                  e.value = value;
+              // 访问后回调
+              afterNodeAccess(e);
+              // 返回旧值
+              return oldValue;
+          }
+      }
+      // 结构性修改
+      ++modCount;
+      // 实际大小大于阈值则扩容
+      if (++size &gt; threshold)
+          resize();
+      // 插入后回调
+      afterNodeInsertion(evict);
+      return null;
+  }
+  ```
+</code></pre><ul><li><p>对比1.7中的put方法</p><ul><li><p>① 如果定位到的数组位置没有元素 就直接插入。</p></li><li><p>② 如果定位到的数组位置有元素，遍历<strong>以这个元素为头结点的链表</strong>，依次和插入的 key 比较，如果 key 相同就直接覆盖，不同就<strong>采用头插法插入元素</strong>。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java></code></pre></div></li></ul><p>//源码
+public V put(K key, V value)
+if (table == EMPTY_TABLE) {
+inflateTable(threshold);
+}
+if (key == null)
+return putForNullKey(value);
+int hash = hash(key);
+int i = indexFor(hash, table.length);
+for (Entry&lt;K,V> e = table[i]; e != null; e = e.next) { // 先遍历
+Object k;
+if (e.hash == hash && ((k = e.key) == key || key.equals(k))) {
+V oldValue = e.value;
+e.value = value;
+e.recordAccess(this);
+return oldValue;
+}
+}</p><pre><code>  modCount++;
+  addEntry(hash, key, value, i);  // 再插入
+  return null;
+</code></pre><p>}</p><pre tabindex=0><code></code></pre></li><li><p>get方法
+//先算hash值，然后算出key在数组中的index下标，然后就要<strong>在数组中取值</strong>了（先判断第一个结点(链表/树))。如果相等，则返回，如果不相等则分两种情况：在（红黑树）树中get或者 <strong>链表中get（需要遍历）</strong></p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java></code></pre></div></li></ul><p>public V get(Object key) {
+Node&lt;K,V> e;
+return (e = getNode(hash(key), key)) == null ? null : e.value;
+}</p><pre><code>final Node&lt;K,V&gt; getNode(int hash, Object key) {
+    Node&lt;K,V&gt;[] tab; Node&lt;K,V&gt; first, e; int n; K k;
+    if ((tab = table) != null &amp;&amp; (n = tab.length) &gt; 0 &amp;&amp;
+        (first = tab[(n - 1) &amp; hash]) != null) {
+        // 数组元素相等
+        if (first.hash == hash &amp;&amp; // always check first node
+            ((k = first.key) == key || (key != null &amp;&amp; key.equals(k))))
+            return first;
+        // 桶中不止一个节点
+        if ((e = first.next) != null) {
+            // 在树中get
+            if (first instanceof TreeNode)
+                return ((TreeNode&lt;K,V&gt;)first).getTreeNode(hash, key);
+            // 在链表中get
+            do {
+                if (e.hash == hash &amp;&amp;
+                    ((k = e.key) == key || (key != null &amp;&amp; key.equals(k))))
+                    return e;
+            } while ((e = e.next) != null);
+        }
+    }
+    return null;
+}
+```
+</code></pre><ul><li><p>resize方法
+每次<strong>扩容</strong>，都会进行一次<strong>重新hash分配</strong>，且<strong>会遍历所有元素</strong>（非常耗时）</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java></code></pre></div></li></ul><p>final Node&lt;K,V>[] resize() {
+Node&lt;K,V>[] oldTab = table;
+int oldCap = (oldTab == null) ? 0 : oldTab.length;
+int oldThr = threshold;
+int newCap, newThr = 0;
+if (oldCap > 0) {
+// 超过最大值就不再扩充了，就只好随你碰撞去吧
+if (oldCap >= MAXIMUM_CAPACITY) {
+threshold = Integer.MAX_VALUE;
+return oldTab;
+}
+// 没超过最大值，就扩充为原来的2倍
+else if ((newCap = oldCap &#171; 1) &lt; MAXIMUM_CAPACITY && oldCap >= DEFAULT_INITIAL_CAPACITY)
+newThr = oldThr &#171; 1; // double threshold
+}
+else if (oldThr > 0) // initial capacity was placed in threshold
+newCap = oldThr;
+else {
+// signifies using defaults
+newCap = DEFAULT_INITIAL_CAPACITY;
+newThr = (int)(DEFAULT_LOAD_FACTOR * DEFAULT_INITIAL_CAPACITY);
+}
+// 计算新的resize上限
+if (newThr == 0) {
+float ft = (float)newCap * loadFactor;
+newThr = (newCap &lt; MAXIMUM_CAPACITY && ft &lt; (float)MAXIMUM_CAPACITY ? (int)ft : Integer.MAX_VALUE);
+}
+threshold = newThr;
+@SuppressWarnings({&ldquo;rawtypes&rdquo;,&ldquo;unchecked&rdquo;})
+Node&lt;K,V>[] newTab = (Node&lt;K,V>[])new Node[newCap];
+table = newTab;
+if (oldTab != null) {
+// 把每个bucket都移动到新的buckets中
+for (int j = 0; j &lt; oldCap; ++j) {
+Node&lt;K,V> e;
+if ((e = oldTab[j]) != null) {
+oldTab[j] = null;
+if (e.next == null)
+newTab[e.hash & (newCap - 1)] = e;
+else if (e instanceof TreeNode)
+((TreeNode&lt;K,V>)e).split(this, newTab, j, oldCap);
+else {
+Node&lt;K,V> loHead = null, loTail = null;
+Node&lt;K,V> hiHead = null, hiTail = null;
+Node&lt;K,V> next;
+do {
+next = e.next;
+// 原索引
+if ((e.hash & oldCap) == 0) {
+if (loTail == null)
+loHead = e;
+else
+loTail.next = e;
+loTail = e;
+}
+// 原索引+oldCap
+else {
+if (hiTail == null)
+hiHead = e;
+else
+hiTail.next = e;
+hiTail = e;
+}
+} while ((e = next) != null);
+// 原索引放到bucket里
+if (loTail != null) {
+loTail.next = null;
+newTab[j] = loHead;
+}
+// 原索引+oldCap放到bucket里
+if (hiTail != null) {
+hiTail.next = null;
+newTab[j + oldCap] = hiHead;
+}
+}
+}
+}
+}
+return newTab;
+}
+```</p><h2 id=hashmap常用方法测试>HashMap常用方法测试
+<a class=anchor href=#hashmap%e5%b8%b8%e7%94%a8%e6%96%b9%e6%b3%95%e6%b5%8b%e8%af%95>#</a></h2><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=display:flex><span><span style=color:#f92672>package</span> map;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> java.util.Collection;
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> java.util.HashMap;
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> java.util.Set;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>HashMapDemo</span> {
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>main</span>(String<span style=color:#f92672>[]</span> args) {
+</span></span><span style=display:flex><span>        HashMap<span style=color:#f92672>&lt;</span>String, String<span style=color:#f92672>&gt;</span> map <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> HashMap<span style=color:#f92672>&lt;</span>String, String<span style=color:#f92672>&gt;</span>();
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// 键不能重复，值可以重复</span>
+</span></span><span style=display:flex><span>        map.<span style=color:#a6e22e>put</span>(<span style=color:#e6db74>&#34;san&#34;</span>, <span style=color:#e6db74>&#34;张三&#34;</span>);
+</span></span><span style=display:flex><span>        map.<span style=color:#a6e22e>put</span>(<span style=color:#e6db74>&#34;si&#34;</span>, <span style=color:#e6db74>&#34;李四&#34;</span>);
+</span></span><span style=display:flex><span>        map.<span style=color:#a6e22e>put</span>(<span style=color:#e6db74>&#34;wu&#34;</span>, <span style=color:#e6db74>&#34;王五&#34;</span>);
+</span></span><span style=display:flex><span>        map.<span style=color:#a6e22e>put</span>(<span style=color:#e6db74>&#34;wang&#34;</span>, <span style=color:#e6db74>&#34;老王&#34;</span>);
+</span></span><span style=display:flex><span>        map.<span style=color:#a6e22e>put</span>(<span style=color:#e6db74>&#34;wang&#34;</span>, <span style=color:#e6db74>&#34;老王2&#34;</span>);<span style=color:#75715e>// 老王被覆盖</span>
+</span></span><span style=display:flex><span>        map.<span style=color:#a6e22e>put</span>(<span style=color:#e6db74>&#34;lao&#34;</span>, <span style=color:#e6db74>&#34;老王&#34;</span>);
+</span></span><span style=display:flex><span>        System.<span style=color:#a6e22e>out</span>.<span style=color:#a6e22e>println</span>(<span style=color:#e6db74>&#34;-------直接输出hashmap:-------&#34;</span>);
+</span></span><span style=display:flex><span>        System.<span style=color:#a6e22e>out</span>.<span style=color:#a6e22e>println</span>(map);
+</span></span><span style=display:flex><span>        <span style=color:#75715e>/**
+</span></span></span><span style=display:flex><span><span style=color:#75715e>         * 遍历HashMap
+</span></span></span><span style=display:flex><span><span style=color:#75715e>         */</span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// 1.获取Map中的所有键</span>
+</span></span><span style=display:flex><span>        System.<span style=color:#a6e22e>out</span>.<span style=color:#a6e22e>println</span>(<span style=color:#e6db74>&#34;-------foreach获取Map中所有的键:------&#34;</span>);
+</span></span><span style=display:flex><span>        Set<span style=color:#f92672>&lt;</span>String<span style=color:#f92672>&gt;</span> keys <span style=color:#f92672>=</span> map.<span style=color:#a6e22e>keySet</span>();
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>for</span> (String key : keys) {
+</span></span><span style=display:flex><span>            System.<span style=color:#a6e22e>out</span>.<span style=color:#a6e22e>print</span>(key<span style=color:#f92672>+</span><span style=color:#e6db74>&#34;  &#34;</span>);
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>        System.<span style=color:#a6e22e>out</span>.<span style=color:#a6e22e>println</span>();<span style=color:#75715e>//换行</span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// 2.获取Map中所有值</span>
+</span></span><span style=display:flex><span>        System.<span style=color:#a6e22e>out</span>.<span style=color:#a6e22e>println</span>(<span style=color:#e6db74>&#34;-------foreach获取Map中所有的值:------&#34;</span>);
+</span></span><span style=display:flex><span>        Collection<span style=color:#f92672>&lt;</span>String<span style=color:#f92672>&gt;</span> values <span style=color:#f92672>=</span> map.<span style=color:#a6e22e>values</span>();
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>for</span> (String value : values) {
+</span></span><span style=display:flex><span>            System.<span style=color:#a6e22e>out</span>.<span style=color:#a6e22e>print</span>(value<span style=color:#f92672>+</span><span style=color:#e6db74>&#34;  &#34;</span>);
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>        System.<span style=color:#a6e22e>out</span>.<span style=color:#a6e22e>println</span>();<span style=color:#75715e>//换行</span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// 3.得到key的值的同时得到key所对应的值</span>
+</span></span><span style=display:flex><span>        System.<span style=color:#a6e22e>out</span>.<span style=color:#a6e22e>println</span>(<span style=color:#e6db74>&#34;-------得到key的值的同时得到key所对应的值:-------&#34;</span>);
+</span></span><span style=display:flex><span>        Set<span style=color:#f92672>&lt;</span>String<span style=color:#f92672>&gt;</span> keys2 <span style=color:#f92672>=</span> map.<span style=color:#a6e22e>keySet</span>();
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>for</span> (String key : keys2) {
+</span></span><span style=display:flex><span>            System.<span style=color:#a6e22e>out</span>.<span style=color:#a6e22e>print</span>(key <span style=color:#f92672>+</span> <span style=color:#e6db74>&#34;：&#34;</span> <span style=color:#f92672>+</span> map.<span style=color:#a6e22e>get</span>(key)<span style=color:#f92672>+</span><span style=color:#e6db74>&#34;   &#34;</span>);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>        <span style=color:#75715e>/**
+</span></span></span><span style=display:flex><span><span style=color:#75715e>         * 如果既要遍历key又要value，那么建议这种方式，因为如果先获取keySet然后再执行map.get(key)，map内部会执行两次遍历。
+</span></span></span><span style=display:flex><span><span style=color:#75715e>         * 一次是在获取keySet的时候，一次是在遍历所有key的时候。
+</span></span></span><span style=display:flex><span><span style=color:#75715e>         */</span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// 当我调用put(key,value)方法的时候，首先会把key和value封装到</span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// Entry这个静态内部类对象中，把Entry对象再添加到数组中，所以我们想获取</span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// map中的所有键值对，我们只要获取数组中的所有Entry对象，接下来</span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// 调用Entry对象中的getKey()和getValue()方法就能获取键值对了</span>
+</span></span><span style=display:flex><span>        Set<span style=color:#f92672>&lt;</span>java.<span style=color:#a6e22e>util</span>.<span style=color:#a6e22e>Map</span>.<span style=color:#a6e22e>Entry</span><span style=color:#f92672>&lt;</span>String, String<span style=color:#f92672>&gt;&gt;</span> entrys <span style=color:#f92672>=</span> map.<span style=color:#a6e22e>entrySet</span>();
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>for</span> (java.<span style=color:#a6e22e>util</span>.<span style=color:#a6e22e>Map</span>.<span style=color:#a6e22e>Entry</span><span style=color:#f92672>&lt;</span>String, String<span style=color:#f92672>&gt;</span> entry : entrys) {
+</span></span><span style=display:flex><span>            System.<span style=color:#a6e22e>out</span>.<span style=color:#a6e22e>println</span>(entry.<span style=color:#a6e22e>getKey</span>() <span style=color:#f92672>+</span> <span style=color:#e6db74>&#34;--&#34;</span> <span style=color:#f92672>+</span> entry.<span style=color:#a6e22e>getValue</span>());
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e>/**
+</span></span></span><span style=display:flex><span><span style=color:#75715e>         * HashMap其他常用方法
+</span></span></span><span style=display:flex><span><span style=color:#75715e>         */</span>
+</span></span><span style=display:flex><span>        System.<span style=color:#a6e22e>out</span>.<span style=color:#a6e22e>println</span>(<span style=color:#e6db74>&#34;after map.size()：&#34;</span><span style=color:#f92672>+</span>map.<span style=color:#a6e22e>size</span>());
+</span></span><span style=display:flex><span>        System.<span style=color:#a6e22e>out</span>.<span style=color:#a6e22e>println</span>(<span style=color:#e6db74>&#34;after map.isEmpty()：&#34;</span><span style=color:#f92672>+</span>map.<span style=color:#a6e22e>isEmpty</span>());
+</span></span><span style=display:flex><span>        System.<span style=color:#a6e22e>out</span>.<span style=color:#a6e22e>println</span>(map.<span style=color:#a6e22e>remove</span>(<span style=color:#e6db74>&#34;san&#34;</span>));
+</span></span><span style=display:flex><span>        System.<span style=color:#a6e22e>out</span>.<span style=color:#a6e22e>println</span>(<span style=color:#e6db74>&#34;after map.remove()：&#34;</span><span style=color:#f92672>+</span>map);
+</span></span><span style=display:flex><span>        System.<span style=color:#a6e22e>out</span>.<span style=color:#a6e22e>println</span>(<span style=color:#e6db74>&#34;after map.get(si)：&#34;</span><span style=color:#f92672>+</span>map.<span style=color:#a6e22e>get</span>(<span style=color:#e6db74>&#34;si&#34;</span>));
+</span></span><span style=display:flex><span>        System.<span style=color:#a6e22e>out</span>.<span style=color:#a6e22e>println</span>(<span style=color:#e6db74>&#34;after map.containsKey(si)：&#34;</span><span style=color:#f92672>+</span>map.<span style=color:#a6e22e>containsKey</span>(<span style=color:#e6db74>&#34;si&#34;</span>));
+</span></span><span style=display:flex><span>        System.<span style=color:#a6e22e>out</span>.<span style=color:#a6e22e>println</span>(<span style=color:#e6db74>&#34;after containsValue(李四)：&#34;</span><span style=color:#f92672>+</span>map.<span style=color:#a6e22e>containsValue</span>(<span style=color:#e6db74>&#34;李四&#34;</span>));
+</span></span><span style=display:flex><span>        System.<span style=color:#a6e22e>out</span>.<span style=color:#a6e22e>println</span>(map.<span style=color:#a6e22e>replace</span>(<span style=color:#e6db74>&#34;si&#34;</span>, <span style=color:#e6db74>&#34;李四2&#34;</span>));
+</span></span><span style=display:flex><span>        System.<span style=color:#a6e22e>out</span>.<span style=color:#a6e22e>println</span>(<span style=color:#e6db74>&#34;after map.replace(si, 李四2):&#34;</span><span style=color:#f92672>+</span>map);
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><blockquote><p>大部分转自https://github.com/Snailclimb/JavaGuide</p></blockquote></article><footer class=book-footer><div class="flex flex-wrap justify-between"></div><script>(function(){function e(e){const t=window.getSelection(),n=document.createRange();n.selectNodeContents(e),t.removeAllRanges(),t.addRange(n)}document.querySelectorAll("pre code").forEach(t=>{t.addEventListener("click",function(){if(window.getSelection().toString())return;e(t.parentElement),navigator.clipboard&&navigator.clipboard.writeText(t.parentElement.textContent)})})})()</script></footer><div class=book-comments></div><label for=menu-control class="hidden book-menu-overlay"></label></div><aside class=book-toc><div class=book-toc-content><nav id=TableOfContents><ul><li><ul><li><a href=#hashmap简介>HashMap简介</a></li><li><a href=#底层数据结构分析>底层数据结构分析</a></li><li><a href=#hashmap源码分析>HashMap源码分析</a></li><li><a href=#hashmap常用方法测试>HashMap常用方法测试</a></li></ul></li></ul></nav></div></aside></main></body></html>

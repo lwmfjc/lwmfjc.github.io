@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>_深入理解Java虚拟机_ on 随记</title><link>https://lwmfjc.github.io/zh/docs/technology/JVM/understanding_the_jvm/</link><description>Recent content in _深入理解Java虚拟机_ on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Thu, 25 May 2023 20:04:33 +0000</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/docs/technology/JVM/understanding_the_jvm/index.xml" rel="self" type="application/rss+xml"/><item><title>03垃圾收集器与内存分配策略</title><link>https://lwmfjc.github.io/zh/docs/technology/JVM/understanding_the_jvm/03/</link><pubDate>Thu, 25 May 2023 20:04:33 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/JVM/understanding_the_jvm/03/</guid><description>&lt;blockquote>
+&lt;p>学习《深入理解Java虚拟机》，感谢作者！&lt;/p>
+&lt;/blockquote>
+&lt;h3 id="代码清单3-9--xxmaxtenuringthreshod1说明">
+ 代码清单3-9 -XX:MaxTenuringThreshod=1说明
+ &lt;a class="anchor" href="#%e4%bb%a3%e7%a0%81%e6%b8%85%e5%8d%953-9--xxmaxtenuringthreshod1%e8%af%b4%e6%98%8e">#&lt;/a>
+&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>&lt;/th>
+ &lt;th>Eden[8M]&lt;/th>
+ &lt;th>Survivor1[1M]&lt;/th>
+ &lt;th>Survivor2[1M]&lt;/th>
+ &lt;th>Old {10M}&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>初始&lt;/td>
+ &lt;td>allocation1[0.25M]，allocation2[4MB]&lt;/td>
+ &lt;td>&lt;/td>
+ &lt;td>&lt;/td>
+ &lt;td>&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>3执行时gc导致的变化&lt;/td>
+ &lt;td>&lt;/td>
+ &lt;td>+allocation1[0.25M]&lt;/td>
+ &lt;td>&lt;/td>
+ &lt;td>+allocation2[4MB]&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>3执行后&lt;/td>
+ &lt;td>+allocation3[4MB]&lt;/td>
+ &lt;td>+allocation1[0.25M]&lt;/td>
+ &lt;td>&lt;/td>
+ &lt;td>+allocation2[4MB]&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>5执行时gc导致的变化&lt;/td>
+ &lt;td>&lt;/td>
+ &lt;td>&lt;/td>
+ &lt;td>&lt;/td>
+ &lt;td>allocation2[4MB]，+allocation1[0.25M]&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>5执行后&lt;/td>
+ &lt;td>+allocation3[4MB]&lt;/td>
+ &lt;td>&lt;/td>
+ &lt;td>&lt;/td>
+ &lt;td>allocation2[4MB]，+allocation1[0.25M]&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h3 id="代码清单3-9--xxmaxtenuringthreshod15说明">
+ 代码清单3-9 -XX:MaxTenuringThreshod=15说明
+ &lt;a class="anchor" href="#%e4%bb%a3%e7%a0%81%e6%b8%85%e5%8d%953-9--xxmaxtenuringthreshod15%e8%af%b4%e6%98%8e">#&lt;/a>
+&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>&lt;/th>
+ &lt;th>Eden[8M]&lt;/th>
+ &lt;th>Survivor1[1M]&lt;/th>
+ &lt;th>Survivor2[1M]&lt;/th>
+ &lt;th>Old {10M}&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>初始&lt;/td>
+ &lt;td>allocation1[0.25M]，allocation2[4MB]&lt;/td>
+ &lt;td>&lt;/td>
+ &lt;td>&lt;/td>
+ &lt;td>&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>3执行时gc导致的变化&lt;/td>
+ &lt;td>&lt;/td>
+ &lt;td>+allocation1[0.25M]&lt;/td>
+ &lt;td>&lt;/td>
+ &lt;td>+allocation2[4MB]&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>3执行后&lt;/td>
+ &lt;td>+allocation3[4MB]&lt;/td>
+ &lt;td>+allocation1[0.25M]&lt;/td>
+ &lt;td>&lt;/td>
+ &lt;td>+allocation2[4MB]&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>5执行时gc导致的变化&lt;/td>
+ &lt;td>&lt;/td>
+ &lt;td>+allocation1[0.25M]&lt;/td>
+ &lt;td>&lt;/td>
+ &lt;td>allocation2[4MB]&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>5执行后&lt;/td>
+ &lt;td>+allocation3[4MB]&lt;/td>
+ &lt;td>+allocation1[0.25M]&lt;/td>
+ &lt;td>&lt;/td>
+ &lt;td>allocation2[4MB]，+allocation1[0.25M]&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h3 id="代码清单3-10-说明">
+ 代码清单3-10 说明
+ &lt;a class="anchor" href="#%e4%bb%a3%e7%a0%81%e6%b8%85%e5%8d%953-10-%e8%af%b4%e6%98%8e">#&lt;/a>
+&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>&lt;/th>
+ &lt;th>Eden[8M]&lt;/th>
+ &lt;th>Survivor1[1M]&lt;/th>
+ &lt;th>Survivor2[1M]&lt;/th>
+ &lt;th>Old {10M}&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>初始&lt;/td>
+ &lt;td>allocation1[0.25M]，&lt;br >allocation2[[0.25M]，allocation3[4M]&lt;/td>
+ &lt;td>&lt;/td>
+ &lt;td>&lt;/td>
+ &lt;td>&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>4执行时gc导致的变化&lt;/td>
+ &lt;td>&lt;/td>
+ &lt;td>+allocation1[0.25M]，&lt;br >+allocation2[[0.25M]，&lt;/td>
+ &lt;td>&lt;/td>
+ &lt;td>+allocation3[4MB]&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>4执行后&lt;/td>
+ &lt;td>+allocation4[4MB]&lt;/td>
+ &lt;td>+allocation1[0.25M]，&lt;br >+allocation2[[0.25M]，&lt;/td>
+ &lt;td>&lt;/td>
+ &lt;td>+allocation3[4MB]&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>6执行时gc导致的变化&lt;/td>
+ &lt;td>&lt;/td>
+ &lt;td>&lt;/td>
+ &lt;td>&lt;/td>
+ &lt;td>allocation3[4MB]，&lt;br >+allocation1[0.25M]，&lt;br >+allocation2[[0.25M]，&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>6执行后&lt;/td>
+ &lt;td>+allocation4[4MB]&lt;/td>
+ &lt;td>&lt;/td>
+ &lt;td>&lt;/td>
+ &lt;td>allocation3[4MB]，&lt;br >+allocation1[0.25M]，&lt;br >+allocation2[[0.25M]，&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h3 id="代码清单3-11-说明">
+ 代码清单3-11 说明
+ &lt;a class="anchor" href="#%e4%bb%a3%e7%a0%81%e6%b8%85%e5%8d%953-11-%e8%af%b4%e6%98%8e">#&lt;/a>
+&lt;/h3>
+&lt;h4 id="-xx-handlepromotionfailure-关">
+ -XX:-HandlePromotionFailure 关
+ &lt;a class="anchor" href="#-xx-handlepromotionfailure-%e5%85%b3">#&lt;/a>
+&lt;/h4>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>&lt;/th>
+ &lt;th>Eden[8M]&lt;/th>
+ &lt;th>Survivor1[1M]&lt;/th>
+ &lt;th>Survivor2[1M]&lt;/th>
+ &lt;th>Old {10M}&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>初始&lt;/td>
+ &lt;td>allocation1[2M]，&lt;br >allocation2[2M]，&lt;br >allocation3[2M]&lt;br >allocation1[null]，allocation4[2M]&lt;/td>
+ &lt;td>&lt;/td>
+ &lt;td>&lt;/td>
+ &lt;td>&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>5执行时gc导致的变化&lt;/td>
+ &lt;td>&lt;/td>
+ &lt;td>&lt;/td>
+ &lt;td>&lt;/td>
+ &lt;td>+allocation2[2M]，+allocation3[2M] //总共4M&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>5执行后&lt;/td>
+ &lt;td>+allocation4[2M]&lt;/td>
+ &lt;td>&lt;/td>
+ &lt;td>&lt;/td>
+ &lt;td>+allocation2[2M]，+allocation3[2M] //总共4M&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>6-&amp;gt;11&lt;/td>
+ &lt;td>allocation4[2M]&lt;br >+allocation5[2M]，&lt;br >+allocation6[2M]&lt;/td>
+ &lt;td>&lt;/td>
+ &lt;td>&lt;/td>
+ &lt;td>allocation2[2M]，&lt;br >allocation3[2M] //总共4M，&lt;br >此时老年代连续可用空间在6M（或者说小于6M）&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>11执行时gc导致的变化&lt;/td>
+ &lt;td>&lt;/td>
+ &lt;td>&lt;/td>
+ &lt;td>&lt;/td>
+ &lt;td>allocation3[4MB]，&lt;br >+allocation1[0.25M]，&lt;br >+allocation2[[0.25M]，&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>11执行后&lt;/td>
+ &lt;td>+allocation7[2MB]&lt;/td>
+ &lt;td>&lt;/td>
+ &lt;td>&lt;/td>
+ &lt;td>allocation3[4MB]，&lt;br >+allocation1[0.25M]，&lt;br >+allocation2[[0.25M]，&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h1 id="说明">
+ 说明
+ &lt;a class="anchor" href="#%e8%af%b4%e6%98%8e">#&lt;/a>
+&lt;/h1>
+&lt;blockquote>
+&lt;ol>
+&lt;li>
+&lt;p>书籍版权归著者和出版社所有&lt;/p></description></item></channel></rss>
