@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>随记</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/high-availability/</link><description>Recent content on 随记</description><generator>Hugo</generator><language>zh</language><atom:link href="https://lwmfjc.github.io/zh/docs/technology/Interview/high-availability/index.xml" rel="self" type="application/rss+xml"/><item><title>超时&amp;重试详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/high-availability/timeout-and-retry/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/high-availability/timeout-and-retry/</guid><description>&lt;p>由于网络问题、系统或者服务内部的 Bug、服务器宕机、操作系统崩溃等问题的不确定性，我们的系统或者服务永远不可能保证时刻都是可用的状态。&lt;/p>
+&lt;p>为了最大限度的减小系统或者服务出现故障之后带来的影响，我们需要用到的 &lt;strong>超时（Timeout）&lt;/strong> 和 &lt;strong>重试（Retry）&lt;/strong> 机制。&lt;/p>
+&lt;p>想要把超时和重试机制讲清楚其实很简单，因为它俩本身就不是什么高深的概念。&lt;/p>
+&lt;p>虽然超时和重试机制的思想很简单，但是它俩是真的非常实用。你平时接触到的绝大部分涉及到远程调用的系统或者服务都会应用超时和重试机制。尤其是对于微服务系统来说，正确设置超时和重试非常重要。单体服务通常只涉及数据库、缓存、第三方 API、中间件等的网络调用，而微服务系统内部各个服务之间还存在着网络调用。&lt;/p>
+&lt;h2 id="超时机制">
+ 超时机制
+ &lt;a class="anchor" href="#%e8%b6%85%e6%97%b6%e6%9c%ba%e5%88%b6">#&lt;/a>
+&lt;/h2>
+&lt;h3 id="什么是超时机制">
+ 什么是超时机制？
+ &lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e8%b6%85%e6%97%b6%e6%9c%ba%e5%88%b6">#&lt;/a>
+&lt;/h3>
+&lt;p>超时机制说的是当一个请求超过指定的时间（比如 1s）还没有被处理的话，这个请求就会直接被取消并抛出指定的异常或者错误（比如 &lt;code>504 Gateway Timeout&lt;/code>）。&lt;/p>
+&lt;p>我们平时接触到的超时可以简单分为下面 2 种：&lt;/p>
+&lt;ul>
+&lt;li>&lt;strong>连接超时（ConnectTimeout）&lt;/strong>：客户端与服务端建立连接的最长等待时间。&lt;/li>
+&lt;li>&lt;strong>读取超时（ReadTimeout）&lt;/strong>：客户端和服务端已经建立连接，客户端等待服务端处理完请求的最长时间。实际项目中，我们关注比较多的还是读取超时。&lt;/li>
+&lt;/ul>
+&lt;p>一些连接池客户端框架中可能还会有获取连接超时和空闲连接清理超时。&lt;/p>
+&lt;p>如果没有设置超时的话，就可能会导致服务端连接数爆炸和大量请求堆积的问题。&lt;/p>
+&lt;p>这些堆积的连接和请求会消耗系统资源，影响新收到的请求的处理。严重的情况下，甚至会拖垮整个系统或者服务。&lt;/p>
+&lt;p>我之前在实际项目就遇到过类似的问题，整个网站无法正常处理请求，服务器负载直接快被拉满。后面发现原因是项目超时设置错误加上客户端请求处理异常，导致服务端连接数直接接近 40w+，这么多堆积的连接直接把系统干趴了。&lt;/p>
+&lt;h3 id="超时时间应该如何设置">
+ 超时时间应该如何设置？
+ &lt;a class="anchor" href="#%e8%b6%85%e6%97%b6%e6%97%b6%e9%97%b4%e5%ba%94%e8%af%a5%e5%a6%82%e4%bd%95%e8%ae%be%e7%bd%ae">#&lt;/a>
+&lt;/h3>
+&lt;p>超时到底设置多长时间是一个难题！超时值设置太高或者太低都有风险。如果设置太高的话，会降低超时机制的有效性，比如你设置超时为 10s 的话，那设置超时就没啥意义了，系统依然可能会出现大量慢请求堆积的问题。如果设置太低的话，就可能会导致在系统或者服务在某些处理请求速度变慢的情况下（比如请求突然增多），大量请求重试（超时通常会结合重试）继续加重系统或者服务的压力，进而导致整个系统或者服务被拖垮的问题。&lt;/p>
+&lt;p>通常情况下，我们建议读取超时设置为 &lt;strong>1500ms&lt;/strong> ,这是一个比较普适的值。如果你的系统或者服务对于延迟比较敏感的话，那读取超时值可以适当在 &lt;strong>1500ms&lt;/strong> 的基础上进行缩短。反之，读取超时值也可以在 &lt;strong>1500ms&lt;/strong> 的基础上进行加长，不过，尽量还是不要超过 &lt;strong>1500ms&lt;/strong> 。连接超时可以适当设置长一些，建议在 &lt;strong>1000ms ~ 5000ms&lt;/strong> 之内。&lt;/p>
+&lt;p>没有银弹！超时值具体该设置多大，还是要根据实际项目的需求和情况慢慢调整优化得到。&lt;/p>
+&lt;p>更上一层，参考&lt;a href="https://tech.meituan.com/2020/04/02/java-pooling-pratice-in-meituan.html">美团的 Java 线程池参数动态配置&lt;/a>思想，我们也可以将超时弄成可配置化的参数而不是固定的，比较简单的一种办法就是将超时的值放在配置中心中。这样的话，我们就可以根据系统或者服务的状态动态调整超时值了。&lt;/p>
+&lt;h2 id="重试机制">
+ 重试机制
+ &lt;a class="anchor" href="#%e9%87%8d%e8%af%95%e6%9c%ba%e5%88%b6">#&lt;/a>
+&lt;/h2>
+&lt;h3 id="什么是重试机制">
+ 什么是重试机制？
+ &lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e9%87%8d%e8%af%95%e6%9c%ba%e5%88%b6">#&lt;/a>
+&lt;/h3>
+&lt;p>重试机制一般配合超时机制一起使用，指的是多次发送相同的请求来避免瞬态故障和偶然性故障。&lt;/p>
+&lt;p>瞬态故障可以简单理解为某一瞬间系统偶然出现的故障，并不会持久。偶然性故障可以理解为哪些在某些情况下偶尔出现的故障，频率通常较低。&lt;/p>
+&lt;p>重试的核心思想是通过消耗服务器的资源来尽可能获得请求更大概率被成功处理。由于瞬态故障和偶然性故障是很少发生的，因此，重试对于服务器的资源消耗几乎是可以被忽略的。&lt;/p>
+&lt;h3 id="常见的重试策略有哪些">
+ 常见的重试策略有哪些？
+ &lt;a class="anchor" href="#%e5%b8%b8%e8%a7%81%e7%9a%84%e9%87%8d%e8%af%95%e7%ad%96%e7%95%a5%e6%9c%89%e5%93%aa%e4%ba%9b">#&lt;/a>
+&lt;/h3>
+&lt;p>常见的重试策略有两种：&lt;/p>
+&lt;ol>
+&lt;li>&lt;strong>固定间隔时间重试&lt;/strong>：每次重试之间都使用相同的时间间隔，比如每隔 1.5 秒进行一次重试。这种重试策略的优点是实现起来比较简单，不需要考虑重试次数和时间的关系，也不需要维护额外的状态信息。但是这种重试策略的缺点是可能会导致重试过于频繁或过于稀疏，从而影响系统的性能和效率。如果重试间隔太短，可能会对目标系统造成过大的压力，导致雪崩效应；如果重试间隔太长，可能会导致用户等待时间过长，影响用户体验。&lt;/li>
+&lt;li>&lt;strong>梯度间隔重试&lt;/strong>：根据重试次数的增加去延长下次重试时间，比如第一次重试间隔为 1 秒，第二次为 2 秒，第三次为 4 秒，以此类推。这种重试策略的优点是能够有效提高重试成功的几率（随着重试次数增加，但是重试依然不成功，说明目标系统恢复时间比较长，因此可以根据重试次数延长下次重试时间），也能通过柔性化的重试避免对下游系统造成更大压力。但是这种重试策略的缺点是实现起来比较复杂，需要考虑重试次数和时间的关系，以及设置合理的上限和下限值。另外，这种重试策略也可能会导致用户等待时间过长，影响用户体验。&lt;/li>
+&lt;/ol>
+&lt;p>这两种适合的场景各不相同。固定间隔时间重试适用于目标系统恢复时间比较稳定和可预测的场景，比如网络波动或服务重启。梯度间隔重试适用于目标系统恢复时间比较长或不可预测的场景，比如网络故障和服务故障。&lt;/p></description></item><item><title>服务限流详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/high-availability/limit-request/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/high-availability/limit-request/</guid><description>&lt;p>针对软件系统来说，限流就是对请求的速率进行限制，避免瞬时的大量请求击垮软件系统。毕竟，软件系统的处理能力是有限的。如果说超过了其处理能力的范围，软件系统可能直接就挂掉了。&lt;/p>
+&lt;p>限流可能会导致用户的请求无法被正确处理或者无法立即被处理，不过，这往往也是权衡了软件系统的稳定性之后得到的最优解。&lt;/p>
+&lt;p>现实生活中，处处都有限流的实际应用，就比如排队买票是为了避免大量用户涌入购票而导致售票员无法处理。&lt;/p>
+&lt;h2 id="常见限流算法有哪些">
+ 常见限流算法有哪些？
+ &lt;a class="anchor" href="#%e5%b8%b8%e8%a7%81%e9%99%90%e6%b5%81%e7%ae%97%e6%b3%95%e6%9c%89%e5%93%aa%e4%ba%9b">#&lt;/a>
+&lt;/h2>
+&lt;p>简单介绍 4 种非常好理解并且容易实现的限流算法！&lt;/p>
+&lt;blockquote>
+&lt;p>图片来源于 InfoQ 的一篇文章&lt;a href="https://www.infoq.cn/article/Qg2tX8fyw5Vt-f3HH673">《分布式服务限流实战，已经为你排好坑了》&lt;/a>。&lt;/p>
+&lt;/blockquote>
+&lt;h3 id="固定窗口计数器算法">
+ 固定窗口计数器算法
+ &lt;a class="anchor" href="#%e5%9b%ba%e5%ae%9a%e7%aa%97%e5%8f%a3%e8%ae%a1%e6%95%b0%e5%99%a8%e7%ae%97%e6%b3%95">#&lt;/a>
+&lt;/h3>
+&lt;p>固定窗口其实就是时间窗口，其原理是将时间划分为固定大小的窗口，在每个窗口内限制请求的数量或速率，即固定窗口计数器算法规定了系统单位时间处理的请求数量。&lt;/p>
+&lt;p>假如我们规定系统中某个接口 1 分钟只能被访问 33 次的话，使用固定窗口计数器算法的实现思路如下：&lt;/p>
+&lt;ul>
+&lt;li>将时间划分固定大小窗口，这里是 1 分钟一个窗口。&lt;/li>
+&lt;li>给定一个变量 &lt;code>counter&lt;/code> 来记录当前接口处理的请求数量，初始值为 0（代表接口当前 1 分钟内还未处理请求）。&lt;/li>
+&lt;li>1 分钟之内每处理一个请求之后就将 &lt;code>counter+1&lt;/code> ，当 &lt;code>counter=33&lt;/code> 之后（也就是说在这 1 分钟内接口已经被访问 33 次的话），后续的请求就会被全部拒绝。&lt;/li>
+&lt;li>等到 1 分钟结束后，将 &lt;code>counter&lt;/code> 重置 0，重新开始计数。&lt;/li>
+&lt;/ul>
+&lt;p>&lt;img src="https://static001.infoq.cn/resource/image/8d/15/8ded7a2b90e1482093f92fff555b3615.png" alt="固定窗口计数器算法" />&lt;/p>
+&lt;p>优点：实现简单，易于理解。&lt;/p>
+&lt;p>缺点：&lt;/p>
+&lt;ul>
+&lt;li>限流不够平滑。例如，我们限制某个接口每分钟只能访问 30 次，假设前 30 秒就有 30 个请求到达的话，那后续 30 秒将无法处理请求，这是不可取的，用户体验极差！&lt;/li>
+&lt;li>无法保证限流速率，因而无法应对突然激增的流量。例如，我们限制某个接口 1 分钟只能访问 1000 次，该接口的 QPS 为 500，前 55s 这个接口 1 个请求没有接收，后 1s 突然接收了 1000 个请求。然后，在当前场景下，这 1000 个请求在 1s 内是没办法被处理的，系统直接就被瞬时的大量请求给击垮了。&lt;/li>
+&lt;/ul>
+&lt;h3 id="滑动窗口计数器算法">
+ 滑动窗口计数器算法
+ &lt;a class="anchor" href="#%e6%bb%91%e5%8a%a8%e7%aa%97%e5%8f%a3%e8%ae%a1%e6%95%b0%e5%99%a8%e7%ae%97%e6%b3%95">#&lt;/a>
+&lt;/h3>
+&lt;p>&lt;strong>滑动窗口计数器算法&lt;/strong> 算的上是固定窗口计数器算法的升级版，限流的颗粒度更小。&lt;/p></description></item><item><title>高可用系统设计指南</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/high-availability/high-availability-system-design/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/high-availability/high-availability-system-design/</guid><description>&lt;h2 id="什么是高可用可用性的判断标准是啥">
+ 什么是高可用？可用性的判断标准是啥？
+ &lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e9%ab%98%e5%8f%af%e7%94%a8%e5%8f%af%e7%94%a8%e6%80%a7%e7%9a%84%e5%88%a4%e6%96%ad%e6%a0%87%e5%87%86%e6%98%af%e5%95%a5">#&lt;/a>
+&lt;/h2>
+&lt;p>高可用描述的是一个系统在大部分时间都是可用的，可以为我们提供服务的。高可用代表系统即使在发生硬件故障或者系统升级的时候，服务仍然是可用的。&lt;/p>
+&lt;p>一般情况下，我们使用多少个 9 来评判一个系统的可用性，比如 99.9999% 就是代表该系统在所有的运行时间中只有 0.0001% 的时间是不可用的，这样的系统就是非常非常高可用的了！当然，也会有系统如果可用性不太好的话，可能连 9 都上不了。&lt;/p>
+&lt;p>除此之外，系统的可用性还可以用某功能的失败次数与总的请求次数之比来衡量，比如对网站请求 1000 次，其中有 10 次请求失败，那么可用性就是 99%。&lt;/p>
+&lt;h2 id="哪些情况会导致系统不可用">
+ 哪些情况会导致系统不可用？
+ &lt;a class="anchor" href="#%e5%93%aa%e4%ba%9b%e6%83%85%e5%86%b5%e4%bc%9a%e5%af%bc%e8%87%b4%e7%b3%bb%e7%bb%9f%e4%b8%8d%e5%8f%af%e7%94%a8">#&lt;/a>
+&lt;/h2>
+&lt;ol>
+&lt;li>黑客攻击；&lt;/li>
+&lt;li>硬件故障，比如服务器坏掉。&lt;/li>
+&lt;li>并发量/用户请求量激增导致整个服务宕掉或者部分服务不可用。&lt;/li>
+&lt;li>代码中的坏味道导致内存泄漏或者其他问题导致程序挂掉。&lt;/li>
+&lt;li>网站架构某个重要的角色比如 Nginx 或者数据库突然不可用。&lt;/li>
+&lt;li>自然灾害或者人为破坏。&lt;/li>
+&lt;li>……&lt;/li>
+&lt;/ol>
+&lt;h2 id="有哪些提高系统可用性的方法">
+ 有哪些提高系统可用性的方法？
+ &lt;a class="anchor" href="#%e6%9c%89%e5%93%aa%e4%ba%9b%e6%8f%90%e9%ab%98%e7%b3%bb%e7%bb%9f%e5%8f%af%e7%94%a8%e6%80%a7%e7%9a%84%e6%96%b9%e6%b3%95">#&lt;/a>
+&lt;/h2>
+&lt;h3 id="注重代码质量测试严格把关">
+ 注重代码质量，测试严格把关
+ &lt;a class="anchor" href="#%e6%b3%a8%e9%87%8d%e4%bb%a3%e7%a0%81%e8%b4%a8%e9%87%8f%e6%b5%8b%e8%af%95%e4%b8%a5%e6%a0%bc%e6%8a%8a%e5%85%b3">#&lt;/a>
+&lt;/h3>
+&lt;p>我觉得这个是最最最重要的，代码质量有问题比如比较常见的内存泄漏、循环依赖都是对系统可用性极大的损害。大家都喜欢谈限流、降级、熔断，但是我觉得从代码质量这个源头把关是首先要做好的一件很重要的事情。如何提高代码质量？比较实际可用的就是 CodeReview，不要在乎每天多花的那 1 个小时左右的时间，作用可大着呢！&lt;/p>
+&lt;p>另外，安利几个对提高代码质量有实际效果的神器：&lt;/p>
+&lt;ul>
+&lt;li>&lt;a href="https://www.sonarqube.org/">Sonarqube&lt;/a>；&lt;/li>
+&lt;li>Alibaba 开源的 Java 诊断工具 &lt;a href="https://arthas.aliyun.com/doc/">Arthas&lt;/a>；&lt;/li>
+&lt;li>&lt;a href="https://github.com/alibaba/p3c">阿里巴巴 Java 代码规范&lt;/a>（Alibaba Java Code Guidelines）；&lt;/li>
+&lt;li>IDEA 自带的代码分析等工具。&lt;/li>
+&lt;/ul>
+&lt;h3 id="使用集群减少单点故障">
+ 使用集群，减少单点故障
+ &lt;a class="anchor" href="#%e4%bd%bf%e7%94%a8%e9%9b%86%e7%be%a4%e5%87%8f%e5%b0%91%e5%8d%95%e7%82%b9%e6%95%85%e9%9a%9c">#&lt;/a>
+&lt;/h3>
+&lt;p>先拿常用的 Redis 举个例子！我们如何保证我们的 Redis 缓存高可用呢？答案就是使用集群，避免单点故障。当我们使用一个 Redis 实例作为缓存的时候，这个 Redis 实例挂了之后，整个缓存服务可能就挂了。使用了集群之后，即使一台 Redis 实例挂了，不到一秒就会有另外一台 Redis 实例顶上。&lt;/p></description></item><item><title>降级&amp;熔断详解(付费)</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/high-availability/fallback-and-circuit-breaker/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/high-availability/fallback-and-circuit-breaker/</guid><description>&lt;p>&lt;strong>降级&amp;amp;熔断&lt;/strong> 相关的面试题为我的&lt;a href="https://javaguide.cn/about-the-author/zhishixingqiu-two-years.html">知识星球&lt;/a>（点击链接即可查看详细介绍以及加入方法）专属内容，已经整理到了&lt;a href="https://javaguide.cn/zhuanlan/java-mian-shi-zhi-bei.html">《Java 面试指北》&lt;/a>中。&lt;/p></description></item><item><title>冗余设计详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/high-availability/redundancy/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/high-availability/redundancy/</guid><description>&lt;p>冗余设计是保证系统和数据高可用的最常的手段。&lt;/p>
+&lt;p>对于服务来说，冗余的思想就是相同的服务部署多份，如果正在使用的服务突然挂掉的话，系统可以很快切换到备份服务上，大大减少系统的不可用时间，提高系统的可用性。&lt;/p>
+&lt;p>对于数据来说，冗余的思想就是相同的数据备份多份，这样就可以很简单地提高数据的安全性。&lt;/p>
+&lt;p>实际上，日常生活中就有非常多的冗余思想的应用。&lt;/p>
+&lt;p>拿我自己来说，我对于重要文件的保存方法就是冗余思想的应用。我日常所使用的重要文件都会同步一份在 GitHub 以及个人云盘上，这样就可以保证即使电脑硬盘损坏，我也可以通过 GitHub 或者个人云盘找回自己的重要文件。&lt;/p>
+&lt;p>高可用集群（High Availability Cluster，简称 HA Cluster）、同城灾备、异地灾备、同城多活和异地多活是冗余思想在高可用系统设计中最典型的应用。&lt;/p>
+&lt;ul>
+&lt;li>&lt;strong>高可用集群&lt;/strong> : 同一份服务部署两份或者多份，当正在使用的服务突然挂掉的话，可以切换到另外一台服务，从而保证服务的高可用。&lt;/li>
+&lt;li>&lt;strong>同城灾备&lt;/strong>：一整个集群可以部署在同一个机房，而同城灾备中相同服务部署在同一个城市的不同机房中。并且，备用服务不处理请求。这样可以避免机房出现意外情况比如停电、火灾。&lt;/li>
+&lt;li>&lt;strong>异地灾备&lt;/strong>：类似于同城灾备，不同的是，相同服务部署在异地（通常距离较远，甚至是在不同的城市或者国家）的不同机房中&lt;/li>
+&lt;li>&lt;strong>同城多活&lt;/strong>：类似于同城灾备，但备用服务可以处理请求，这样可以充分利用系统资源，提高系统的并发。&lt;/li>
+&lt;li>&lt;strong>异地多活&lt;/strong> : 将服务部署在异地的不同机房中，并且，它们可以同时对外提供服务。&lt;/li>
+&lt;/ul>
+&lt;p>高可用集群单纯是服务的冗余，并没有强调地域。同城灾备、异地灾备、同城多活和异地多活实现了地域上的冗余。&lt;/p>
+&lt;p>同城和异地的主要区别在于机房之间的距离。异地通常距离较远，甚至是在不同的城市或者国家。&lt;/p>
+&lt;p>和传统的灾备设计相比，同城多活和异地多活最明显的改变在于“多活”，即所有站点都是同时在对外提供服务的。异地多活是为了应对突发状况比如火灾、地震等自然或者人为灾害。&lt;/p>
+&lt;p>光做好冗余还不够，必须要配合上 &lt;strong>故障转移&lt;/strong> 才可以！ 所谓故障转移，简单来说就是实现不可用服务快速且自动地切换到可用服务，整个过程不需要人为干涉。&lt;/p>
+&lt;p>举个例子：哨兵模式的 Redis 集群中，如果 Sentinel（哨兵） 检测到 master 节点出现故障的话， 它就会帮助我们实现故障转移，自动将某一台 slave 升级为 master，确保整个 Redis 系统的可用性。整个过程完全自动，不需要人工介入。我在&lt;a href="https://www.yuque.com/docs/share/f37fc804-bfe6-4b0d-b373-9c462188fec7">《Java 面试指北》&lt;/a>的「技术面试题篇」中的数据库部分详细介绍了 Redis 集群相关的知识点&amp;amp;面试题，感兴趣的小伙伴可以看看。&lt;/p>
+&lt;p>再举个例子：Nginx 可以结合 Keepalived 来实现高可用。如果 Nginx 主服务器宕机的话，Keepalived 可以自动进行故障转移，备用 Nginx 主服务器升级为主服务。并且，这个切换对外是透明的，因为使用的虚拟 IP，虚拟 IP 不会改变。我在&lt;a href="https://www.yuque.com/docs/share/f37fc804-bfe6-4b0d-b373-9c462188fec7">《Java 面试指北》&lt;/a>的「技术面试题篇」中的「服务器」部分详细介绍了 Nginx 相关的知识点&amp;amp;面试题，感兴趣的小伙伴可以看看。&lt;/p>
+&lt;p>异地多活架构实施起来非常难，需要考虑的因素非常多。本人不才，实际项目中并没有实践过异地多活架构，我对其了解还停留在书本知识。&lt;/p>
+&lt;p>如果你想要深入学习异地多活相关的知识，我这里推荐几篇我觉得还不错的文章：&lt;/p>
+&lt;ul>
+&lt;li>&lt;a href="https://mp.weixin.qq.com/s/T6mMDdtTfBuIiEowCpqu6Q">搞懂异地多活，看这篇就够了- 水滴与银弹 - 2021&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://mp.weixin.qq.com/s/hMD-IS__4JE5_nQhYPYSTg">四步构建异地多活&lt;/a>&lt;/li>
+&lt;li>&lt;a href="http://gk.link/a/10pKZ">《从零开始学架构》— 28 | 业务高可用的保障：异地多活架构&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;p>不过，这些文章大多也都是在介绍概念知识。目前，网上还缺少真正介绍具体要如何去实践落地异地多活架构的资料。&lt;/p></description></item><item><title>性能测试入门</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/high-availability/performance-test/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/high-availability/performance-test/</guid><description>&lt;p>性能测试一般情况下都是由测试这个职位去做的，那还需要我们开发学这个干嘛呢？了解性能测试的指标、分类以及工具等知识有助于我们更好地去写出性能更好的程序，另外作为开发这个角色，如果你会性能测试的话，相信也会为你的履历加分不少。&lt;/p>
+&lt;p>这篇文章是我会结合自己的实际经历以及在测试这里取的经所得，除此之外，我还借鉴了一些优秀书籍，希望对你有帮助。&lt;/p>
+&lt;h2 id="不同角色看网站性能">
+ 不同角色看网站性能
+ &lt;a class="anchor" href="#%e4%b8%8d%e5%90%8c%e8%a7%92%e8%89%b2%e7%9c%8b%e7%bd%91%e7%ab%99%e6%80%a7%e8%83%bd">#&lt;/a>
+&lt;/h2>
+&lt;h3 id="用户">
+ 用户
+ &lt;a class="anchor" href="#%e7%94%a8%e6%88%b7">#&lt;/a>
+&lt;/h3>
+&lt;p>当用户打开一个网站的时候，最关注的是什么？当然是网站响应速度的快慢。比如我们点击了淘宝的主页，淘宝需要多久将首页的内容呈现在我的面前，我点击了提交订单按钮需要多久返回结果等等。&lt;/p>
+&lt;p>所以，用户在体验我们系统的时候往往根据你的响应速度的快慢来评判你的网站的性能。&lt;/p>
+&lt;h3 id="开发人员">
+ 开发人员
+ &lt;a class="anchor" href="#%e5%bc%80%e5%8f%91%e4%ba%ba%e5%91%98">#&lt;/a>
+&lt;/h3>
+&lt;p>用户与开发人员都关注速度，这个速度实际上就是我们的系统&lt;strong>处理用户请求的速度&lt;/strong>。&lt;/p>
+&lt;p>开发人员一般情况下很难直观的去评判自己网站的性能，我们往往会根据网站当前的架构以及基础设施情况给一个大概的值,比如：&lt;/p>
+&lt;ol>
+&lt;li>项目架构是分布式的吗？&lt;/li>
+&lt;li>用到了缓存和消息队列没有？&lt;/li>
+&lt;li>高并发的业务有没有特殊处理？&lt;/li>
+&lt;li>数据库设计是否合理？&lt;/li>
+&lt;li>系统用到的算法是否还需要优化？&lt;/li>
+&lt;li>系统是否存在内存泄露的问题？&lt;/li>
+&lt;li>项目使用的 Redis 缓存多大？服务器性能如何？用的是机械硬盘还是固态硬盘？&lt;/li>
+&lt;li>……&lt;/li>
+&lt;/ol>
+&lt;h3 id="测试人员">
+ 测试人员
+ &lt;a class="anchor" href="#%e6%b5%8b%e8%af%95%e4%ba%ba%e5%91%98">#&lt;/a>
+&lt;/h3>
+&lt;p>测试人员一般会根据性能测试工具来测试，然后一般会做出一个表格。这个表格可能会涵盖下面这些重要的内容：&lt;/p>
+&lt;ol>
+&lt;li>响应时间；&lt;/li>
+&lt;li>请求成功率；&lt;/li>
+&lt;li>吞吐量；&lt;/li>
+&lt;li>……&lt;/li>
+&lt;/ol>
+&lt;h3 id="运维人员">
+ 运维人员
+ &lt;a class="anchor" href="#%e8%bf%90%e7%bb%b4%e4%ba%ba%e5%91%98">#&lt;/a>
+&lt;/h3>
+&lt;p>运维人员会倾向于根据基础设施和资源的利用率来判断网站的性能，比如我们的服务器资源使用是否合理、数据库资源是否存在滥用的情况、当然，这是传统的运维人员，现在 Devops 火起来后，单纯干运维的很少了。我们这里暂且还保留有这个角色。&lt;/p>
+&lt;h2 id="性能测试需要注意的点">
+ 性能测试需要注意的点
+ &lt;a class="anchor" href="#%e6%80%a7%e8%83%bd%e6%b5%8b%e8%af%95%e9%9c%80%e8%a6%81%e6%b3%a8%e6%84%8f%e7%9a%84%e7%82%b9">#&lt;/a>
+&lt;/h2>
+&lt;p>几乎没有文章在讲性能测试的时候提到这个问题，大家都会讲如何去性能测试，有哪些性能测试指标这些东西。&lt;/p>
+&lt;h3 id="了解系统的业务场景">
+ 了解系统的业务场景
+ &lt;a class="anchor" href="#%e4%ba%86%e8%a7%a3%e7%b3%bb%e7%bb%9f%e7%9a%84%e4%b8%9a%e5%8a%a1%e5%9c%ba%e6%99%af">#&lt;/a>
+&lt;/h3>
+&lt;p>&lt;strong>性能测试之前更需要你了解当前的系统的业务场景。&lt;/strong> 对系统业务了解的不够深刻，我们很容易犯测试方向偏执的错误，从而导致我们忽略了对系统某些更需要性能测试的地方进行测试。比如我们的系统可以为用户提供发送邮件的功能，用户配置成功邮箱后只需输入相应的邮箱之后就能发送，系统每天大概能处理上万次发邮件的请求。很多人看到这个可能就直接开始使用相关工具测试邮箱发送接口，但是，发送邮件这个场景可能不是当前系统的性能瓶颈，这么多人用我们的系统发邮件， 还可能有很多人一起发邮件，单单这个场景就这么人用，那用户管理可能才是性能瓶颈吧！&lt;/p>
+&lt;h3 id="历史数据非常有用">
+ 历史数据非常有用
+ &lt;a class="anchor" href="#%e5%8e%86%e5%8f%b2%e6%95%b0%e6%8d%ae%e9%9d%9e%e5%b8%b8%e6%9c%89%e7%94%a8">#&lt;/a>
+&lt;/h3>
+&lt;p>当前系统所留下的历史数据非常重要，一般情况下，我们可以通过相应的些历史数据初步判定这个系统哪些接口调用的比较多、哪些服务承受的压力最大，这样的话，我们就可以针对这些地方进行更细致的性能测试与分析。&lt;/p>
+&lt;p>另外，这些地方也就像这个系统的一个短板一样，优化好了这些地方会为我们的系统带来质的提升。&lt;/p>
+&lt;h2 id="常见性能指标">
+ 常见性能指标
+ &lt;a class="anchor" href="#%e5%b8%b8%e8%a7%81%e6%80%a7%e8%83%bd%e6%8c%87%e6%a0%87">#&lt;/a>
+&lt;/h2>
+&lt;h3 id="响应时间">
+ 响应时间
+ &lt;a class="anchor" href="#%e5%93%8d%e5%ba%94%e6%97%b6%e9%97%b4">#&lt;/a>
+&lt;/h3>
+&lt;p>&lt;strong>响应时间 RT(Response-time)就是用户发出请求到用户收到系统处理结果所需要的时间。&lt;/strong>&lt;/p>
+&lt;p>RT 是一个非常重要且直观的指标，RT 数值大小直接反应了系统处理用户请求速度的快慢。&lt;/p>
+&lt;h3 id="并发数">
+ 并发数
+ &lt;a class="anchor" href="#%e5%b9%b6%e5%8f%91%e6%95%b0">#&lt;/a>
+&lt;/h3>
+&lt;p>&lt;strong>并发数可以简单理解为系统能够同时供多少人访问使用也就是说系统同时能处理的请求数量。&lt;/strong>&lt;/p>
+&lt;p>并发数反应了系统的负载能力。&lt;/p></description></item></channel></rss>
