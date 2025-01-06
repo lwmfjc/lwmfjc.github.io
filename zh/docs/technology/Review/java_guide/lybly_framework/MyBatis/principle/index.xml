@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>原理 on 随记</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lybly_framework/MyBatis/principle/</link><description>Recent content in 原理 on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Fri, 10 Feb 2023 11:27:48 +0000</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lybly_framework/MyBatis/principle/index.xml" rel="self" type="application/rss+xml"/><item><title>Mybatis原理系列(3)</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lybly_framework/MyBatis/principle/mybatis-principle3/</link><pubDate>Fri, 10 Feb 2023 11:27:48 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lybly_framework/MyBatis/principle/mybatis-principle3/</guid><description>&lt;blockquote>
+&lt;p>转载自https://www.jianshu.com/p/4e268828db48（添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;p>&lt;strong>还没看完&lt;/strong>&lt;/p>
+&lt;blockquote>
+&lt;p>在上篇文章中，我们讲解了MyBatis的启动流程，以及启动过程中涉及到的组件，在本篇文中，我们继续探索SqlSession,SqlSessionFactory,SqlSessionFactoryBuilder的关系。SqlSession作为MyBatis的核心组件，可以说MyBatis的所有操作都是围绕SqlSession来展开的。对&lt;strong>SqlSession理解透彻&lt;/strong>，才能全面掌握MyBatis。&lt;/p>
+&lt;/blockquote>
+&lt;h4 id="1-sqlsession初识">
+ 1. SqlSession初识
+ &lt;a class="anchor" href="#1-sqlsession%e5%88%9d%e8%af%86">#&lt;/a>
+&lt;/h4>
+&lt;p>SqlSession在一开始就介绍过是高级接口，类似于JDBC操作的connection对象，它包装了数据库连接，通过这个接口我们可以实现增删改查，提交/回滚事物，关闭连接，获取代理类等操作。SqlSession是个接口，其默认实现是DefaultSqlSession。SqlSession是线程不安全的，每个线程都会有自己唯一的SqlSession，不同线程间调用同一个SqlSession会出现问题，因此在使用完后需要close掉。&lt;/p>
+&lt;p>&lt;img src="https:////upload-images.jianshu.io/upload_images/1183379-d5d3c96bed2f4352.png?imageMogr2/auto-orient/strip%7cimageView2/2/w/413/format/webp" alt="img" />&lt;/p>
+&lt;p>SqlSession的方法&lt;/p>
+&lt;h4 id="2-sqlsession的创建">
+ 2. SqlSession的创建
+ &lt;a class="anchor" href="#2-sqlsession%e7%9a%84%e5%88%9b%e5%bb%ba">#&lt;/a>
+&lt;/h4>
+&lt;p>SqlSessionFactoryBuilder的build()方法使用建造者模式创建了SqlSessionFactory接口对象，SqlSessionFactory接口的默认实现是DefaultSqlSessionFactory。SqlSessionFactory使用实例工厂模式来创建SqlSession对象。SqlSession,SqlSessionFactory,SqlSessionFactoryBuilder的关系如下(图画得有点丑&amp;hellip;)：&lt;/p>
+&lt;p>&lt;img src="https:////upload-images.jianshu.io/upload_images/1183379-8e031424b84ca308.png?imageMogr2/auto-orient/strip%7cimageView2/2/w/1200/format/webp" alt="img" />&lt;/p>
+&lt;p>类图&lt;/p>
+&lt;p>DefaultSqlSessionFactory中openSession是有两种方法一种是openSessionFromDataSource，另一种是openSessionFromConnection。这两种是什么区别呢？从字面意义上将，一种是从数据源中获取SqlSession对象，一种是由已有连接获取SqlSession。SqlSession实际是对数据库连接的一层包装，数据库连接是个珍贵的资源，如果频繁的创建销毁将会影响吞吐量，因此使用数据库连接池化技术就可以复用数据库连接了。因此openSessionFromDataSource会从数据库连接池中获取一个连接，然后包装成一个SqlSession对像。openSessionFromConnection则是直接包装已有的连接并返回SqlSession对像。&lt;/p>
+&lt;p>openSessionFromDataSource 主要经历了以下几步：&lt;/p>
+&lt;ol>
+&lt;li>从获取configuration中获取Environment对象，Environment包含了数据库配置&lt;/li>
+&lt;li>从Environment获取DataSource数据源&lt;/li>
+&lt;li>从DataSource数据源中获取Connection连接对象&lt;/li>
+&lt;li>从DataSource数据源中获取TransactionFactory事物工厂&lt;/li>
+&lt;li>从TransactionFactory中创建事物Transaction对象&lt;/li>
+&lt;li>创建Executor对象&lt;/li>
+&lt;li>包装configuration和Executor对象成DefaultSqlSession对象&lt;/li>
+&lt;/ol>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">private&lt;/span> SqlSession &lt;span style="color:#a6e22e">openSessionFromDataSource&lt;/span>(ExecutorType execType, TransactionIsolationLevel level, &lt;span style="color:#66d9ef">boolean&lt;/span> autoCommit) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> Transaction tx &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">null&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">try&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">final&lt;/span> Environment environment &lt;span style="color:#f92672">=&lt;/span> configuration.&lt;span style="color:#a6e22e">getEnvironment&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">final&lt;/span> TransactionFactory transactionFactory &lt;span style="color:#f92672">=&lt;/span> getTransactionFactoryFromEnvironment(environment);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> tx &lt;span style="color:#f92672">=&lt;/span> transactionFactory.&lt;span style="color:#a6e22e">newTransaction&lt;/span>(environment.&lt;span style="color:#a6e22e">getDataSource&lt;/span>(), level, autoCommit);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">final&lt;/span> Executor executor &lt;span style="color:#f92672">=&lt;/span> configuration.&lt;span style="color:#a6e22e">newExecutor&lt;/span>(tx, execType);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> DefaultSqlSession(configuration, executor, autoCommit);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> } &lt;span style="color:#66d9ef">catch&lt;/span> (Exception e) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> closeTransaction(tx); &lt;span style="color:#75715e">// may have fetched a connection so lets call close()&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">throw&lt;/span> ExceptionFactory.&lt;span style="color:#a6e22e">wrapException&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;Error opening session. Cause: &amp;#34;&lt;/span> &lt;span style="color:#f92672">+&lt;/span> e, e);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> } &lt;span style="color:#66d9ef">finally&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ErrorContext.&lt;span style="color:#a6e22e">instance&lt;/span>().&lt;span style="color:#a6e22e">reset&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">private&lt;/span> SqlSession &lt;span style="color:#a6e22e">openSessionFromConnection&lt;/span>(ExecutorType execType, Connection connection) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">try&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">boolean&lt;/span> autoCommit;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">try&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> autoCommit &lt;span style="color:#f92672">=&lt;/span> connection.&lt;span style="color:#a6e22e">getAutoCommit&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> } &lt;span style="color:#66d9ef">catch&lt;/span> (SQLException e) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// Failover to true, as most poor drivers&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// or databases won&amp;#39;t support transactions&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> autoCommit &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">true&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">final&lt;/span> Environment environment &lt;span style="color:#f92672">=&lt;/span> configuration.&lt;span style="color:#a6e22e">getEnvironment&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">final&lt;/span> TransactionFactory transactionFactory &lt;span style="color:#f92672">=&lt;/span> getTransactionFactoryFromEnvironment(environment);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">final&lt;/span> Transaction tx &lt;span style="color:#f92672">=&lt;/span> transactionFactory.&lt;span style="color:#a6e22e">newTransaction&lt;/span>(connection);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">final&lt;/span> Executor executor &lt;span style="color:#f92672">=&lt;/span> configuration.&lt;span style="color:#a6e22e">newExecutor&lt;/span>(tx, execType);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> DefaultSqlSession(configuration, executor, autoCommit);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> } &lt;span style="color:#66d9ef">catch&lt;/span> (Exception e) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">throw&lt;/span> ExceptionFactory.&lt;span style="color:#a6e22e">wrapException&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;Error opening session. Cause: &amp;#34;&lt;/span> &lt;span style="color:#f92672">+&lt;/span> e, e);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> } &lt;span style="color:#66d9ef">finally&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ErrorContext.&lt;span style="color:#a6e22e">instance&lt;/span>().&lt;span style="color:#a6e22e">reset&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h4 id="3-sqlsession的使用">
+ 3. SqlSession的使用
+ &lt;a class="anchor" href="#3-sqlsession%e7%9a%84%e4%bd%bf%e7%94%a8">#&lt;/a>
+&lt;/h4>
+&lt;p>SqlSession 获取成功后，我们就可以使用其中的方法了，比如直接使用SqlSession发送sql语句，或者通过mapper映射文件的方式来使用，在上两篇文章中我们都是通过mapper映射文件来使用的，接下来就介绍第一种，直接使用SqlSession发送sql语句。&lt;/p></description></item><item><title>Mybatis原理系列(2)</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lybly_framework/MyBatis/principle/mybatis-principle2/</link><pubDate>Fri, 10 Feb 2023 11:04:31 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lybly_framework/MyBatis/principle/mybatis-principle2/</guid><description>&lt;blockquote>
+&lt;p>转载自https://www.jianshu.com/p/7d6b891180a3（添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;blockquote>
+&lt;p>在上篇文章中，我们举了一个例子如何使用MyBatis，但是对其中&lt;strong>dao层&lt;/strong>，&lt;strong>entity层&lt;/strong>，&lt;strong>mapper层&lt;/strong>间的关系不得而知，从此篇文章开始，笔者将&lt;strong>从MyBatis的启动流程&lt;/strong>着手，真正的开始研究MyBatis源码了。&lt;/p>
+&lt;/blockquote>
+&lt;h4 id="1-mybatis启动代码示例">
+ 1. MyBatis启动代码示例
+ &lt;a class="anchor" href="#1-mybatis%e5%90%af%e5%8a%a8%e4%bb%a3%e7%a0%81%e7%a4%ba%e4%be%8b">#&lt;/a>
+&lt;/h4>
+&lt;p>在上篇文章中，介绍了MyBatis的相关配置和各层代码编写，本文将以下代码展开描述和介绍MyBatis的启动流程，并简略的介绍各个模块的作用，&lt;strong>各个模块的细节部分将在其它文章中呈现&lt;/strong>。&lt;/p>
+&lt;p>回顾下上文中使用mybatis的部分代码，包括七步。每步虽然都是一行代码，但是隐藏了很多细节。接下来我们将围绕这起步展开了解。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">@Slf4j&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">MyBatisBootStrap&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>(String&lt;span style="color:#f92672">[]&lt;/span> args) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">try&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// 1. 读取配置&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> InputStream inputStream &lt;span style="color:#f92672">=&lt;/span> Resources.&lt;span style="color:#a6e22e">getResourceAsStream&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;mybatis-config.xml&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// 2. 创建SqlSessionFactory工厂&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> SqlSessionFactory sqlSessionFactory &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> SqlSessionFactoryBuilder().&lt;span style="color:#a6e22e">build&lt;/span>(inputStream);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// 3. 获取sqlSession&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> SqlSession sqlSession &lt;span style="color:#f92672">=&lt;/span> sqlSessionFactory.&lt;span style="color:#a6e22e">openSession&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// 4. 获取Mapper&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> TTestUserMapper userMapper &lt;span style="color:#f92672">=&lt;/span> sqlSession.&lt;span style="color:#a6e22e">getMapper&lt;/span>(TTestUserMapper.&lt;span style="color:#a6e22e">class&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// 5. 执行接口方法&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> TTestUser userInfo &lt;span style="color:#f92672">=&lt;/span> userMapper.&lt;span style="color:#a6e22e">selectByPrimaryKey&lt;/span>(16L);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> System.&lt;span style="color:#a6e22e">out&lt;/span>.&lt;span style="color:#a6e22e">println&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;userInfo = &amp;#34;&lt;/span> &lt;span style="color:#f92672">+&lt;/span> JSONUtil.&lt;span style="color:#a6e22e">toJsonStr&lt;/span>(userInfo));
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// 6. 提交事物&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> sqlSession.&lt;span style="color:#a6e22e">commit&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// 7. 关闭资源&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> sqlSession.&lt;span style="color:#a6e22e">close&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> inputStream.&lt;span style="color:#a6e22e">close&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> } &lt;span style="color:#66d9ef">catch&lt;/span> (Exception e){
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> log.&lt;span style="color:#a6e22e">error&lt;/span>(e.&lt;span style="color:#a6e22e">getMessage&lt;/span>(), e);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h4 id="2-读取配置">
+ 2. 读取配置
+ &lt;a class="anchor" href="#2-%e8%af%bb%e5%8f%96%e9%85%8d%e7%bd%ae">#&lt;/a>
+&lt;/h4>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// 1. 读取配置
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>InputStream inputStream &lt;span style="color:#f92672">=&lt;/span> Resources.getResourceAsStream(&lt;span style="color:#e6db74">&amp;#34;mybatis-config.xml&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>在&lt;strong>mybatis-config.xml&lt;/strong>中我们配置了&lt;strong>属性&lt;/strong>，&lt;strong>环境&lt;/strong>，&lt;strong>映射文件路径&lt;/strong>等，其实不仅可以配置以上内容，还可以配置&lt;strong>插件&lt;/strong>，&lt;strong>反射工厂&lt;/strong>，&lt;strong>类型处理器&lt;/strong>等等其它内容。在启动流程中的第一步我们就需要&lt;strong>读取这个配置文件&lt;/strong>，并获取一个输入流为下一步解析配置文件作准备。&lt;/p></description></item><item><title>Mybatis原理系列(1)</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lybly_framework/MyBatis/principle/mybatis-principle1/</link><pubDate>Fri, 10 Feb 2023 08:54:26 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lybly_framework/MyBatis/principle/mybatis-principle1/</guid><description>&lt;blockquote>
+&lt;p>转载自https://www.jianshu.com/p/ada025f97a07（添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;blockquote>
+&lt;p>作为Java码农，无论在面试中，还是在工作中都会遇到MyBatis的相关问题。笔者从大学开始就接触MyBatis，到现在为止都是会用，知道怎么配置，怎么编写xml，但是不知道Mybatis核心原理，一遇到问题就复制错误信息百度解决。为了改变这种境地，鼓起勇气开始下定决心阅读MyBatis源码，并开始记录阅读过程，希望和大家分享。&lt;/p>
+&lt;/blockquote>
+&lt;h4 id="1-初识mybatis">
+ 1. 初识MyBatis
+ &lt;a class="anchor" href="#1-%e5%88%9d%e8%af%86mybatis">#&lt;/a>
+&lt;/h4>
+&lt;p>还记得当初接触MyBatis时，觉得要配置很多，而且sql要单独写在xml中，相比Hibernate来说简直不太友好，直到后来出现了复杂的业务需求，需要编写相应的复杂的sql，此时用Hibernate反而更加麻烦了，用MyBatis是真香了。因此笔者对MyBatis的第一印象就是&lt;strong>将业务关注的sql&lt;/strong>和&lt;strong>java代码&lt;/strong>进行了解耦，在业务复杂变化的时候，相应的数据库操作需要相应进行修改，&lt;strong>如果通过java代码构建操作数据逻辑&lt;/strong>，这不断变动的需求对程序员的耐心是极大的考验。如果&lt;strong>将sql统一的维护在一个文件&lt;/strong>里，java代码用接口定义，在需求变动时，&lt;strong>只用改相应的sql&lt;/strong>，从而&lt;strong>减少了修改量&lt;/strong>，&lt;strong>提高开发效率&lt;/strong>。以上也是经常在面试中经常问到的Hibernate和MyBatis间的区别一点。&lt;/p>
+&lt;p>切到正题，Mybatis是什么呢？&lt;/p>
+&lt;p>Mybatis SQL 映射框架使得一个&lt;strong>面向对象构建的应用程序&lt;/strong>去&lt;strong>访问一个关系型数据库&lt;/strong>变得更容易。MyBatis使用&lt;strong>XML描述符&lt;/strong>或&lt;strong>注解&lt;/strong>将&lt;strong>对象&lt;/strong>与&lt;strong>存储过程&lt;/strong>或&lt;strong>SQL语句耦合&lt;/strong>。与对象关系映射工具相比，简单性是MyBatis数据映射器的最大优势。&lt;/p>
+&lt;p>以上是Mybatis的官方解释，其中“映射”，“面向对象”，“关系型”，“xml”等等都是Mybatis的关键词，也是我们了解了Mybatis原理后，会恍然大悟的地方。笔者现在不详述这些概念，在最后总结的时候再进行详述。我们只要知道Mybatis为我们操作数据库提供了很大的便捷。&lt;/p>
+&lt;h4 id="2-源码下载">
+ 2. 源码下载
+ &lt;a class="anchor" href="#2-%e6%ba%90%e7%a0%81%e4%b8%8b%e8%bd%bd">#&lt;/a>
+&lt;/h4>
+&lt;blockquote>
+&lt;p>这里建议使用maven即可，在pom.xml添加以下依赖&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-xml" data-lang="xml">&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;dependencies&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">&amp;lt;!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java --&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;dependency&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;groupId&amp;gt;&lt;/span>mysql&lt;span style="color:#f92672">&amp;lt;/groupId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;artifactId&amp;gt;&lt;/span>mysql-connector-java&lt;span style="color:#f92672">&amp;lt;/artifactId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;version&amp;gt;&lt;/span>8.0.32&lt;span style="color:#f92672">&amp;lt;/version&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;/dependency&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;dependency&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;groupId&amp;gt;&lt;/span>org.mybatis&lt;span style="color:#f92672">&amp;lt;/groupId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;artifactId&amp;gt;&lt;/span>mybatis&lt;span style="color:#f92672">&amp;lt;/artifactId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;version&amp;gt;&lt;/span>3.5.6&lt;span style="color:#f92672">&amp;lt;/version&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;/dependency&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">&amp;lt;!--这里还添加了一些辅助的依赖--&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">&amp;lt;!--lombok--&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;dependency&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;groupId&amp;gt;&lt;/span>org.projectlombok&lt;span style="color:#f92672">&amp;lt;/groupId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;artifactId&amp;gt;&lt;/span>lombok&lt;span style="color:#f92672">&amp;lt;/artifactId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;version&amp;gt;&lt;/span>1.18.8&lt;span style="color:#f92672">&amp;lt;/version&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;/dependency&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">&amp;lt;!--日志模块--&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;dependency&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;groupId&amp;gt;&lt;/span>org.apache.logging.log4j&lt;span style="color:#f92672">&amp;lt;/groupId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;artifactId&amp;gt;&lt;/span>log4j-api&lt;span style="color:#f92672">&amp;lt;/artifactId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;version&amp;gt;&lt;/span>2.17.1&lt;span style="color:#f92672">&amp;lt;/version&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;/dependency&amp;gt;&lt;/span> 
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;/dependencies&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>然后在ExternalLibraries 的mybatis:3.5.6里找到，就能看到目录结构 ，随便找一个进去 idea右上角会出现DownloadSource之类的字样 ，点击即可&lt;br>
+&lt;img src="img/ly-20241212142014144.png" alt="ly-20241212142014144" />&lt;/p>
+&lt;/blockquote>
+&lt;p>我们首先要从github上下载源码，&lt;a href="https://links.jianshu.com/go?to=https%3A%2F%2Fgithub.com%2Fmybatis%2Fmybatis-3">仓库地址&lt;/a>，然后在IDEA中clone代码&lt;/p>
+&lt;p>&lt;img src="img/ly-20241212142014403.png" alt="img" />&lt;/p>
+&lt;p>在打开中的IDEA中，选择vsc -&amp;gt; get from version control -&amp;gt; 复制刚才的地址&lt;/p>
+&lt;p>&lt;img src="img/ly-20241212142014541.png" alt="img" />&lt;/p>
+&lt;p>image.png&lt;/p>
+&lt;p>点击clone即可&lt;/p>
+&lt;p>&lt;img src="img/ly-20241212142014681.png" alt="img" />&lt;/p></description></item></channel></rss>

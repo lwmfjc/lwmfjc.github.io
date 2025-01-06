@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>IO on 随记</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/IO/</link><description>Recent content in IO on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Wed, 26 Oct 2022 14:17:58 +0000</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/IO/index.xml" rel="self" type="application/rss+xml"/><item><title>io模型</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/IO/ly0203lyio-model/</link><pubDate>Wed, 26 Oct 2022 14:17:58 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/IO/ly0203lyio-model/</guid><description>&lt;blockquote>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide （添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;blockquote>
+&lt;p>&lt;a href="https://zhuanlan.zhihu.com/p/360878783">https://zhuanlan.zhihu.com/p/360878783&lt;/a> IO多路复用讲解，这是一个与系统底层有关的知识点，需要一些操作系统调用代码才知道IO多路复用省的时间。&lt;/p>
+&lt;/blockquote>
+&lt;h2 id="io">
+ I/O
+ &lt;a class="anchor" href="#io">#&lt;/a>
+&lt;/h2>
+&lt;h3 id="何为io">
+ 何为I/O
+ &lt;a class="anchor" href="#%e4%bd%95%e4%b8%baio">#&lt;/a>
+&lt;/h3>
+&lt;ul>
+&lt;li>I/O(&lt;strong>Input/Output&lt;/strong>)，即&lt;strong>输入/输出&lt;/strong>
+从计算机结构的角度来解读一下I/O，根据冯诺依曼结构，计算机结构分为5大部分：&lt;strong>运算器&lt;/strong>、&lt;strong>控制器&lt;/strong>、&lt;strong>存储器&lt;/strong>、&lt;strong>输入设备&lt;/strong>、&lt;strong>输出设备&lt;/strong>
+&lt;img src="img/ly-20241212141951603.png" alt="ly-20241212141951603" />
+其中，输入设备：键盘；输出设备：显示器
+网卡、硬盘既属于输入设备也属于输出设备&lt;/li>
+&lt;li>输入设备&lt;strong>向计算机输入（内存）&lt;strong>数据，输出设备&lt;/strong>接收计算机（内存）&lt;strong>输出的数据，即I/O描述了&lt;/strong>计算机系统&lt;/strong>与&lt;strong>外部设备&lt;/strong>之间&lt;strong>通信&lt;/strong>的过程&lt;/li>
+&lt;li>从应用程序的角度解读I/O
+&lt;ul>
+&lt;li>为了保证系统稳定性和安全性，一个进程的地址空间划分为&lt;strong>用户空间User space&lt;/strong>和&lt;strong>内核空间Kernel space&lt;/strong> &lt;code>kernel	英[ˈkɜːnl]&lt;/code>&lt;/li>
+&lt;li>平常运行的应用程序都运行在用户空间，只有&lt;strong>内核空间才能进行系统态级别&lt;/strong>的&lt;strong>资源&lt;/strong>有关操作&amp;mdash;&lt;strong>文件管理、进程通信、内存管理&lt;/strong>&lt;/li>
+&lt;li>如果要进行IO操作，就得依赖&lt;strong>内核空间&lt;/strong>的能力，&lt;strong>用户空间的程序&lt;/strong>不能直接访问&lt;strong>内核空间&lt;/strong>&lt;/li>
+&lt;li>用户进程要想执行IO操作，必须通过&lt;strong>系统调用&lt;/strong>来间接访问内核空间&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>对于&lt;strong>磁盘IO（读写文件）&lt;strong>和&lt;/strong>网络IO（网络请求和响应）&lt;/strong>，从应用程序视角来看，&lt;strong>应用程序&lt;/strong>对操作系统的&lt;strong>内核&lt;/strong>发起&lt;strong>IO调用（系统调用）&lt;/strong>，操作系统负责的&lt;strong>内核&lt;/strong>执行具体&lt;strong>IO&lt;/strong>操作
+&lt;ul>
+&lt;li>&lt;strong>应用程序只是发起了IO操作调用&lt;/strong>，而具体的IO执行则由&lt;strong>操作系统内核&lt;/strong>完成&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>应用程序&lt;strong>发起I/O后&lt;/strong>，经历两个步骤
+&lt;ul>
+&lt;li>内核&lt;strong>等待I/O设备&lt;/strong>准备好数据&lt;/li>
+&lt;li>内核将数据&lt;strong>从内核空间&lt;/strong>拷贝&lt;strong>到用户空间&lt;/strong>&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="有哪些常见的io模型">
+ 有哪些常见的IO模型
+ &lt;a class="anchor" href="#%e6%9c%89%e5%93%aa%e4%ba%9b%e5%b8%b8%e8%a7%81%e7%9a%84io%e6%a8%a1%e5%9e%8b">#&lt;/a>
+&lt;/h3>
+&lt;p>UNIX系统下，包括5种：&lt;strong>同步阻塞I/O&lt;/strong>，&lt;strong>同步非阻塞I/O&lt;/strong>，&lt;strong>I/O多路复用&lt;/strong>、&lt;strong>信号驱动I/O&lt;/strong>和&lt;strong>异步I/O&lt;/strong>&lt;/p>
+&lt;h2 id="java中3中常见io模型">
+ Java中3中常见I/O模型
+ &lt;a class="anchor" href="#java%e4%b8%ad3%e4%b8%ad%e5%b8%b8%e8%a7%81io%e6%a8%a1%e5%9e%8b">#&lt;/a>
+&lt;/h2>
+&lt;h3 id="bio-blocking-io-">
+ BIO (Blocking I/O )
+ &lt;a class="anchor" href="#bio-blocking-io-">#&lt;/a>
+&lt;/h3>
+&lt;ul>
+&lt;li>应用程序发起read调用后，会一直阻塞，&lt;strong>直到内核把数据拷贝到用户空间&lt;/strong>
+&lt;img src="img/ly-20241212141951883.png" alt="ly-20241212141951883" />&lt;/li>
+&lt;/ul>
+&lt;h3 id="nio-non-blockingnew-io">
+ NIO (Non-blocking/New I/O)
+ &lt;a class="anchor" href="#nio-non-blockingnew-io">#&lt;/a>
+&lt;/h3>
+&lt;ul>
+&lt;li>对于java.nio包，提供了&lt;strong>Channel&lt;/strong>、&lt;strong>Selector&lt;/strong>、&lt;strong>Buffer&lt;/strong>等抽象概念，对于&lt;strong>高负载高并发&lt;/strong>，应使用NIO&lt;/li>
+&lt;li>NIO是I/O多路复用模型，属于&lt;strong>同步非阻塞IO&lt;/strong>模型
+&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>一般的同步非阻塞 IO 模型&lt;/strong>中，应用程序会&lt;strong>一直发起 read&lt;/strong> 调用。&lt;br>
+等待&lt;strong>数据从内核空间拷贝到用户空&lt;/strong>间的这段时间里，&lt;strong>线程依然是阻塞&lt;/strong>的**，**直到在内核把数据拷贝到用户空间。&lt;/p>
+&lt;p>相比于同步阻塞 IO 模型，同步非阻塞 IO 模型确实有了很大改进。通过轮询操作，避免了一直阻塞。&lt;/p>
+&lt;p>但是，这种 IO 模型同样存在问题：&lt;strong>应用程序不断进行 I/O 系统调用轮询数据是否已经准备好的过程是十分消耗 CPU 资源的。&lt;/strong>&lt;/p></description></item><item><title>io设计模式</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/IO/ly0202lyio-design-patterns/</link><pubDate>Mon, 24 Oct 2022 23:40:53 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/IO/ly0202lyio-design-patterns/</guid><description>&lt;blockquote>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide （添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;h2 id="装饰器模式">
+ 装饰器模式
+ &lt;a class="anchor" href="#%e8%a3%85%e9%a5%b0%e5%99%a8%e6%a8%a1%e5%bc%8f">#&lt;/a>
+&lt;/h2>
+&lt;p>​	类图：&lt;br>
+​	&lt;img src="img/ly-20241212141951023.png" alt="ly-20241212141951023" />&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>装饰器，Decorator，装饰器模式可以在&lt;strong>不改变原有对象的情况下拓展其功能&lt;/strong>&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>★装饰器模式，&lt;strong>通过组合替代继承&lt;/strong>来扩展原始类功能，在一些&lt;strong>继承关系较复杂&lt;/strong>的场景（IO这一场景各种类的继承关系就比较复杂）下更加实用&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>对于字节流，&lt;strong>FilterInputStream（对应输入流）和FilterOutputStream（对应输出流）&lt;strong>是&lt;/strong>装饰器模式的核心&lt;/strong>，分别用于&lt;strong>增强（继承了）InputStream&lt;/strong>和&lt;strong>OutputStream&lt;/strong>子类对象的功能
+Filter （过滤的意思），中间（Closeable）下面这两条&lt;strong>虚线代表实现&lt;/strong>；最下面的&lt;strong>实线代表继承&lt;/strong>
+&lt;img src="img/ly-20241212141951298.png" alt="ly-20241212141951298" />&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>其中BufferedInputStream（字节缓冲输入流）、DataInputStream等等都是FilterInputStream的子类，对应的BufferedOutputStream和DataOutputStream都是FilterOutputStream的子类&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>例子，使用BufferedInputStream（字节缓冲输入流）来增强FileInputStream功能&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>BufferedInputStream源码（构造函数）&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">private&lt;/span> &lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">int&lt;/span> DEFAULT_BUFFER_SIZE &lt;span style="color:#f92672">=&lt;/span> 8192;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#a6e22e">BufferedInputStream&lt;/span>(InputStream in) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">this&lt;/span>(in, DEFAULT_BUFFER_SIZE);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#a6e22e">BufferedInputStream&lt;/span>(InputStream in, &lt;span style="color:#66d9ef">int&lt;/span> size) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">super&lt;/span>(in);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span> (size &lt;span style="color:#f92672">&amp;lt;=&lt;/span> 0) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">throw&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> IllegalArgumentException(&lt;span style="color:#e6db74">&amp;#34;Buffer size &amp;lt;= 0&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> buf &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> &lt;span style="color:#66d9ef">byte&lt;/span>&lt;span style="color:#f92672">[&lt;/span>size&lt;span style="color:#f92672">]&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>使用&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">try&lt;/span> (BufferedInputStream bis &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> BufferedInputStream(&lt;span style="color:#66d9ef">new&lt;/span> FileInputStream(&lt;span style="color:#e6db74">&amp;#34;input.txt&amp;#34;&lt;/span>))) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">int&lt;/span> content;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">long&lt;/span> skip &lt;span style="color:#f92672">=&lt;/span> bis.&lt;span style="color:#a6e22e">skip&lt;/span>(2);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">while&lt;/span> ((content &lt;span style="color:#f92672">=&lt;/span> bis.&lt;span style="color:#a6e22e">read&lt;/span>()) &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#f92672">-&lt;/span>1) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> System.&lt;span style="color:#a6e22e">out&lt;/span>.&lt;span style="color:#a6e22e">print&lt;/span>((&lt;span style="color:#66d9ef">char&lt;/span>) content);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>} &lt;span style="color:#66d9ef">catch&lt;/span> (IOException e) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> e.&lt;span style="color:#a6e22e">printStackTrace&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>ZipInputStream和ZipOutputStream还可以用来增强BufferedInputStream和BufferedOutputStream的能力&lt;/p></description></item><item><title>io基础</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/IO/ly0201lyio/</link><pubDate>Sun, 23 Oct 2022 12:21:12 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/IO/ly0201lyio/</guid><description>&lt;blockquote>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide （添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;h2 id="简介">
+ 简介
+ &lt;a class="anchor" href="#%e7%ae%80%e4%bb%8b">#&lt;/a>
+&lt;/h2>
+&lt;ul>
+&lt;li>
+&lt;p>IO，即Input/Output，输入和输出，输入就是&lt;strong>数据输入到计算机内存&lt;/strong>；输出则是&lt;strong>输出到外部存储&lt;/strong>（如&lt;strong>数据库&lt;/strong>、&lt;strong>文件&lt;/strong>、&lt;strong>远程主机&lt;/strong>）&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>根据数据处理方式，又分为&lt;strong>字节流&lt;/strong>和&lt;strong>字符流&lt;/strong>&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>基类&lt;/p>
+&lt;ul>
+&lt;li>字节输入流 &lt;strong>InputStream&lt;/strong>，字符输入流 &lt;strong>Reader&lt;/strong>&lt;/li>
+&lt;li>字节输出流 &lt;strong>OutputStream&lt;/strong>, 字符输出流 &lt;strong>Writer&lt;/strong>&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h2 id="字节流">
+ 字节流
+ &lt;a class="anchor" href="#%e5%ad%97%e8%8a%82%e6%b5%81">#&lt;/a>
+&lt;/h2>
+&lt;ul>
+&lt;li>
+&lt;p>字节输入流 InputStream
+InputStream用于从源头（通常是文件）&lt;strong>读取数据（字节信息）到内存&lt;/strong>中，java.io.InputStream抽象类是&lt;strong>所有字节输入流的父类&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>常用方法&lt;/p>
+&lt;blockquote>
+&lt;ul>
+&lt;li>&lt;code>read()&lt;/code> ：返回输入流中下一个字节的数据。返回的值介于 0 到 255 之间。如果未读取任何字节，则代码返回 &lt;code>-1&lt;/code> ，表示文件结束。&lt;/li>
+&lt;li>&lt;code>read(byte b[ ])&lt;/code> : 从输入流中读取一些字节存储到数组 &lt;code>b&lt;/code> 中。如果数组 &lt;code>b&lt;/code> 的长度为零，则不读取。如果没有可用字节读取，返回 &lt;code>-1&lt;/code>。如果有可用字节读取，则最多读取的字节数最多等于 &lt;code>b.length&lt;/code> ， 返回读取的字节数。这个方法等价于 &lt;code>read(b, 0, b.length)&lt;/code>。&lt;/li>
+&lt;li>&lt;code>read(byte b[], int off, int len)&lt;/code> ：在&lt;code>read(byte b[ ])&lt;/code> 方法的基础上增加了 &lt;code>off&lt;/code> 参数（偏移量）和 &lt;code>len&lt;/code> 参数（要读取的最大字节数）。&lt;/li>
+&lt;li>&lt;code>skip(long n)&lt;/code> ：忽略输入流中的 n 个字节 ,返回实际忽略的字节数。&lt;/li>
+&lt;li>&lt;code>available()&lt;/code> ：返回输入流中可以读取的字节数。&lt;/li>
+&lt;li>&lt;code>close()&lt;/code> ：关闭输入流释放相关的系统资源。&lt;/li>
+&lt;/ul>
+&lt;/blockquote>
+&lt;/li>
+&lt;li>
+&lt;p>Java9 新增了多个实用方法&lt;/p></description></item></channel></rss>

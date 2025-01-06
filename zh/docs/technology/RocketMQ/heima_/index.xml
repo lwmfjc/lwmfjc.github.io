@@ -1,0 +1,704 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>基础(黑马)_ on 随记</title><link>https://lwmfjc.github.io/zh/docs/technology/RocketMQ/heima_/</link><description>Recent content in 基础(黑马)_ on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Sat, 09 Apr 2022 09:20:04 +0000</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/docs/technology/RocketMQ/heima_/index.xml" rel="self" type="application/rss+xml"/><item><title>05高级功能</title><link>https://lwmfjc.github.io/zh/docs/technology/RocketMQ/heima_/05advance/</link><pubDate>Sat, 09 Apr 2022 09:20:04 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/RocketMQ/heima_/05advance/</guid><description>&lt;blockquote>
+&lt;p>学习来源 &lt;a href="https://www.bilibili.com/video/BV1L4411y7mn">https://www.bilibili.com/video/BV1L4411y7mn&lt;/a>（添加小部分笔记）感谢作者！&lt;/p>
+&lt;/blockquote>
+&lt;h1 id="消息存储">
+ 消息存储
+ &lt;a class="anchor" href="#%e6%b6%88%e6%81%af%e5%ad%98%e5%82%a8">#&lt;/a>
+&lt;/h1>
+&lt;h2 id="流程">
+ 流程
+ &lt;a class="anchor" href="#%e6%b5%81%e7%a8%8b">#&lt;/a>
+&lt;/h2>
+&lt;p>&lt;img src="img/ly-20241212142201154.png" alt="ly-20241212142201154" />&lt;/p>
+&lt;h2 id="存储介质">
+ 存储介质
+ &lt;a class="anchor" href="#%e5%ad%98%e5%82%a8%e4%bb%8b%e8%b4%a8">#&lt;/a>
+&lt;/h2>
+&lt;h3 id="关系型数据库db">
+ 关系型数据库DB
+ &lt;a class="anchor" href="#%e5%85%b3%e7%b3%bb%e5%9e%8b%e6%95%b0%e6%8d%ae%e5%ba%93db">#&lt;/a>
+&lt;/h3>
+&lt;p>适合数据量不够大，比如&lt;strong>ActiveMQ&lt;/strong>可选用JDBC方式作为消息持久化&lt;/p>
+&lt;h3 id="文件系统">
+ 文件系统
+ &lt;a class="anchor" href="#%e6%96%87%e4%bb%b6%e7%b3%bb%e7%bb%9f">#&lt;/a>
+&lt;/h3>
+&lt;ol>
+&lt;li>关系型数据库最终也是要存到文件系统中的，不如直接存到文件系统，绕过关系型数据库&lt;/li>
+&lt;li>常见的RocketMQ/RabbitMQ/Kafka都是采用消息刷盘到计算机的文件系统来做持久化(&lt;strong>同步刷盘&lt;/strong>/&lt;strong>异步刷盘&lt;/strong>)&lt;/li>
+&lt;/ol>
+&lt;h2 id="消息发送">
+ 消息发送
+ &lt;a class="anchor" href="#%e6%b6%88%e6%81%af%e5%8f%91%e9%80%81">#&lt;/a>
+&lt;/h2>
+&lt;ol>
+&lt;li>
+&lt;p>顺序写：600MB/s，随机写：100KB/s&lt;/p>
+&lt;blockquote>
+&lt;ul>
+&lt;li>
+&lt;p>系统运行一段时间后，我们对文件的增删改会导致磁盘上数据无法连续，非常的分散。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>顺序读也只是逻辑上的顺序，也就是按照当前文件的相对偏移量顺序读取，并非磁盘上连续空间读取&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>对于磁盘的读写分为两种模式，&lt;strong>顺序IO&lt;/strong>和&lt;strong>随机IO&lt;/strong>。 随机IO存在一个寻址的过程，所以效率比较低。而顺序IO，相当于有一个&lt;strong>物理索引&lt;/strong>，在读取的时候不需要寻找地址，效率很高。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>来源： &lt;a href="https://www.cnblogs.com/liuche/p/15455808.html">https://www.cnblogs.com/liuche/p/15455808.html&lt;/a>&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;/blockquote>
+&lt;/li>
+&lt;li>
+&lt;p>数据网络传输&lt;/p>
+&lt;p>零拷贝技术&lt;strong>MappedByteBuffer&lt;/strong>，省去了用户态，由&lt;strong>内核态&lt;/strong>直接拷贝到&lt;strong>网络驱动内核&lt;/strong>。 &lt;br>
+RocketMQ默认设置单个CommitLog日志数据文件为1G&lt;/p>
+&lt;p>&lt;img src="img/ly-20241212142201208.png" alt="ly-20241212142201208" />&lt;/p>
+&lt;/li>
+&lt;/ol>
+&lt;h2 id="消息存储-1">
+ 消息存储
+ &lt;a class="anchor" href="#%e6%b6%88%e6%81%af%e5%ad%98%e5%82%a8-1">#&lt;/a>
+&lt;/h2>
+&lt;p>三个概念：commitLog、ConsumerQueue、index&lt;/p>
+&lt;h3 id="commitlog">
+ CommitLog
+ &lt;a class="anchor" href="#commitlog">#&lt;/a>
+&lt;/h3>
+&lt;ol>
+&lt;li>默认大小1G&lt;br>
+&lt;img src="img/ly-20241212142201240.png" alt="ly-20241212142201240" />&lt;/li>
+&lt;li>存储消息的元数据，包括了Topic、QueueId、Message&lt;/li>
+&lt;li>还存储了ConsumerQueue相关信息，所以ConsumerQueue丢了也没事&lt;/li>
+&lt;/ol>
+&lt;h3 id="consumerqueue">
+ ConsumerQueue
+ &lt;a class="anchor" href="#consumerqueue">#&lt;/a>
+&lt;/h3>
+&lt;ol>
+&lt;li>存储了消息在CommitLog的索引（几百K，Linux会事先加载到内存中）&lt;/li>
+&lt;li>包括最小/最大偏移量、已经消费的偏移量&lt;/li>
+&lt;li>一个Topic多个队列，每个队列对应一个ConsumerQueue&lt;br>
+&lt;img src="img/ly-20241212142201276.png" alt="ly-20241212142201276" />&lt;/li>
+&lt;/ol>
+&lt;h3 id="index">
+ Index
+ &lt;a class="anchor" href="#index">#&lt;/a>
+&lt;/h3>
+&lt;p>也是索引文件，为消息查询服务，通过key或时间区间查询消息&lt;/p>
+&lt;h3 id="总结">
+ 总结
+ &lt;a class="anchor" href="#%e6%80%bb%e7%bb%93">#&lt;/a>
+&lt;/h3>
+&lt;p>&lt;img src="img/ly-20241212142201312.png" alt="ly-20241212142201312" />&lt;/p>
+&lt;h2 id="刷盘机制">
+ 刷盘机制
+ &lt;a class="anchor" href="#%e5%88%b7%e7%9b%98%e6%9c%ba%e5%88%b6">#&lt;/a>
+&lt;/h2>
+&lt;p>&lt;img src="img/ly-20241212142201340.png" alt="ly-20241212142201340" />&lt;/p>
+&lt;ol>
+&lt;li>同步刷盘&lt;/li>
+&lt;li>异步刷盘&lt;/li>
+&lt;/ol>
+&lt;h1 id="高可用性机制">
+ 高可用性机制
+ &lt;a class="anchor" href="#%e9%ab%98%e5%8f%af%e7%94%a8%e6%80%a7%e6%9c%ba%e5%88%b6">#&lt;/a>
+&lt;/h1>
+&lt;h2 id="消费高可用及发送高可用">
+ 消费高可用及发送高可用
+ &lt;a class="anchor" href="#%e6%b6%88%e8%b4%b9%e9%ab%98%e5%8f%af%e7%94%a8%e5%8f%8a%e5%8f%91%e9%80%81%e9%ab%98%e5%8f%af%e7%94%a8">#&lt;/a>
+&lt;/h2>
+&lt;p>&lt;img src="img/ly-20241212142201372.png" alt="ly-20241212142201372" />&lt;/p></description></item><item><title>04案例</title><link>https://lwmfjc.github.io/zh/docs/technology/RocketMQ/heima_/04case/</link><pubDate>Fri, 08 Apr 2022 11:00:03 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/RocketMQ/heima_/04case/</guid><description>&lt;blockquote>
+&lt;p>学习来源 &lt;a href="https://www.bilibili.com/video/BV1L4411y7mn">https://www.bilibili.com/video/BV1L4411y7mn&lt;/a>（添加小部分笔记）感谢作者!基本架构&lt;/p>
+&lt;/blockquote>
+&lt;h2 id="架构">
+ 架构
+ &lt;a class="anchor" href="#%e6%9e%b6%e6%9e%84">#&lt;/a>
+&lt;/h2>
+&lt;p>&lt;img src="img/ly-20241212142200977.png" alt="ly-20241212142200977" />&lt;/p>
+&lt;h2 id="流程图">
+ 流程图
+ &lt;a class="anchor" href="#%e6%b5%81%e7%a8%8b%e5%9b%be">#&lt;/a>
+&lt;/h2>
+&lt;h3 id="下单流程">
+ 下单流程
+ &lt;a class="anchor" href="#%e4%b8%8b%e5%8d%95%e6%b5%81%e7%a8%8b">#&lt;/a>
+&lt;/h3>
+&lt;p>&lt;img src="img/ly-20241212142201029.png" alt="ly-20241212142201029" />&lt;/p>
+&lt;h3 id="支付流程">
+ 支付流程
+ &lt;a class="anchor" href="#%e6%94%af%e4%bb%98%e6%b5%81%e7%a8%8b">#&lt;/a>
+&lt;/h3>
+&lt;p>&lt;img src="img/ly-20241212142201068.png" alt="ly-20241212142201068" />&lt;/p>
+&lt;h1 id="springboot整合rocketmq">
+ SpringBoot整合RocketMQ
+ &lt;a class="anchor" href="#springboot%e6%95%b4%e5%90%88rocketmq">#&lt;/a>
+&lt;/h1>
+&lt;h2 id="依赖包">
+ 依赖包
+ &lt;a class="anchor" href="#%e4%be%9d%e8%b5%96%e5%8c%85">#&lt;/a>
+&lt;/h2>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-xml" data-lang="xml">&lt;span style="display:flex;">&lt;span>	 &lt;span style="color:#f92672">&amp;lt;dependency&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;groupId&amp;gt;&lt;/span>org.apache.rocketmq&lt;span style="color:#f92672">&amp;lt;/groupId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;artifactId&amp;gt;&lt;/span>rocketmq-spring-boot-starter&lt;span style="color:#f92672">&amp;lt;/artifactId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;/dependency&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="生产者">
+ 生产者
+ &lt;a class="anchor" href="#%e7%94%9f%e4%ba%a7%e8%80%85">#&lt;/a>
+&lt;/h2>
+&lt;h3 id="yaml">
+ yaml
+ &lt;a class="anchor" href="#yaml">#&lt;/a>
+&lt;/h3>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-yaml" data-lang="yaml">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">rocketmq&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">name-server&lt;/span>: &lt;span style="color:#ae81ff">192.168.1.135&lt;/span>:&lt;span style="color:#ae81ff">9876&lt;/span>&lt;span style="color:#ae81ff">;192.168.1.138:9876&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">producer&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">group&lt;/span>: &lt;span style="color:#ae81ff">my-group&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="使用">
+ 使用
+ &lt;a class="anchor" href="#%e4%bd%bf%e7%94%a8">#&lt;/a>
+&lt;/h3>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">@Autowired&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">private&lt;/span> RocketMQTemplate template;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">@RequestMapping&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;rocketmq&amp;#34;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> String &lt;span style="color:#a6e22e">rocketmq&lt;/span>(){
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> log.&lt;span style="color:#a6e22e">info&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;我被调用了-rocketmq&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">//主题+内容&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> template.&lt;span style="color:#a6e22e">convertAndSend&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;mytopic-ly&amp;#34;&lt;/span>,&lt;span style="color:#e6db74">&amp;#34;hello1231&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#e6db74">&amp;#34;hello world&amp;#34;&lt;/span>&lt;span style="color:#f92672">+&lt;/span>serverPort;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="消费者">
+ 消费者
+ &lt;a class="anchor" href="#%e6%b6%88%e8%b4%b9%e8%80%85">#&lt;/a>
+&lt;/h2>
+&lt;h3 id="yaml-1">
+ yaml
+ &lt;a class="anchor" href="#yaml-1">#&lt;/a>
+&lt;/h3>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-yaml" data-lang="yaml">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">rocketmq&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">name-server&lt;/span>: &lt;span style="color:#ae81ff">192.168.1.135&lt;/span>:&lt;span style="color:#ae81ff">9876&lt;/span>&lt;span style="color:#ae81ff">;192.168.1.138:9876&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">consumer&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">group&lt;/span>: &lt;span style="color:#ae81ff">my-group2&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="使用-1">
+ 使用
+ &lt;a class="anchor" href="#%e4%bd%bf%e7%94%a8-1">#&lt;/a>
+&lt;/h3>
+&lt;p>创建监听器&lt;/p></description></item><item><title>03收发消息</title><link>https://lwmfjc.github.io/zh/docs/technology/RocketMQ/heima_/03messagetype/</link><pubDate>Thu, 07 Apr 2022 14:31:59 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/RocketMQ/heima_/03messagetype/</guid><description>&lt;blockquote>
+&lt;p>学习来源 &lt;a href="https://www.bilibili.com/video/BV1L4411y7mn">https://www.bilibili.com/video/BV1L4411y7mn&lt;/a>（添加小部分笔记）感谢作者!前提&lt;/p>
+&lt;/blockquote>
+&lt;h2 id="依赖包">
+ 依赖包
+ &lt;a class="anchor" href="#%e4%be%9d%e8%b5%96%e5%8c%85">#&lt;/a>
+&lt;/h2>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-xml" data-lang="xml">&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#f92672">&amp;lt;dependency&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;groupId&amp;gt;&lt;/span>org.apache.rocketmq&lt;span style="color:#f92672">&amp;lt;/groupId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;artifactId&amp;gt;&lt;/span>rocketmq-client&lt;span style="color:#f92672">&amp;lt;/artifactId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;version&amp;gt;&lt;/span>4.4.0&lt;span style="color:#f92672">&amp;lt;/version&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;/dependency&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="消息生产者步骤">
+ 消息生产者步骤
+ &lt;a class="anchor" href="#%e6%b6%88%e6%81%af%e7%94%9f%e4%ba%a7%e8%80%85%e6%ad%a5%e9%aa%a4">#&lt;/a>
+&lt;/h2>
+&lt;p>创建生产者，生产者组名&amp;ndash;&amp;gt;指定nameserver地址&amp;ndash;&amp;gt;启动producer&amp;ndash;&amp;gt;&lt;/p>
+&lt;p>创建消息对象(Topic、Tag、消息体)&lt;/p>
+&lt;p>发送消息、关闭生产者producer&lt;/p>
+&lt;h2 id="消息消费者步骤">
+ 消息消费者步骤
+ &lt;a class="anchor" href="#%e6%b6%88%e6%81%af%e6%b6%88%e8%b4%b9%e8%80%85%e6%ad%a5%e9%aa%a4">#&lt;/a>
+&lt;/h2>
+&lt;p>创建消费者，制定消费者组名&amp;ndash;&amp;gt;指定nameserver地址&lt;/p>
+&lt;p>订阅Topic和Tag，设置回调函数处理消息&lt;/p>
+&lt;p>启动消费者consumer&lt;/p>
+&lt;h1 id="消息发送">
+ 消息发送
+ &lt;a class="anchor" href="#%e6%b6%88%e6%81%af%e5%8f%91%e9%80%81">#&lt;/a>
+&lt;/h1>
+&lt;h2 id="同步消息">
+ 同步消息
+ &lt;a class="anchor" href="#%e5%90%8c%e6%ad%a5%e6%b6%88%e6%81%af">#&lt;/a>
+&lt;/h2>
+&lt;p>发送消息后客户端会进行阻塞，直到得到结果后，客户端才会继续执行&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>(String&lt;span style="color:#f92672">[]&lt;/span> args) &lt;span style="color:#66d9ef">throws&lt;/span> MQClientException, MQBrokerException, RemotingException, InterruptedException {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">//创建Producer，并指定生产者组&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> DefaultMQProducer producer &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> DefaultMQProducer(&lt;span style="color:#e6db74">&amp;#34;group1&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> producer.&lt;span style="color:#a6e22e">setNamesrvAddr&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;192.168.1.135:9876;192.168.1.138:9876&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> producer.&lt;span style="color:#a6e22e">start&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">for&lt;/span> (&lt;span style="color:#66d9ef">int&lt;/span> i &lt;span style="color:#f92672">=&lt;/span> 0; i &lt;span style="color:#f92672">&amp;lt;&lt;/span> 10; i&lt;span style="color:#f92672">++&lt;/span>) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> Message msg &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> Message();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> msg.&lt;span style="color:#a6e22e">setTopic&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;base&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> msg.&lt;span style="color:#a6e22e">setTags&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;Tag1&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> msg.&lt;span style="color:#a6e22e">setBody&lt;/span>((&lt;span style="color:#e6db74">&amp;#34;hello world&amp;#34;&lt;/span> &lt;span style="color:#f92672">+&lt;/span> i).&lt;span style="color:#a6e22e">getBytes&lt;/span>());
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">//发送消息&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> SendResult result &lt;span style="color:#f92672">=&lt;/span> producer.&lt;span style="color:#a6e22e">send&lt;/span>(msg);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">//发送状态&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> SendStatus sendStatus &lt;span style="color:#f92672">=&lt;/span> result.&lt;span style="color:#a6e22e">getSendStatus&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">//消息id&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> String msgId &lt;span style="color:#f92672">=&lt;/span> result.&lt;span style="color:#a6e22e">getMsgId&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">//消息接收队列id&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> MessageQueue messageQueue &lt;span style="color:#f92672">=&lt;/span> result.&lt;span style="color:#a6e22e">getMessageQueue&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">int&lt;/span> queueId &lt;span style="color:#f92672">=&lt;/span> messageQueue.&lt;span style="color:#a6e22e">getQueueId&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> log.&lt;span style="color:#a6e22e">info&lt;/span>(result.&lt;span style="color:#a6e22e">toString&lt;/span>());
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> log.&lt;span style="color:#a6e22e">info&lt;/span>(messageQueue.&lt;span style="color:#a6e22e">toString&lt;/span>());
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> log.&lt;span style="color:#a6e22e">info&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;status:&amp;#34;&lt;/span> &lt;span style="color:#f92672">+&lt;/span> sendStatus &lt;span style="color:#f92672">+&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#e6db74">&amp;#34;msgId:&amp;#34;&lt;/span> &lt;span style="color:#f92672">+&lt;/span> msgId &lt;span style="color:#f92672">+&lt;/span> &lt;span style="color:#e6db74">&amp;#34;queueId&amp;#34;&lt;/span> &lt;span style="color:#f92672">+&lt;/span> queueId);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> TimeUnit.&lt;span style="color:#a6e22e">SECONDS&lt;/span>.&lt;span style="color:#a6e22e">sleep&lt;/span>(1);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> log.&lt;span style="color:#a6e22e">info&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;发送结束===================&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> producer.&lt;span style="color:#a6e22e">shutdown&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="异步消息">
+ 异步消息
+ &lt;a class="anchor" href="#%e5%bc%82%e6%ad%a5%e6%b6%88%e6%81%af">#&lt;/a>
+&lt;/h2>
+&lt;p>发送消息后不会导致阻塞，当broker返回结果时，会调用回调函数进行处理&lt;/p></description></item><item><title>02双主双从集群搭建</title><link>https://lwmfjc.github.io/zh/docs/technology/RocketMQ/heima_/02buildcluster/</link><pubDate>Wed, 06 Apr 2022 10:55:23 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/RocketMQ/heima_/02buildcluster/</guid><description>&lt;blockquote>
+&lt;p>学习来源 &lt;a href="https://www.bilibili.com/video/BV1L4411y7mn">https://www.bilibili.com/video/BV1L4411y7mn&lt;/a>（添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;h1 id="服务器信息修改">
+ 服务器信息修改
+ &lt;a class="anchor" href="#%e6%9c%8d%e5%8a%a1%e5%99%a8%e4%bf%a1%e6%81%af%e4%bf%ae%e6%94%b9">#&lt;/a>
+&lt;/h1>
+&lt;p>在.135和.138均进行下面的操作&lt;/p>
+&lt;h2 id="解压">
+ 解压
+ &lt;a class="anchor" href="#%e8%a7%a3%e5%8e%8b">#&lt;/a>
+&lt;/h2>
+&lt;p>rocketmq解压到/usr/local/rocketmq目录下&lt;/p>
+&lt;h2 id="host添加">
+ host添加
+ &lt;a class="anchor" href="#host%e6%b7%bb%e5%8a%a0">#&lt;/a>
+&lt;/h2>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#添加host&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>vim /etc/hosts
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">##添加内容&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>192.168.1.135 rocketmq-nameserver1
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>192.168.1.138 rocketmq-nameserver2
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>192.168.1.135 rocketmq-master1
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>192.168.1.135 rocketmq-slave2
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>192.168.1.138 rocketmq-master2
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>192.168.1.138 rocketmq-slave1
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">## 保存后&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>systemctl restart network
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="防火墙">
+ 防火墙
+ &lt;a class="anchor" href="#%e9%98%b2%e7%81%ab%e5%a2%99">#&lt;/a>
+&lt;/h2>
+&lt;h3 id="直接关闭">
+ 直接关闭
+ &lt;a class="anchor" href="#%e7%9b%b4%e6%8e%a5%e5%85%b3%e9%97%ad">#&lt;/a>
+&lt;/h3>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">## 防火墙关闭&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>systemctl stop firewalld.service
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">## 防火墙状态查看&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>firewall-cmd --state
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">##禁止开机启动&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>systemctl disable firewalld.service
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="或者直接关闭对应端口即可">
+ 或者直接关闭对应端口即可
+ &lt;a class="anchor" href="#%e6%88%96%e8%80%85%e7%9b%b4%e6%8e%a5%e5%85%b3%e9%97%ad%e5%af%b9%e5%ba%94%e7%ab%af%e5%8f%a3%e5%8d%b3%e5%8f%af">#&lt;/a>
+&lt;/h3>
+&lt;p>&lt;img src="img/ly-20241212142200796.png" alt="ly-20241212142200796" />&lt;/p>
+&lt;h2 id="环境变量配置">
+ 环境变量配置
+ &lt;a class="anchor" href="#%e7%8e%af%e5%a2%83%e5%8f%98%e9%87%8f%e9%85%8d%e7%bd%ae">#&lt;/a>
+&lt;/h2>
+&lt;p>为了执行rocketmq命令方便&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#添加环境变量&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>vim /etc/profile
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#添加&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>ROCKETMQ_HOME&lt;span style="color:#f92672">=&lt;/span>/usr/local/rocketmq/rocketmq-all-4.4.0-bin-release
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>PATH&lt;span style="color:#f92672">=&lt;/span>$PATH:$ROCKETMQ_HOME/bin
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>export ROCKETMQ_HOME PATH
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#使配置生效&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>source /etc/profile
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="消息存储路径创建">
+ 消息存储路径创建
+ &lt;a class="anchor" href="#%e6%b6%88%e6%81%af%e5%ad%98%e5%82%a8%e8%b7%af%e5%be%84%e5%88%9b%e5%bb%ba">#&lt;/a>
+&lt;/h2>
+&lt;h3 id="a">
+ a
+ &lt;a class="anchor" href="#a">#&lt;/a>
+&lt;/h3>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>mkdir /usr/local/rocketmq/store-a
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>mkdir /usr/local/rocketmq/store-a/commitlog
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>mkdir /usr/local/rocketmq/store-a/consumequeue
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>mkdir /usr/local/rocketmq/store-a/index
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="b">
+ b
+ &lt;a class="anchor" href="#b">#&lt;/a>
+&lt;/h3>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>mkdir /usr/local/rocketmq/store-b
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>mkdir /usr/local/rocketmq/store-b/commitlog
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>mkdir /usr/local/rocketmq/store-b/consumequeue
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>mkdir /usr/local/rocketmq/store-b/index
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h1 id="双主双从配置文件的修改">
+ 双主双从配置文件的修改
+ &lt;a class="anchor" href="#%e5%8f%8c%e4%b8%bb%e5%8f%8c%e4%bb%8e%e9%85%8d%e7%bd%ae%e6%96%87%e4%bb%b6%e7%9a%84%e4%bf%ae%e6%94%b9">#&lt;/a>
+&lt;/h1>
+&lt;h2 id="master-a">
+ master-a
+ &lt;a class="anchor" href="#master-a">#&lt;/a>
+&lt;/h2>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#所属集群名字&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>brokerClusterName&lt;span style="color:#f92672">=&lt;/span>rocketmq-cluster
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#broker名字，注意此处不同的配置文件填写的不一样&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>brokerName&lt;span style="color:#f92672">=&lt;/span>broker-a
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#0 表示 Master，&amp;gt;0 表示 Slave&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>brokerId&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">0&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#nameServer地址，分号分割&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>namesrvAddr&lt;span style="color:#f92672">=&lt;/span>rocketmq-nameserver1:9876;rocketmq-nameserver2:9876
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#在发送消息时，自动创建服务器不存在的topic，默认创建的队列数&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>defaultTopicQueueNums&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">4&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#是否允许 Broker 自动创建Topic，建议线下开启，线上关闭&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>autoCreateTopicEnable&lt;span style="color:#f92672">=&lt;/span>true
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#是否允许 Broker 自动创建订阅组，建议线下开启，线上关闭&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>autoCreateSubscriptionGroup&lt;span style="color:#f92672">=&lt;/span>true
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#Broker 对外服务的监听端口&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>listenPort&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">10911&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#删除文件时间点，默认凌晨 4点&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>deleteWhen&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">04&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#文件保留时间，默认 48 小时&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>fileReservedTime&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">120&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#commitLog每个文件的大小默认1G&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>mapedFileSizeCommitLog&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">1073741824&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#ConsumeQueue每个文件默认存30W条，根据业务情况调整&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>mapedFileSizeConsumeQueue&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">300000&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#destroyMapedFileIntervalForcibly=120000&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#redeleteHangedFileInterval=120000&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#检测物理文件磁盘空间&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>diskMaxUsedSpaceRatio&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">88&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#存储路径&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>storePathRootDir&lt;span style="color:#f92672">=&lt;/span>/usr/local/rocketmq/store-a
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#commitLog 存储路径&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>storePathCommitLog&lt;span style="color:#f92672">=&lt;/span>/usr/local/rocketmq/store-a/commitlog
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#消费队列存储路径存储路径&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>storePathConsumeQueue&lt;span style="color:#f92672">=&lt;/span>/usr/local/rocketmq/store-a/consumequeue
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#消息索引存储路径&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>storePathIndex&lt;span style="color:#f92672">=&lt;/span>/usr/local/rocketmq/store-a/index
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#checkpoint 文件存储路径&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>storeCheckpoint&lt;span style="color:#f92672">=&lt;/span>/usr/local/rocketmq/store-a/checkpoint
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#abort 文件存储路径&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>abortFile&lt;span style="color:#f92672">=&lt;/span>/usr/local/rocketmq/store-a/abort
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#限制的消息大小&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>maxMessageSize&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">65536&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#flushCommitLogLeastPages=4&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#flushConsumeQueueLeastPages=2&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#flushCommitLogThoroughInterval=10000&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#flushConsumeQueueThoroughInterval=60000&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#Broker 的角色&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#- ASYNC_MASTER 异步复制Master&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#- SYNC_MASTER 同步双写Master&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#- SLAVE&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>brokerRole&lt;span style="color:#f92672">=&lt;/span>SYNC_MASTER
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#刷盘方式&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#- ASYNC_FLUSH 异步刷盘&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#- SYNC_FLUSH 同步刷盘&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>flushDiskType&lt;span style="color:#f92672">=&lt;/span>SYNC_FLUSH
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#checkTransactionMessageEnable=false&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#发消息线程池数量&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#sendMessageThreadPoolNums=128&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#拉消息线程池数量&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#pullMessageThreadPoolNums=128&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="slave-b">
+ slave-b
+ &lt;a class="anchor" href="#slave-b">#&lt;/a>
+&lt;/h2>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#所属集群名字&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>brokerClusterName&lt;span style="color:#f92672">=&lt;/span>rocketmq-cluster
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#broker名字，注意此处不同的配置文件填写的不一样&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>brokerName&lt;span style="color:#f92672">=&lt;/span>broker-b
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#0 表示 Master，&amp;gt;0 表示 Slave&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>brokerId&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">1&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#nameServer地址，分号分割&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>namesrvAddr&lt;span style="color:#f92672">=&lt;/span>rocketmq-nameserver1:9876;rocketmq-nameserver2:9876
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#在发送消息时，自动创建服务器不存在的topic，默认创建的队列数&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>defaultTopicQueueNums&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">4&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#是否允许 Broker 自动创建Topic，建议线下开启，线上关闭&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>autoCreateTopicEnable&lt;span style="color:#f92672">=&lt;/span>true
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#是否允许 Broker 自动创建订阅组，建议线下开启，线上关闭&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>autoCreateSubscriptionGroup&lt;span style="color:#f92672">=&lt;/span>true
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#Broker 对外服务的监听端口&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>listenPort&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">11011&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#删除文件时间点，默认凌晨 4点&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>deleteWhen&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">04&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#文件保留时间，默认 48 小时&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>fileReservedTime&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">120&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#commitLog每个文件的大小默认1G&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>mapedFileSizeCommitLog&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">1073741824&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#ConsumeQueue每个文件默认存30W条，根据业务情况调整&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>mapedFileSizeConsumeQueue&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">300000&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#destroyMapedFileIntervalForcibly=120000&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#redeleteHangedFileInterval=120000&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#检测物理文件磁盘空间&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>diskMaxUsedSpaceRatio&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">88&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#存储路径&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>storePathRootDir&lt;span style="color:#f92672">=&lt;/span>/usr/local/rocketmq/store-b
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#commitLog 存储路径&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>storePathCommitLog&lt;span style="color:#f92672">=&lt;/span>/usr/local/rocketmq/store-b/commitlog
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#消费队列存储路径存储路径&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>storePathConsumeQueue&lt;span style="color:#f92672">=&lt;/span>/usr/local/rocketmq/store-b/consumequeue
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#消息索引存储路径&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>storePathIndex&lt;span style="color:#f92672">=&lt;/span>/usr/local/rocketmq/store-b/index
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#checkpoint 文件存储路径&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>storeCheckpoint&lt;span style="color:#f92672">=&lt;/span>/usr/local/rocketmq/store-b/checkpoint
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#abort 文件存储路径&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>abortFile&lt;span style="color:#f92672">=&lt;/span>/usr/local/rocketmq/store-b/abort
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#限制的消息大小&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>maxMessageSize&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">65536&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#flushCommitLogLeastPages=4&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#flushConsumeQueueLeastPages=2&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#flushCommitLogThoroughInterval=10000&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#flushConsumeQueueThoroughInterval=60000&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#Broker 的角色&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#- ASYNC_MASTER 异步复制Master&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#- SYNC_MASTER 同步双写Master&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#- SLAVE&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>brokerRole&lt;span style="color:#f92672">=&lt;/span>SLAVE
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#刷盘方式&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#- ASYNC_FLUSH 异步刷盘&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#- SYNC_FLUSH 同步刷盘&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>flushDiskType&lt;span style="color:#f92672">=&lt;/span>ASYNC_FLUSH
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#checkTransactionMessageEnable=false&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#发消息线程池数量&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#sendMessageThreadPoolNums=128&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#拉消息线程池数量&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#pullMessageThreadPoolNums=128&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="master-b">
+ master-b
+ &lt;a class="anchor" href="#master-b">#&lt;/a>
+&lt;/h2>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#所属集群名字&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>brokerClusterName&lt;span style="color:#f92672">=&lt;/span>rocketmq-cluster
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#broker名字，注意此处不同的配置文件填写的不一样&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>brokerName&lt;span style="color:#f92672">=&lt;/span>broker-b
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#0 表示 Master，&amp;gt;0 表示 Slave&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>brokerId&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">0&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#nameServer地址，分号分割&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>namesrvAddr&lt;span style="color:#f92672">=&lt;/span>rocketmq-nameserver1:9876;rocketmq-nameserver2:9876
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#在发送消息时，自动创建服务器不存在的topic，默认创建的队列数&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>defaultTopicQueueNums&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">4&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#是否允许 Broker 自动创建Topic，建议线下开启，线上关闭&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>autoCreateTopicEnable&lt;span style="color:#f92672">=&lt;/span>true
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#是否允许 Broker 自动创建订阅组，建议线下开启，线上关闭&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>autoCreateSubscriptionGroup&lt;span style="color:#f92672">=&lt;/span>true
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#Broker 对外服务的监听端口&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>listenPort&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">10911&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#删除文件时间点，默认凌晨 4点&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>deleteWhen&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">04&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#文件保留时间，默认 48 小时&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>fileReservedTime&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">120&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#commitLog每个文件的大小默认1G&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>mapedFileSizeCommitLog&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">1073741824&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#ConsumeQueue每个文件默认存30W条，根据业务情况调整&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>mapedFileSizeConsumeQueue&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">300000&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#destroyMapedFileIntervalForcibly=120000&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#redeleteHangedFileInterval=120000&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#检测物理文件磁盘空间&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>diskMaxUsedSpaceRatio&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">88&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#存储路径&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>storePathRootDir&lt;span style="color:#f92672">=&lt;/span>/usr/local/rocketmq/store-b
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#commitLog 存储路径&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>storePathCommitLog&lt;span style="color:#f92672">=&lt;/span>/usr/local/rocketmq/store-b/commitlog
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#消费队列存储路径存储路径&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>storePathConsumeQueue&lt;span style="color:#f92672">=&lt;/span>/usr/local/rocketmq/store-b/consumequeue
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#消息索引存储路径&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>storePathIndex&lt;span style="color:#f92672">=&lt;/span>/usr/local/rocketmq/store-b/index
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#checkpoint 文件存储路径&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>storeCheckpoint&lt;span style="color:#f92672">=&lt;/span>/usr/local/rocketmq/store-b/checkpoint
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#abort 文件存储路径&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>abortFile&lt;span style="color:#f92672">=&lt;/span>/usr/local/rocketmq/store-b/abort
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#限制的消息大小&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>maxMessageSize&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">65536&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#flushCommitLogLeastPages=4&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#flushConsumeQueueLeastPages=2&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#flushCommitLogThoroughInterval=10000&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#flushConsumeQueueThoroughInterval=60000&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#Broker 的角色&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#- ASYNC_MASTER 异步复制Master&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#- SYNC_MASTER 同步双写Master&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#- SLAVE&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>brokerRole&lt;span style="color:#f92672">=&lt;/span>SYNC_MASTER
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#刷盘方式&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#- ASYNC_FLUSH 异步刷盘&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#- SYNC_FLUSH 同步刷盘&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>flushDiskType&lt;span style="color:#f92672">=&lt;/span>SYNC_FLUSH
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#checkTransactionMessageEnable=false&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#发消息线程池数量&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#sendMessageThreadPoolNums=128&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#拉消息线程池数量&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#pullMessageThreadPoolNums=128&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="slave-a">
+ slave-a
+ &lt;a class="anchor" href="#slave-a">#&lt;/a>
+&lt;/h2>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#所属集群名字&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>brokerClusterName&lt;span style="color:#f92672">=&lt;/span>rocketmq-cluster
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#broker名字，注意此处不同的配置文件填写的不一样&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>brokerName&lt;span style="color:#f92672">=&lt;/span>broker-a
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#0 表示 Master，&amp;gt;0 表示 Slave&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>brokerId&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">1&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#nameServer地址，分号分割&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>namesrvAddr&lt;span style="color:#f92672">=&lt;/span>rocketmq-nameserver1:9876;rocketmq-nameserver2:9876
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#在发送消息时，自动创建服务器不存在的topic，默认创建的队列数&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>defaultTopicQueueNums&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">4&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#是否允许 Broker 自动创建Topic，建议线下开启，线上关闭&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>autoCreateTopicEnable&lt;span style="color:#f92672">=&lt;/span>true
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#是否允许 Broker 自动创建订阅组，建议线下开启，线上关闭&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>autoCreateSubscriptionGroup&lt;span style="color:#f92672">=&lt;/span>true
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#Broker 对外服务的监听端口&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>listenPort&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">11011&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#删除文件时间点，默认凌晨 4点&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>deleteWhen&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">04&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#文件保留时间，默认 48 小时&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>fileReservedTime&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">120&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#commitLog每个文件的大小默认1G&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>mapedFileSizeCommitLog&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">1073741824&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#ConsumeQueue每个文件默认存30W条，根据业务情况调整&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>mapedFileSizeConsumeQueue&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">300000&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#destroyMapedFileIntervalForcibly=120000&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#redeleteHangedFileInterval=120000&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#检测物理文件磁盘空间&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>diskMaxUsedSpaceRatio&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">88&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#存储路径&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>storePathRootDir&lt;span style="color:#f92672">=&lt;/span>/usr/local/rocketmq/store-a
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#commitLog 存储路径&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>storePathCommitLog&lt;span style="color:#f92672">=&lt;/span>/usr/local/rocketmq/store-a/commitlog
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#消费队列存储路径存储路径&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>storePathConsumeQueue&lt;span style="color:#f92672">=&lt;/span>/usr/local/rocketmq/store-a/consumequeue
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#消息索引存储路径&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>storePathIndex&lt;span style="color:#f92672">=&lt;/span>/usr/local/rocketmq/store-a/index
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#checkpoint 文件存储路径&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>storeCheckpoint&lt;span style="color:#f92672">=&lt;/span>/usr/local/rocketmq/store-a/checkpoint
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#abort 文件存储路径&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>abortFile&lt;span style="color:#f92672">=&lt;/span>/usr/local/rocketmq/store-a/abort
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#限制的消息大小&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>maxMessageSize&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">65536&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#flushCommitLogLeastPages=4&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#flushConsumeQueueLeastPages=2&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#flushCommitLogThoroughInterval=10000&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#flushConsumeQueueThoroughInterval=60000&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#Broker 的角色&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#- ASYNC_MASTER 异步复制Master&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#- SYNC_MASTER 同步双写Master&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#- SLAVE&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>brokerRole&lt;span style="color:#f92672">=&lt;/span>SLAVE
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#刷盘方式&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#- ASYNC_FLUSH 异步刷盘&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#- SYNC_FLUSH 同步刷盘&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>flushDiskType&lt;span style="color:#f92672">=&lt;/span>ASYNC_FLUSH
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#checkTransactionMessageEnable=false&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#发消息线程池数量&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#sendMessageThreadPoolNums=128&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#拉消息线程池数量&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#pullMessageThreadPoolNums=128&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h1 id="修改两台主机的runserversh及runbrokersh修改">
+ 修改两台主机的runserver.sh及runbroker.sh修改
+ &lt;a class="anchor" href="#%e4%bf%ae%e6%94%b9%e4%b8%a4%e5%8f%b0%e4%b8%bb%e6%9c%ba%e7%9a%84runserversh%e5%8f%8arunbrokersh%e4%bf%ae%e6%94%b9">#&lt;/a>
+&lt;/h1>
+&lt;h2 id="修改runbrokersh">
+ 修改runbroker.sh
+ &lt;a class="anchor" href="#%e4%bf%ae%e6%94%b9runbrokersh">#&lt;/a>
+&lt;/h2>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>JAVA_OPT&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#e6db74">&amp;#34;&lt;/span>&lt;span style="color:#e6db74">${&lt;/span>JAVA_OPT&lt;span style="color:#e6db74">}&lt;/span>&lt;span style="color:#e6db74"> -server -Xms256m -Xmx256m -Xmn128m&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="修改runserversh">
+ 修改runserver.sh
+ &lt;a class="anchor" href="#%e4%bf%ae%e6%94%b9runserversh">#&lt;/a>
+&lt;/h2>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>JAVA_OPT&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#e6db74">&amp;#34;&lt;/span>&lt;span style="color:#e6db74">${&lt;/span>JAVA_OPT&lt;span style="color:#e6db74">}&lt;/span>&lt;span style="color:#e6db74"> -server -Xms256m -Xmx256m -Xmn128m -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=320m&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h1 id="两台主机分别启动nameserver和brocker">
+ 两台主机分别启动nameserver和Brocker
+ &lt;a class="anchor" href="#%e4%b8%a4%e5%8f%b0%e4%b8%bb%e6%9c%ba%e5%88%86%e5%88%ab%e5%90%af%e5%8a%a8nameserver%e5%92%8cbrocker">#&lt;/a>
+&lt;/h1>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">## 在两台主机分别启动nameserver &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>nohup sh mqnamesrv &amp;amp;
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#135启动master1&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>nohup sh mqbroker -c /usr/local/rocketmq/rocketmq-all-4.4.0-bin-release/conf/2m-2s-sync/broker-a.properties &amp;amp;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#135启动slave2&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>nohup sh mqbroker -c /usr/local/rocketmq/rocketmq-all-4.4.0-bin-release/conf/2m-2s-sync/broker-b-s.properties &amp;amp;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#查看&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>jps
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">3478&lt;/span> Jps
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">3366&lt;/span> BrokerStartup
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">3446&lt;/span> BrokerStartup
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">3334&lt;/span> NamesrvStartup
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#138启动master2&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>nohup sh mqbroker -c /usr/local/rocketmq/rocketmq-all-4.4.0-bin-release/conf/2m-2s-sync/broker-b.properties &amp;amp;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#135启动slave1&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>nohup sh mqbroker -c /usr/local/rocketmq/rocketmq-all-4.4.0-bin-release/conf/2m-2s-sync/broker-a-s.properties &amp;amp;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#查看&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>jps
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">3376&lt;/span> Jps
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">3360&lt;/span> BrokerStartup
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">3251&lt;/span> NamesrvStartup
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">3295&lt;/span> BrokerStartup
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;strong>双主双从集群搭建完毕！&lt;/strong>&lt;/p></description></item><item><title>01rocketmq学习</title><link>https://lwmfjc.github.io/zh/docs/technology/RocketMQ/heima_/01base/</link><pubDate>Wed, 06 Apr 2022 00:11:58 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/RocketMQ/heima_/01base/</guid><description>&lt;blockquote>
+&lt;p>学习来源 &lt;a href="https://www.bilibili.com/video/BV1L4411y7mn">https://www.bilibili.com/video/BV1L4411y7mn&lt;/a>（添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;h1 id="基本操作">
+ 基本操作
+ &lt;a class="anchor" href="#%e5%9f%ba%e6%9c%ac%e6%93%8d%e4%bd%9c">#&lt;/a>
+&lt;/h1>
+&lt;h2 id="下载">
+ 下载
+ &lt;a class="anchor" href="#%e4%b8%8b%e8%bd%bd">#&lt;/a>
+&lt;/h2>
+&lt;p>&lt;a href="https://rocketmq.apache.org/download/">https://rocketmq.apache.org/download/&lt;/a> 选择Binary下载即可，放到Linux主机中&lt;/p>
+&lt;h2 id="前提java运行环境">
+ 前提java运行环境
+ &lt;a class="anchor" href="#%e5%89%8d%e6%8f%90java%e8%bf%90%e8%a1%8c%e7%8e%af%e5%a2%83">#&lt;/a>
+&lt;/h2>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>yum search java | grep jdk
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>yum install -y java-1.8.0-openjdk-devel.x86_64
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># java -version 正常&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># javac -version 正常&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="启动">
+ 启动
+ &lt;a class="anchor" href="#%e5%90%af%e5%8a%a8">#&lt;/a>
+&lt;/h2>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#nameserver启动&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>nohup sh bin/mqnamesrv &amp;amp;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#nameserver日志查看&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>tail -f ~/logs/rocketmqlogs/namesrv.log
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#输出&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>2023-04-06 00:08:34 INFO main - tls.client.certPath &lt;span style="color:#f92672">=&lt;/span> null
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>2023-04-06 00:08:34 INFO main - tls.client.authServer &lt;span style="color:#f92672">=&lt;/span> false
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>2023-04-06 00:08:34 INFO main - tls.client.trustCertPath &lt;span style="color:#f92672">=&lt;/span> null
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>2023-04-06 00:08:35 INFO main - Using OpenSSL provider
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>2023-04-06 00:08:35 INFO main - SSLContext created &lt;span style="color:#66d9ef">for&lt;/span> server
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>2023-04-06 00:08:36 INFO NettyEventExecutor - NettyEventExecutor service started
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>2023-04-06 00:08:36 INFO main - The Name Server boot success. serializeType&lt;span style="color:#f92672">=&lt;/span>JSON
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>2023-04-06 00:08:36 INFO FileWatchService - FileWatchService service started
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>2023-04-06 00:09:35 INFO NSScheduledThread1 - --------------------------------------------------------
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>2023-04-06 00:09:35 INFO NSScheduledThread1 - configTable SIZE: &lt;span style="color:#ae81ff">0&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#broker启动&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>nohup sh bin/mqbroker -n localhost:9876 &amp;amp;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#查看broker日志&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>tail -f ~/logs/rocketmqlogs/broker.log
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#日志如下&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>tail: 无法打开&lt;span style="color:#e6db74">&amp;#34;/root/logs/rocketmqlogs/broker.log&amp;#34;&lt;/span> 读取数据: 没有那个文件或目录
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>tail: 没有剩余文件
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>👇
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#jps查看&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">2465&lt;/span> Jps
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">2430&lt;/span> NamesrvStartup
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#说明没有启动成功,因为默认配置的虚拟机内存较大&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>vim bin/runbroker.sh 以及 vim runserver.sh
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#修改 &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>JAVA_OPT&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#e6db74">&amp;#34;&lt;/span>&lt;span style="color:#e6db74">${&lt;/span>JAVA_OPT&lt;span style="color:#e6db74">}&lt;/span>&lt;span style="color:#e6db74"> -server -Xms8g -Xmx8g -Xmn4g&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#修改为&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>JAVA_OPT&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#e6db74">&amp;#34;&lt;/span>&lt;span style="color:#e6db74">${&lt;/span>JAVA_OPT&lt;span style="color:#e6db74">}&lt;/span>&lt;span style="color:#e6db74"> -server -Xms256m -Xmx256m -Xmn128m -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=320m&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#修改完毕后启动&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#先关闭namesrv后&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#按上述启动namesrv以及broker&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>sh bin/mqshutdown namesrv
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># jsp命令查看进程&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">2612&lt;/span> Jps
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">2551&lt;/span> BrokerStartup
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">2524&lt;/span> NamesrvStartup
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="测试">
+ 测试
+ &lt;a class="anchor" href="#%e6%b5%8b%e8%af%95">#&lt;/a>
+&lt;/h2>
+&lt;p>同一台机器上，两个cmd窗口&lt;/p></description></item></channel></rss>

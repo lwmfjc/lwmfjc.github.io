@@ -1,0 +1,494 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>复习-JavaGuide-Framework on 随记</title><link>https://lwmfjc.github.io/zh/tags/%E5%A4%8D%E4%B9%A0-javaGuide-framework/</link><description>Recent content in 复习-JavaGuide-Framework on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Fri, 10 Feb 2023 11:27:48 +0000</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/tags/%E5%A4%8D%E4%B9%A0-javaGuide-framework/index.xml" rel="self" type="application/rss+xml"/><item><title>Mybatis原理系列(3)</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lybly_framework/MyBatis/principle/mybatis-principle3/</link><pubDate>Fri, 10 Feb 2023 11:27:48 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lybly_framework/MyBatis/principle/mybatis-principle3/</guid><description>&lt;blockquote>
+&lt;p>转载自https://www.jianshu.com/p/4e268828db48（添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;p>&lt;strong>还没看完&lt;/strong>&lt;/p>
+&lt;blockquote>
+&lt;p>在上篇文章中，我们讲解了MyBatis的启动流程，以及启动过程中涉及到的组件，在本篇文中，我们继续探索SqlSession,SqlSessionFactory,SqlSessionFactoryBuilder的关系。SqlSession作为MyBatis的核心组件，可以说MyBatis的所有操作都是围绕SqlSession来展开的。对&lt;strong>SqlSession理解透彻&lt;/strong>，才能全面掌握MyBatis。&lt;/p>
+&lt;/blockquote>
+&lt;h4 id="1-sqlsession初识">
+ 1. SqlSession初识
+ &lt;a class="anchor" href="#1-sqlsession%e5%88%9d%e8%af%86">#&lt;/a>
+&lt;/h4>
+&lt;p>SqlSession在一开始就介绍过是高级接口，类似于JDBC操作的connection对象，它包装了数据库连接，通过这个接口我们可以实现增删改查，提交/回滚事物，关闭连接，获取代理类等操作。SqlSession是个接口，其默认实现是DefaultSqlSession。SqlSession是线程不安全的，每个线程都会有自己唯一的SqlSession，不同线程间调用同一个SqlSession会出现问题，因此在使用完后需要close掉。&lt;/p>
+&lt;p>&lt;img src="https:////upload-images.jianshu.io/upload_images/1183379-d5d3c96bed2f4352.png?imageMogr2/auto-orient/strip%7cimageView2/2/w/413/format/webp" alt="img" />&lt;/p>
+&lt;p>SqlSession的方法&lt;/p>
+&lt;h4 id="2-sqlsession的创建">
+ 2. SqlSession的创建
+ &lt;a class="anchor" href="#2-sqlsession%e7%9a%84%e5%88%9b%e5%bb%ba">#&lt;/a>
+&lt;/h4>
+&lt;p>SqlSessionFactoryBuilder的build()方法使用建造者模式创建了SqlSessionFactory接口对象，SqlSessionFactory接口的默认实现是DefaultSqlSessionFactory。SqlSessionFactory使用实例工厂模式来创建SqlSession对象。SqlSession,SqlSessionFactory,SqlSessionFactoryBuilder的关系如下(图画得有点丑&amp;hellip;)：&lt;/p>
+&lt;p>&lt;img src="https:////upload-images.jianshu.io/upload_images/1183379-8e031424b84ca308.png?imageMogr2/auto-orient/strip%7cimageView2/2/w/1200/format/webp" alt="img" />&lt;/p>
+&lt;p>类图&lt;/p>
+&lt;p>DefaultSqlSessionFactory中openSession是有两种方法一种是openSessionFromDataSource，另一种是openSessionFromConnection。这两种是什么区别呢？从字面意义上将，一种是从数据源中获取SqlSession对象，一种是由已有连接获取SqlSession。SqlSession实际是对数据库连接的一层包装，数据库连接是个珍贵的资源，如果频繁的创建销毁将会影响吞吐量，因此使用数据库连接池化技术就可以复用数据库连接了。因此openSessionFromDataSource会从数据库连接池中获取一个连接，然后包装成一个SqlSession对像。openSessionFromConnection则是直接包装已有的连接并返回SqlSession对像。&lt;/p>
+&lt;p>openSessionFromDataSource 主要经历了以下几步：&lt;/p>
+&lt;ol>
+&lt;li>从获取configuration中获取Environment对象，Environment包含了数据库配置&lt;/li>
+&lt;li>从Environment获取DataSource数据源&lt;/li>
+&lt;li>从DataSource数据源中获取Connection连接对象&lt;/li>
+&lt;li>从DataSource数据源中获取TransactionFactory事物工厂&lt;/li>
+&lt;li>从TransactionFactory中创建事物Transaction对象&lt;/li>
+&lt;li>创建Executor对象&lt;/li>
+&lt;li>包装configuration和Executor对象成DefaultSqlSession对象&lt;/li>
+&lt;/ol>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">private&lt;/span> SqlSession &lt;span style="color:#a6e22e">openSessionFromDataSource&lt;/span>(ExecutorType execType, TransactionIsolationLevel level, &lt;span style="color:#66d9ef">boolean&lt;/span> autoCommit) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> Transaction tx &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">null&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">try&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">final&lt;/span> Environment environment &lt;span style="color:#f92672">=&lt;/span> configuration.&lt;span style="color:#a6e22e">getEnvironment&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">final&lt;/span> TransactionFactory transactionFactory &lt;span style="color:#f92672">=&lt;/span> getTransactionFactoryFromEnvironment(environment);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> tx &lt;span style="color:#f92672">=&lt;/span> transactionFactory.&lt;span style="color:#a6e22e">newTransaction&lt;/span>(environment.&lt;span style="color:#a6e22e">getDataSource&lt;/span>(), level, autoCommit);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">final&lt;/span> Executor executor &lt;span style="color:#f92672">=&lt;/span> configuration.&lt;span style="color:#a6e22e">newExecutor&lt;/span>(tx, execType);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> DefaultSqlSession(configuration, executor, autoCommit);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> } &lt;span style="color:#66d9ef">catch&lt;/span> (Exception e) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> closeTransaction(tx); &lt;span style="color:#75715e">// may have fetched a connection so lets call close()&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">throw&lt;/span> ExceptionFactory.&lt;span style="color:#a6e22e">wrapException&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;Error opening session. Cause: &amp;#34;&lt;/span> &lt;span style="color:#f92672">+&lt;/span> e, e);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> } &lt;span style="color:#66d9ef">finally&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ErrorContext.&lt;span style="color:#a6e22e">instance&lt;/span>().&lt;span style="color:#a6e22e">reset&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">private&lt;/span> SqlSession &lt;span style="color:#a6e22e">openSessionFromConnection&lt;/span>(ExecutorType execType, Connection connection) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">try&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">boolean&lt;/span> autoCommit;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">try&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> autoCommit &lt;span style="color:#f92672">=&lt;/span> connection.&lt;span style="color:#a6e22e">getAutoCommit&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> } &lt;span style="color:#66d9ef">catch&lt;/span> (SQLException e) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// Failover to true, as most poor drivers&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// or databases won&amp;#39;t support transactions&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> autoCommit &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">true&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">final&lt;/span> Environment environment &lt;span style="color:#f92672">=&lt;/span> configuration.&lt;span style="color:#a6e22e">getEnvironment&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">final&lt;/span> TransactionFactory transactionFactory &lt;span style="color:#f92672">=&lt;/span> getTransactionFactoryFromEnvironment(environment);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">final&lt;/span> Transaction tx &lt;span style="color:#f92672">=&lt;/span> transactionFactory.&lt;span style="color:#a6e22e">newTransaction&lt;/span>(connection);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">final&lt;/span> Executor executor &lt;span style="color:#f92672">=&lt;/span> configuration.&lt;span style="color:#a6e22e">newExecutor&lt;/span>(tx, execType);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> DefaultSqlSession(configuration, executor, autoCommit);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> } &lt;span style="color:#66d9ef">catch&lt;/span> (Exception e) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">throw&lt;/span> ExceptionFactory.&lt;span style="color:#a6e22e">wrapException&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;Error opening session. Cause: &amp;#34;&lt;/span> &lt;span style="color:#f92672">+&lt;/span> e, e);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> } &lt;span style="color:#66d9ef">finally&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ErrorContext.&lt;span style="color:#a6e22e">instance&lt;/span>().&lt;span style="color:#a6e22e">reset&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h4 id="3-sqlsession的使用">
+ 3. SqlSession的使用
+ &lt;a class="anchor" href="#3-sqlsession%e7%9a%84%e4%bd%bf%e7%94%a8">#&lt;/a>
+&lt;/h4>
+&lt;p>SqlSession 获取成功后，我们就可以使用其中的方法了，比如直接使用SqlSession发送sql语句，或者通过mapper映射文件的方式来使用，在上两篇文章中我们都是通过mapper映射文件来使用的，接下来就介绍第一种，直接使用SqlSession发送sql语句。&lt;/p></description></item><item><title>Mybatis原理系列(2)</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lybly_framework/MyBatis/principle/mybatis-principle2/</link><pubDate>Fri, 10 Feb 2023 11:04:31 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lybly_framework/MyBatis/principle/mybatis-principle2/</guid><description>&lt;blockquote>
+&lt;p>转载自https://www.jianshu.com/p/7d6b891180a3（添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;blockquote>
+&lt;p>在上篇文章中，我们举了一个例子如何使用MyBatis，但是对其中&lt;strong>dao层&lt;/strong>，&lt;strong>entity层&lt;/strong>，&lt;strong>mapper层&lt;/strong>间的关系不得而知，从此篇文章开始，笔者将&lt;strong>从MyBatis的启动流程&lt;/strong>着手，真正的开始研究MyBatis源码了。&lt;/p>
+&lt;/blockquote>
+&lt;h4 id="1-mybatis启动代码示例">
+ 1. MyBatis启动代码示例
+ &lt;a class="anchor" href="#1-mybatis%e5%90%af%e5%8a%a8%e4%bb%a3%e7%a0%81%e7%a4%ba%e4%be%8b">#&lt;/a>
+&lt;/h4>
+&lt;p>在上篇文章中，介绍了MyBatis的相关配置和各层代码编写，本文将以下代码展开描述和介绍MyBatis的启动流程，并简略的介绍各个模块的作用，&lt;strong>各个模块的细节部分将在其它文章中呈现&lt;/strong>。&lt;/p>
+&lt;p>回顾下上文中使用mybatis的部分代码，包括七步。每步虽然都是一行代码，但是隐藏了很多细节。接下来我们将围绕这起步展开了解。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">@Slf4j&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">MyBatisBootStrap&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>(String&lt;span style="color:#f92672">[]&lt;/span> args) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">try&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// 1. 读取配置&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> InputStream inputStream &lt;span style="color:#f92672">=&lt;/span> Resources.&lt;span style="color:#a6e22e">getResourceAsStream&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;mybatis-config.xml&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// 2. 创建SqlSessionFactory工厂&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> SqlSessionFactory sqlSessionFactory &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> SqlSessionFactoryBuilder().&lt;span style="color:#a6e22e">build&lt;/span>(inputStream);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// 3. 获取sqlSession&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> SqlSession sqlSession &lt;span style="color:#f92672">=&lt;/span> sqlSessionFactory.&lt;span style="color:#a6e22e">openSession&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// 4. 获取Mapper&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> TTestUserMapper userMapper &lt;span style="color:#f92672">=&lt;/span> sqlSession.&lt;span style="color:#a6e22e">getMapper&lt;/span>(TTestUserMapper.&lt;span style="color:#a6e22e">class&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// 5. 执行接口方法&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> TTestUser userInfo &lt;span style="color:#f92672">=&lt;/span> userMapper.&lt;span style="color:#a6e22e">selectByPrimaryKey&lt;/span>(16L);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> System.&lt;span style="color:#a6e22e">out&lt;/span>.&lt;span style="color:#a6e22e">println&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;userInfo = &amp;#34;&lt;/span> &lt;span style="color:#f92672">+&lt;/span> JSONUtil.&lt;span style="color:#a6e22e">toJsonStr&lt;/span>(userInfo));
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// 6. 提交事物&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> sqlSession.&lt;span style="color:#a6e22e">commit&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// 7. 关闭资源&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> sqlSession.&lt;span style="color:#a6e22e">close&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> inputStream.&lt;span style="color:#a6e22e">close&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> } &lt;span style="color:#66d9ef">catch&lt;/span> (Exception e){
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> log.&lt;span style="color:#a6e22e">error&lt;/span>(e.&lt;span style="color:#a6e22e">getMessage&lt;/span>(), e);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h4 id="2-读取配置">
+ 2. 读取配置
+ &lt;a class="anchor" href="#2-%e8%af%bb%e5%8f%96%e9%85%8d%e7%bd%ae">#&lt;/a>
+&lt;/h4>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// 1. 读取配置
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>InputStream inputStream &lt;span style="color:#f92672">=&lt;/span> Resources.getResourceAsStream(&lt;span style="color:#e6db74">&amp;#34;mybatis-config.xml&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>在&lt;strong>mybatis-config.xml&lt;/strong>中我们配置了&lt;strong>属性&lt;/strong>，&lt;strong>环境&lt;/strong>，&lt;strong>映射文件路径&lt;/strong>等，其实不仅可以配置以上内容，还可以配置&lt;strong>插件&lt;/strong>，&lt;strong>反射工厂&lt;/strong>，&lt;strong>类型处理器&lt;/strong>等等其它内容。在启动流程中的第一步我们就需要&lt;strong>读取这个配置文件&lt;/strong>，并获取一个输入流为下一步解析配置文件作准备。&lt;/p></description></item><item><title>Mybatis原理系列(1)</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lybly_framework/MyBatis/principle/mybatis-principle1/</link><pubDate>Fri, 10 Feb 2023 08:54:26 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lybly_framework/MyBatis/principle/mybatis-principle1/</guid><description>&lt;blockquote>
+&lt;p>转载自https://www.jianshu.com/p/ada025f97a07（添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;blockquote>
+&lt;p>作为Java码农，无论在面试中，还是在工作中都会遇到MyBatis的相关问题。笔者从大学开始就接触MyBatis，到现在为止都是会用，知道怎么配置，怎么编写xml，但是不知道Mybatis核心原理，一遇到问题就复制错误信息百度解决。为了改变这种境地，鼓起勇气开始下定决心阅读MyBatis源码，并开始记录阅读过程，希望和大家分享。&lt;/p>
+&lt;/blockquote>
+&lt;h4 id="1-初识mybatis">
+ 1. 初识MyBatis
+ &lt;a class="anchor" href="#1-%e5%88%9d%e8%af%86mybatis">#&lt;/a>
+&lt;/h4>
+&lt;p>还记得当初接触MyBatis时，觉得要配置很多，而且sql要单独写在xml中，相比Hibernate来说简直不太友好，直到后来出现了复杂的业务需求，需要编写相应的复杂的sql，此时用Hibernate反而更加麻烦了，用MyBatis是真香了。因此笔者对MyBatis的第一印象就是&lt;strong>将业务关注的sql&lt;/strong>和&lt;strong>java代码&lt;/strong>进行了解耦，在业务复杂变化的时候，相应的数据库操作需要相应进行修改，&lt;strong>如果通过java代码构建操作数据逻辑&lt;/strong>，这不断变动的需求对程序员的耐心是极大的考验。如果&lt;strong>将sql统一的维护在一个文件&lt;/strong>里，java代码用接口定义，在需求变动时，&lt;strong>只用改相应的sql&lt;/strong>，从而&lt;strong>减少了修改量&lt;/strong>，&lt;strong>提高开发效率&lt;/strong>。以上也是经常在面试中经常问到的Hibernate和MyBatis间的区别一点。&lt;/p>
+&lt;p>切到正题，Mybatis是什么呢？&lt;/p>
+&lt;p>Mybatis SQL 映射框架使得一个&lt;strong>面向对象构建的应用程序&lt;/strong>去&lt;strong>访问一个关系型数据库&lt;/strong>变得更容易。MyBatis使用&lt;strong>XML描述符&lt;/strong>或&lt;strong>注解&lt;/strong>将&lt;strong>对象&lt;/strong>与&lt;strong>存储过程&lt;/strong>或&lt;strong>SQL语句耦合&lt;/strong>。与对象关系映射工具相比，简单性是MyBatis数据映射器的最大优势。&lt;/p>
+&lt;p>以上是Mybatis的官方解释，其中“映射”，“面向对象”，“关系型”，“xml”等等都是Mybatis的关键词，也是我们了解了Mybatis原理后，会恍然大悟的地方。笔者现在不详述这些概念，在最后总结的时候再进行详述。我们只要知道Mybatis为我们操作数据库提供了很大的便捷。&lt;/p>
+&lt;h4 id="2-源码下载">
+ 2. 源码下载
+ &lt;a class="anchor" href="#2-%e6%ba%90%e7%a0%81%e4%b8%8b%e8%bd%bd">#&lt;/a>
+&lt;/h4>
+&lt;blockquote>
+&lt;p>这里建议使用maven即可，在pom.xml添加以下依赖&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-xml" data-lang="xml">&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;dependencies&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">&amp;lt;!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java --&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;dependency&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;groupId&amp;gt;&lt;/span>mysql&lt;span style="color:#f92672">&amp;lt;/groupId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;artifactId&amp;gt;&lt;/span>mysql-connector-java&lt;span style="color:#f92672">&amp;lt;/artifactId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;version&amp;gt;&lt;/span>8.0.32&lt;span style="color:#f92672">&amp;lt;/version&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;/dependency&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;dependency&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;groupId&amp;gt;&lt;/span>org.mybatis&lt;span style="color:#f92672">&amp;lt;/groupId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;artifactId&amp;gt;&lt;/span>mybatis&lt;span style="color:#f92672">&amp;lt;/artifactId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;version&amp;gt;&lt;/span>3.5.6&lt;span style="color:#f92672">&amp;lt;/version&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;/dependency&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">&amp;lt;!--这里还添加了一些辅助的依赖--&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">&amp;lt;!--lombok--&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;dependency&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;groupId&amp;gt;&lt;/span>org.projectlombok&lt;span style="color:#f92672">&amp;lt;/groupId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;artifactId&amp;gt;&lt;/span>lombok&lt;span style="color:#f92672">&amp;lt;/artifactId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;version&amp;gt;&lt;/span>1.18.8&lt;span style="color:#f92672">&amp;lt;/version&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;/dependency&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">&amp;lt;!--日志模块--&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;dependency&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;groupId&amp;gt;&lt;/span>org.apache.logging.log4j&lt;span style="color:#f92672">&amp;lt;/groupId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;artifactId&amp;gt;&lt;/span>log4j-api&lt;span style="color:#f92672">&amp;lt;/artifactId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;version&amp;gt;&lt;/span>2.17.1&lt;span style="color:#f92672">&amp;lt;/version&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;/dependency&amp;gt;&lt;/span> 
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;/dependencies&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>然后在ExternalLibraries 的mybatis:3.5.6里找到，就能看到目录结构 ，随便找一个进去 idea右上角会出现DownloadSource之类的字样 ，点击即可&lt;br>
+&lt;img src="img/ly-20241212142014144.png" alt="ly-20241212142014144" />&lt;/p>
+&lt;/blockquote>
+&lt;p>我们首先要从github上下载源码，&lt;a href="https://links.jianshu.com/go?to=https%3A%2F%2Fgithub.com%2Fmybatis%2Fmybatis-3">仓库地址&lt;/a>，然后在IDEA中clone代码&lt;/p>
+&lt;p>&lt;img src="img/ly-20241212142014403.png" alt="img" />&lt;/p>
+&lt;p>在打开中的IDEA中，选择vsc -&amp;gt; get from version control -&amp;gt; 复制刚才的地址&lt;/p>
+&lt;p>&lt;img src="img/ly-20241212142014541.png" alt="img" />&lt;/p>
+&lt;p>image.png&lt;/p>
+&lt;p>点击clone即可&lt;/p>
+&lt;p>&lt;img src="img/ly-20241212142014681.png" alt="img" />&lt;/p></description></item><item><title>Mybatis面试</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lybly_framework/MyBatis/MyBatis-interview/</link><pubDate>Thu, 09 Feb 2023 16:34:39 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lybly_framework/MyBatis/MyBatis-interview/</guid><description>&lt;blockquote>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
+&lt;p>部分疑问参考自 &lt;a href="https://blog.csdn.net/Gherbirthday0916">https://blog.csdn.net/Gherbirthday0916&lt;/a> 感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;h3 id="-和--的区别是什么">
+ #{} 和 ${} 的区别是什么？
+ &lt;a class="anchor" href="#-%e5%92%8c--%e7%9a%84%e5%8c%ba%e5%88%ab%e6%98%af%e4%bb%80%e4%b9%88">#&lt;/a>
+&lt;/h3>
+&lt;p>注：这道题是面试官面试我同事的。&lt;/p>
+&lt;p>答：&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>${}&lt;/code>是 Properties &lt;strong>文件中的变量占位符&lt;/strong>，它可以用于&lt;strong>标签属性值&lt;/strong>和 &lt;strong>sql 内部&lt;/strong>，属于&lt;strong>静态文本替换&lt;/strong>，比如${driver}会被静态替换为&lt;code>com.mysql.jdbc. Driver&lt;/code>。&lt;/li>
+&lt;li>&lt;code>#{}&lt;/code>是 sql 的参数占位符，MyBatis 会&lt;strong>将 sql 中的&lt;code>#{}&lt;/code>&lt;strong>替换为&lt;/strong>? 号&lt;/strong>，在 sql 执行前会使用 &lt;strong>PreparedStatement 的参数设置&lt;/strong>方法，&lt;strong>按序给 sql 的? 号占位符设置参数值&lt;/strong>，比如 ps.setInt(0, parameterValue)，&lt;code>#{item.name}&lt;/code> 的取值方式为使用&lt;strong>反射从参数对象中获取 item 对象的 name 属性值&lt;/strong>，相当于 &lt;strong>&lt;code>param.getItem().getName()&lt;/code>&lt;/strong>。 [&lt;strong>这里用到了反射&lt;/strong>]&lt;/li>
+&lt;/ul>
+&lt;blockquote>
+&lt;p>在&lt;strong>底层构造完整SQL&lt;/strong>语句时，MyBatis的两种&lt;strong>传参方式&lt;/strong>所采取的方式不同。&lt;code>#{Parameter}&lt;/code>采用&lt;strong>预编译&lt;/strong>的方式构造SQL，&lt;strong>避免了 SQL注入&lt;/strong> 的产生。而**&lt;code>${Parameter}&lt;/code>采用拼接&lt;strong>的方式构造SQL，在&lt;/strong>对用户输入过滤不严格**的前提下，此处很可能存在SQL注入&lt;/p>
+&lt;/blockquote>
+&lt;h3 id="xml-映射文件中除了常见的-selectinsertupdatedelete-标签之外还有哪些标签">
+ xml 映射文件中，除了常见的 select、insert、update、delete 标签之外，还有哪些标签？
+ &lt;a class="anchor" href="#xml-%e6%98%a0%e5%b0%84%e6%96%87%e4%bb%b6%e4%b8%ad%e9%99%a4%e4%ba%86%e5%b8%b8%e8%a7%81%e7%9a%84-selectinsertupdatedelete-%e6%a0%87%e7%ad%be%e4%b9%8b%e5%a4%96%e8%bf%98%e6%9c%89%e5%93%aa%e4%ba%9b%e6%a0%87%e7%ad%be">#&lt;/a>
+&lt;/h3>
+&lt;p>注：这道题是京东面试官面试我时问的。&lt;/p>
+&lt;p>答：还有很多其他的标签， &lt;strong>&lt;code>&amp;lt;resultMap&amp;gt;&lt;/code>&lt;/strong> 、 &lt;strong>&lt;code>&amp;lt;parameterMap&amp;gt;&lt;/code>&lt;/strong> 、 &lt;strong>&lt;code>&amp;lt;sql&amp;gt;&lt;/code>&lt;/strong> 、 &lt;strong>&lt;code>&amp;lt;include&amp;gt;&lt;/code>&lt;/strong> 、 &lt;strong>&lt;code>&amp;lt;selectKey&amp;gt;&lt;/code>&lt;/strong> ，加上动态 sql 的 9 个标签， &lt;strong>&lt;code>trim|where|set|foreach|if|choose|when|otherwise|bind&lt;/code>&lt;/strong> 等，其中 &lt;code>&amp;lt;sql&amp;gt;&lt;/code> 为 sql 片段标签，通过 &lt;code>&amp;lt;include&amp;gt;&lt;/code> 标签引入 sql 片段， &lt;code>&amp;lt;selectKey&amp;gt;&lt;/code> 为不支持自增的主键生成策略标签。&lt;/p></description></item><item><title>ConditionalOnClass实践</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lybly_framework/conditional_on_class/</link><pubDate>Thu, 09 Feb 2023 15:38:01 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lybly_framework/conditional_on_class/</guid><description>&lt;h1 id="两个测试方向">
+ 两个测试方向
+ &lt;a class="anchor" href="#%e4%b8%a4%e4%b8%aa%e6%b5%8b%e8%af%95%e6%96%b9%e5%90%91">#&lt;/a>
+&lt;/h1>
+&lt;h2 id="方向1两个maven项目">
+ 方向1：两个maven项目
+ &lt;a class="anchor" href="#%e6%96%b9%e5%90%911%e4%b8%a4%e4%b8%aamaven%e9%a1%b9%e7%9b%ae">#&lt;/a>
+&lt;/h2>
+&lt;blockquote>
+&lt;p>详见git上的 conditional_on_class_main 项目以及 conditional_on_class2 项目&lt;/p>
+&lt;/blockquote>
+&lt;ol>
+&lt;li>
+&lt;p>基础maven项目 conditional_on_class2&lt;br>
+pom文件&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-xml" data-lang="xml">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&amp;lt;?xml version=&amp;#34;1.0&amp;#34; encoding=&amp;#34;UTF-8&amp;#34;?&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">&amp;lt;project&lt;/span> &lt;span style="color:#a6e22e">xmlns=&lt;/span>&lt;span style="color:#e6db74">&amp;#34;http://maven.apache.org/POM/4.0.0&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">xmlns:xsi=&lt;/span>&lt;span style="color:#e6db74">&amp;#34;http://www.w3.org/2001/XMLSchema-instance&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">xsi:schemaLocation=&lt;/span>&lt;span style="color:#e6db74">&amp;#34;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd&amp;#34;&lt;/span>&lt;span style="color:#f92672">&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;modelVersion&amp;gt;&lt;/span>4.0.0&lt;span style="color:#f92672">&amp;lt;/modelVersion&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;groupId&amp;gt;&lt;/span>org.example&lt;span style="color:#f92672">&amp;lt;/groupId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;artifactId&amp;gt;&lt;/span>conditional_on_class_2&lt;span style="color:#f92672">&amp;lt;/artifactId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;version&amp;gt;&lt;/span>1.0-SNAPSHOT&lt;span style="color:#f92672">&amp;lt;/version&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">&amp;lt;/project&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>java类&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">package&lt;/span> com;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">LyReferenceImpl&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> String &lt;span style="color:#a6e22e">sayWord&lt;/span>() {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#e6db74">&amp;#34;hello one&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>简单的SpringBoot项目 conditional_on_class_main&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-xml" data-lang="xml">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&amp;lt;!--pom文件--&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&amp;lt;?xml version=&amp;#34;1.0&amp;#34; encoding=&amp;#34;UTF-8&amp;#34;?&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">&amp;lt;project&lt;/span> &lt;span style="color:#a6e22e">xmlns=&lt;/span>&lt;span style="color:#e6db74">&amp;#34;http://maven.apache.org/POM/4.0.0&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">xmlns:xsi=&lt;/span>&lt;span style="color:#e6db74">&amp;#34;http://www.w3.org/2001/XMLSchema-instance&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">xsi:schemaLocation=&lt;/span>&lt;span style="color:#e6db74">&amp;#34;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd&amp;#34;&lt;/span>&lt;span style="color:#f92672">&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;modelVersion&amp;gt;&lt;/span>4.0.0&lt;span style="color:#f92672">&amp;lt;/modelVersion&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;groupId&amp;gt;&lt;/span>org.example&lt;span style="color:#f92672">&amp;lt;/groupId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;artifactId&amp;gt;&lt;/span>conditional_on_class_main&lt;span style="color:#f92672">&amp;lt;/artifactId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;version&amp;gt;&lt;/span>1.0-SNAPSHOT&lt;span style="color:#f92672">&amp;lt;/version&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;parent&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;groupId&amp;gt;&lt;/span>org.springframework.boot&lt;span style="color:#f92672">&amp;lt;/groupId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;artifactId&amp;gt;&lt;/span>spring-boot-starter-parent&lt;span style="color:#f92672">&amp;lt;/artifactId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;version&amp;gt;&lt;/span>2.7.8&lt;span style="color:#f92672">&amp;lt;/version&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;/parent&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;dependencies&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">&amp;lt;!--把1配置的bean引用进来--&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;dependency&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;groupId&amp;gt;&lt;/span>org.example&lt;span style="color:#f92672">&amp;lt;/groupId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;artifactId&amp;gt;&lt;/span>conditional_on_class_2&lt;span style="color:#f92672">&amp;lt;/artifactId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;version&amp;gt;&lt;/span>1.0-SNAPSHOT&lt;span style="color:#f92672">&amp;lt;/version&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;scope&amp;gt;&lt;/span>provided&lt;span style="color:#f92672">&amp;lt;/scope&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;optional&amp;gt;&lt;/span>true&lt;span style="color:#f92672">&amp;lt;/optional&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;/dependency&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;dependency&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;groupId&amp;gt;&lt;/span>org.springframework.boot&lt;span style="color:#f92672">&amp;lt;/groupId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;artifactId&amp;gt;&lt;/span>spring-boot-starter-web&lt;span style="color:#f92672">&amp;lt;/artifactId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;/dependency&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;/dependencies&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;build&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;plugins&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;plugin&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;groupId&amp;gt;&lt;/span>org.springframework.boot&lt;span style="color:#f92672">&amp;lt;/groupId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;artifactId&amp;gt;&lt;/span>spring-boot-maven-plugin&lt;span style="color:#f92672">&amp;lt;/artifactId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;configuration&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;excludes&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">&amp;lt;!-- 默认会将conditional_on_class_2 打包进去,现在会配置SayExist
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">						如果放开注释,那么会配置SayNotExist--&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">&amp;lt;!--&amp;lt;dependency&amp;gt;
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"> &amp;lt;groupId&amp;gt;org.example&amp;lt;/groupId&amp;gt;
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"> &amp;lt;artifactId&amp;gt;conditional_on_class_2&amp;lt;/artifactId&amp;gt;
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"> &amp;lt;/dependency&amp;gt;--&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;/excludes&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;jvmArguments&amp;gt;&lt;/span>-Dfile.encoding=UTF-8&lt;span style="color:#f92672">&amp;lt;/jvmArguments&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;/configuration&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;executions&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;execution&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;goals&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;goal&amp;gt;&lt;/span>repackage&lt;span style="color:#f92672">&amp;lt;/goal&amp;gt;&lt;/span>&lt;span style="color:#75715e">&amp;lt;!--可以把依赖的包都打包到生成的Jar包中 --&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;/goals&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;/execution&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;/executions&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;/plugin&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;/plugins&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;/build&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">&amp;lt;/project&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//两个配置类 &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//配置类1&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">package&lt;/span> com.config;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">import&lt;/span> com.service.ISay;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">import&lt;/span> com.service.SayExist;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">import&lt;/span> org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">import&lt;/span> org.springframework.context.annotation.Bean;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">import&lt;/span> org.springframework.context.annotation.Configuration;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">@Configuration&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//不要放在方法里面,否则会报错&amp;#34;java.lang.ArrayStoreException: sun.reflect.annotation.TypeNotPresentExceptionProxy&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">@ConditionalOnClass&lt;/span>(value &lt;span style="color:#f92672">=&lt;/span> com.&lt;span style="color:#a6e22e">LyReferenceImpl&lt;/span>.&lt;span style="color:#a6e22e">class&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">ExistConfiguration&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">@Bean&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> ISay &lt;span style="color:#a6e22e">getISay1&lt;/span>(){
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> SayExist();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//配置类2&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">package&lt;/span> com.config;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">import&lt;/span> com.service.ISay;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">import&lt;/span> com.service.SayNotExist;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">import&lt;/span> org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">import&lt;/span> org.springframework.context.annotation.Bean;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">import&lt;/span> org.springframework.context.annotation.Configuration;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">@Configuration&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">@ConditionalOnMissingClass&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;com.LyReferenceImpl&amp;#34;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">NotExistConfiguration&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">@Bean&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> ISay &lt;span style="color:#a6e22e">getISay1&lt;/span>(){
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> SayNotExist();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;/ol>
+&lt;h2 id="方向23个maven项目建议用这个理解">
+ 方向2：3个maven项目(建议用这个理解)
+ &lt;a class="anchor" href="#%e6%96%b9%e5%90%9123%e4%b8%aamaven%e9%a1%b9%e7%9b%ae%e5%bb%ba%e8%ae%ae%e7%94%a8%e8%bf%99%e4%b8%aa%e7%90%86%e8%a7%a3">#&lt;/a>
+&lt;/h2>
+&lt;blockquote>
+&lt;p>注意，这里可能还漏了一个问题，那就是 这个conditional_on_class1 的configuration之所以能够被自动装配，是因为和 conditional_on_class_main1的Application类是同一个包，所以不用特殊处理。如果是其他包名的话，那么是需要用到spring boot的自动装配机制的：在conditional_on_class1 工程的 resources 包下创建&lt;code>META-INF/spring.factories&lt;/code>，并写上Config类的全类名&lt;/p></description></item><item><title>SpringBoot自动装配原理</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lybly_framework/ly05ly_springboot-auto-assembly/</link><pubDate>Thu, 09 Feb 2023 10:37:36 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lybly_framework/ly05ly_springboot-auto-assembly/</guid><description>&lt;blockquote>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;p>每次问到 Spring Boot， 面试官非常喜欢问这个问题：“讲述一下 SpringBoot 自动装配原理？”。&lt;/p>
+&lt;p>我觉得我们可以从以下几个方面回答：&lt;/p>
+&lt;ol>
+&lt;li>什么是 &lt;strong>SpringBoot 自动装配&lt;/strong>？&lt;/li>
+&lt;li>SpringBoot 是&lt;strong>如何实现自动装配&lt;/strong>的？&lt;strong>如何实现按需加载&lt;/strong>？&lt;/li>
+&lt;li>&lt;strong>如何实现一个 Starter&lt;/strong>？&lt;/li>
+&lt;/ol>
+&lt;p>篇幅问题，这篇文章并没有深入，小伙伴们也可以直接使用 debug 的方式去看看 SpringBoot 自动装配部分的源代码。&lt;/p>
+&lt;h2 id="前言">
+ 前言
+ &lt;a class="anchor" href="#%e5%89%8d%e8%a8%80">#&lt;/a>
+&lt;/h2>
+&lt;p>使用过 Spring 的小伙伴，一定有被 XML 配置统治的恐惧。即使 Spring 后面引入了基于注解的配置，我们在开启某些 Spring 特性或者引入第三方依赖的时候，还是需要用 XML 或 Java 进行显式配置。&lt;/p>
+&lt;p>举个例子。没有 Spring Boot 的时候，我们写一个 RestFul Web 服务，还首先需要进行如下配置。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">@Configuration&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">RESTConfiguration&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">@Bean&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> View &lt;span style="color:#a6e22e">jsonTemplate&lt;/span>() {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> MappingJackson2JsonView view &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> MappingJackson2JsonView();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> view.&lt;span style="color:#a6e22e">setPrettyPrint&lt;/span>(&lt;span style="color:#66d9ef">true&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> view;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">@Bean&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> ViewResolver &lt;span style="color:#a6e22e">viewResolver&lt;/span>() {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> BeanNameViewResolver();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>spring&lt;span style="color:#f92672">-&lt;/span>servlet.&lt;span style="color:#a6e22e">xml&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">&amp;lt;&lt;/span>beans xmlns&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#e6db74">&amp;#34;http://www.springframework.org/schema/beans&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> xmlns:xsi&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#e6db74">&amp;#34;http://www.w3.org/2001/XMLSchema-instance&amp;#34;&lt;/span> xmlns:context&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#e6db74">&amp;#34;http://www.springframework.org/schema/context&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> xmlns:mvc&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#e6db74">&amp;#34;http://www.springframework.org/schema/mvc&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> xsi:schemaLocation&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#e6db74">&amp;#34;http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74"> http://www.springframework.org/schema/context/ http://www.springframework.org/schema/context/spring-context.xsd
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74"> http://www.springframework.org/schema/mvc/ http://www.springframework.org/schema/mvc/spring-mvc.xsd&amp;#34;&lt;/span>&lt;span style="color:#f92672">&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;&lt;/span>context:component&lt;span style="color:#f92672">-&lt;/span>scan base&lt;span style="color:#f92672">-&lt;/span>package&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#e6db74">&amp;#34;com.howtodoinjava.demo&amp;#34;&lt;/span> &lt;span style="color:#f92672">/&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;&lt;/span>mvc:annotation&lt;span style="color:#f92672">-&lt;/span>driven &lt;span style="color:#f92672">/&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;!--&lt;/span> JSON Support &lt;span style="color:#f92672">--&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;&lt;/span>bean name&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#e6db74">&amp;#34;viewResolver&amp;#34;&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">=&amp;#34;&lt;/span>&lt;span style="color:#a6e22e">org&lt;/span>.&lt;span style="color:#a6e22e">springframework&lt;/span>.&lt;span style="color:#a6e22e">web&lt;/span>.&lt;span style="color:#a6e22e">servlet&lt;/span>.&lt;span style="color:#a6e22e">view&lt;/span>.&lt;span style="color:#a6e22e">BeanNameViewResolver&lt;/span>&lt;span style="color:#e6db74">&amp;#34;/&amp;gt;
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74"> &amp;lt;bean name=&amp;#34;&lt;/span>jsonTemplate&lt;span style="color:#e6db74">&amp;#34; class=&amp;#34;&lt;/span>org.&lt;span style="color:#a6e22e">springframework&lt;/span>.&lt;span style="color:#a6e22e">web&lt;/span>.&lt;span style="color:#a6e22e">servlet&lt;/span>.&lt;span style="color:#a6e22e">view&lt;/span>.&lt;span style="color:#a6e22e">json&lt;/span>.&lt;span style="color:#a6e22e">MappingJackson2JsonView&lt;/span>&lt;span style="color:#e6db74">&amp;#34;/&amp;gt;
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">&amp;lt;/beans&amp;gt;
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>但是，Spring Boot 项目，我们只需要添加相关依赖，无需配置，通过启动下面的 &lt;code>main&lt;/code> 方法即可。&lt;/p></description></item><item><title>spring 设计模式</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lybly_framework/ly04ly_spring-design-patterns/</link><pubDate>Wed, 08 Feb 2023 20:18:14 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lybly_framework/ly04ly_spring-design-patterns/</guid><description>&lt;blockquote>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;p>“JDK 中用到了哪些设计模式? Spring 中用到了哪些设计模式? ”这两个问题，在面试中比较常见。&lt;/p>
+&lt;p>我在网上搜索了一下关于 Spring 中设计模式的讲解几乎都是千篇一律，而且大部分都年代久远。所以，花了几天时间自己总结了一下。&lt;/p>
+&lt;p>由于我的个人能力有限，文中如有任何错误各位都可以指出。另外，文章篇幅有限，对于设计模式以及一些源码的解读我只是一笔带过，这篇文章的主要目的是回顾一下 Spring 中的设计模式。&lt;/p>
+&lt;h2 id="控制反转ioc和依赖注入di">
+ 控制反转(IoC)和依赖注入(DI)
+ &lt;a class="anchor" href="#%e6%8e%a7%e5%88%b6%e5%8f%8d%e8%bd%acioc%e5%92%8c%e4%be%9d%e8%b5%96%e6%b3%a8%e5%85%a5di">#&lt;/a>
+&lt;/h2>
+&lt;p>&lt;strong>IoC(Inversion of Control,控制反转)&lt;/strong> 是 Spring 中一个非常非常重要的概念，它不是什么技术，而是一种&lt;strong>解耦的设计思想&lt;/strong>。IoC 的主要目的是借助于“第三方”(Spring 中的 IoC 容器) 实现&lt;strong>具有依赖关系的对象之间的解耦&lt;/strong>(IOC 容器管理对象，你只管使用即可)，从而降低代码之间的耦合度。&lt;/p>
+&lt;p>&lt;strong>IoC 是一个原则，而不是一个模式，以下模式（但不限于）实现了 IoC 原则。&lt;/strong>&lt;/p>
+&lt;p>&lt;img src="img/ly-20241212142011328.jpg" alt="ioc-patterns" />&lt;/p>
+&lt;p>&lt;strong>Spring IoC 容器就像是一个工厂一样，当我们需要创建一个对象的时候，只需要配置好配置文件/注解即可，完全不用考虑对象是如何被创建出来的。&lt;/strong> IoC 容器负责创建对象，将对象连接在一起，配置这些对象，并从创建中处理这些对象的整个生命周期，直到它们被完全销毁。&lt;/p>
+&lt;p>在实际项目中一个 Service 类如果有几百甚至上千个类作为它的底层，我们需要实例化这个 Service，你可能要每次都要搞清这个 Service 所有底层类的构造函数，这可能会把人逼疯。如果利用 IOC 的话，你&lt;strong>只需要配置好，然后在需要的地方引用&lt;/strong>就行了，这大大增加了项目的可维护性且降低了开发难度。&lt;/p>
+&lt;blockquote>
+&lt;p>关于 Spring IOC 的理解，推荐看这一下知乎的一个回答：https://www.zhihu.com/question/23277575/answer/169698662 ，非常不错。&lt;/p>
+&lt;/blockquote>
+&lt;p>&lt;strong>控制反转怎么理解呢?&lt;/strong> 举个例子：&amp;quot;&lt;strong>对象 a 依赖了对象 b，当对象 a 需要使用 对象 b 的时候必须自己去创建。但是当系统引入了 IOC 容器后， 对象 a 和对象 b 之前就失去了直接的联系。这个时候，当对象 a 需要使用 对象 b 的时候， 我们可以指定 IOC 容器去创建一个对象 b 注入到对象 a 中&lt;/strong>&amp;quot;。 对象 a 获得依赖对象 b 的过程,由&lt;strong>主动&lt;/strong>行为变为了&lt;strong>被动&lt;/strong>行为，控制权反转，这就是控制反转名字的由来。&lt;/p></description></item><item><title>Spring事务详情</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lybly_framework/ly03ly_spring-transaction/</link><pubDate>Wed, 08 Feb 2023 16:08:16 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lybly_framework/ly03ly_spring-transaction/</guid><description>&lt;blockquote>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;p>前段时间答应读者的 &lt;strong>Spring 事务&lt;/strong> 分析总结终于来了。这部分内容比较重要，不论是对于工作还是面试，但是网上比较好的参考资料比较少。&lt;/p>
+&lt;h2 id="什么是事务">
+ 什么是事务？
+ &lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e4%ba%8b%e5%8a%a1">#&lt;/a>
+&lt;/h2>
+&lt;p>&lt;strong>事务是逻辑上的一组操作，要么都执行，要么都不执行。&lt;/strong>&lt;/p>
+&lt;p>相信大家应该都能背上面这句话了，下面我结合我们日常的真实开发来谈一谈。&lt;/p>
+&lt;p>我们系统的&lt;strong>每个业务方法&lt;/strong>可能包括了&lt;strong>多个原子性的数据库操作&lt;/strong>，比如下面的 &lt;code>savePerson()&lt;/code> 方法中就有&lt;strong>两个&lt;/strong>原子性的数据库操作。&lt;strong>这些&lt;/strong>原子性的数据库&lt;strong>操作&lt;/strong>是&lt;strong>有依赖&lt;/strong>的，它们要么&lt;strong>都执行&lt;/strong>，要不就&lt;strong>都不执行&lt;/strong>。&lt;/p>
+&lt;pre tabindex="0">&lt;code>	public void savePerson() {
+		personDao.save(person);
+		personDetailDao.save(personDetail);
+	}
+&lt;/code>&lt;/pre>&lt;p>另外，需要格外注意的是：&lt;strong>事务能否生效数据库引擎是否支持事务是关键。比如常用的 MySQL 数据库默认使用支持事务的 &lt;code>innodb&lt;/code>引擎。但是，如果把数据库引擎变为 &lt;code>myisam&lt;/code>，那么程序也就不再支持事务了！&lt;/strong>&lt;/p>
+&lt;p>事务最经典也经常被拿出来说例子就是转账了。假如小明要给小红转账 1000 元，这个转账会涉及到两个关键操作就是：&lt;/p>
+&lt;blockquote>
+&lt;ol>
+&lt;li>将小明的余额减少 1000 元。&lt;/li>
+&lt;li>将小红的余额增加 1000 元。&lt;/li>
+&lt;/ol>
+&lt;/blockquote>
+&lt;p>万一在这两个操作之间突然出现错误比如银行系统崩溃或者网络故障，导致小明余额减少而小红的余额没有增加，这样就不对了。事务就是保证这两个关键操作要么都成功，要么都要失败。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">OrdersService&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">private&lt;/span> AccountDao accountDao;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">setOrdersDao&lt;/span>(AccountDao accountDao) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">this&lt;/span>.&lt;span style="color:#a6e22e">accountDao&lt;/span> &lt;span style="color:#f92672">=&lt;/span> accountDao;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">@Transactional&lt;/span>(propagation &lt;span style="color:#f92672">=&lt;/span> Propagation.&lt;span style="color:#a6e22e">REQUIRED&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> isolation &lt;span style="color:#f92672">=&lt;/span> Isolation.&lt;span style="color:#a6e22e">DEFAULT&lt;/span>, readOnly &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">false&lt;/span>, timeout &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#f92672">-&lt;/span>1)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">accountMoney&lt;/span>() {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">//小红账户多1000&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		accountDao.&lt;span style="color:#a6e22e">addMoney&lt;/span>(1000,xiaohong);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//模拟突然出现的异常，比如银行中可能为突然停电等等&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">//如果没有配置事务管理的话会造成，小红账户多了1000而小明账户没有少钱&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">int&lt;/span> i &lt;span style="color:#f92672">=&lt;/span> 10 &lt;span style="color:#f92672">/&lt;/span> 0;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//小王账户少1000&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		accountDao.&lt;span style="color:#a6e22e">reduceMoney&lt;/span>(1000,xiaoming);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>另外，数据库事务的 &lt;strong>ACID&lt;/strong> 四大特性是事务的基础，下面简单来了解一下。&lt;/p></description></item><item><title>Spring/SpringBoot常用注解</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lybly_framework/ly02ly_spring-annotations/</link><pubDate>Wed, 08 Feb 2023 14:56:32 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lybly_framework/ly02ly_spring-annotations/</guid><description>&lt;blockquote>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;h3 id="0前言">
+ 0.前言
+ &lt;a class="anchor" href="#0%e5%89%8d%e8%a8%80">#&lt;/a>
+&lt;/h3>
+&lt;p>可以毫不夸张地说，这篇文章介绍的 Spring/SpringBoot 常用注解基本已经涵盖你工作中遇到的大部分常用的场景。对于每一个注解我都说了具体用法，掌握搞懂，使用 SpringBoot 来开发项目基本没啥大问题了！&lt;/p>
+&lt;p>&lt;strong>为什么要写这篇文章？&lt;/strong>&lt;/p>
+&lt;p>最近看到网上有一篇关于 SpringBoot 常用注解的文章被转载的比较多，我看了文章内容之后属实觉得质量有点低，并且有点会误导没有太多实际使用经验的人（这些人又占据了大多数）。所以，自己索性花了大概 两天时间简单总结一下了。&lt;/p>
+&lt;p>&lt;strong>因为我个人的能力和精力有限，如果有任何不对或者需要完善的地方，请帮忙指出！Guide 哥感激不尽！&lt;/strong>&lt;/p>
+&lt;h3 id="1-springbootapplication">
+ 1. &lt;code>@SpringBootApplication&lt;/code>
+ &lt;a class="anchor" href="#1-springbootapplication">#&lt;/a>
+&lt;/h3>
+&lt;p>这里先单独拎出&lt;code>@SpringBootApplication&lt;/code> 注解说一下，虽然我们一般不会主动去使用它。&lt;/p>
+&lt;p>&lt;em>Guide 哥：这个注解是 Spring Boot 项目的基石，创建 SpringBoot 项目之后会默认在主类加上。&lt;/em>&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">@SpringBootApplication&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">SpringSecurityJwtGuideApplication&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>(java.&lt;span style="color:#a6e22e">lang&lt;/span>.&lt;span style="color:#a6e22e">String&lt;/span>&lt;span style="color:#f92672">[]&lt;/span> args) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> SpringApplication.&lt;span style="color:#a6e22e">run&lt;/span>(SpringSecurityJwtGuideApplication.&lt;span style="color:#a6e22e">class&lt;/span>, args);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>我们可以把 &lt;code>@SpringBootApplication&lt;/code>看作是 &lt;code>@Configuration&lt;/code>、&lt;code>@EnableAutoConfiguration&lt;/code>、&lt;code>@ComponentScan&lt;/code> 注解的集合。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">package&lt;/span> org.springframework.boot.autoconfigure;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">@Target&lt;/span>(ElementType.&lt;span style="color:#a6e22e">TYPE&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">@Retention&lt;/span>(RetentionPolicy.&lt;span style="color:#a6e22e">RUNTIME&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">@Documented&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">@Inherited&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">@SpringBootConfiguration&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">@EnableAutoConfiguration&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">@ComponentScan&lt;/span>(excludeFilters &lt;span style="color:#f92672">=&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#a6e22e">@Filter&lt;/span>(type &lt;span style="color:#f92672">=&lt;/span> FilterType.&lt;span style="color:#a6e22e">CUSTOM&lt;/span>, classes &lt;span style="color:#f92672">=&lt;/span> TypeExcludeFilter.&lt;span style="color:#a6e22e">class&lt;/span>),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#a6e22e">@Filter&lt;/span>(type &lt;span style="color:#f92672">=&lt;/span> FilterType.&lt;span style="color:#a6e22e">CUSTOM&lt;/span>, classes &lt;span style="color:#f92672">=&lt;/span> AutoConfigurationExcludeFilter.&lt;span style="color:#a6e22e">class&lt;/span>) })
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#a6e22e">@interface&lt;/span> SpringBootApplication {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ......
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">package&lt;/span> org.springframework.boot;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">@Target&lt;/span>(ElementType.&lt;span style="color:#a6e22e">TYPE&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">@Retention&lt;/span>(RetentionPolicy.&lt;span style="color:#a6e22e">RUNTIME&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">@Documented&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">@Configuration&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#a6e22e">@interface&lt;/span> SpringBootConfiguration {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>根据 SpringBoot 官网，这三个注解的作用分别是：&lt;/p></description></item></channel></rss>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>随记</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/ssm/</link><description>Recent content on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Fri, 23 Sep 2022 13:37:38 +0000</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/docs/technology/Review/ssm/index.xml" rel="self" type="application/rss+xml"/><item><title>作用域及事务</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/ssm/scope_transaction/</link><pubDate>Fri, 23 Sep 2022 13:37:38 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/ssm/scope_transaction/</guid><description>&lt;h2 id="四种作用域">
+ 四种作用域
+ &lt;a class="anchor" href="#%e5%9b%9b%e7%a7%8d%e4%bd%9c%e7%94%a8%e5%9f%9f">#&lt;/a>
+&lt;/h2>
+&lt;ul>
+&lt;li>singleton：默认值，当IOC容器一创建就会创建bean实例，而且是单例的，每次得到的是同一个&lt;/li>
+&lt;li>prototype：原型的，IOC容器创建时不再创建bean实例。每次调用getBean方法时再实例化该bean（每次都会进行实例化）&lt;/li>
+&lt;li>request：每次请求会实例化一个bean&lt;/li>
+&lt;li>session：在一次会话中共享一个bean&lt;/li>
+&lt;/ul>
+&lt;h2 id="事务">
+ 事务
+ &lt;a class="anchor" href="#%e4%ba%8b%e5%8a%a1">#&lt;/a>
+&lt;/h2>
+&lt;h3 id="事务是什么">
+ 事务是什么
+ &lt;a class="anchor" href="#%e4%ba%8b%e5%8a%a1%e6%98%af%e4%bb%80%e4%b9%88">#&lt;/a>
+&lt;/h3>
+&lt;p>逻辑上的一组操作，要么都执行，要么都不执行&lt;/p>
+&lt;h3 id="事务的特性">
+ 事务的特性
+ &lt;a class="anchor" href="#%e4%ba%8b%e5%8a%a1%e7%9a%84%e7%89%b9%e6%80%a7">#&lt;/a>
+&lt;/h3>
+&lt;p>ACID&lt;/p>
+&lt;ul>
+&lt;li>Atomicity &lt;code>/ˌætəˈmɪsəti/&lt;/code>原子性 , 要么全部成功，要么全部失败&lt;/li>
+&lt;li>Consistency &lt;code>/kənˈsɪstənsi/&lt;/code> 一致性 , 数据库的完整性&lt;/li>
+&lt;li>Isolation &lt;code>/ˌaɪsəˈleɪʃn/&lt;/code> 隔离性 , 数据库允许多个并发事务同时对其数据进行读写和修改的能力，隔离性可以防止多个事务并发执行时由于交叉执行而导致数据的不一致 , 这里涉及到事务隔离级别&lt;/li>
+&lt;li>Durability &lt;code>/ˌdjʊərəˈbɪləti/&lt;/code> 持久性 , 事务处理结束后，对数据的修改就是永久的，即便系统故障也不会丢失&lt;/li>
+&lt;/ul>
+&lt;h3 id="spring支持两种方式的事务管理">
+ Spring支持两种方式的事务管理
+ &lt;a class="anchor" href="#spring%e6%94%af%e6%8c%81%e4%b8%a4%e7%a7%8d%e6%96%b9%e5%bc%8f%e7%9a%84%e4%ba%8b%e5%8a%a1%e7%ae%a1%e7%90%86">#&lt;/a>
+&lt;/h3>
+&lt;ul>
+&lt;li>
+&lt;p>编程式事务管理
+&lt;code>/ˈeksɪkjuːt/&lt;/code> execute&lt;br>
+使用transactionTemplate&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">@Autowired&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">private&lt;/span> TransactionTemplate transactionTemplate;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">testTransaction&lt;/span>() {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> transactionTemplate.&lt;span style="color:#a6e22e">execute&lt;/span>(&lt;span style="color:#66d9ef">new&lt;/span> TransactionCallbackWithoutResult() {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">@Override&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">protected&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">doInTransactionWithoutResult&lt;/span>(TransactionStatus transactionStatus) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">try&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// .... 业务代码&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> } &lt;span style="color:#66d9ef">catch&lt;/span> (Exception e){
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">//回滚&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> transactionStatus.&lt;span style="color:#a6e22e">setRollbackOnly&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> });
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>使用transactionManager&lt;/p></description></item></channel></rss>

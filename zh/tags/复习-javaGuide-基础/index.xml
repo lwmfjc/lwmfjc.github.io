@@ -1,0 +1,737 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>复习-JavaGuide-基础 on 随记</title><link>https://lwmfjc.github.io/zh/tags/%E5%A4%8D%E4%B9%A0-javaGuide-%E5%9F%BA%E7%A1%80/</link><description>Recent content in 复习-JavaGuide-基础 on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Wed, 12 Oct 2022 17:36:26 +0000</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/tags/%E5%A4%8D%E4%B9%A0-javaGuide-%E5%9F%BA%E7%A1%80/index.xml" rel="self" type="application/rss+xml"/><item><title>语法糖</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Basic/ly0011lysyntactic_sugar/</link><pubDate>Wed, 12 Oct 2022 17:36:26 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Basic/ly0011lysyntactic_sugar/</guid><description>&lt;blockquote>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide （添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;h2 id="简介">
+ 简介
+ &lt;a class="anchor" href="#%e7%ae%80%e4%bb%8b">#&lt;/a>
+&lt;/h2>
+&lt;p>语法糖（Syntactic Sugar）也称&lt;strong>糖衣语法&lt;/strong>，指的是在计算机语言中添加的某种语法，这种语法对语言的功能并没有影响，但是更方便程序员使用，简而言之，让程序更加&lt;strong>简洁&lt;/strong>，有更高的&lt;strong>可读性&lt;/strong>&lt;/p>
+&lt;h2 id="java中有哪些语法糖">
+ Java中有哪些语法糖
+ &lt;a class="anchor" href="#java%e4%b8%ad%e6%9c%89%e5%93%aa%e4%ba%9b%e8%af%ad%e6%b3%95%e7%b3%96">#&lt;/a>
+&lt;/h2>
+&lt;p>Java&lt;strong>虚拟机并不支持&lt;/strong>这些语法糖，这些语法糖在&lt;strong>编译阶段就会被还原成简单的基础语法&lt;/strong>结构，这个过程就是解语法糖&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>javac&lt;/code>命令可以将后缀为&lt;code>.java&lt;/code>的源文件编译为后缀名为&lt;code>.class&lt;/code>的&lt;strong>可以运行于Java虚拟机的字节码&lt;/strong>。其中，&lt;code>com.sun.tools.javac.main.JavaCompiler&lt;/code>的源码中，&lt;code>compile()&lt;/code>中有一个步骤就是调用&lt;code>desugar()&lt;/code>，这个方法就是负责&lt;strong>解语法糖&lt;/strong>的实现的&lt;/li>
+&lt;li>Java中的语法糖，包括 &lt;strong>泛型&lt;/strong>、&lt;strong>变长参数&lt;/strong>、&lt;strong>条件编译&lt;/strong>、&lt;strong>自动拆装箱&lt;/strong>、&lt;strong>内部类&lt;/strong>等&lt;/li>
+&lt;/ul>
+&lt;h3 id="switch支持string与枚举">
+ switch支持String与枚举
+ &lt;a class="anchor" href="#switch%e6%94%af%e6%8c%81string%e4%b8%8e%e6%9e%9a%e4%b8%be">#&lt;/a>
+&lt;/h3>
+&lt;p>switch本身原本只支持基本类型，如int、char&lt;br>
+&lt;img src="img/ly-20241212141927344.png" alt="ly-20241212141927344" />&lt;/p>
+&lt;p>int是比较数值，而char则是比较其ascii码，所以其实对于编译器来说，都是int类型(整型)，比如&lt;code>byte&lt;/code>。&lt;code>short&lt;/code>，&lt;code>char&lt;/code>(ackii 码是整型)以及&lt;code>int&lt;/code>。
+&lt;img src="img/ly-20241212141927646.png" alt="ly-20241212141927646" />&lt;/p>
+&lt;p>&lt;img src="img/ly-20241212141927801.png" alt="ly-20241212141927801" />
+而对于enum类型，&lt;br>
+&lt;img src="img/ly-20241212141927960.png" alt="ly-20241212141927960" />&lt;/p>
+&lt;p>对于switch中使用String，则：&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">switchDemoString&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>(String&lt;span style="color:#f92672">[]&lt;/span> args) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> String str &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#e6db74">&amp;#34;world&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">switch&lt;/span> (str) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">case&lt;/span> &lt;span style="color:#e6db74">&amp;#34;hello&amp;#34;&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> System.&lt;span style="color:#a6e22e">out&lt;/span>.&lt;span style="color:#a6e22e">println&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;hello&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">break&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">case&lt;/span> &lt;span style="color:#e6db74">&amp;#34;world&amp;#34;&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> System.&lt;span style="color:#a6e22e">out&lt;/span>.&lt;span style="color:#a6e22e">println&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;world&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">break&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">default&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">break&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//反编译之后&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">switchDemoString&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#a6e22e">switchDemoString&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>(String args&lt;span style="color:#f92672">[]&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> String str &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#e6db74">&amp;#34;world&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> String s;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">switch&lt;/span>((s &lt;span style="color:#f92672">=&lt;/span> str).&lt;span style="color:#a6e22e">hashCode&lt;/span>())
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">default&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">break&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">case&lt;/span> 99162322:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span>(s.&lt;span style="color:#a6e22e">equals&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;hello&amp;#34;&lt;/span>))
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> System.&lt;span style="color:#a6e22e">out&lt;/span>.&lt;span style="color:#a6e22e">println&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;hello&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">break&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">case&lt;/span> 113318802:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span>(s.&lt;span style="color:#a6e22e">equals&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;world&amp;#34;&lt;/span>))
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> System.&lt;span style="color:#a6e22e">out&lt;/span>.&lt;span style="color:#a6e22e">println&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;world&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">break&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>即switch判断是通过**equals()&lt;strong>和&lt;/strong>hashCode()**方法来实现的&lt;/p></description></item><item><title>java_spi</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Basic/ly0010lyjava_spi/</link><pubDate>Wed, 12 Oct 2022 10:12:52 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Basic/ly0010lyjava_spi/</guid><description>&lt;blockquote>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide （添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;h3 id="简介">
+ 简介
+ &lt;a class="anchor" href="#%e7%ae%80%e4%bb%8b">#&lt;/a>
+&lt;/h3>
+&lt;p>为了实现在&lt;strong>模块装配&lt;/strong>的时候&lt;strong>不用再程序里面动态指明&lt;/strong>，这就需要一种&lt;strong>服务发现&lt;/strong>机制。JavaSPI就是提供了这样的一个机制：&lt;strong>为某个接口寻找服务实现&lt;/strong>的机制。有点类似IoC的思想，将装配的控制权交到了程序之外&lt;/p>
+&lt;h3 id="spi介绍">
+ SPI介绍
+ &lt;a class="anchor" href="#spi%e4%bb%8b%e7%bb%8d">#&lt;/a>
+&lt;/h3>
+&lt;p>SPI，ServiceProviderInterface
+使用SPI：Spring框架、数据库加载驱动、日志接口、以及Dubbo的扩展实现&lt;/p>
+&lt;p>&lt;img src="img/ly-20241212141926732.png" alt="ly-20241212141926732" />&lt;/p>
+&lt;p>感觉下面这个图不太对，被调用方应该
+一般&lt;strong>模块之间&lt;/strong>都是&lt;strong>通过接口&lt;/strong>进行通讯，&lt;/p>
+&lt;blockquote>
+&lt;p>当&lt;strong>实现方&lt;/strong>提供了&lt;strong>接口和实现&lt;/strong>，我们可以通过&lt;strong>调用实现方的接口&lt;/strong>从而拥有&lt;strong>实现方给我们提供的能力&lt;/strong>，这就是 API ，这种&lt;strong>接口和实现&lt;/strong>都是放在实现方的。&lt;/p>
+&lt;p>当接口存在于&lt;strong>调用方&lt;/strong>这边时，就是 SPI ，由接口调用方确定接口规则，然后由不同的厂商去根据这个规则对这个接口进行实现，从而提供服务。[&lt;strong>可以理解成业务方，或者说使用方。它使用了这个接口，而且制定了接口规范，但是具体实现，由被调用方实现&lt;/strong>]&lt;/p>
+&lt;p>我的理解：被调用方（提供接口的人），调用方（使用接口的人），但是其实这里只把调用方&amp;ndash;&amp;gt;使用接口的人 这个关系是对的。&lt;/p>
+&lt;p>也就是说，正常情况下由被调用方自己提供接口和实现，即API。而现在，由调用方（这里的调用方其实可以理解成上面的被调用方），提供了接口还使用了接口，而由被调用方进行接口实现&lt;/p>
+&lt;/blockquote>
+&lt;h3 id="实战演示">
+ 实战演示
+ &lt;a class="anchor" href="#%e5%ae%9e%e6%88%98%e6%bc%94%e7%a4%ba">#&lt;/a>
+&lt;/h3>
+&lt;p>SLF4J只是一个日志门面（接口），但是SLF4J的具体实现可以有多种，如：Logback/Log4j/Log4j2等等&lt;/p>
+&lt;p>&lt;img src="img/ly-20241212141927020.png" alt="ly-20241212141927020" />&lt;/p>
+&lt;h4 id="简易版本">
+ 简易版本
+ &lt;a class="anchor" href="#%e7%ae%80%e6%98%93%e7%89%88%e6%9c%ac">#&lt;/a>
+&lt;/h4>
+&lt;ul>
+&lt;li>
+&lt;p>ServiceProviderInterface&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>目录结构&lt;/p>
+&lt;pre tabindex="0">&lt;code>│ service-provider-interface.iml
+│
+├─.idea
+│ │ .gitignore
+│ │ misc.xml
+│ │ modules.xml
+│ └─ workspace.xml
+│
+└─src
+ └─edu
+ └─jiangxuan
+ └─up
+ └─spi
+ Logger.java
+ LoggerService.java
+ Main.class
+&lt;/code>&lt;/pre>&lt;ul>
+&lt;li>
+&lt;p>Logger接口，即SPI 服务提供者接口，后面的服务提供者要针对这个接口进行实现&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">package&lt;/span> edu.jiangxuan.up.spi;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">interface&lt;/span> &lt;span style="color:#a6e22e">Logger&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">info&lt;/span>(String msg);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">debug&lt;/span>(String msg);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>LoggerService类，主要是为服务使用者（调用方）提供特定功能，这个类是实现JavaSPI机制的关键所在&lt;/p></description></item><item><title>unsafe类</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Basic/ly0009lyunsafe_class/</link><pubDate>Mon, 10 Oct 2022 17:10:27 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Basic/ly0009lyunsafe_class/</guid><description>&lt;blockquote>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide （添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;p>&lt;code>sun.misc.Unsafe&lt;/code>&lt;/p>
+&lt;p>提供&lt;strong>执行低级别&lt;/strong>、&lt;strong>不安全操作&lt;/strong>的方法，如&lt;strong>直接访问系统内存资源&lt;/strong>、&lt;strong>自主管理内存资源&lt;/strong>等，效率快，但由于有了操作内存空间的能力，会&lt;strong>增加指针问题风险&lt;/strong>。且这些功能的实现依赖于本地方法，Java代码中只是声明方法头，具体实现规则交给本地代码
+&lt;img src="img/ly-20241212141925562.png" alt="ly-20241212141925562" />&lt;/p>
+&lt;h3 id="为什么要使用本地方法">
+ 为什么要使用本地方法
+ &lt;a class="anchor" href="#%e4%b8%ba%e4%bb%80%e4%b9%88%e8%a6%81%e4%bd%bf%e7%94%a8%e6%9c%ac%e5%9c%b0%e6%96%b9%e6%b3%95">#&lt;/a>
+&lt;/h3>
+&lt;ul>
+&lt;li>需要用到Java中不具备的&lt;strong>依赖于操作系统&lt;/strong>的特性，跨平台的同时要实现&lt;strong>对底层控制&lt;/strong>&lt;/li>
+&lt;li>对于其他语言已经完成的现成功能，可以使用Java调用&lt;/li>
+&lt;li>对&lt;strong>时间敏感/性能要求&lt;/strong>非常高，有必要使用更为底层的语言&lt;/li>
+&lt;/ul>
+&lt;p>对于同一本地方法，不同的操作系统可能通过不同的方式来实现的&lt;/p>
+&lt;h3 id="unsafe创建">
+ Unsafe创建
+ &lt;a class="anchor" href="#unsafe%e5%88%9b%e5%bb%ba">#&lt;/a>
+&lt;/h3>
+&lt;p>sun.misc.Unsafe部分源码&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">final&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">Unsafe&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// 单例对象&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">private&lt;/span> &lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">final&lt;/span> Unsafe theUnsafe;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ......
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">private&lt;/span> &lt;span style="color:#a6e22e">Unsafe&lt;/span>() {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">//Sensitive : 敏感的 英[ˈsensətɪv]&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">@CallerSensitive&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">static&lt;/span> Unsafe &lt;span style="color:#a6e22e">getUnsafe&lt;/span>() {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> Class var0 &lt;span style="color:#f92672">=&lt;/span> Reflection.&lt;span style="color:#a6e22e">getCallerClass&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// 仅在引导类加载器`BootstrapClassLoader`加载时才合法&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span>(&lt;span style="color:#f92672">!&lt;/span>VM.&lt;span style="color:#a6e22e">isSystemDomainLoader&lt;/span>(var0.&lt;span style="color:#a6e22e">getClassLoader&lt;/span>())) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">throw&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> SecurityException(&lt;span style="color:#e6db74">&amp;#34;Unsafe&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> } &lt;span style="color:#66d9ef">else&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> theUnsafe;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>会先判断当前类是否由&lt;strong>Bootstrap classloader&lt;/strong>加载。即只有&lt;strong>启动类加载器加载的类&lt;/strong>才能够调用Unsafe类中的方法&lt;/p>
+&lt;p>如何使用&lt;code>Unsafe&lt;/code>这个类&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>利用反射获得Unsafe类中已经实例化完成的单例对象&lt;code>theUnsafe&lt;/code>&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">private&lt;/span> &lt;span style="color:#66d9ef">static&lt;/span> Unsafe &lt;span style="color:#a6e22e">reflectGetUnsafe&lt;/span>() {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">try&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> Field field &lt;span style="color:#f92672">=&lt;/span> Unsafe.&lt;span style="color:#a6e22e">class&lt;/span>.&lt;span style="color:#a6e22e">getDeclaredField&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;theUnsafe&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> field.&lt;span style="color:#a6e22e">setAccessible&lt;/span>(&lt;span style="color:#66d9ef">true&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> (Unsafe) field.&lt;span style="color:#a6e22e">get&lt;/span>(&lt;span style="color:#66d9ef">null&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> } &lt;span style="color:#66d9ef">catch&lt;/span> (Exception e) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> log.&lt;span style="color:#a6e22e">error&lt;/span>(e.&lt;span style="color:#a6e22e">getMessage&lt;/span>(), e);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#66d9ef">null&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>通过Java命令行命令&lt;code>-Xbootclasspath/a&lt;/code>把&lt;strong>调用Unsafe相关方法的类A所在jar包路径追加到默认的bootstrap路径中&lt;/strong>，使得&lt;strong>A被引导类加载器加载&lt;/strong>&lt;/p></description></item><item><title>big_decimal</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Basic/ly0008lybig_decimal/</link><pubDate>Mon, 10 Oct 2022 14:56:26 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Basic/ly0008lybig_decimal/</guid><description>&lt;blockquote>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide （添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;h3 id="精度的丢失">
+ 精度的丢失
+ &lt;a class="anchor" href="#%e7%b2%be%e5%ba%a6%e7%9a%84%e4%b8%a2%e5%a4%b1">#&lt;/a>
+&lt;/h3>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">float&lt;/span> a &lt;span style="color:#f92672">=&lt;/span> 2.&lt;span style="color:#a6e22e">0f&lt;/span> &lt;span style="color:#f92672">-&lt;/span> 1.&lt;span style="color:#a6e22e">9f&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">float&lt;/span> b &lt;span style="color:#f92672">=&lt;/span> 1.&lt;span style="color:#a6e22e">8f&lt;/span> &lt;span style="color:#f92672">-&lt;/span> 1.&lt;span style="color:#a6e22e">7f&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>System.&lt;span style="color:#a6e22e">out&lt;/span>.&lt;span style="color:#a6e22e">println&lt;/span>(a);&lt;span style="color:#75715e">// 0.100000024&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>System.&lt;span style="color:#a6e22e">out&lt;/span>.&lt;span style="color:#a6e22e">println&lt;/span>(b);&lt;span style="color:#75715e">// 0.099999905&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>System.&lt;span style="color:#a6e22e">out&lt;/span>.&lt;span style="color:#a6e22e">println&lt;/span>(a &lt;span style="color:#f92672">==&lt;/span> b);&lt;span style="color:#75715e">// false&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;blockquote>
+&lt;p>为什么会有精度丢失的风险&lt;/p>
+&lt;p>这个和计算机保存浮点数的机制有很大关系。我们知道计算机是&lt;strong>二进制&lt;/strong>的，而且计算机在&lt;strong>表示一个数字时，宽度是有限&lt;/strong>的，无限循环的小数存储在计算机时，&lt;strong>只能被截断&lt;/strong>，所以就会导致&lt;strong>小数精度发生损失&lt;/strong>的情况。这也就是解释了为什么浮点数没有办法用二进制精确表示&lt;/p>
+&lt;/blockquote>
+&lt;p>使用BigDecimal来定义浮点数的值，然后再进行浮点数的运算操作即可&lt;/p>
+&lt;h3 id="bigdecimal常见方法">
+ BigDecimal常见方法
+ &lt;a class="anchor" href="#bigdecimal%e5%b8%b8%e8%a7%81%e6%96%b9%e6%b3%95">#&lt;/a>
+&lt;/h3>
+&lt;ul>
+&lt;li>
+&lt;p>我们在使用 &lt;code>BigDecimal&lt;/code> 时，为了防止精度丢失，推荐使用它的&lt;code>BigDecimal(String val)&lt;/code>构造方法或者 &lt;code>BigDecimal.valueOf(double val)&lt;/code> 静态方法来创建对象&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>加减乘除&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>BigDecimal a &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> BigDecimal(&lt;span style="color:#e6db74">&amp;#34;1.0&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>BigDecimal b &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> BigDecimal(&lt;span style="color:#e6db74">&amp;#34;0.9&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>System.&lt;span style="color:#a6e22e">out&lt;/span>.&lt;span style="color:#a6e22e">println&lt;/span>(a.&lt;span style="color:#a6e22e">add&lt;/span>(b));&lt;span style="color:#75715e">// 1.9&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>System.&lt;span style="color:#a6e22e">out&lt;/span>.&lt;span style="color:#a6e22e">println&lt;/span>(a.&lt;span style="color:#a6e22e">subtract&lt;/span>(b));&lt;span style="color:#75715e">// 0.1&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>System.&lt;span style="color:#a6e22e">out&lt;/span>.&lt;span style="color:#a6e22e">println&lt;/span>(a.&lt;span style="color:#a6e22e">multiply&lt;/span>(b));&lt;span style="color:#75715e">// 0.90&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>System.&lt;span style="color:#a6e22e">out&lt;/span>.&lt;span style="color:#a6e22e">println&lt;/span>(a.&lt;span style="color:#a6e22e">divide&lt;/span>(b));&lt;span style="color:#75715e">// 无法除尽，抛出 ArithmeticException 异常&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>System.&lt;span style="color:#a6e22e">out&lt;/span>.&lt;span style="color:#a6e22e">println&lt;/span>(a.&lt;span style="color:#a6e22e">divide&lt;/span>(b, 2, RoundingMode.&lt;span style="color:#a6e22e">HALF_UP&lt;/span>));&lt;span style="color:#75715e">// 1.11&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>使用divide方法的时候，尽量使用3个参数版本（roundingMode.oldMode)&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>保留规则&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">enum&lt;/span> RoundingMode {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// 2.5 -&amp;gt; 3 , 1.6 -&amp;gt; 2&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// -1.6 -&amp;gt; -2 , -2.5 -&amp;gt; -3&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			 UP(BigDecimal.&lt;span style="color:#a6e22e">ROUND_UP&lt;/span>), &lt;span style="color:#75715e">//数轴上靠近哪个取哪个&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// 2.5 -&amp;gt; 2 , 1.6 -&amp;gt; 1&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// -1.6 -&amp;gt; -1 , -2.5 -&amp;gt; -2&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			 DOWN(BigDecimal.&lt;span style="color:#a6e22e">ROUND_DOWN&lt;/span>), &lt;span style="color:#75715e">//数轴上离哪个远取哪个&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			 &lt;span style="color:#75715e">// 2.5 -&amp;gt; 3 , 1.6 -&amp;gt; 2&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// -1.6 -&amp;gt; -1 , -2.5 -&amp;gt; -2&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			 CEILING(BigDecimal.&lt;span style="color:#a6e22e">ROUND_CEILING&lt;/span>),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			 &lt;span style="color:#75715e">// 2.5 -&amp;gt; 2 , 1.6 -&amp;gt; 1&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// -1.6 -&amp;gt; -2 , -2.5 -&amp;gt; -3&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			 FLOOR(BigDecimal.&lt;span style="color:#a6e22e">ROUND_FLOOR&lt;/span>), &lt;span style="color:#75715e">////数轴上 正数：远离哪个取哪个 负数：靠近哪个取哪个&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 	&lt;span style="color:#75715e">// 2.5 -&amp;gt; 3 , 1.6 -&amp;gt; 2&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// -1.6 -&amp;gt; -2 , -2.5 -&amp;gt; -3&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			 HALF_UP(BigDecimal.&lt;span style="color:#a6e22e">ROUND_HALF_UP&lt;/span>),&lt;span style="color:#75715e">// 数轴上 正数：靠近哪个取哪个 负数：远离哪个取哪个&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">//......&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>大小比较&lt;br>
+使用compareTo&lt;/p></description></item><item><title>Java代理模式</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Basic/ly0007lyproxy_pattern/</link><pubDate>Mon, 10 Oct 2022 14:30:02 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Basic/ly0007lyproxy_pattern/</guid><description>&lt;blockquote>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide （添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;h3 id="代理模式">
+ 代理模式
+ &lt;a class="anchor" href="#%e4%bb%a3%e7%90%86%e6%a8%a1%e5%bc%8f">#&lt;/a>
+&lt;/h3>
+&lt;p>使用代理对象来代替对真实对象的访问，就可以在&lt;strong>不修改原目标对象的前提下提供额外的功能操作&lt;/strong>，&lt;strong>扩展目标对象的功能&lt;/strong>，即在目标对象的&lt;strong>某个方法执行前后可以增加一些自定义的操作&lt;/strong>&lt;/p>
+&lt;h3 id="静态代理">
+ 静态代理
+ &lt;a class="anchor" href="#%e9%9d%99%e6%80%81%e4%bb%a3%e7%90%86">#&lt;/a>
+&lt;/h3>
+&lt;blockquote>
+&lt;p>&lt;strong>静态代理中，我们对目标对象的每个方法的增强都是手动完成的（*后面会具体演示代码*），非常不灵活（*比如接口一旦新增加方法，目标对象和代理对象都要进行修改*）且麻烦(*需要对每个目标类都单独写一个代理类*）。&lt;/strong> 实际应用场景非常非常少，日常开发几乎看不到使用静态代理的场景。&lt;/p>
+&lt;p>上面我们是从实现和应用角度来说的静态代理，从 JVM 层面来说， &lt;strong>静态代理在编译时就将接口、实现类、代理类这些都变成了一个个实际的 class 文件。&lt;/strong>&lt;/p>
+&lt;/blockquote>
+&lt;ol>
+&lt;li>定义一个接口及其实现类；&lt;/li>
+&lt;li>创建一个代理类同样实现这个接口&lt;/li>
+&lt;li>将目标对象注入进代理类，然后在代理类的对应方法调用目标类中的对应方法。这样的话，我们就可以通过代理类屏蔽对目标对象的访问，并且可以在目标方法执行前后做一些自己想做的事情。&lt;/li>
+&lt;/ol>
+&lt;p>代码:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//定义发送短信的接口&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">interface&lt;/span> &lt;span style="color:#a6e22e">SmsService&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> String &lt;span style="color:#a6e22e">send&lt;/span>(String message);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//实现发送短信的接口&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">SmsServiceImpl&lt;/span> &lt;span style="color:#66d9ef">implements&lt;/span> SmsService {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> String &lt;span style="color:#a6e22e">send&lt;/span>(String message) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> System.&lt;span style="color:#a6e22e">out&lt;/span>.&lt;span style="color:#a6e22e">println&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;send message:&amp;#34;&lt;/span> &lt;span style="color:#f92672">+&lt;/span> message);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> message;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//创建代理类并同样实现发送短信的接口&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">SmsProxy&lt;/span> &lt;span style="color:#66d9ef">implements&lt;/span> SmsService {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">private&lt;/span> &lt;span style="color:#66d9ef">final&lt;/span> SmsService smsService;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#a6e22e">SmsProxy&lt;/span>(SmsService smsService) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">this&lt;/span>.&lt;span style="color:#a6e22e">smsService&lt;/span> &lt;span style="color:#f92672">=&lt;/span> smsService;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">@Override&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> String &lt;span style="color:#a6e22e">send&lt;/span>(String message) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">//调用方法之前，我们可以添加自己的操作&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> System.&lt;span style="color:#a6e22e">out&lt;/span>.&lt;span style="color:#a6e22e">println&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;before method send()&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> smsService.&lt;span style="color:#a6e22e">send&lt;/span>(message);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">//调用方法之后，我们同样可以添加自己的操作&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> System.&lt;span style="color:#a6e22e">out&lt;/span>.&lt;span style="color:#a6e22e">println&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;after method send()&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#66d9ef">null&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//实际使用&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">Main&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>(String&lt;span style="color:#f92672">[]&lt;/span> args) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> SmsService smsService &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> SmsServiceImpl();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> SmsProxy smsProxy &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> SmsProxy(smsService);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> smsProxy.&lt;span style="color:#a6e22e">send&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;java&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//打印结果&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>before method &lt;span style="color:#a6e22e">send&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>send message:java
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>after method &lt;span style="color:#a6e22e">send&lt;/span>()
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="动态代理">
+ 动态代理
+ &lt;a class="anchor" href="#%e5%8a%a8%e6%80%81%e4%bb%a3%e7%90%86">#&lt;/a>
+&lt;/h3>
+&lt;p>从JVM角度来说，动态代理是在&lt;strong>运行时动态生成类字节码&lt;/strong>，并&lt;strong>加载到JVM中的&lt;/strong>。 SpringAOP和RPC等框架都实现了动态代理&lt;/p></description></item><item><title>java-reflex</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Basic/ly0006lyreflex/</link><pubDate>Mon, 10 Oct 2022 11:27:04 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Basic/ly0006lyreflex/</guid><description>&lt;blockquote>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide （添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;h3 id="何为反射">
+ 何为反射
+ &lt;a class="anchor" href="#%e4%bd%95%e4%b8%ba%e5%8f%8d%e5%b0%84">#&lt;/a>
+&lt;/h3>
+&lt;p>赋予了我们在&lt;strong>运行时分析类&lt;/strong>以及&lt;strong>执行类中方法&lt;/strong>的能力；运行中&lt;strong>获取任意一个类的所有属性&lt;/strong>和&lt;strong>方法&lt;/strong>，以及&lt;strong>调用这些方法&lt;/strong>和&lt;strong>属性&lt;/strong>&lt;/p>
+&lt;h3 id="应用场景">
+ 应用场景
+ &lt;a class="anchor" href="#%e5%ba%94%e7%94%a8%e5%9c%ba%e6%99%af">#&lt;/a>
+&lt;/h3>
+&lt;p>Spring/Spring Boot 、MyBatis等框架都用了大量反射机制，以下为&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>JDK动态代理&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>接口及实现类&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">package&lt;/span> proxy;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">interface&lt;/span> &lt;span style="color:#a6e22e">Car&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">run&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">//实现类&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">package&lt;/span> proxy;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">CarImpl&lt;/span> &lt;span style="color:#66d9ef">implements&lt;/span> Car{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">run&lt;/span>() {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> System.&lt;span style="color:#a6e22e">out&lt;/span>.&lt;span style="color:#a6e22e">println&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;car running&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>代理类 及main方法使用
+&lt;code>[ˌɪnvəˈkeɪʃn] 祈祷&lt;/code>&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">package&lt;/span> proxy;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">import&lt;/span> java.lang.reflect.InvocationHandler;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">import&lt;/span> java.lang.reflect.Method;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">//JDK动态代理代理类 &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">CarHandler&lt;/span> &lt;span style="color:#66d9ef">implements&lt;/span> InvocationHandler{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">//真实类的对象&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">private&lt;/span> Object car;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">//构造方法赋值给真实的类&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#a6e22e">CarHandler&lt;/span>(Object obj){
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">this&lt;/span>.&lt;span style="color:#a6e22e">car&lt;/span> &lt;span style="color:#f92672">=&lt;/span> obj;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">//代理类执行方法时，调用的是这个方法&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> Object &lt;span style="color:#a6e22e">invoke&lt;/span>(Object proxy, Method method, Object&lt;span style="color:#f92672">[]&lt;/span> args) &lt;span style="color:#66d9ef">throws&lt;/span> Throwable {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> System.&lt;span style="color:#a6e22e">out&lt;/span>.&lt;span style="color:#a6e22e">println&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;before&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> Object res &lt;span style="color:#f92672">=&lt;/span> method.&lt;span style="color:#a6e22e">invoke&lt;/span>(car, args);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> System.&lt;span style="color:#a6e22e">out&lt;/span>.&lt;span style="color:#a6e22e">println&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;after&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> res;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">//main方法使用&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">package&lt;/span> proxy;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">import&lt;/span> java.lang.reflect.Proxy;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>(String&lt;span style="color:#f92672">[]&lt;/span> args) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> CarImpl carImpl &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> CarImpl();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> CarHandler carHandler &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> CarHandler(carImpl);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> Car proxy &lt;span style="color:#f92672">=&lt;/span> (Car)Proxy.&lt;span style="color:#a6e22e">newProxyInstance&lt;/span>(
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> main.&lt;span style="color:#a6e22e">class&lt;/span>.&lt;span style="color:#a6e22e">getClassLoader&lt;/span>(), &lt;span style="color:#75715e">//第一个参数，获取ClassLoader&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> carImpl.&lt;span style="color:#a6e22e">getClass&lt;/span>().&lt;span style="color:#a6e22e">getInterfaces&lt;/span>(), &lt;span style="color:#75715e">//第二个参数，获取被代理类的接口&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> carHandler);&lt;span style="color:#75715e">//第三个参数，一个InvocationHandler对象，表示的是当我这个动态代理对象在调用方法的时候，会关联到哪一个InvocationHandler对象上&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> proxy.&lt;span style="color:#a6e22e">run&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//输出&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>before
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>car running
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>after
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>Cglib动态代理（没有实现接口的Car&lt;/p></description></item><item><title>Java序列化详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Basic/ly0005lyserialize/</link><pubDate>Mon, 10 Oct 2022 10:39:01 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Basic/ly0005lyserialize/</guid><description>&lt;blockquote>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide （添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;h3 id="什么是序列化什么是反序列化">
+ 什么是序列化？什么是反序列化
+ &lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e5%ba%8f%e5%88%97%e5%8c%96%e4%bb%80%e4%b9%88%e6%98%af%e5%8f%8d%e5%ba%8f%e5%88%97%e5%8c%96">#&lt;/a>
+&lt;/h3>
+&lt;p>当需要&lt;strong>持久化Java对象&lt;/strong>，比如&lt;strong>将Java对象保存在文件&lt;/strong>中、或者&lt;strong>在网络中传输Java对象&lt;/strong>，这些场景都需要用到序列化&lt;/p>
+&lt;p>即：&lt;/p>
+&lt;ul>
+&lt;li>序列化：将&lt;strong>数据结构/对象&lt;/strong>，&lt;strong>转换成二进制字节流&lt;/strong>&lt;/li>
+&lt;li>反序列化：将在&lt;strong>序列化过程中所生成的二进制字节流&lt;/strong>，&lt;strong>转换成数据结构或者对象&lt;/strong>的过程&lt;/li>
+&lt;/ul>
+&lt;p>对于Java，序列化的是对象(Object)，也就是实例化后的类(Class)&lt;/p>
+&lt;p>序列化的目的，是通过网络传输对象，或者说是将对象存储到文件系统、数据库、内存中，如图：
+&lt;img src="img/ly-20241212141924954.png" alt="ly-20241212141924954" />&lt;/p>
+&lt;h3 id="实际场景">
+ 实际场景
+ &lt;a class="anchor" href="#%e5%ae%9e%e9%99%85%e5%9c%ba%e6%99%af">#&lt;/a>
+&lt;/h3>
+&lt;ul>
+&lt;li>对象在&lt;strong>进行网络传输（比如远程方法调用 RPC 的时候）之前&lt;/strong>需要先被序列化，&lt;strong>接收到&lt;/strong>序列化的对象&lt;strong>之后&lt;/strong>需要再进行&lt;strong>反序列化&lt;/strong>；&lt;/li>
+&lt;li>将对象&lt;strong>存储到文件中&lt;/strong>的时候需要进行序列化，将对象从文件中读取出来需要进行反序列化。&lt;/li>
+&lt;li>将&lt;strong>对象存储到缓存数据库（如 Redis）时需要用到序列化&lt;/strong>，将对象&lt;strong>从缓存数据库中读取&lt;/strong>出来需要反序列化&lt;/li>
+&lt;/ul>
+&lt;h3 id="序列化协议对于tcpip-4层模型的哪一层">
+ 序列化协议对于TCP/IP 4层模型的哪一层
+ &lt;a class="anchor" href="#%e5%ba%8f%e5%88%97%e5%8c%96%e5%8d%8f%e8%ae%ae%e5%af%b9%e4%ba%8etcpip-4%e5%b1%82%e6%a8%a1%e5%9e%8b%e7%9a%84%e5%93%aa%e4%b8%80%e5%b1%82">#&lt;/a>
+&lt;/h3>
+&lt;p>4层包括，网络接口层，网络层，传输层，应用层
+如下图所示：&lt;br>
+&lt;img src="img/ly-20241212141925161.png" alt="ly-20241212141925161" />&lt;/p>
+&lt;p>OSI七层协议模型中，表示层就是&lt;strong>对应用层的用户数据，进行处理转换成二进制流&lt;/strong>；反过来的话，就是&lt;strong>将二进制流转换成应用层的用户数据&lt;/strong>，即序列化和反序列化，&lt;br>
+因为，OSI 七层协议模型中的&lt;strong>应用层、表示层和会话层&lt;/strong>对应的都是 &lt;strong>TCP/IP 四层模型&lt;/strong>中的&lt;strong>应用层&lt;/strong>，所以&lt;strong>序列化协议&lt;/strong>属于 &lt;strong>TCP/IP 协议应用层&lt;/strong>的一部分&lt;/p>
+&lt;h3 id="常见序列化协议对比">
+ 常见序列化协议对比
+ &lt;a class="anchor" href="#%e5%b8%b8%e8%a7%81%e5%ba%8f%e5%88%97%e5%8c%96%e5%8d%8f%e8%ae%ae%e5%af%b9%e6%af%94">#&lt;/a>
+&lt;/h3>
+&lt;p>kryo 英音 [k&amp;rsquo;rɪəʊ] ，除了JDK自带的序列化，还有&lt;strong>hessian&lt;/strong>、&lt;strong>kryo&lt;/strong>、&lt;strong>protostuff&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>JDK自带的序列化，只需要实现java.io.Serializable接口即可&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">@AllArgsConstructor&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">@NoArgsConstructor&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">@Getter&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">@Builder&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">@ToString&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">RpcRequest&lt;/span> &lt;span style="color:#66d9ef">implements&lt;/span> Serializable {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">private&lt;/span> &lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">final&lt;/span> &lt;span style="color:#66d9ef">long&lt;/span> serialVersionUID &lt;span style="color:#f92672">=&lt;/span> 1905122041950251207L;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">private&lt;/span> String requestId;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">private&lt;/span> String interfaceName;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">private&lt;/span> String methodName;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">private&lt;/span> Object&lt;span style="color:#f92672">[]&lt;/span> parameters;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">private&lt;/span> Class&lt;span style="color:#f92672">&amp;lt;?&amp;gt;[]&lt;/span> paramTypes;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">private&lt;/span> RpcMessageTypeEnum rpcMessageTypeEnum;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>serialVersionUID用于版本控制，会被写入二进制序列，反序列化如果发现和当前类不一致则会抛出InvalidClassException异常。一般不使用JDK自带序列化，1 不支持跨语言调用 2 性能差，序列化之后字节数组体积过大&lt;/p></description></item><item><title>为什么Java中只有值传递</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Basic/ly0004lypassbyvalue/</link><pubDate>Sun, 09 Oct 2022 11:30:05 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Basic/ly0004lypassbyvalue/</guid><description>&lt;blockquote>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide （添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;ul>
+&lt;li>
+&lt;p>形参&amp;amp;&amp;amp;实参&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>实参(&lt;strong>实际参数，Arguments&lt;/strong>)，用于传递给函数/方法的参数，必须有确定的值&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>形参(&lt;strong>形式参数，Parameters&lt;/strong>)，用于定义函数/方法，接收实参，不需要有确定的值&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>String hello &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Hello!&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// hello 为实参&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>sayHello(hello);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// str 为形参&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">sayHello&lt;/span>(String str) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> System.&lt;span style="color:#a6e22e">out&lt;/span>.&lt;span style="color:#a6e22e">println&lt;/span>(str);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>值传递&amp;amp;&amp;amp;引用传递&lt;/p>
+&lt;ul>
+&lt;li>程序设计将实参传递给方法的方式分为两种，值传递：方法&lt;strong>接收实参值的拷&lt;/strong>贝，会&lt;strong>创建副本&lt;/strong>；引用传递：&lt;strong>方法接受的是实参所引用的对象在堆中的地址&lt;/strong>，不会创建副本，对形参的修改将影响到实参&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Java中只有值传递&lt;/strong>，原因：&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>传递基本类型参数&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>(String&lt;span style="color:#f92672">[]&lt;/span> args) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">int&lt;/span> num1 &lt;span style="color:#f92672">=&lt;/span> 10;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">int&lt;/span> num2 &lt;span style="color:#f92672">=&lt;/span> 20;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> swap(num1, num2);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> System.&lt;span style="color:#a6e22e">out&lt;/span>.&lt;span style="color:#a6e22e">println&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;num1 = &amp;#34;&lt;/span> &lt;span style="color:#f92672">+&lt;/span> num1);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> System.&lt;span style="color:#a6e22e">out&lt;/span>.&lt;span style="color:#a6e22e">println&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;num2 = &amp;#34;&lt;/span> &lt;span style="color:#f92672">+&lt;/span> num2);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">swap&lt;/span>(&lt;span style="color:#66d9ef">int&lt;/span> a, &lt;span style="color:#66d9ef">int&lt;/span> b) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">int&lt;/span> temp &lt;span style="color:#f92672">=&lt;/span> a;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> a &lt;span style="color:#f92672">=&lt;/span> b;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> b &lt;span style="color:#f92672">=&lt;/span> temp;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> System.&lt;span style="color:#a6e22e">out&lt;/span>.&lt;span style="color:#a6e22e">println&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;a = &amp;#34;&lt;/span> &lt;span style="color:#f92672">+&lt;/span> a);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> System.&lt;span style="color:#a6e22e">out&lt;/span>.&lt;span style="color:#a6e22e">println&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;b = &amp;#34;&lt;/span> &lt;span style="color:#f92672">+&lt;/span> b);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//输出&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>a &lt;span style="color:#f92672">=&lt;/span> 20
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>b &lt;span style="color:#f92672">=&lt;/span> 10
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>num1 &lt;span style="color:#f92672">=&lt;/span> 10
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>num2 &lt;span style="color:#f92672">=&lt;/span> 20
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>传递引用类型参数 1&lt;/p></description></item><item><title>javaGuide基础3</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Basic/ly0003lyjava_guide_basic_3/</link><pubDate>Sat, 08 Oct 2022 15:23:15 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Basic/ly0003lyjava_guide_basic_3/</guid><description>&lt;blockquote>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide （添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;h2 id="异常">
+ 异常
+ &lt;a class="anchor" href="#%e5%bc%82%e5%b8%b8">#&lt;/a>
+&lt;/h2>
+&lt;ul>
+&lt;li>
+&lt;p>unchecked exceptions (运行时异常)&lt;br>
+checked exceptions (非运行时异常，编译异常）&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Java异常类层次结构图
+&lt;img src="img/ly-20241212141923567.png" alt="ly-20241212141923567" />&lt;/p>
+&lt;p>&lt;img src="img/ly-20241212141923848.png" alt="ly-20241212141923848" />&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Exception和Error有什么区别&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>除了RuntimeException及其子类以外，其他的Exception类及其子类都属于受检查异常&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Exception : 程序本身可以处理的异常（可通过catch捕获）&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>Checked Exception ，受检查异常，必须处理(&lt;strong>catch 或者 throws ，否则编译器通过不了&lt;/strong>)
+IOException，ClassNotFoundException，SQLException，FileNotFoundException&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Unchecked Exception ， 不受检查异常 ， 可以不处理&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;p>（算数异常，类型转换异常，不合法的线程状态异常，下标超出异常，空指针异常，参数类型异常，数字格式异常，不支持操作异常）
+ArithmeticException，ClassCastException，IllegalThreadStateException，IndexOutOfBoundsException&lt;/p>
+&lt;pre>&lt;code> NullPointerException，IllegalArgumentException，NumberFormatException，SecurityException，UnsupportedOperationException 
+
+
+ ```illegal 英[ɪˈliːɡl] 非法的``` 
+ ```Arithmetic 英[əˈrɪθmətɪk] 算术```
+&lt;/code>&lt;/pre>
+&lt;ul>
+&lt;li>
+&lt;p>Error： &lt;strong>程序无法处理&lt;/strong>的错误 ，不建议通过catch 捕获，已办错误发生时JVM会选择线程终止&lt;br>
+OutOfMemoryError （堆，Java heap space），VirtualMachineError，StackOverFlowError，AssertionError （断言），IOError&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Throwable类常用方法&lt;/p>
+&lt;ul>
+&lt;li>String getMessage() //简要描述&lt;/li>
+&lt;li>String toString() //详细&lt;/li>
+&lt;li>String getLocalizedMessage() //本地化信息，如果子类(Throwable的子类)没有覆盖该方法，则与gtMessage() 结果一样&lt;/li>
+&lt;li>void printStackTrace() //打印Throwable对象封装的异常信息&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>try-catch-finally如何使用
+try后面必须要有catch或者finally；无论是否捕获异常，finally都会执行；当在 &lt;code>try&lt;/code> 块或 &lt;code>catch&lt;/code> 块中遇到 &lt;code>return&lt;/code> 语句时，&lt;code>finally&lt;/code> 语句块将在方法返回之前被执行。&lt;/p></description></item><item><title>javaGuide基础2</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Basic/ly0002lyjava_guide_basic_2/</link><pubDate>Thu, 29 Sep 2022 10:16:13 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Basic/ly0002lyjava_guide_basic_2/</guid><description>&lt;blockquote>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide （添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;h2 id="面向对象基础">
+ 面向对象基础
+ &lt;a class="anchor" href="#%e9%9d%a2%e5%90%91%e5%af%b9%e8%b1%a1%e5%9f%ba%e7%a1%80">#&lt;/a>
+&lt;/h2>
+&lt;ul>
+&lt;li>
+&lt;p>区别&lt;/p>
+&lt;ul>
+&lt;li>面向&lt;strong>过程&lt;/strong>把解决问题的&lt;strong>过程拆成一个个方法&lt;/strong>，通过一个个方法的执行解决问题。&lt;/li>
+&lt;li>面向对象会&lt;strong>先抽象出对象&lt;/strong>，然后&lt;strong>用对象执行方法&lt;/strong>的方式解决问题。&lt;/li>
+&lt;li>面向对象编程 &lt;strong>易维护&lt;/strong>、&lt;strong>易复用&lt;/strong>、&lt;strong>易扩展&lt;/strong>&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>对象实例与对象引用的不同&lt;br>
+new 运算符，new 创建对象实例（&lt;strong>对象实例在堆&lt;/strong>内存中），对象引用指向对象实例（&lt;strong>对象引用存放在栈&lt;/strong>内存中）。&lt;/p>
+&lt;p>一个对象引用可以指向 0 个或 1 个对象（一根绳子可以不系气球，也可以系一个气球）;一个对象可以有 n 个引用指向它（可以用 n 条绳子系住一个气球）。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>对象的相等一般比较的是&lt;strong>内存中存放的内容&lt;/strong>是否相等；引用相等一般比较的是他们指向的&lt;strong>内存地址是否相等&lt;/strong>&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>如果一个类没有声明构造方法，该程序能正确执行吗?
+如果我们自己添加了类的构造方法（无论是否有参），Java 就不会再添加默认的无参数的构造方法了&lt;/p>
+&lt;ul>
+&lt;li>构造方法特点：名字与类名相同；没有返回值但不能用void声明构造函数；生成类的对象时自动执行&lt;/li>
+&lt;li>构造方法&lt;strong>不能重写&lt;/strong>(override)，但&lt;strong>能重载&lt;/strong> (overload)&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>面向对象三大特征&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>封装&lt;br>
+把一个对象的状态信息(属性)&lt;strong>隐藏在对象内部&lt;/strong>，&lt;strong>不允许直接访问&lt;/strong>，但提供可以被外界访问的方法来操作属性&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">Student&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">private&lt;/span> &lt;span style="color:#66d9ef">int&lt;/span> id;&lt;span style="color:#75715e">//id属性私有化&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">private&lt;/span> String name;&lt;span style="color:#75715e">//name属性私有化&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">//获取id的方法&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">getId&lt;/span>() {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> id;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">//设置id的方法&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">setId&lt;/span>(&lt;span style="color:#66d9ef">int&lt;/span> id) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">this&lt;/span>.&lt;span style="color:#a6e22e">id&lt;/span> &lt;span style="color:#f92672">=&lt;/span> id;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">//获取name的方法&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> String &lt;span style="color:#a6e22e">getName&lt;/span>() {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> name;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">//设置name的方法&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">setName&lt;/span>(String name) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">this&lt;/span>.&lt;span style="color:#a6e22e">name&lt;/span> &lt;span style="color:#f92672">=&lt;/span> name;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>继承&lt;br>
+不通类型的对象，相互之间有一定数量的共同点，同时每个对象定义了额外的特性使得他们与众不同。继承是&lt;strong>使用已存在的类的定义作为基础&lt;/strong>建立新类的技术&lt;/p></description></item><item><title>javaGuide基础1</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Basic/ly0001lyjava_guide_basic_1/</link><pubDate>Wed, 28 Sep 2022 10:51:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Basic/ly0001lyjava_guide_basic_1/</guid><description>&lt;blockquote>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide （添加小部分笔记）感谢作者!&lt;/p>
+&lt;/blockquote>
+&lt;h2 id="基础概念及常识">
+ 基础概念及常识
+ &lt;a class="anchor" href="#%e5%9f%ba%e7%a1%80%e6%a6%82%e5%bf%b5%e5%8f%8a%e5%b8%b8%e8%af%86">#&lt;/a>
+&lt;/h2>
+&lt;ul>
+&lt;li>
+&lt;p>Java语言特点&lt;/p>
+&lt;ul>
+&lt;li>面向对象（封装、继承、多态）&lt;/li>
+&lt;li>平台无关性（Java虚拟机）&lt;/li>
+&lt;li>等等&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>JVM并非只有一种，只要满足JVM规范，可以开发自己专属JVM&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>JDK与JRE&lt;/p>
+&lt;ul>
+&lt;li>JDK，JavaDevelopmentKit，包含JRE，还有编译器（javac）和工具（如javadoc、jdb）。能够创建和编译程序&lt;/li>
+&lt;li>JRE，Java运行时环境，包括Java虚拟机、Java类库，及Java命令等。但是不能创建新程序&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>字节码，采用字节码的好处&lt;/p>
+&lt;ul>
+&lt;li>Java中，JVM可以理解的代码称为字节码（.class文件)，不面向任何处理器，只面向虚拟机&lt;/li>
+&lt;li>Java程序从源代码到运行的过程
+&lt;img src="img/ly-20241212141922068.png" alt="ly-20241212141922068" />
+&lt;ul>
+&lt;li>java代码必须先编译为字节码，之后呢，.class&amp;ndash;&amp;gt;机器码，这里JVM类加载器先加载字节码文件，然后通过解释器进行解释执行（也就是字节码需要由Java解释器来解释执行）&lt;/li>
+&lt;li>Java解释器是JVM的一部分&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>编译与解释并存&lt;/p>
+&lt;ul>
+&lt;li>编译型：通过编译器将源代码一次性翻译成可被该平台执行的机器码，执行快、开发效率低&lt;/li>
+&lt;li>解释型：通过解释器一句一句的将代码解释成机器代码后执行，执行慢，开发效率高&lt;/li>
+&lt;li>如图
+&lt;img src="img/ly-20241212141922280.png" alt="ly-20241212141922280" />&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>为什么说 Java 语言“编译与解释并存”？&lt;/strong>&lt;/p>
+&lt;p>这是因为 Java 语言既具有编译型语言的特征，也具有解释型语言的特征。因为 Java 程序要经过&lt;strong>先编译，后解释&lt;/strong>两个步骤，由 Java 编写的程序需要先经过编译步骤，生成字节码（&lt;code>.class&lt;/code> 文件），&lt;strong>这种字节码必须由 Java 解释器来解释执行&lt;/strong>。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Java与C++区别&lt;/p>
+&lt;ul>
+&lt;li>没学过C++，Java不提供指针直接访问内存&lt;/li>
+&lt;li>Java为单继承；但是Java支持继承多接口&lt;/li>
+&lt;li>Java有自动内存管理垃圾回收机制（GC），不需要程序员手动释放无用内存&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>注释分为 单行注释、多行注释、文档注释
+&lt;img src="img/ly-20241212141922440.png" alt="ly-20241212141922440" />&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>标识符与关键字
+标识符即名字，关键字则是被赋予特殊含义的标识符&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>自增自减运算符
+当 &lt;code>b = ++a&lt;/code> 时，先自增（自己增加 1），再赋值（赋值给 b）；当 &lt;code>b = a++&lt;/code> 时，先赋值(赋值给 b)，再自增（自己增加 1）&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>continue/break/return&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>continue&lt;/code> ：指跳出当前的这一次循环，继续下一次循环。&lt;/li>
+&lt;li>&lt;code>break&lt;/code> ：指跳出整个循环体，继续执行循环下面的语句。&lt;/li>
+&lt;li>&lt;code>return&lt;/code> 用于跳出所在方法，结束该方法的运行。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>变量&lt;/p>
+&lt;ul>
+&lt;li>成员变量和局部变量
+&lt;ul>
+&lt;li>成员变量可以被 &lt;code>public&lt;/code>,&lt;code>private&lt;/code>,&lt;code>static&lt;/code> 等修饰符所修饰，而局部变量不能被访问控制修饰符及 &lt;code>static&lt;/code> 所修饰；但是，成员变量和局部变量都能被 &lt;code>final&lt;/code> 所修饰&lt;/li>
+&lt;li>从变量在内存中的存储方式来看,如果成员变量是使用 &lt;code>static&lt;/code> 修饰的，那么这个成员变量是属于类的，如果没有使用 &lt;code>static&lt;/code> 修饰，这个成员变量是属于实例的。而对象存在于堆内存，局部变量则存在于栈内存。&lt;/li>
+&lt;li>从变量在内存中的生存时间上看，成员变量是对象的一部分，它随着对象的创建而存在，而局部变量随着方法的调用而自动生成，随着方法的调用结束而消亡（即方法栈弹出后消亡）。&lt;/li>
+&lt;li>final必须显示赋初始值，其他都自动以类型默认值赋值&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>静态变量：被类所有实例共享&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>字符型常量与字符串常量区别&lt;/p></description></item></channel></rss>
