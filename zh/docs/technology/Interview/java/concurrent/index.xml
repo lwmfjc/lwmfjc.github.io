@@ -3,7 +3,7 @@
  &lt;a class="anchor" href="#aqs-%e4%bb%8b%e7%bb%8d">#&lt;/a>
 &lt;/h2>
 &lt;p>AQS 的全称为 &lt;code>AbstractQueuedSynchronizer&lt;/code> ，翻译过来的意思就是抽象队列同步器。这个类在 &lt;code>java.util.concurrent.locks&lt;/code> 包下面。&lt;/p>
-&lt;p>&lt;img src="https://oss.javaguide.cn/github/javaguide/AQS.png" alt="" />&lt;/p>
+&lt;p>&lt;img src="img/1de28206f29fa6f492f8610260d510e0_MD5.jpg" alt="" />&lt;/p>
 &lt;p>AQS 就是一个抽象类，主要用来构建锁和同步器。&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">abstract&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">AbstractQueuedSynchronizer&lt;/span> &lt;span style="color:#66d9ef">extends&lt;/span> AbstractOwnableSynchronizer &lt;span style="color:#66d9ef">implements&lt;/span> java.&lt;span style="color:#a6e22e">io&lt;/span>.&lt;span style="color:#a6e22e">Serializable&lt;/span> {
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
@@ -33,7 +33,7 @@
 &lt;p>&lt;code>Atomic&lt;/code> 类依赖于 CAS（Compare-And-Swap，比较并交换）乐观锁来保证其方法的原子性，而不需要使用传统的锁机制（如 &lt;code>synchronized&lt;/code> 块或 &lt;code>ReentrantLock&lt;/code>）。&lt;/p>
 &lt;p>这篇文章我们只介绍 Atomic 原子类的概念，具体实现原理可以阅读笔者写的这篇文章：
 &lt;a target="_blank" href="./cas.md">CAS 详解&lt;/a>。&lt;/p>
-&lt;p>&lt;img src="https://oss.javaguide.cn/github/javaguide/java/JUC%E5%8E%9F%E5%AD%90%E7%B1%BB%E6%A6%82%E8%A7%88.png" alt="JUC原子类概览" />&lt;/p>
+&lt;p>&lt;img src="img/7ce72f767e05ed93372f3a2d6910230c_MD5.jpg" alt="JUC原子类概览" />&lt;/p>
 &lt;p>根据操作的数据类型，可以将 JUC 包中的原子类分为 4 类：&lt;/p>
 &lt;p>&lt;mark>1、基本类型&lt;/mark>&lt;/p>
 &lt;p>使用原子的方式更新基本类型&lt;/p>
@@ -106,9 +106,9 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">boolean&lt;/span> &lt;span style="color:#a6e22e">compareAndSwapLong&lt;/span>(Object o, &lt;span style="color:#66d9ef">long&lt;/span> offset, &lt;span style="color:#66d9ef">long&lt;/span> expected, &lt;span style="color:#66d9ef">long&lt;/span> x);
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;code>Unsafe&lt;/code>类中的 CAS 方法是&lt;code>native&lt;/code>方法。&lt;code>native&lt;/code>关键字表明这些方法是用本地代码（通常是 C 或 C++）实现的，而不是用 Java 实现的。这些方法直接调用底层的硬件指令来实现原子操作。也就是说，Java 语言并没有直接用 Java 实现 CAS。&lt;/p></description></item><item><title>CompletableFuture 详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/completablefuture-intro/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/completablefuture-intro/</guid><description>&lt;p>实际项目中，一个接口可能需要同时获取多种不同的数据，然后再汇总返回，这种场景还是挺常见的。举个例子：用户请求获取订单信息，可能需要同时获取用户信息、商品详情、物流信息、商品推荐等数据。&lt;/p>
 &lt;p>如果是串行（按顺序依次执行每个任务）执行的话，接口的响应速度会非常慢。考虑到这些任务之间有大部分都是 &lt;mark>无前后顺序关联&lt;/mark> 的，可以 &lt;mark>并行执行&lt;/mark> ，就比如说调用获取商品详情的时候，可以同时调用获取物流信息。通过并行执行多个任务的方式，接口的响应速度会得到大幅优化。&lt;/p>
-&lt;p>&lt;img src="https://oss.javaguide.cn/github/javaguide/high-performance/serial-to-parallel.png" alt="" />&lt;/p>
+&lt;p>&lt;img src="img/69a7bfc227cb782767e26774b276cfdd_MD5.jpg" alt="" />&lt;/p>
 &lt;p>对于存在前后调用顺序关系的任务，可以进行任务编排。&lt;/p>
-&lt;p>&lt;img src="https://oss.javaguide.cn/github/javaguide/high-performance/serial-to-parallel2.png" alt="" />&lt;/p>
+&lt;p>&lt;img src="img/7910a04957d6577ba0cb4b4d73bffded_MD5.jpg" alt="" />&lt;/p>
 &lt;ol>
 &lt;li>获取用户信息之后，才能调用商品详情和物流信息接口。&lt;/li>
 &lt;li>成功获取商品详情和物流信息之后，才能调用商品推荐接口。&lt;/li>
@@ -166,7 +166,7 @@
 &lt;p>我们知道，&lt;code>HashMap&lt;/code> 是线程不安全的，如果在并发场景下使用，一种常见的解决方式是通过 &lt;code>Collections.synchronizedMap()&lt;/code> 方法对 &lt;code>HashMap&lt;/code> 进行包装，使其变为线程安全。不过，这种方式是通过一个全局锁来同步不同线程间的并发访问，会导致严重的性能瓶颈，尤其是在高并发场景下。&lt;/p>
 &lt;p>为了解决这一问题，&lt;code>ConcurrentHashMap&lt;/code> 应运而生，作为 &lt;code>HashMap&lt;/code> 的线程安全版本，它提供了更高效的并发处理能力。&lt;/p>
 &lt;p>在 JDK1.7 的时候，&lt;code>ConcurrentHashMap&lt;/code> 对整个桶数组进行了分割分段(&lt;code>Segment&lt;/code>，分段锁)，每一把锁只锁容器其中一部分数据（下面有示意图），多线程访问容器里不同数据段的数据，就不会存在锁竞争，提高并发访问率。&lt;/p>
-&lt;p>&lt;img src="https://oss.javaguide.cn/github/javaguide/java/collection/java7_concurrenthashmap.png" alt="Java7 ConcurrentHashMap 存储结构" />&lt;/p>
+&lt;p>&lt;img src="img/fdb9e448b5d837729d9c4895b8a6dd22_MD5.jpg" alt="Java7 ConcurrentHashMap 存储结构" />&lt;/p>
 &lt;p>到了 JDK1.8 的时候，&lt;code>ConcurrentHashMap&lt;/code> 取消了 &lt;code>Segment&lt;/code> 分段锁，采用 &lt;code>Node + CAS + synchronized&lt;/code> 来保证并发安全。数据结构跟 &lt;code>HashMap&lt;/code> 1.8 的结构类似，数组+链表/红黑二叉树。Java 8 在链表长度超过一定阈值（8）时将链表（寻址时间复杂度为 O(N)）转换为红黑树（寻址时间复杂度为 O(log(N))）。&lt;/p>
 &lt;p>Java 8 中，锁粒度更细，&lt;code>synchronized&lt;/code> 只锁定当前链表或红黑二叉树的首节点，这样只要 hash 不冲突，就不会产生并发，就不会影响其他 Node 的读写，效率大幅提升。&lt;/p></description></item><item><title>Java 线程池详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/java-thread-pool-summary/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/java-thread-pool-summary/</guid><description>&lt;p>池化技术想必大家已经屡见不鲜了，线程池、数据库连接池、HTTP 连接池等等都是对这个思想的应用。池化技术的思想主要是为了减少每次获取资源的消耗，提高对资源的利用率。&lt;/p>
 &lt;p>这篇文章我会详细介绍一下线程池的基本概念以及核心原理。&lt;/p>
@@ -196,7 +196,7 @@
 &lt;p>执行任务需要实现的 &lt;mark>&lt;code>Runnable&lt;/code> 接口&lt;/mark> 或 &lt;mark>&lt;code>Callable&lt;/code>接口&lt;/mark>。&lt;mark>&lt;code>Runnable&lt;/code> 接口&lt;/mark>或 &lt;mark>&lt;code>Callable&lt;/code> 接口&lt;/mark> 实现类都可以被 &lt;mark>&lt;code>ThreadPoolExecutor&lt;/code>&lt;/mark> 或 &lt;mark>&lt;code>ScheduledThreadPoolExecutor&lt;/code>&lt;/mark> 执行。&lt;/p>
 &lt;p>&lt;mark>2、任务的执行(&lt;code>Executor&lt;/code>)&lt;/mark>&lt;/p>
 &lt;p>如下图所示，包括任务执行机制的核心接口 &lt;mark>&lt;code>Executor&lt;/code>&lt;/mark> ，以及继承自 &lt;code>Executor&lt;/code> 接口的 &lt;mark>&lt;code>ExecutorService&lt;/code> 接口。&lt;code>ThreadPoolExecutor&lt;/code>&lt;/mark> 和 &lt;mark>&lt;code>ScheduledThreadPoolExecutor&lt;/code>&lt;/mark> 这两个关键类实现了 &lt;mark>&lt;code>ExecutorService&lt;/code>&lt;/mark> 接口。&lt;/p>
-&lt;p>&lt;img src="https://oss.javaguide.cn/github/javaguide/java/concurrent/executor-class-diagram.png" alt="" />&lt;/p>
+&lt;p>&lt;img src="img/160ba0206fbb01ac6c2fa3a99cafc290_MD5.jpg" alt="" />&lt;/p>
 &lt;p>这里提了很多底层的类关系，但是，实际上我们需要更多关注的是 &lt;code>ThreadPoolExecutor&lt;/code> 这个类，这个类在我们实际使用线程池的过程中，使用频率还是非常高的。&lt;/p></description></item><item><title>Java 线程池最佳实践</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/java-thread-pool-best-practices/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/java-thread-pool-best-practices/</guid><description>&lt;p>简单总结一下我了解的使用线程池的时候应该注意的东西，网上似乎还没有专门写这方面的文章。&lt;/p>
 &lt;h2 id="1正确声明线程池">
  1、正确声明线程池
@@ -221,7 +221,7 @@
 &lt;/h2>
 &lt;p>你可以通过一些手段来检测线程池的运行状态比如 SpringBoot 中的 Actuator 组件。&lt;/p>
 &lt;p>除此之外，我们还可以利用 &lt;code>ThreadPoolExecutor&lt;/code> 的相关 API 做一个简陋的监控。从下图可以看出， &lt;code>ThreadPoolExecutor&lt;/code>提供了获取线程池当前的线程数和活跃线程数、已经执行完成的任务数、正在排队中的任务数等等。&lt;/p>
-&lt;p>&lt;img src="https://oss.javaguide.cn/github/javaguide/java/concurrent/threadpool-methods-information.png" alt="" />&lt;/p>
+&lt;p>&lt;img src="img/1371ee94fc48c42ad35e7809351eda97_MD5.jpg" alt="" />&lt;/p>
 &lt;p>下面是一个简单的 Demo。&lt;code>printThreadPoolStatus()&lt;/code>会每隔一秒打印出线程池的线程数、活跃线程数、完成的任务数、以及队列中的任务数。&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/**
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"> * 打印线程池的状态
@@ -258,7 +258,7 @@
 &lt;p>进程是程序的一次执行过程，是系统运行程序的基本单位，因此进程是动态的。系统运行一个程序即是一个进程从创建，运行到消亡的过程。&lt;/p>
 &lt;p>在 Java 中，当我们启动 main 函数时其实就是启动了一个 JVM 的进程，而 main 函数所在的线程就是这个进程中的一个线程，也称主线程。&lt;/p>
 &lt;p>如下图所示，在 Windows 中通过查看任务管理器的方式，我们就可以清楚看到 Windows 当前运行的进程（&lt;code>.exe&lt;/code> 文件的运行）。&lt;/p>
-&lt;p>&lt;img src="https://oss.javaguide.cn/github/javaguide/java/%E8%BF%9B%E7%A8%8B%E7%A4%BA%E4%BE%8B%E5%9B%BE%E7%89%87-Windows.png" alt="进程示例图片-Windows" />&lt;/p>
+&lt;p>&lt;img src="img/46845554e7b944990299924ba33b5178_MD5.jpg" alt="进程示例图片-Windows" />&lt;/p>
 &lt;h4 id="何为线程">
  何为线程?
  &lt;a class="anchor" href="#%e4%bd%95%e4%b8%ba%e7%ba%bf%e7%a8%8b">#&lt;/a>
@@ -326,8 +326,8 @@
  &lt;a class="anchor" href="#%e5%a6%82%e4%bd%95%e4%bf%9d%e8%af%81%e5%8f%98%e9%87%8f%e7%9a%84%e5%8f%af%e8%a7%81%e6%80%a7">#&lt;/a>
 &lt;/h3>
 &lt;p>在 Java 中，&lt;code>volatile&lt;/code> 关键字可以保证变量的可见性，如果我们将变量声明为 &lt;mark>&lt;code>volatile&lt;/code>&lt;/mark> ，这就指示 JVM，这个变量是共享且不稳定的，每次使用它都到主存中进行读取。&lt;/p>
-&lt;p>&lt;img src="https://oss.javaguide.cn/github/javaguide/java/concurrent/jmm.png" alt="JMM(Java 内存模型)" />&lt;/p>
-&lt;p>&lt;img src="https://oss.javaguide.cn/github/javaguide/java/concurrent/jmm2.png" alt="JMM(Java 内存模型)强制在主存中进行读取" />&lt;/p>
+&lt;p>&lt;img src="img/e3f3c4d0ec455f4d0368ee2654c7c59e_MD5.jpg" alt="JMM(Java 内存模型" />&lt;/p>
+&lt;p>&lt;img src="img/375293e35dd2bc548effbf2e3e6c026a_MD5.jpg" alt="JMM(Java 内存模型)强制在主存中进行读取" />&lt;/p>
 &lt;p>&lt;code>volatile&lt;/code> 关键字其实并非是 Java 语言特有的，在 C 语言里也有，它最原始的意义就是禁用 CPU 缓存。如果我们将一个变量使用 &lt;code>volatile&lt;/code> 修饰，这就指示 编译器，这个变量是共享且不稳定的，每次使用它都到主存中进行读取。&lt;/p>
 &lt;p>&lt;code>volatile&lt;/code> 关键字能保证数据的可见性，但不能保证数据的原子性。&lt;code>synchronized&lt;/code> 关键字两者都能保证。&lt;/p>
 &lt;h3 id="如何禁止指令重排序">
@@ -356,7 +356,7 @@
 &lt;p>&lt;mark>🐛 修正（参见：
 &lt;a target="_blank" href="https://github.com/Snailclimb/JavaGuide/issues/1848">issue#1848&lt;/a>）&lt;/mark>：对 CPU 缓存模型绘图不严谨的地方进行完善。&lt;/p>
 &lt;/blockquote>
-&lt;p>&lt;img src="https://oss.javaguide.cn/github/javaguide/java/concurrent/cpu-cache.png" alt="CPU 缓存模型示意图" />&lt;/p>
+&lt;p>&lt;img src="img/adb0e6b10759b7bd380fe5e908a559d1_MD5.jpg" alt="CPU 缓存模型示意图" />&lt;/p>
 &lt;p>现代的 CPU Cache 通常分为三层，分别叫 L1,L2,L3 Cache。有些 CPU 可能还有 L4 Cache，这里不做讨论，并不常见&lt;/p>
 &lt;p>&lt;mark>CPU Cache 的工作方式：&lt;/mark> 先复制一份数据到 CPU Cache 中，当 CPU 需要用到的时候就可以直接从 CPU Cache 中读取数据，当运算完成后，再将运算得到的数据写回 Main Memory 中。但是，这样存在 &lt;mark>内存缓存不一致性的问题&lt;/mark> ！比如我执行一个 i++ 操作的话，如果两个线程同时执行的话，假设两个线程从 CPU Cache 中读取的 i=1，两个线程做了 i++ 运算完之后再写回 Main Memory 之后 i=2，而正确结果应该是 i=3。&lt;/p></description></item><item><title>ThreadLocal 详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/threadlocal/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/threadlocal/</guid><description>&lt;blockquote>
 &lt;p>本文来自一枝花算不算浪漫投稿， 原文地址：
@@ -431,7 +431,7 @@
  &lt;a class="anchor" href="#11-reentrantlock-%e7%89%b9%e6%80%a7%e6%a6%82%e8%a7%88">#&lt;/a>
 &lt;/h3>
 &lt;p>ReentrantLock 意思为可重入锁，指的是一个线程能够对一个临界资源重复加锁。为了帮助大家更好地理解 ReentrantLock 的特性，我们先将 ReentrantLock 跟常用的 Synchronized 进行比较，其特性如下（蓝色部分为本篇文章主要剖析的点）：&lt;/p>
-&lt;p>&lt;img src="https://p0.meituan.net/travelcube/412d294ff5535bbcddc0d979b2a339e6102264.png" alt="" />&lt;/p>
+&lt;p>&lt;img src="img/5b1f54f985721d5a7fbff2f32bee7d53_MD5.jpg" alt="" />&lt;/p>
 &lt;p>下面通过伪代码，进行更加直观的比较：&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// ==========================Synchronized的使用方式==========================&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// 1.用于代码块&lt;/span>
@@ -494,7 +494,7 @@
 &lt;/h2>
 &lt;p>乐观锁总是假设最好的情况，认为共享资源每次被访问的时候不会出现问题，线程可以不停地执行，无需加锁也无需等待，只是在提交修改的时候去验证对应的资源（也就是数据）是否被其它线程修改了（具体方法可以使用版本号机制或 CAS 算法）。&lt;/p>
 &lt;p>在 Java 中&lt;code>java.util.concurrent.atomic&lt;/code>包下面的原子变量类（比如&lt;code>AtomicInteger&lt;/code>、&lt;code>LongAdder&lt;/code>）就是使用了乐观锁的一种实现方式 &lt;mark>CAS&lt;/mark> 实现的。
-&lt;img src="https://oss.javaguide.cn/github/javaguide/java/JUC%E5%8E%9F%E5%AD%90%E7%B1%BB%E6%A6%82%E8%A7%88-20230814005211968.png" alt="JUC原子类概览" />&lt;/p>
+&lt;img src="img/7ce72f767e05ed93372f3a2d6910230c_MD5.jpg" alt="JUC原子类概览" />&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// LongAdder 在高并发场景下会比 AtomicInteger 和 AtomicLong 的性能更好&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// 代价就是会消耗更多的内存空间（空间换时间）&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>LongAdder sum &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> LongAdder();
@@ -528,7 +528,7 @@
 &lt;p>在引入虚拟线程之前，&lt;code>java.lang.Thread&lt;/code> 包已经支持所谓的平台线程（Platform Thread），也就是没有虚拟线程之前，我们一直使用的线程。JVM 调度程序通过平台线程（载体线程）来管理虚拟线程，一个平台线程可以在不同的时间执行不同的虚拟线程（多个虚拟线程挂载在一个平台线程上），当虚拟线程被阻塞或等待时，平台线程可以切换到执行另一个虚拟线程。&lt;/p>
 &lt;p>虚拟线程、平台线程和系统内核线程的关系图如下所示（图源：
 &lt;a target="_blank" href="https://medium.com/javarevisited/how-to-use-java-19-virtual-threads-c16a32bad5f7">How to Use Java 19 Virtual Threads&lt;/a>）：&lt;/p>
-&lt;p>&lt;img src="https://oss.javaguide.cn/github/javaguide/java/new-features/virtual-threads-platform-threads-kernel-threads-relationship.png" alt="虚拟线程、平台线程和系统内核线程的关系" />&lt;/p>
+&lt;p>&lt;img src="img/b0cd042a86660ba00e430b15d400f9d8_MD5.jpg" alt="虚拟线程、平台线程和系统内核线程的关系" />&lt;/p>
 &lt;p>关于平台线程和系统内核线程的对应关系多提一点：在 Windows 和 Linux 等主流操作系统中，Java 线程采用的是一对一的线程模型，也就是一个平台线程对应一个系统内核线程。Solaris 系统是一个特例，HotSpot VM 在 Solaris 上支持多对多和一对一。具体可以参考 R 大的回答: 
 &lt;a target="_blank" href="https://www.zhihu.com/question/23096638/answer/29617153">JVM 中的线程模型是用户级的么？&lt;/a>。&lt;/p>
 &lt;h2 id="虚拟线程有什么优点和缺点">

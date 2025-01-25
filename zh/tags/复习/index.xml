@@ -1780,7 +1780,7 @@ QUEUED
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">复制代码&lt;/span>
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>其中&lt;code>SOCK_STREAM&lt;/code>，是指使用&lt;strong>字节流&lt;/strong>传输数据，说白了就是&lt;strong>TCP协议&lt;/strong>。&lt;/p>
 &lt;p>在定义了socket之后，我们就可以愉快的对这个socket进行操作，比如用&lt;code>bind()&lt;/code>绑定IP端口，用&lt;code>connect()&lt;/code>发起建连。&lt;/p>
-&lt;p>&lt;img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/f410977cda814d32b0eff3645c385a8a~tplv-k3u1fbpfcp-zoom-in-crop-mark:4536:0:0:0.awebp" alt="握手建立连接流程" />&lt;/p>
+&lt;p>&lt;img src="img/51d1bda27fea39bd96ed660ee4af549d_MD5.gif" alt="握手建立连接流程" />&lt;/p>
 &lt;p>在连接建立之后，我们就可以使用&lt;code>send()&lt;/code>发送数据，&lt;code>recv()&lt;/code>接收数据。&lt;/p>
 &lt;p>光这样一个纯裸的TCP连接，就可以做到收发数据了，那是不是就够了？&lt;/p>
 &lt;p>不行，这么用会有问题。&lt;/p>
@@ -1789,18 +1789,18 @@ QUEUED
  &lt;a class="anchor" href="#%e4%bd%bf%e7%94%a8%e7%ba%af%e8%a3%b8tcp%e4%bc%9a%e6%9c%89%e4%bb%80%e4%b9%88%e9%97%ae%e9%a2%98">#&lt;/a>
 &lt;/h3>
 &lt;p>八股文常背，TCP是有三个特点，&lt;strong>面向连接&lt;/strong>、&lt;strong>可靠&lt;/strong>、基于&lt;strong>字节流&lt;/strong>。&lt;/p>
-&lt;p>&lt;img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/acb4508111cb47d8a3df6734d04818bc~tplv-k3u1fbpfcp-zoom-in-crop-mark:4536:0:0:0.awebp" alt="TCP是什么" />&lt;/p>
+&lt;p>&lt;img src="img/9b2a2a9eb7998867213b85c601e20513_MD5.webp" alt="TCP是什么" />&lt;/p>
 &lt;p>这三个特点真的概括的&lt;strong>非常精辟&lt;/strong>，这个八股文我们没白背。&lt;/p>
 &lt;p>每个特点展开都能聊一篇文章，而今天我们需要关注的是&lt;strong>基于字节流&lt;/strong>这一点。&lt;/p>
 &lt;p>字节流可以理解为一个双向的通道里流淌的数据，这个&lt;strong>数据&lt;/strong>其实就是我们常说的二进制数据，简单来说就是一大堆 &lt;strong>01 串&lt;/strong>。纯裸TCP收发的这些 01 串之间是&lt;strong>没有任何边界&lt;/strong>的，你根本不知道到哪个地方才算一条完整消息。
 &lt;img src="img/ly-20241212142033022.png" alt="" />&lt;/p>
 &lt;p>正因为这个没有&lt;strong>任何边界&lt;/strong>的特点，所以当我们选择使用TCP发送 &lt;strong>&amp;ldquo;夏洛&amp;quot;和&amp;quot;特烦恼&amp;rdquo;&lt;/strong> 的时候，接收端收到的就是 &lt;strong>&amp;ldquo;夏洛特烦恼&amp;rdquo;&lt;/strong> ，这时候接收端没发区分你是想要表达 &lt;strong>&amp;ldquo;夏洛&amp;rdquo;+&amp;ldquo;特烦恼&amp;rdquo;&lt;/strong> 还是 &lt;strong>&amp;ldquo;夏洛特&amp;rdquo;+&amp;ldquo;烦恼&amp;rdquo;&lt;/strong> 。&lt;/p>
-&lt;p>&lt;img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/4e120d0f1152419585565f693e744a3a~tplv-k3u1fbpfcp-zoom-in-crop-mark:4536:0:0:0.awebp" alt="消息对比" />&lt;/p>
+&lt;p>&lt;img src="img/babad254069eade7c0df5d9db1635c92_MD5.webp" alt="消息对比" />&lt;/p>
 &lt;p>这就是所谓的&lt;strong>粘包问题&lt;/strong>，之前也写过一篇专门的
 &lt;a target="_blank" href="https://link.juejin.cn/?target=https%3A%2F%2Fmp.weixin.qq.com%2Fs%2F0-YBxU1cSbDdzcZEZjmQYA">文章&lt;/a>聊过这个问题。&lt;/p>
 &lt;p>说这个的目的是为了告诉大家，纯裸TCP是不能直接拿来用的，你需要在这个基础上加入一些&lt;strong>自定义的规则&lt;/strong>，用于区分&lt;strong>消息边界&lt;/strong>。&lt;/p>
 &lt;p>于是我们会把每条要发送的数据都包装一下，比如加入&lt;strong>消息头&lt;/strong>，&lt;strong>消息头里写清楚一个完整的包长度是多少&lt;/strong>，根据这个长度可以继续接收数据，截取出来后它们就是我们真正要传输的&lt;strong>消息体&lt;/strong>。&lt;/p>
-&lt;p>&lt;img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/cb29659d4907446e9f70551c44c6369f~tplv-k3u1fbpfcp-zoom-in-crop-mark:4536:0:0:0.awebp" alt="消息边界长度标志" />&lt;/p>
+&lt;p>&lt;img src="img/7f2c3dd6224e63c56e4977708244e594_MD5.webp" alt="消息边界长度标志" />&lt;/p>
 &lt;p>而这里头提到的&lt;strong>消息头&lt;/strong>，还可以放各种东西，比如消息体是否被压缩过和消息体格式之类的，只要上下游都约定好了，互相都认就可以了，这就是所谓的&lt;strong>协议。&lt;/strong>&lt;/p>
 &lt;p>每个使用TCP的项目都可能会定义一套类似这样的协议解析标准，他们可能&lt;strong>有区别，但原理都类似&lt;/strong>。&lt;/p>
 &lt;p>&lt;strong>于是基于TCP，就衍生了非常多的协议，比如HTTP和RPC。&lt;/strong>&lt;/p>
@@ -1809,7 +1809,7 @@ QUEUED
  &lt;a class="anchor" href="#http%e5%92%8crpc">#&lt;/a>
 &lt;/h3>
 &lt;p>我们回过头来看网络的分层图。&lt;/p>
-&lt;p>&lt;img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/04b603b5bd2443209233deea87816161~tplv-k3u1fbpfcp-zoom-in-crop-mark:4536:0:0:0.awebp" alt="四层网络协议" />&lt;/p>
+&lt;p>&lt;img src="img/dea756ded9c20f2a06905d73e33e08c9_MD5.webp" alt="四层网络协议" />&lt;/p>
 &lt;p>&lt;strong>TCP是传输层的协议&lt;/strong>，而基于TCP造出来的HTTP和&lt;strong>各类&lt;/strong>RPC协议，它们都只是定义了不同消息格式的&lt;strong>应用层协议&lt;/strong>而已。&lt;/p>
 &lt;p>&lt;strong>HTTP&lt;/strong>协议（&lt;strong>H&lt;/strong>yper &lt;strong>T&lt;/strong>ext &lt;strong>T&lt;/strong>ransfer &lt;strong>P&lt;/strong>rotocol），又叫做&lt;strong>超文本传输协议&lt;/strong>。我们用的比较多，平时上网在浏览器上敲个网址就能访问网页，这里用到的就是HTTP协议。&lt;/p>
 &lt;p>&lt;img src="img/ly-20241212142033146.png" alt="" />&lt;/p></description></item><item><title>rpc基础及面试题</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lydly_distributed_system/ly05ly_rpc-intro/</link><pubDate>Sat, 11 Feb 2023 19:41:34 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lydly_distributed_system/ly05ly_rpc-intro/</guid><description>&lt;blockquote>
@@ -2081,14 +2081,14 @@ QUEUED
  &lt;a class="anchor" href="#1-sqlsession%e5%88%9d%e8%af%86">#&lt;/a>
 &lt;/h4>
 &lt;p>SqlSession在一开始就介绍过是高级接口，类似于JDBC操作的connection对象，它包装了数据库连接，通过这个接口我们可以实现增删改查，提交/回滚事物，关闭连接，获取代理类等操作。SqlSession是个接口，其默认实现是DefaultSqlSession。SqlSession是线程不安全的，每个线程都会有自己唯一的SqlSession，不同线程间调用同一个SqlSession会出现问题，因此在使用完后需要close掉。&lt;/p>
-&lt;p>&lt;img src="https:////upload-images.jianshu.io/upload_images/1183379-d5d3c96bed2f4352.png?imageMogr2/auto-orient/strip%7cimageView2/2/w/413/format/webp" alt="img" />&lt;/p>
+&lt;p>&lt;img src="img/6aa056bf515cfd3c4bc96542f4b99250_MD5.webp" alt="img" />&lt;/p>
 &lt;p>SqlSession的方法&lt;/p>
 &lt;h4 id="2-sqlsession的创建">
  2. SqlSession的创建
  &lt;a class="anchor" href="#2-sqlsession%e7%9a%84%e5%88%9b%e5%bb%ba">#&lt;/a>
 &lt;/h4>
 &lt;p>SqlSessionFactoryBuilder的build()方法使用建造者模式创建了SqlSessionFactory接口对象，SqlSessionFactory接口的默认实现是DefaultSqlSessionFactory。SqlSessionFactory使用实例工厂模式来创建SqlSession对象。SqlSession,SqlSessionFactory,SqlSessionFactoryBuilder的关系如下(图画得有点丑&amp;hellip;)：&lt;/p>
-&lt;p>&lt;img src="https:////upload-images.jianshu.io/upload_images/1183379-8e031424b84ca308.png?imageMogr2/auto-orient/strip%7cimageView2/2/w/1200/format/webp" alt="img" />&lt;/p>
+&lt;p>&lt;img src="img/dda341fb9f426f5b159a42798973cbba_MD5.webp" alt="img" />&lt;/p>
 &lt;p>类图&lt;/p>
 &lt;p>DefaultSqlSessionFactory中openSession是有两种方法一种是openSessionFromDataSource，另一种是openSessionFromConnection。这两种是什么区别呢？从字面意义上将，一种是从数据源中获取SqlSession对象，一种是由已有连接获取SqlSession。SqlSession实际是对数据库连接的一层包装，数据库连接是个珍贵的资源，如果频繁的创建销毁将会影响吞吐量，因此使用数据库连接池化技术就可以复用数据库连接了。因此openSessionFromDataSource会从数据库连接池中获取一个连接，然后包装成一个SqlSession对像。openSessionFromConnection则是直接包装已有的连接并返回SqlSession对像。&lt;/p>
 &lt;p>openSessionFromDataSource 主要经历了以下几步：&lt;/p>

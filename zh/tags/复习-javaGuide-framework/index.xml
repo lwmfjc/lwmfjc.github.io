@@ -10,14 +10,14 @@
  &lt;a class="anchor" href="#1-sqlsession%e5%88%9d%e8%af%86">#&lt;/a>
 &lt;/h4>
 &lt;p>SqlSession在一开始就介绍过是高级接口，类似于JDBC操作的connection对象，它包装了数据库连接，通过这个接口我们可以实现增删改查，提交/回滚事物，关闭连接，获取代理类等操作。SqlSession是个接口，其默认实现是DefaultSqlSession。SqlSession是线程不安全的，每个线程都会有自己唯一的SqlSession，不同线程间调用同一个SqlSession会出现问题，因此在使用完后需要close掉。&lt;/p>
-&lt;p>&lt;img src="https:////upload-images.jianshu.io/upload_images/1183379-d5d3c96bed2f4352.png?imageMogr2/auto-orient/strip%7cimageView2/2/w/413/format/webp" alt="img" />&lt;/p>
+&lt;p>&lt;img src="img/6aa056bf515cfd3c4bc96542f4b99250_MD5.webp" alt="img" />&lt;/p>
 &lt;p>SqlSession的方法&lt;/p>
 &lt;h4 id="2-sqlsession的创建">
  2. SqlSession的创建
  &lt;a class="anchor" href="#2-sqlsession%e7%9a%84%e5%88%9b%e5%bb%ba">#&lt;/a>
 &lt;/h4>
 &lt;p>SqlSessionFactoryBuilder的build()方法使用建造者模式创建了SqlSessionFactory接口对象，SqlSessionFactory接口的默认实现是DefaultSqlSessionFactory。SqlSessionFactory使用实例工厂模式来创建SqlSession对象。SqlSession,SqlSessionFactory,SqlSessionFactoryBuilder的关系如下(图画得有点丑&amp;hellip;)：&lt;/p>
-&lt;p>&lt;img src="https:////upload-images.jianshu.io/upload_images/1183379-8e031424b84ca308.png?imageMogr2/auto-orient/strip%7cimageView2/2/w/1200/format/webp" alt="img" />&lt;/p>
+&lt;p>&lt;img src="img/dda341fb9f426f5b159a42798973cbba_MD5.webp" alt="img" />&lt;/p>
 &lt;p>类图&lt;/p>
 &lt;p>DefaultSqlSessionFactory中openSession是有两种方法一种是openSessionFromDataSource，另一种是openSessionFromConnection。这两种是什么区别呢？从字面意义上将，一种是从数据源中获取SqlSession对象，一种是由已有连接获取SqlSession。SqlSession实际是对数据库连接的一层包装，数据库连接是个珍贵的资源，如果频繁的创建销毁将会影响吞吐量，因此使用数据库连接池化技术就可以复用数据库连接了。因此openSessionFromDataSource会从数据库连接池中获取一个连接，然后包装成一个SqlSession对像。openSessionFromConnection则是直接包装已有的连接并返回SqlSession对像。&lt;/p>
 &lt;p>openSessionFromDataSource 主要经历了以下几步：&lt;/p>
