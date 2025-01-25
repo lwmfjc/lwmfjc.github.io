@@ -4,18 +4,18 @@
 &lt;/h2>
 &lt;p>JWT （JSON Web Token） 是目前最流行的跨域认证解决方案，是一种基于 Token 的认证授权机制。 从 JWT 的全称可以看出，JWT 本身也是 Token，一种规范化之后的 JSON 结构的 Token。&lt;/p>
 &lt;p>JWT 自身包含了身份验证所需要的所有信息，因此，我们的服务器不需要存储 Session 信息。这显然增加了系统的可用性和伸缩性，大大减轻了服务端的压力。&lt;/p>
-&lt;p>可以看出，&lt;strong>JWT 更符合设计 RESTful API 时的「Stateless（无状态）」原则&lt;/strong> 。&lt;/p>
+&lt;p>可以看出，&lt;mark>JWT 更符合设计 RESTful API 时的「Stateless（无状态）」原则&lt;/mark> 。&lt;/p>
 &lt;p>并且， 使用 JWT 认证可以有效避免 CSRF 攻击，因为 JWT 一般是存在在 localStorage 中，使用 JWT 进行身份验证的过程中是不会涉及到 Cookie 的。&lt;/p>
 &lt;p>我在 
-&lt;a href="./advantages-and-disadvantages-of-jwt.md">JWT 优缺点分析&lt;/a>这篇文章中有详细介绍到使用 JWT 做身份认证的优势和劣势。&lt;/p>
+&lt;a target="_blank" href="./advantages-and-disadvantages-of-jwt.md">JWT 优缺点分析&lt;/a>这篇文章中有详细介绍到使用 JWT 做身份认证的优势和劣势。&lt;/p>
 &lt;p>下面是 
-&lt;a href="https://tools.ietf.org/html/rfc7519">RFC 7519&lt;/a> 对 JWT 做的较为正式的定义。&lt;/p>
+&lt;a target="_blank" href="https://tools.ietf.org/html/rfc7519">RFC 7519&lt;/a> 对 JWT 做的较为正式的定义。&lt;/p>
 &lt;blockquote>
 &lt;p>JSON Web Token (JWT) is a compact, URL-safe means of representing claims to be transferred between two parties. The claims in a JWT are encoded as a JSON object that is used as the payload of a JSON Web Signature (JWS) structure or as the plaintext of a JSON Web Encryption (JWE) structure, enabling the claims to be digitally signed or integrity protected with a Message Authentication Code (MAC) and/or encrypted. ——
-&lt;a href="https://tools.ietf.org/html/rfc7519">JSON Web Token (JWT)&lt;/a>&lt;/p></description></item><item><title>JWT 身份认证优缺点分析</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/system-design/security/advantages-and-disadvantages-of-jwt/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/system-design/security/advantages-and-disadvantages-of-jwt/</guid><description>&lt;p>校招面试中，遇到大部分的候选者认证登录这块用的都是 JWT。提问 JWT 的概念性问题以及使用 JWT 的原因，基本都能回答一些，但当问到 JWT 存在的一些问题和解决方案时，只有一小部分候选者回答的还可以。&lt;/p>
+&lt;a target="_blank" href="https://tools.ietf.org/html/rfc7519">JSON Web Token (JWT)&lt;/a>&lt;/p></description></item><item><title>JWT 身份认证优缺点分析</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/system-design/security/advantages-and-disadvantages-of-jwt/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/system-design/security/advantages-and-disadvantages-of-jwt/</guid><description>&lt;p>校招面试中，遇到大部分的候选者认证登录这块用的都是 JWT。提问 JWT 的概念性问题以及使用 JWT 的原因，基本都能回答一些，但当问到 JWT 存在的一些问题和解决方案时，只有一小部分候选者回答的还可以。&lt;/p>
 &lt;p>JWT 不是银弹，也有很多缺陷，很多时候并不是最优的选择。这篇文章，我们一起探讨一下 JWT 身份认证的优缺点以及常见问题的解决办法，来看看为什么很多人不再推荐使用 JWT 了。&lt;/p>
 &lt;p>关于 JWT 的基本概念介绍请看我写的这篇文章： 
-&lt;a href="https://javaguide.cn/system-design/security/jwt-intro.html">JWT 基本概念详解&lt;/a>。&lt;/p>
+&lt;a target="_blank" href="https://javaguide.cn/system-design/security/jwt-intro.html">JWT 基本概念详解&lt;/a>。&lt;/p>
 &lt;h2 id="jwt-的优势">
  JWT 的优势
  &lt;a class="anchor" href="#jwt-%e7%9a%84%e4%bc%98%e5%8a%bf">#&lt;/a>
@@ -26,15 +26,15 @@
  &lt;a class="anchor" href="#%e6%97%a0%e7%8a%b6%e6%80%81">#&lt;/a>
 &lt;/h3>
 &lt;p>JWT 自身包含了身份验证所需要的所有信息，因此，我们的服务器不需要存储 JWT 信息。这显然增加了系统的可用性和伸缩性，大大减轻了服务端的压力。&lt;/p>
-&lt;p>不过，也正是由于 JWT 的无状态，也导致了它最大的缺点：&lt;strong>不可控！&lt;/strong>&lt;/p>
+&lt;p>不过，也正是由于 JWT 的无状态，也导致了它最大的缺点：&lt;mark>不可控！&lt;/mark>&lt;/p>
 &lt;p>就比如说，我们想要在 JWT 有效期内废弃一个 JWT 或者更改它的权限的话，并不会立即生效，通常需要等到有效期过后才可以。再比如说，当用户 Logout 的话，JWT 也还有效。除非，我们在后端增加额外的处理逻辑比如将失效的 JWT 存储起来，后端先验证 JWT 是否有效再进行处理。具体的解决办法，我们会在后面的内容中详细介绍到，这里只是简单提一下。&lt;/p>
 &lt;h3 id="有效避免了-csrf-攻击">
  有效避免了 CSRF 攻击
  &lt;a class="anchor" href="#%e6%9c%89%e6%95%88%e9%81%bf%e5%85%8d%e4%ba%86-csrf-%e6%94%bb%e5%87%bb">#&lt;/a>
 &lt;/h3>
-&lt;p>&lt;strong>CSRF（Cross Site Request Forgery）&lt;/strong> 一般被翻译为 &lt;strong>跨站请求伪造&lt;/strong>，属于网络攻击领域范围。相比于 SQL 脚本注入、XSS 等安全攻击方式，CSRF 的知名度并没有它们高。但是，它的确是我们开发系统时必须要考虑的安全隐患。就连业内技术标杆 Google 的产品 Gmail 也曾在 2007 年的时候爆出过 CSRF 漏洞，这给 Gmail 的用户造成了很大的损失。&lt;/p></description></item><item><title>SSO 单点登录详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/system-design/security/sso-intro/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/system-design/security/sso-intro/</guid><description>&lt;blockquote>
+&lt;p>&lt;mark>CSRF（Cross Site Request Forgery）&lt;/mark> 一般被翻译为 &lt;mark>跨站请求伪造&lt;/mark>，属于网络攻击领域范围。相比于 SQL 脚本注入、XSS 等安全攻击方式，CSRF 的知名度并没有它们高。但是，它的确是我们开发系统时必须要考虑的安全隐患。就连业内技术标杆 Google 的产品 Gmail 也曾在 2007 年的时候爆出过 CSRF 漏洞，这给 Gmail 的用户造成了很大的损失。&lt;/p></description></item><item><title>SSO 单点登录详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/system-design/security/sso-intro/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/system-design/security/sso-intro/</guid><description>&lt;blockquote>
 &lt;p>本文授权转载自：
-&lt;a href="https://ken.io/note/sso-design-implement">https://ken.io/note/sso-design-implement&lt;/a> 作者：ken.io&lt;/p>
+&lt;a target="_blank" href="https://ken.io/note/sso-design-implement">https://ken.io/note/sso-design-implement&lt;/a> 作者：ken.io&lt;/p>
 &lt;/blockquote>
 &lt;h2 id="sso-介绍">
  SSO 介绍
@@ -46,27 +46,27 @@
 &lt;/h3>
 &lt;p>SSO 英文全称 Single Sign On，单点登录。SSO 是在多个应用系统中，用户只需要登录一次就可以访问所有相互信任的应用系统。&lt;/p>
 &lt;p>例如你登录网易账号中心（
-&lt;a href="https://reg.163.com/">https://reg.163.com/&lt;/a> ）之后访问以下站点都是登录状态。&lt;/p>
+&lt;a target="_blank" href="https://reg.163.com/">https://reg.163.com/&lt;/a> ）之后访问以下站点都是登录状态。&lt;/p>
 &lt;ul>
 &lt;li>网易直播 
-&lt;a href="https://v.163.com/">https://v.163.com&lt;/a>&lt;/li>
+&lt;a target="_blank" href="https://v.163.com/">https://v.163.com&lt;/a>&lt;/li>
 &lt;li>网易博客 
-&lt;a href="https://blog.163.com/">https://blog.163.com&lt;/a>&lt;/li>
+&lt;a target="_blank" href="https://blog.163.com/">https://blog.163.com&lt;/a>&lt;/li>
 &lt;li>网易花田 
-&lt;a href="https://love.163.com/">https://love.163.com&lt;/a>&lt;/li>
+&lt;a target="_blank" href="https://love.163.com/">https://love.163.com&lt;/a>&lt;/li>
 &lt;li>网易考拉 
-&lt;a href="https://www.kaola.com/">https://www.kaola.com&lt;/a>&lt;/li>
+&lt;a target="_blank" href="https://www.kaola.com/">https://www.kaola.com&lt;/a>&lt;/li>
 &lt;li>网易 Lofter 
-&lt;a href="http://www.lofter.com/">http://www.lofter.com&lt;/a>&lt;/li>
+&lt;a target="_blank" href="http://www.lofter.com/">http://www.lofter.com&lt;/a>&lt;/li>
 &lt;/ul>
 &lt;h3 id="sso-有什么好处">
  SSO 有什么好处？
  &lt;a class="anchor" href="#sso-%e6%9c%89%e4%bb%80%e4%b9%88%e5%a5%bd%e5%a4%84">#&lt;/a>
 &lt;/h3>
 &lt;ol>
-&lt;li>&lt;strong>用户角度&lt;/strong> :用户能够做到一次登录多次使用，无需记录多套用户名和密码，省心。&lt;/li>
-&lt;li>&lt;strong>系统管理员角度&lt;/strong> : 管理员只需维护好一个统一的账号中心就可以了，方便。&lt;/li>
-&lt;li>&lt;strong>新系统开发角度:&lt;/strong> 新系统开发时只需直接对接统一的账号中心即可，简化开发流程，省时。&lt;/li>
+&lt;li>&lt;mark>用户角度&lt;/mark> :用户能够做到一次登录多次使用，无需记录多套用户名和密码，省心。&lt;/li>
+&lt;li>&lt;mark>系统管理员角度&lt;/mark> : 管理员只需维护好一个统一的账号中心就可以了，方便。&lt;/li>
+&lt;li>&lt;mark>新系统开发角度:&lt;/mark> 新系统开发时只需直接对接统一的账号中心即可，简化开发流程，省时。&lt;/li>
 &lt;/ol>
 &lt;h2 id="sso-设计与实现">
  SSO 设计与实现
@@ -132,8 +132,8 @@
  &lt;a class="anchor" href="#%e7%94%a8%e6%88%b7%e7%99%bb%e5%bd%95%e7%8a%b6%e6%80%81%e7%9a%84%e5%ad%98%e5%82%a8%e4%b8%8e%e6%a0%a1%e9%aa%8c">#&lt;/a>
 &lt;/h3>
 &lt;p>常见的 Web 框架对于 Session 的实现都是生成一个 SessionId 存储在浏览器 Cookie 中。然后将 Session 内容存储在服务器端内存中，这个 
-&lt;a href="https://ken.io/">ken.io&lt;/a> 在之前
-&lt;a href="https://ken.io/note/session-principle-skill">Session 工作原理&lt;/a>中也提到过。整体也是借鉴这个思路。&lt;/p></description></item><item><title>常见加密算法总结</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/system-design/security/encryption-algorithms/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/system-design/security/encryption-algorithms/</guid><description>&lt;p>加密算法是一种用数学方法对数据进行变换的技术，目的是保护数据的安全，防止被未经授权的人读取或修改。加密算法可以分为三大类：对称加密算法、非对称加密算法和哈希算法（也叫摘要算法）。&lt;/p>
+&lt;a target="_blank" href="https://ken.io/">ken.io&lt;/a> 在之前
+&lt;a target="_blank" href="https://ken.io/note/session-principle-skill">Session 工作原理&lt;/a>中也提到过。整体也是借鉴这个思路。&lt;/p></description></item><item><title>常见加密算法总结</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/system-design/security/encryption-algorithms/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/system-design/security/encryption-algorithms/</guid><description>&lt;p>加密算法是一种用数学方法对数据进行变换的技术，目的是保护数据的安全，防止被未经授权的人读取或修改。加密算法可以分为三大类：对称加密算法、非对称加密算法和哈希算法（也叫摘要算法）。&lt;/p>
 &lt;p>日常开发中常见的需要用到加密算法的场景：&lt;/p>
 &lt;ol>
 &lt;li>保存在数据库中的密码需要加盐之后使用哈希算法（比如 BCrypt）进行加密。&lt;/li>
@@ -162,10 +162,10 @@
 &lt;/ul>
 &lt;p>哈希算法可以简单分为两类：&lt;/p>
 &lt;ol>
-&lt;li>&lt;strong>加密哈希算法&lt;/strong>：安全性较高的哈希算法，它可以提供一定的数据完整性保护和数据防篡改能力，能够抵御一定的攻击手段，安全性相对较高，但性能较差，适用于对安全性要求较高的场景。例如 SHA2、SHA3、SM3、RIPEMD-160、BLAKE2、SipHash 等等。&lt;/li>
-&lt;li>&lt;strong>非加密哈希算法&lt;/strong>：安全性相对较低的哈希算法，易受到暴力破解、冲突攻击等攻击手段的影响，但性能较高，适用于对安全性没有要求的业务场景。例如 CRC32、MurMurHash3、SipHash 等等。&lt;/li>
+&lt;li>&lt;mark>加密哈希算法&lt;/mark>：安全性较高的哈希算法，它可以提供一定的数据完整性保护和数据防篡改能力，能够抵御一定的攻击手段，安全性相对较高，但性能较差，适用于对安全性要求较高的场景。例如 SHA2、SHA3、SM3、RIPEMD-160、BLAKE2、SipHash 等等。&lt;/li>
+&lt;li>&lt;mark>非加密哈希算法&lt;/mark>：安全性相对较低的哈希算法，易受到暴力破解、冲突攻击等攻击手段的影响，但性能较高，适用于对安全性没有要求的业务场景。例如 CRC32、MurMurHash3、SipHash 等等。&lt;/li>
 &lt;/ol>
-&lt;p>除了这两种之外，还有一些特殊的哈希算法，例如安全性更高的&lt;strong>慢哈希算法&lt;/strong>。&lt;/p>
+&lt;p>除了这两种之外，还有一些特殊的哈希算法，例如安全性更高的&lt;mark>慢哈希算法&lt;/mark>。&lt;/p>
 &lt;p>常见的哈希算法有：&lt;/p>
 &lt;ul>
 &lt;li>MD（Message Digest，消息摘要算法）：MD2、MD4、MD5 等，已经不被推荐使用。&lt;/li>
@@ -175,12 +175,12 @@
 &lt;li>MAC（Message Authentication Code，消息认证码算法）：HMAC 是一种基于哈希的 MAC，可以与任何安全的哈希算法结合使用，例如 SHA-256。&lt;/li>
 &lt;li>CRC：（Cyclic Redundancy Check，循环冗余校验）：CRC32 是一种 CRC 算法，它的特点是生成 32 位的校验值，通常用于数据完整性校验、文件校验等场景。&lt;/li>
 &lt;li>SipHash：加密哈希算法，它的设计目的是在速度和安全性之间达到一个平衡，用于防御
-&lt;a href="https://aumasson.jp/siphash/siphashdos_29c3_slides.pdf">哈希泛洪 DoS 攻击&lt;/a>。Rust 默认使用 SipHash 作为哈希算法，从 Redis4.0 开始，哈希算法被替换为 SipHash。&lt;/li>
+&lt;a target="_blank" href="https://aumasson.jp/siphash/siphashdos_29c3_slides.pdf">哈希泛洪 DoS 攻击&lt;/a>。Rust 默认使用 SipHash 作为哈希算法，从 Redis4.0 开始，哈希算法被替换为 SipHash。&lt;/li>
 &lt;li>MurMurHash：经典快速的非加密哈希算法，目前最新的版本是 MurMurHash3，可以生成 32 位或者 128 位哈希值；&lt;/li>
 &lt;li>……&lt;/li>
 &lt;/ul>
 &lt;p>哈希算法一般是不需要密钥的，但也存在部分特殊哈希算法需要密钥。例如，MAC 和 SipHash 就是一种基于密钥的哈希算法，它在哈希算法的基础上增加了一个密钥，使得只有知道密钥的人才能验证数据的完整性和来源。&lt;/p></description></item><item><title>敏感词过滤方案总结</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/system-design/security/sentive-words-filter/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/system-design/security/sentive-words-filter/</guid><description>&lt;p>系统需要对用户输入的文本进行敏感词过滤如色情、政治、暴力相关的词汇。&lt;/p>
-&lt;p>敏感词过滤用的使用比较多的 &lt;strong>Trie 树算法&lt;/strong> 和 &lt;strong>DFA 算法&lt;/strong>。&lt;/p>
+&lt;p>敏感词过滤用的使用比较多的 &lt;mark>Trie 树算法&lt;/mark> 和 &lt;mark>DFA 算法&lt;/mark>。&lt;/p>
 &lt;h2 id="算法实现">
  算法实现
  &lt;a class="anchor" href="#%e7%ae%97%e6%b3%95%e5%ae%9e%e7%8e%b0">#&lt;/a>
@@ -189,7 +189,7 @@
  Trie 树
  &lt;a class="anchor" href="#trie-%e6%a0%91">#&lt;/a>
 &lt;/h3>
-&lt;p>&lt;strong>Trie 树&lt;/strong> 也称为字典树、单词查找树，哈希树的一种变种，通常被用于字符串匹配，用来解决在一组字符串集合中快速查找某个字符串的问题。像浏览器搜索的关键词提示就可以基于 Trie 树来做的。&lt;/p>
+&lt;p>&lt;mark>Trie 树&lt;/mark> 也称为字典树、单词查找树，哈希树的一种变种，通常被用于字符串匹配，用来解决在一组字符串集合中快速查找某个字符串的问题。像浏览器搜索的关键词提示就可以基于 Trie 树来做的。&lt;/p>
 &lt;p>&lt;img src="https://oss.javaguide.cn/github/javaguide/system-design/security/brower-trie.png" alt="浏览器 Trie 树效果展示" />&lt;/p>
 &lt;p>假如我们的敏感词库中有以下敏感词：&lt;/p>
 &lt;ul>
@@ -201,9 +201,9 @@
 &lt;p>我们构造出来的敏感词 Trie 树就是下面这样的：&lt;/p>
 &lt;p>&lt;img src="https://oss.javaguide.cn/github/javaguide/system-design/security/sensitive-word-trie.png" alt="敏感词 Trie 树" />&lt;/p>
 &lt;p>当我们要查找对应的字符串“东京热”的话，我们会把这个字符串切割成单个的字符“东”、“京”、“热”，然后我们从 Trie 树的根节点开始匹配。&lt;/p>
-&lt;p>可以看出， &lt;strong>Trie 树的核心原理其实很简单，就是通过公共前缀来提高字符串匹配效率。&lt;/strong>&lt;/p>
+&lt;p>可以看出， &lt;mark>Trie 树的核心原理其实很简单，就是通过公共前缀来提高字符串匹配效率。&lt;/mark>&lt;/p>
 &lt;p>
-&lt;a href="https://mvnrepository.com/artifact/org.apache.commons/commons-collections4">Apache Commons Collections&lt;/a> 这个库中就有 Trie 树实现：&lt;/p>
+&lt;a target="_blank" href="https://mvnrepository.com/artifact/org.apache.commons/commons-collections4">Apache Commons Collections&lt;/a> 这个库中就有 Trie 树实现：&lt;/p>
 &lt;p>&lt;img src="https://oss.javaguide.cn/github/javaguide/system-design/security/common-collections-trie.png" alt="Apache Commons Collections 中的 Trie 树实现" />&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>Trie&lt;span style="color:#f92672">&amp;lt;&lt;/span>String, String&lt;span style="color:#f92672">&amp;gt;&lt;/span> trie &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> PatriciaTrie&lt;span style="color:#f92672">&amp;lt;&amp;gt;&lt;/span>();
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>trie.&lt;span style="color:#a6e22e">put&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;Abigail&amp;#34;&lt;/span>, &lt;span style="color:#e6db74">&amp;#34;student&amp;#34;&lt;/span>);
@@ -217,7 +217,7 @@
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Trie 树是一种利用空间换时间的数据结构，占用的内存会比较大。也正是因为这个原因，实际工程项目中都是使用的改进版 Trie 树例如双数组 Trie 树（Double-Array Trie，DAT）。&lt;/p></description></item><item><title>权限系统设计详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/system-design/security/design-of-authority-system/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/system-design/security/design-of-authority-system/</guid><description>&lt;blockquote>
 &lt;p>作者：转转技术团队&lt;/p>
 &lt;p>原文：
-&lt;a href="https://mp.weixin.qq.com/s/ONMuELjdHYa0yQceTj01Iw">https://mp.weixin.qq.com/s/ONMuELjdHYa0yQceTj01Iw&lt;/a>&lt;/p>
+&lt;a target="_blank" href="https://mp.weixin.qq.com/s/ONMuELjdHYa0yQceTj01Iw">https://mp.weixin.qq.com/s/ONMuELjdHYa0yQceTj01Iw&lt;/a>&lt;/p>
 &lt;/blockquote>
 &lt;h2 id="老权限系统的问题与现状">
  老权限系统的问题与现状
@@ -236,25 +236,25 @@
 &lt;/h2>
 &lt;p>目前业界主流的权限模型有两种，下面分别介绍下：&lt;/p>
 &lt;ul>
-&lt;li>&lt;strong>基于角色的访问控制（RBAC）&lt;/strong>&lt;/li>
-&lt;li>&lt;strong>基于属性的访问控制（ABAC）&lt;/strong>&lt;/li>
+&lt;li>&lt;mark>基于角色的访问控制（RBAC）&lt;/mark>&lt;/li>
+&lt;li>&lt;mark>基于属性的访问控制（ABAC）&lt;/mark>&lt;/li>
 &lt;/ul>
 &lt;h3 id="rbac-模型">
  RBAC 模型
  &lt;a class="anchor" href="#rbac-%e6%a8%a1%e5%9e%8b">#&lt;/a>
 &lt;/h3>
-&lt;p>&lt;strong>基于角色的访问控制（Role-Based Access Control，简称 RBAC）&lt;/strong> 指的是通过用户的角色（Role）授权其相关权限，实现了灵活的访问控制，相比直接授予用户权限，要更加简单、高效、可扩展。&lt;/p>
+&lt;p>&lt;mark>基于角色的访问控制（Role-Based Access Control，简称 RBAC）&lt;/mark> 指的是通过用户的角色（Role）授权其相关权限，实现了灵活的访问控制，相比直接授予用户权限，要更加简单、高效、可扩展。&lt;/p>
 &lt;p>一个用户可以拥有若干角色，每一个角色又可以被分配若干权限这样，就构造成“用户-角色-权限” 的授权模型。在这种模型中，用户与角色、角色与权限之间构成了多对多的关系。&lt;/p>
 &lt;p>用一个图来描述如下：&lt;/p>
 &lt;p>&lt;img src="https://oss.javaguide.cn/github/javaguide/system-design/security/design-of-authority-system/rbac.png" alt="RBAC 权限模型示意图" />&lt;/p>
 &lt;p>当使用 &lt;code>RBAC模型&lt;/code> 时，通过分析用户的实际情况，基于共同的职责和需求，授予他们不同角色。这种 &lt;code>用户 -&amp;gt; 角色 -&amp;gt; 权限&lt;/code> 间的关系，让我们可以不用再单独管理单个用户权限，用户从授予的角色里面获取所需的权限。&lt;/p>
-&lt;p>以一个简单的场景（Gitlab 的权限系统）为例，用户系统中有 &lt;code>Admin&lt;/code>、&lt;code>Maintainer&lt;/code>、&lt;code>Operator&lt;/code> 三种角色，这三种角色分别具备不同的权限，比如只有 &lt;code>Admin&lt;/code> 具备创建代码仓库、删除代码仓库的权限，其他的角色都不具备。我们授予某个用户 &lt;code>Admin&lt;/code> 这个角色，他就具备了 &lt;strong>创建代码仓库&lt;/strong> 和 &lt;strong>删除代码仓库&lt;/strong> 这两个权限。&lt;/p>
+&lt;p>以一个简单的场景（Gitlab 的权限系统）为例，用户系统中有 &lt;code>Admin&lt;/code>、&lt;code>Maintainer&lt;/code>、&lt;code>Operator&lt;/code> 三种角色，这三种角色分别具备不同的权限，比如只有 &lt;code>Admin&lt;/code> 具备创建代码仓库、删除代码仓库的权限，其他的角色都不具备。我们授予某个用户 &lt;code>Admin&lt;/code> 这个角色，他就具备了 &lt;mark>创建代码仓库&lt;/mark> 和 &lt;mark>删除代码仓库&lt;/mark> 这两个权限。&lt;/p>
 &lt;p>通过 &lt;code>RBAC模型&lt;/code> ，当存在多个用户拥有相同权限时，我们只需要创建好拥有该权限的角色，然后给不同的用户分配不同的角色，后续只需要修改角色的权限，就能自动修改角色内所有用户的权限。&lt;/p>
 &lt;h3 id="abac-模型">
  ABAC 模型
  &lt;a class="anchor" href="#abac-%e6%a8%a1%e5%9e%8b">#&lt;/a>
 &lt;/h3>
-&lt;p>&lt;strong>基于属性的访问控制（Attribute-Based Access Control，简称 ABAC）&lt;/strong> 是一种比 &lt;code>RBAC模型&lt;/code> 更加灵活的授权模型，它的原理是通过各种属性来动态判断一个操作是否可以被允许。这个模型在云系统中使用的比较多，比如 AWS，阿里云等。&lt;/p>
+&lt;p>&lt;mark>基于属性的访问控制（Attribute-Based Access Control，简称 ABAC）&lt;/mark> 是一种比 &lt;code>RBAC模型&lt;/code> 更加灵活的授权模型，它的原理是通过各种属性来动态判断一个操作是否可以被允许。这个模型在云系统中使用的比较多，比如 AWS，阿里云等。&lt;/p>
 &lt;p>考虑下面这些场景的权限控制：&lt;/p>
 &lt;ol>
 &lt;li>授权某个人具体某本书的编辑权限&lt;/li>
@@ -271,13 +271,13 @@
 &lt;p>这是一个绝大多数人都会混淆的问题。首先先从读音上来认识这两个名词，很多人都会把它俩的读音搞混，所以我建议你先先去查一查这两个单词到底该怎么读，他们的具体含义是什么。&lt;/p>
 &lt;p>说简单点就是：&lt;/p>
 &lt;ul>
-&lt;li>&lt;strong>认证 (Authentication)：&lt;/strong> 你是谁。&lt;/li>
-&lt;li>&lt;strong>授权 (Authorization)：&lt;/strong> 你有权限干什么。&lt;/li>
+&lt;li>&lt;mark>认证 (Authentication)：&lt;/mark> 你是谁。&lt;/li>
+&lt;li>&lt;mark>授权 (Authorization)：&lt;/mark> 你有权限干什么。&lt;/li>
 &lt;/ul>
 &lt;p>稍微正式点（啰嗦点）的说法就是：&lt;/p>
 &lt;ul>
-&lt;li>&lt;strong>Authentication（认证）&lt;/strong> 是验证您的身份的凭据（例如用户名/用户 ID 和密码），通过这个凭据，系统得以知道你就是你，也就是说系统存在你这个用户。所以，Authentication 被称为身份/用户验证。&lt;/li>
-&lt;li>&lt;strong>Authorization（授权）&lt;/strong> 发生在 &lt;strong>Authentication（认证）&lt;/strong> 之后。授权嘛，光看意思大家应该就明白，它主要掌管我们访问系统的权限。比如有些特定资源只能具有特定权限的人才能访问比如 admin，有些对系统资源操作比如删除、添加、更新只能特定人才具有。&lt;/li>
+&lt;li>&lt;mark>Authentication（认证）&lt;/mark> 是验证您的身份的凭据（例如用户名/用户 ID 和密码），通过这个凭据，系统得以知道你就是你，也就是说系统存在你这个用户。所以，Authentication 被称为身份/用户验证。&lt;/li>
+&lt;li>&lt;mark>Authorization（授权）&lt;/mark> 发生在 &lt;mark>Authentication（认证）&lt;/mark> 之后。授权嘛，光看意思大家应该就明白，它主要掌管我们访问系统的权限。比如有些特定资源只能具有特定权限的人才能访问比如 admin，有些对系统资源操作比如删除、添加、更新只能特定人才具有。&lt;/li>
 &lt;/ul>
 &lt;p>认证：&lt;/p>
 &lt;p>&lt;img src="https://oss.javaguide.cn/github/javaguide/system-design/security/authentication-login.png" alt="认证登录" />&lt;/p>
@@ -288,8 +288,8 @@
  RBAC 模型了解吗？
  &lt;a class="anchor" href="#rbac-%e6%a8%a1%e5%9e%8b%e4%ba%86%e8%a7%a3%e5%90%97">#&lt;/a>
 &lt;/h2>
-&lt;p>系统权限控制最常采用的访问控制模型就是 &lt;strong>RBAC 模型&lt;/strong> 。&lt;/p>
-&lt;p>&lt;strong>什么是 RBAC 呢？&lt;/strong> RBAC 即基于角色的权限访问控制（Role-Based Access Control）。这是一种通过角色关联权限，角色同时又关联用户的授权的方式。&lt;/p>
+&lt;p>系统权限控制最常采用的访问控制模型就是 &lt;mark>RBAC 模型&lt;/mark> 。&lt;/p>
+&lt;p>&lt;mark>什么是 RBAC 呢？&lt;/mark> RBAC 即基于角色的权限访问控制（Role-Based Access Control）。这是一种通过角色关联权限，角色同时又关联用户的授权的方式。&lt;/p>
 &lt;p>简单地说：一个用户可以拥有若干角色，每一个角色又可以被分配若干权限，这样就构造成“用户-角色-权限” 的授权模型。在这种模型中，用户与角色、角色与权限之间构成了多对多的关系。&lt;/p>
 &lt;p>&lt;img src="https://oss.javaguide.cn/github/javaguide/system-design/security/design-of-authority-system/rbac.png" alt="RBAC 权限模型示意图" />&lt;/p>
 &lt;p>在 RBAC 权限模型中，权限与角色相关联，用户通过成为包含特定角色的成员而得到这些角色的权限，这就极大地简化了权限的管理。&lt;/p>
@@ -304,7 +304,7 @@
 &lt;/h2>
 &lt;p>&lt;img src="https://oss.javaguide.cn/github/javaguide/system-design/security/cookie-sessionId.png" alt="" />&lt;/p></description></item><item><title>数据脱敏方案总结</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/system-design/security/data-desensitization/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/system-design/security/data-desensitization/</guid><description>&lt;blockquote>
 &lt;p>本文转载完善自
-&lt;a href="https://mp.weixin.qq.com/s/1qFWczesU50ndPPLtABHFg">Hutool：一行代码搞定数据脱敏 - 京东云开发者&lt;/a>。&lt;/p>
+&lt;a target="_blank" href="https://mp.weixin.qq.com/s/1qFWczesU50ndPPLtABHFg">Hutool：一行代码搞定数据脱敏 - 京东云开发者&lt;/a>。&lt;/p>
 &lt;/blockquote>
 &lt;h2 id="什么是数据脱敏">
  什么是数据脱敏
@@ -332,7 +332,7 @@
 &lt;li>重排：将原始数据中的某些字符或字段的顺序打乱。例如，将身份证号码的随机位交错互换。&lt;/li>
 &lt;li>加噪：在数据中注入一些误差或者噪音，达到对数据脱敏的效果。例如，在敏感数据中添加一些随机生成的字符。&lt;/li>
 &lt;li>加密（常用）：使用加密算法将敏感数据转换为密文。例如，将银行卡号用 MD5 或 SHA-256 等哈希函数进行散列。常见加密算法总结可以参考这篇文章：
-&lt;a href="https://javaguide.cn/system-design/security/encryption-algorithms.html">https://javaguide.cn/system-design/security/encryption-algorithms.html&lt;/a> 。&lt;/li>
+&lt;a target="_blank" href="https://javaguide.cn/system-design/security/encryption-algorithms.html">https://javaguide.cn/system-design/security/encryption-algorithms.html&lt;/a> 。&lt;/li>
 &lt;li>……&lt;/li>
 &lt;/ul>
 &lt;h2 id="常用脱敏工具">

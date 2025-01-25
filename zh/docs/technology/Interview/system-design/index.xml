@@ -2,7 +2,7 @@
  Servlet 总结
  &lt;a class="anchor" href="#servlet-%e6%80%bb%e7%bb%93">#&lt;/a>
 &lt;/h1>
-&lt;p>在 Java Web 程序中，&lt;strong>Servlet&lt;/strong>主要负责接收用户请求 &lt;code>HttpServletRequest&lt;/code>,在&lt;code>doGet()&lt;/code>,&lt;code>doPost()&lt;/code>中做相应的处理，并将回应&lt;code>HttpServletResponse&lt;/code>反馈给用户。&lt;strong>Servlet&lt;/strong> 可以设置初始化参数，供 Servlet 内部使用。一个 Servlet 类只会有一个实例，在它初始化时调用&lt;code>init()&lt;/code>方法，销毁时调用&lt;code>destroy()&lt;/code>方法**。**Servlet 需要在 web.xml 中配置（MyEclipse 中创建 Servlet 会自动配置），&lt;strong>一个 Servlet 可以设置多个 URL 访问&lt;/strong>。&lt;strong>Servlet 不是线程安全&lt;/strong>，因此要谨慎使用类变量。&lt;/p>
+&lt;p>在 Java Web 程序中，&lt;mark>Servlet&lt;/mark>主要负责接收用户请求 &lt;code>HttpServletRequest&lt;/code>,在&lt;code>doGet()&lt;/code>,&lt;code>doPost()&lt;/code>中做相应的处理，并将回应&lt;code>HttpServletResponse&lt;/code>反馈给用户。&lt;mark>Servlet&lt;/mark> 可以设置初始化参数，供 Servlet 内部使用。一个 Servlet 类只会有一个实例，在它初始化时调用&lt;code>init()&lt;/code>方法，销毁时调用&lt;code>destroy()&lt;/code>方法==。==Servlet 需要在 web.xml 中配置（MyEclipse 中创建 Servlet 会自动配置），&lt;mark>一个 Servlet 可以设置多个 URL 访问&lt;/mark>。&lt;mark>Servlet 不是线程安全&lt;/mark>，因此要谨慎使用类变量。&lt;/p>
 &lt;h2 id="阐述-servlet-和-cgi-的区别">
  阐述 Servlet 和 CGI 的区别?
  &lt;a class="anchor" href="#%e9%98%90%e8%bf%b0-servlet-%e5%92%8c-cgi-%e7%9a%84%e5%8c%ba%e5%88%ab">#&lt;/a>
@@ -71,7 +71,7 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>当前时间: Fri May 28 15:18:48 CST 2021n线程名称: Timer
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>不过其缺陷较多，比如一个 &lt;code>Timer&lt;/code> 一个线程，这就导致 &lt;code>Timer&lt;/code> 的任务的执行只能串行执行，一个任务执行时间过长的话会影响其他任务（性能非常差），再比如发生异常时任务直接停止（&lt;code>Timer&lt;/code> 只捕获了 &lt;code>InterruptedException&lt;/code> ）。&lt;/p></description></item><item><title>Web 实时消息推送详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/system-design/web-real-time-message-push/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/system-design/web-real-time-message-push/</guid><description>&lt;blockquote>
 &lt;p>原文地址：
-&lt;a href="https://juejin.cn/post/7122014462181113887%EF%BC%8CJavaGuide">https://juejin.cn/post/7122014462181113887，JavaGuide&lt;/a> 对本文进行了完善总结。&lt;/p>
+&lt;a target="_blank" href="https://juejin.cn/post/7122014462181113887%EF%BC%8CJavaGuide">https://juejin.cn/post/7122014462181113887，JavaGuide&lt;/a> 对本文进行了完善总结。&lt;/p>
 &lt;/blockquote>
 &lt;p>我有一个朋友做了一个小破站，现在要实现一个站内信 Web 消息推送的功能，对，就是下图这个小红点，一个很常用的功能。&lt;/p>
 &lt;p>&lt;img src="https://oss.javaguide.cn/github/javaguide/system-design/web-real-time-message-push/1460000042192380.png" alt="站内信 Web 消息推送" />&lt;/p>
@@ -99,7 +99,7 @@
  短轮询
  &lt;a class="anchor" href="#%e7%9f%ad%e8%bd%ae%e8%af%a2">#&lt;/a>
 &lt;/h3>
-&lt;p>&lt;strong>轮询(polling)&lt;/strong> 应该是实现消息推送方案中最简单的一种，这里我们暂且将轮询分为短轮询和长轮询。&lt;/p>
+&lt;p>&lt;mark>轮询(polling)&lt;/mark> 应该是实现消息推送方案中最简单的一种，这里我们暂且将轮询分为短轮询和长轮询。&lt;/p>
 &lt;p>短轮询很好理解，指定的时间间隔，由浏览器向服务器发出 HTTP 请求，服务器实时返回未读消息数据给客户端，浏览器再做渲染显示。&lt;/p>
 &lt;p>一个简单的 JS 定时器就可以搞定，每秒钟请求一次未读消息数接口，返回的数据展示即可。&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-typescript" data-lang="typescript">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">setInterval&lt;/span>(() &lt;span style="color:#f92672">=&amp;gt;&lt;/span> {
@@ -115,10 +115,10 @@
  长轮询
  &lt;a class="anchor" href="#%e9%95%bf%e8%bd%ae%e8%af%a2">#&lt;/a>
 &lt;/h3>
-&lt;p>长轮询是对上边短轮询的一种改进版本，在尽可能减少对服务器资源浪费的同时，保证消息的相对实时性。长轮询在中间件中应用的很广泛，比如 Nacos 和 Apollo 配置中心，消息队列 Kafka、RocketMQ 中都有用到长轮询。&lt;/p></description></item><item><title>设计模式常见面试题总结</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/system-design/design-pattern/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/system-design/design-pattern/</guid><description>&lt;p>&lt;strong>设计模式&lt;/strong> 相关的面试题已经整理到了 PDF 手册中，你可以在我的公众号“&lt;strong>JavaGuide&lt;/strong>”后台回复“&lt;strong>PDF&lt;/strong>” 获取。&lt;/p>
+&lt;p>长轮询是对上边短轮询的一种改进版本，在尽可能减少对服务器资源浪费的同时，保证消息的相对实时性。长轮询在中间件中应用的很广泛，比如 Nacos 和 Apollo 配置中心，消息队列 Kafka、RocketMQ 中都有用到长轮询。&lt;/p></description></item><item><title>设计模式常见面试题总结</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/system-design/design-pattern/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/system-design/design-pattern/</guid><description>&lt;p>&lt;mark>设计模式&lt;/mark> 相关的面试题已经整理到了 PDF 手册中，你可以在我的公众号“&lt;mark>JavaGuide&lt;/mark>”后台回复“&lt;mark>PDF&lt;/mark>” 获取。&lt;/p>
 &lt;p>&lt;img src="https://oss.javaguide.cn/github/javaguide/gongzhonghaoxuanchuan.png" alt="JavaGuide 官方公众号" />&lt;/p>
-&lt;p>&lt;strong>《设计模式》PDF 电子书内容概览&lt;/strong>：&lt;/p>
-&lt;p>&lt;img src="https://oss.javaguide.cn/github/javaguide/system-design/design-pattern-pdf.png" alt="《设计模式》PDF文档概览" />&lt;/p></description></item><item><title>系统设计常见面试题总结(付费)</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/system-design/system-design-questions/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/system-design/system-design-questions/</guid><description>&lt;p>&lt;strong>系统设计&lt;/strong> 相关的面试题为我的
-&lt;a href="https://javaguide.cn/about-the-author/zhishixingqiu-two-years.html">知识星球&lt;/a>（点击链接即可查看详细介绍以及加入方法）专属内容，已经整理到了
-&lt;a href="https://javaguide.cn/zhuanlan/java-mian-shi-zhi-bei.html">《Java 面试指北》&lt;/a>中。&lt;/p>
+&lt;p>&lt;mark>《设计模式》PDF 电子书内容概览&lt;/mark>：&lt;/p>
+&lt;p>&lt;img src="https://oss.javaguide.cn/github/javaguide/system-design/design-pattern-pdf.png" alt="《设计模式》PDF文档概览" />&lt;/p></description></item><item><title>系统设计常见面试题总结(付费)</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/system-design/system-design-questions/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/system-design/system-design-questions/</guid><description>&lt;p>&lt;mark>系统设计&lt;/mark> 相关的面试题为我的
+&lt;a target="_blank" href="https://javaguide.cn/about-the-author/zhishixingqiu-two-years.html">知识星球&lt;/a>（点击链接即可查看详细介绍以及加入方法）专属内容，已经整理到了
+&lt;a target="_blank" href="https://javaguide.cn/zhuanlan/java-mian-shi-zhi-bei.html">《Java 面试指北》&lt;/a>中。&lt;/p>
 &lt;p>&lt;img src="https://oss.javaguide.cn/javamianshizhibei/system-design-questions.png" alt="" />&lt;/p></description></item></channel></rss>

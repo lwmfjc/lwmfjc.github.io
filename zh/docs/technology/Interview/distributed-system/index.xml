@@ -5,7 +5,7 @@
 &lt;p>微服务背景下，一个系统被拆分为多个服务，但是像安全认证，流量控制，日志，监控等功能是每个服务都需要的，没有网关的话，我们就需要在每个服务中单独实现，这使得我们做了很多重复的事情并且没有一个全局的视图来统一管理这些功能。&lt;/p>
 &lt;p>&lt;img src="https://oss.javaguide.cn/github/javaguide/system-design/distributed-system/api-gateway-overview.png" alt="网关示意图" />&lt;/p>
 &lt;p>一般情况下，网关可以为我们提供请求转发、安全认证（身份/权限认证）、流量控制、负载均衡、降级熔断、日志、监控、参数校验、协议转换等功能。&lt;/p>
-&lt;p>上面介绍了这么多功能，实际上，网关主要做了两件事情：&lt;strong>请求转发&lt;/strong> + &lt;strong>请求过滤&lt;/strong>。&lt;/p>
+&lt;p>上面介绍了这么多功能，实际上，网关主要做了两件事情：&lt;mark>请求转发&lt;/mark> + &lt;mark>请求过滤&lt;/mark>。&lt;/p>
 &lt;p>由于引入网关之后，会多一步网络转发，因此性能会有一点影响（几乎可以忽略不计，尤其是内网访问的情况下）。 另外，我们需要保障网关服务的高可用，避免单点风险。&lt;/p>
 &lt;p>如下图所示，网关服务外层通过 Nginx（其他负载均衡设备/软件也行） 进⾏负载转发以达到⾼可⽤。Nginx 在部署的时候，尽量也要考虑高可用，避免单点风险。&lt;/p>
 &lt;p>&lt;img src="https://oss.javaguide.cn/github/javaguide/high-performance/load-balancing/server-load-balancing.png" alt="基于 Nginx 的服务端负载均衡" />&lt;/p>
@@ -15,33 +15,33 @@
 &lt;/h2>
 &lt;p>绝大部分网关可以提供下面这些功能（有一些功能需要借助其他框架或者中间件）：&lt;/p>
 &lt;ul>
-&lt;li>&lt;strong>请求转发&lt;/strong>：将请求转发到目标微服务。&lt;/li>
-&lt;li>&lt;strong>负载均衡&lt;/strong>：根据各个微服务实例的负载情况或者具体的负载均衡策略配置对请求实现动态的负载均衡。&lt;/li>
-&lt;li>&lt;strong>安全认证&lt;/strong>：对用户请求进行身份验证并仅允许可信客户端访问 API，并且还能够使用类似 RBAC 等方式来授权。&lt;/li>
-&lt;li>&lt;strong>参数校验&lt;/strong>：支持参数映射与校验逻辑。&lt;/li>
-&lt;li>&lt;strong>日志记录&lt;/strong>：记录所有请求的行为日志供后续使用。&lt;/li>
-&lt;li>&lt;strong>监控告警&lt;/strong>：从业务指标、机器指标、JVM 指标等方面进行监控并提供配套的告警机制。&lt;/li>
-&lt;li>&lt;strong>流量控制&lt;/strong>：对请求的流量进行控制，也就是限制某一时刻内的请求数。&lt;/li>
-&lt;li>&lt;strong>熔断降级&lt;/strong>：实时监控请求的统计信息，达到配置的失败阈值后，自动熔断，返回默认值。&lt;/li>
-&lt;li>&lt;strong>响应缓存&lt;/strong>：当用户请求获取的是一些静态的或更新不频繁的数据时，一段时间内多次请求获取到的数据很可能是一样的。对于这种情况可以将响应缓存起来。这样用户请求可以直接在网关层得到响应数据，无需再去访问业务服务，减轻业务服务的负担。&lt;/li>
-&lt;li>&lt;strong>响应聚合&lt;/strong>：某些情况下用户请求要获取的响应内容可能会来自于多个业务服务。网关作为业务服务的调用方，可以把多个服务的响应整合起来，再一并返回给用户。&lt;/li>
-&lt;li>&lt;strong>灰度发布&lt;/strong>：将请求动态分流到不同的服务版本（最基本的一种灰度发布）。&lt;/li>
-&lt;li>&lt;strong>异常处理&lt;/strong>：对于业务服务返回的异常响应，可以在网关层在返回给用户之前做转换处理。这样可以把一些业务侧返回的异常细节隐藏，转换成用户友好的错误提示返回。&lt;/li>
-&lt;li>&lt;strong>API 文档：&lt;/strong> 如果计划将 API 暴露给组织以外的开发人员，那么必须考虑使用 API 文档，例如 Swagger 或 OpenAPI。&lt;/li>
-&lt;li>&lt;strong>协议转换&lt;/strong>：通过协议转换整合后台基于 REST、AMQP、Dubbo 等不同风格和实现技术的微服务，面向 Web Mobile、开放平台等特定客户端提供统一服务。&lt;/li>
-&lt;li>&lt;strong>证书管理&lt;/strong>：将 SSL 证书部署到 API 网关，由一个统一的入口管理接口，降低了证书更换时的复杂度。&lt;/li>
+&lt;li>&lt;mark>请求转发&lt;/mark>：将请求转发到目标微服务。&lt;/li>
+&lt;li>&lt;mark>负载均衡&lt;/mark>：根据各个微服务实例的负载情况或者具体的负载均衡策略配置对请求实现动态的负载均衡。&lt;/li>
+&lt;li>&lt;mark>安全认证&lt;/mark>：对用户请求进行身份验证并仅允许可信客户端访问 API，并且还能够使用类似 RBAC 等方式来授权。&lt;/li>
+&lt;li>&lt;mark>参数校验&lt;/mark>：支持参数映射与校验逻辑。&lt;/li>
+&lt;li>&lt;mark>日志记录&lt;/mark>：记录所有请求的行为日志供后续使用。&lt;/li>
+&lt;li>&lt;mark>监控告警&lt;/mark>：从业务指标、机器指标、JVM 指标等方面进行监控并提供配套的告警机制。&lt;/li>
+&lt;li>&lt;mark>流量控制&lt;/mark>：对请求的流量进行控制，也就是限制某一时刻内的请求数。&lt;/li>
+&lt;li>&lt;mark>熔断降级&lt;/mark>：实时监控请求的统计信息，达到配置的失败阈值后，自动熔断，返回默认值。&lt;/li>
+&lt;li>&lt;mark>响应缓存&lt;/mark>：当用户请求获取的是一些静态的或更新不频繁的数据时，一段时间内多次请求获取到的数据很可能是一样的。对于这种情况可以将响应缓存起来。这样用户请求可以直接在网关层得到响应数据，无需再去访问业务服务，减轻业务服务的负担。&lt;/li>
+&lt;li>&lt;mark>响应聚合&lt;/mark>：某些情况下用户请求要获取的响应内容可能会来自于多个业务服务。网关作为业务服务的调用方，可以把多个服务的响应整合起来，再一并返回给用户。&lt;/li>
+&lt;li>&lt;mark>灰度发布&lt;/mark>：将请求动态分流到不同的服务版本（最基本的一种灰度发布）。&lt;/li>
+&lt;li>&lt;mark>异常处理&lt;/mark>：对于业务服务返回的异常响应，可以在网关层在返回给用户之前做转换处理。这样可以把一些业务侧返回的异常细节隐藏，转换成用户友好的错误提示返回。&lt;/li>
+&lt;li>&lt;mark>API 文档：&lt;/mark> 如果计划将 API 暴露给组织以外的开发人员，那么必须考虑使用 API 文档，例如 Swagger 或 OpenAPI。&lt;/li>
+&lt;li>&lt;mark>协议转换&lt;/mark>：通过协议转换整合后台基于 REST、AMQP、Dubbo 等不同风格和实现技术的微服务，面向 Web Mobile、开放平台等特定客户端提供统一服务。&lt;/li>
+&lt;li>&lt;mark>证书管理&lt;/mark>：将 SSL 证书部署到 API 网关，由一个统一的入口管理接口，降低了证书更换时的复杂度。&lt;/li>
 &lt;/ul>
 &lt;p>下图来源于
-&lt;a href="https://mp.weixin.qq.com/s/iITqdIiHi3XGKq6u6FRVdg">百亿规模 API 网关服务 Shepherd 的设计与实现 - 美团技术团队 - 2021&lt;/a>这篇文章。&lt;/p>
+&lt;a target="_blank" href="https://mp.weixin.qq.com/s/iITqdIiHi3XGKq6u6FRVdg">百亿规模 API 网关服务 Shepherd 的设计与实现 - 美团技术团队 - 2021&lt;/a>这篇文章。&lt;/p>
 &lt;p>&lt;img src="https://oss.javaguide.cn/github/javaguide/distributed-system/api-gateway/up-35e102c633bbe8e0dea1e075ea3fee5dcfb.png" alt="" />&lt;/p></description></item><item><title>Spring Cloud Gateway常见问题总结</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/distributed-system/spring-cloud-gateway-questions/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/distributed-system/spring-cloud-gateway-questions/</guid><description>&lt;blockquote>
 &lt;p>本文重构完善自
-&lt;a href="https://mp.weixin.qq.com/s/XjFYsP1IUqNzWqXZdJn-Aw">6000 字 | 16 图 | 深入理解 Spring Cloud Gateway 的原理 - 悟空聊架构&lt;/a>这篇文章。&lt;/p>
+&lt;a target="_blank" href="https://mp.weixin.qq.com/s/XjFYsP1IUqNzWqXZdJn-Aw">6000 字 | 16 图 | 深入理解 Spring Cloud Gateway 的原理 - 悟空聊架构&lt;/a>这篇文章。&lt;/p>
 &lt;/blockquote>
 &lt;h2 id="什么是-spring-cloud-gateway">
  什么是 Spring Cloud Gateway？
  &lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af-spring-cloud-gateway">#&lt;/a>
 &lt;/h2>
-&lt;p>Spring Cloud Gateway 属于 Spring Cloud 生态系统中的网关，其诞生的目标是为了替代老牌网关 &lt;strong>Zuul&lt;/strong>。准确点来说，应该是 Zuul 1.x。Spring Cloud Gateway 起步要比 Zuul 2.x 更早。&lt;/p>
+&lt;p>Spring Cloud Gateway 属于 Spring Cloud 生态系统中的网关，其诞生的目标是为了替代老牌网关 &lt;mark>Zuul&lt;/mark>。准确点来说，应该是 Zuul 1.x。Spring Cloud Gateway 起步要比 Zuul 2.x 更早。&lt;/p>
 &lt;p>为了提升网关的性能，Spring Cloud Gateway 基于 Spring WebFlux 。Spring WebFlux 使用 Reactor 库来实现响应式编程模型，底层基于 Netty 实现同步非阻塞的 I/O。&lt;/p>
 &lt;p>&lt;img src="https://oss.javaguide.cn/github/javaguide/system-design/distributed-system/api-gateway/springcloud-gateway-%20demo.png" alt="" />&lt;/p>
 &lt;p>Spring Cloud Gateway 不仅提供统一的路由方式，并且基于 Filter 链的方式提供了网关基本的功能，例如：安全，监控/指标，限流。&lt;/p>
@@ -55,7 +55,7 @@
 &lt;/h3>
 &lt;p>日常开发中，我们需要对系统中的各种数据使用 ID 唯一表示，比如用户 ID 对应且仅对应一个人，商品 ID 对应且仅对应一件商品，订单 ID 对应且仅对应一个订单。&lt;/p>
 &lt;p>我们现实生活中也有各种 ID，比如身份证 ID 对应且仅对应一个人、地址 ID 对应且仅对应一个地址。&lt;/p>
-&lt;p>简单来说，&lt;strong>ID 就是数据的唯一标识&lt;/strong>。&lt;/p>
+&lt;p>简单来说，&lt;mark>ID 就是数据的唯一标识&lt;/mark>。&lt;/p>
 &lt;h3 id="什么是分布式-id">
  什么是分布式 ID？
  &lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e5%88%86%e5%b8%83%e5%bc%8f-id">#&lt;/a>
@@ -63,8 +63,8 @@
 &lt;p>分布式 ID 是分布式系统下的 ID。分布式 ID 不存在与现实生活中，属于计算机系统中的一个概念。&lt;/p>
 &lt;p>我简单举一个分库分表的例子。&lt;/p>
 &lt;p>我司的一个项目，使用的是单机 MySQL 。但是，没想到的是，项目上线一个月之后，随着使用人数越来越多，整个系统的数据量将越来越大。单机 MySQL 已经没办法支撑了，需要进行分库分表（推荐 Sharding-JDBC）。&lt;/p>
-&lt;p>在分库之后， 数据遍布在不同服务器上的数据库，数据库的自增主键已经没办法满足生成的主键唯一了。&lt;strong>我们如何为不同的数据节点生成全局唯一主键呢？&lt;/strong>&lt;/p>
-&lt;p>这个时候就需要生成&lt;strong>分布式 ID&lt;/strong>了。&lt;/p>
+&lt;p>在分库之后， 数据遍布在不同服务器上的数据库，数据库的自增主键已经没办法满足生成的主键唯一了。&lt;mark>我们如何为不同的数据节点生成全局唯一主键呢？&lt;/mark>&lt;/p>
+&lt;p>这个时候就需要生成&lt;mark>分布式 ID&lt;/mark>了。&lt;/p>
 &lt;p>&lt;img src="https://oss.javaguide.cn/github/javaguide/system-design/distributed-system/id-after-the-sub-table-not-conflict.png" alt="" />&lt;/p>
 &lt;h3 id="分布式-id-需要满足哪些要求">
  分布式 ID 需要满足哪些要求?
@@ -74,14 +74,14 @@
 &lt;p>分布式 ID 作为分布式系统中必不可少的一环，很多地方都要用到分布式 ID。&lt;/p>
 &lt;p>一个最基本的分布式 ID 需要满足下面这些要求：&lt;/p>
 &lt;ul>
-&lt;li>&lt;strong>全局唯一&lt;/strong>：ID 的全局唯一性肯定是首先要满足的！&lt;/li>
-&lt;li>&lt;strong>高性能&lt;/strong>：分布式 ID 的生成速度要快，对本地资源消耗要小。&lt;/li>
-&lt;li>&lt;strong>高可用&lt;/strong>：生成分布式 ID 的服务要保证可用性无限接近于 100%。&lt;/li>
-&lt;li>&lt;strong>方便易用&lt;/strong>：拿来即用，使用方便，快速接入！&lt;/li>
+&lt;li>&lt;mark>全局唯一&lt;/mark>：ID 的全局唯一性肯定是首先要满足的！&lt;/li>
+&lt;li>&lt;mark>高性能&lt;/mark>：分布式 ID 的生成速度要快，对本地资源消耗要小。&lt;/li>
+&lt;li>&lt;mark>高可用&lt;/mark>：生成分布式 ID 的服务要保证可用性无限接近于 100%。&lt;/li>
+&lt;li>&lt;mark>方便易用&lt;/mark>：拿来即用，使用方便，快速接入！&lt;/li>
 &lt;/ul>
 &lt;p>除了这些之外，一个比较好的分布式 ID 还应保证：&lt;/p></description></item><item><title>分布式ID设计指南</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/distributed-system/distributed-id-design/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/distributed-system/distributed-id-design/</guid><description>&lt;p>::: tip&lt;/p>
 &lt;p>看到百度 Geek 说的一篇结合具体场景聊分布式 ID 设计的文章，感觉挺不错的。于是，我将这篇文章的部分内容整理到了这里。原文传送门：
-&lt;a href="https://mp.weixin.qq.com/s/bFDLb6U6EgI-DvCdLTq_QA">分布式 ID 生成服务的技术原理和项目实战&lt;/a> 。&lt;/p>
+&lt;a target="_blank" href="https://mp.weixin.qq.com/s/bFDLb6U6EgI-DvCdLTq_QA">分布式 ID 生成服务的技术原理和项目实战&lt;/a> 。&lt;/p>
 &lt;p>:::&lt;/p>
 &lt;p>网上绝大多数的分布式 ID 生成服务，一般着重于技术原理剖析，很少见到根据具体的业务场景去选型 ID 生成服务的文章。&lt;/p>
 &lt;p>本文结合一些使用场景，进一步探讨业务场景中对 ID 有哪些具体的要求。&lt;/p>
@@ -119,10 +119,10 @@
 &lt;li>对订单进行操作，如线下收款，订单核销；&lt;/li>
 &lt;li>下单，改单，成单，退单，售后等系统内部的订单流程处理和跟进。&lt;/li>
 &lt;/ol>
-&lt;p>很多时候搜索订单相关信息的时候都是以订单 ID 作为唯一标识符，这是由于订单号的生成规则的唯一性决定的。从技术角度看，除了 ID 服务必要的特性之外，在订单号的设计上需要体现几个特性：&lt;/p></description></item><item><title>分布式配置中心常见问题总结(付费)</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/distributed-system/distributed-configuration-center/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/distributed-system/distributed-configuration-center/</guid><description>&lt;p>&lt;strong>分布式配置中心&lt;/strong> 相关的面试题为我的
-&lt;a href="https://javaguide.cn/about-the-author/zhishixingqiu-two-years.html">知识星球&lt;/a>（点击链接即可查看详细介绍以及加入方法）专属内容，已经整理到了《Java 面试指北》中。&lt;/p>
-&lt;p>&lt;img src="https://oss.javaguide.cn/javamianshizhibei/distributed-system.png" alt="" />&lt;/p></description></item><item><title>分布式事务常见解决方案总结(付费)</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/distributed-system/distributed-transaction/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/distributed-system/distributed-transaction/</guid><description>&lt;p>&lt;strong>分布式事务&lt;/strong> 相关的面试题为我的
-&lt;a href="https://javaguide.cn/about-the-author/zhishixingqiu-two-years.html">知识星球&lt;/a>（点击链接即可查看详细介绍以及加入方法）专属内容，已经整理到了《Java 面试指北》中。&lt;/p>
+&lt;p>很多时候搜索订单相关信息的时候都是以订单 ID 作为唯一标识符，这是由于订单号的生成规则的唯一性决定的。从技术角度看，除了 ID 服务必要的特性之外，在订单号的设计上需要体现几个特性：&lt;/p></description></item><item><title>分布式配置中心常见问题总结(付费)</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/distributed-system/distributed-configuration-center/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/distributed-system/distributed-configuration-center/</guid><description>&lt;p>&lt;mark>分布式配置中心&lt;/mark> 相关的面试题为我的
+&lt;a target="_blank" href="https://javaguide.cn/about-the-author/zhishixingqiu-two-years.html">知识星球&lt;/a>（点击链接即可查看详细介绍以及加入方法）专属内容，已经整理到了《Java 面试指北》中。&lt;/p>
+&lt;p>&lt;img src="https://oss.javaguide.cn/javamianshizhibei/distributed-system.png" alt="" />&lt;/p></description></item><item><title>分布式事务常见解决方案总结(付费)</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/distributed-system/distributed-transaction/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/distributed-system/distributed-transaction/</guid><description>&lt;p>&lt;mark>分布式事务&lt;/mark> 相关的面试题为我的
+&lt;a target="_blank" href="https://javaguide.cn/about-the-author/zhishixingqiu-two-years.html">知识星球&lt;/a>（点击链接即可查看详细介绍以及加入方法）专属内容，已经整理到了《Java 面试指北》中。&lt;/p>
 &lt;p>&lt;img src="https://oss.javaguide.cn/javamianshizhibei/distributed-system.png" alt="" />&lt;/p></description></item><item><title>分布式锁常见实现方案总结</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/distributed-system/distributed-lock-implementations/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/distributed-system/distributed-lock-implementations/</guid><description>&lt;p>通常情况下，我们一般会选择基于 Redis 或者 ZooKeeper 实现分布式锁，Redis 用的要更多一点，我这里也先以 Redis 为例介绍分布式锁的实现。&lt;/p>
 &lt;h2 id="基于-redis-实现分布式锁">
  基于 Redis 实现分布式锁
@@ -133,7 +133,7 @@
  &lt;a class="anchor" href="#%e5%a6%82%e4%bd%95%e5%9f%ba%e4%ba%8e-redis-%e5%ae%9e%e7%8e%b0%e4%b8%80%e4%b8%aa%e6%9c%80%e7%ae%80%e6%98%93%e7%9a%84%e5%88%86%e5%b8%83%e5%bc%8f%e9%94%81">#&lt;/a>
 &lt;/h3>
 &lt;p>不论是本地锁还是分布式锁，核心都在于“互斥”。&lt;/p>
-&lt;p>在 Redis 中， &lt;code>SETNX&lt;/code> 命令是可以帮助我们实现互斥。&lt;code>SETNX&lt;/code> 即 &lt;strong>SET&lt;/strong> if &lt;strong>N&lt;/strong>ot e&lt;strong>X&lt;/strong>ists (对应 Java 中的 &lt;code>setIfAbsent&lt;/code> 方法)，如果 key 不存在的话，才会设置 key 的值。如果 key 已经存在， &lt;code>SETNX&lt;/code> 啥也不做。&lt;/p>
+&lt;p>在 Redis 中， &lt;code>SETNX&lt;/code> 命令是可以帮助我们实现互斥。&lt;code>SETNX&lt;/code> 即 &lt;mark>SET&lt;/mark> if &lt;mark>N&lt;/mark>ot e&lt;mark>X&lt;/mark>ists (对应 Java 中的 &lt;code>setIfAbsent&lt;/code> 方法)，如果 key 不存在的话，才会设置 key 的值。如果 key 已经存在， &lt;code>SETNX&lt;/code> 啥也不做。&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>&amp;gt; SETNX lockKey uniqueValue
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">(&lt;/span>integer&lt;span style="color:#f92672">)&lt;/span> &lt;span style="color:#ae81ff">1&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&amp;gt; SETNX lockKey uniqueValue
@@ -160,11 +160,11 @@
 &lt;/ul>
 &lt;p>&lt;img src="https://oss.javaguide.cn/github/javaguide/distributed-system/distributed-lock/oversold-without-locking.png" alt="共享资源未互斥访问导致出现问题" />&lt;/p>
 &lt;p>为了保证共享资源被安全地访问，我们需要使用互斥操作对共享资源进行保护，即同一时刻只允许一个线程访问共享资源，其他线程需要等待当前线程释放后才能访问。这样可以避免数据竞争和脏数据问题，保证程序的正确性和稳定性。&lt;/p>
-&lt;p>&lt;strong>如何才能实现共享资源的互斥访问呢？&lt;/strong> 锁是一个比较通用的解决方案，更准确点来说是悲观锁。&lt;/p>
-&lt;p>悲观锁总是假设最坏的情况，认为共享资源每次被访问的时候就会出现问题(比如共享数据被修改)，所以每次在获取资源操作的时候都会上锁，这样其他线程想拿到这个资源就会阻塞直到锁被上一个持有者释放。也就是说，&lt;strong>共享资源每次只给一个线程使用，其它线程阻塞，用完后再把资源转让给其它线程&lt;/strong>。&lt;/p>
-&lt;p>对于单机多线程来说，在 Java 中，我们通常使用 &lt;code>ReentrantLock&lt;/code> 类、&lt;code>synchronized&lt;/code> 关键字这类 JDK 自带的 &lt;strong>本地锁&lt;/strong> 来控制一个 JVM 进程内的多个线程对本地共享资源的访问。&lt;/p>
+&lt;p>&lt;mark>如何才能实现共享资源的互斥访问呢？&lt;/mark> 锁是一个比较通用的解决方案，更准确点来说是悲观锁。&lt;/p>
+&lt;p>悲观锁总是假设最坏的情况，认为共享资源每次被访问的时候就会出现问题(比如共享数据被修改)，所以每次在获取资源操作的时候都会上锁，这样其他线程想拿到这个资源就会阻塞直到锁被上一个持有者释放。也就是说，&lt;mark>共享资源每次只给一个线程使用，其它线程阻塞，用完后再把资源转让给其它线程&lt;/mark>。&lt;/p>
+&lt;p>对于单机多线程来说，在 Java 中，我们通常使用 &lt;code>ReentrantLock&lt;/code> 类、&lt;code>synchronized&lt;/code> 关键字这类 JDK 自带的 &lt;mark>本地锁&lt;/mark> 来控制一个 JVM 进程内的多个线程对本地共享资源的访问。&lt;/p>
 &lt;p>下面是我对本地锁画的一张示意图。&lt;/p>
 &lt;p>&lt;img src="https://oss.javaguide.cn/github/javaguide/distributed-system/distributed-lock/jvm-local-lock.png" alt="本地锁" />&lt;/p>
 &lt;p>从图中可以看出，这些线程访问共享资源是互斥的，同一时刻只有一个线程可以获取到本地锁访问共享资源。&lt;/p>
-&lt;p>分布式系统下，不同的服务/客户端通常运行在独立的 JVM 进程上。如果多个 JVM 进程共享同一份资源的话，使用本地锁就没办法实现资源的互斥访问了。于是，&lt;strong>分布式锁&lt;/strong> 就诞生了。&lt;/p>
+&lt;p>分布式系统下，不同的服务/客户端通常运行在独立的 JVM 进程上。如果多个 JVM 进程共享同一份资源的话，使用本地锁就没办法实现资源的互斥访问了。于是，&lt;mark>分布式锁&lt;/mark> 就诞生了。&lt;/p>
 &lt;p>举个例子：系统的订单服务一共部署了 3 份，都对外提供服务。用户下订单之前需要检查库存，为了防止超卖，这里需要加锁以实现对检查库存操作的同步访问。由于订单服务位于不同的 JVM 进程中，本地锁在这种情况下就没办法正常工作了。我们需要用到分布式锁，这样的话，即使多个线程不在同一个 JVM 进程中也能获取到同一把锁，进而实现共享资源的互斥访问。&lt;/p></description></item></channel></rss>
