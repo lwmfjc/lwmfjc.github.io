@@ -57,7 +57,8 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>0.&lt;span style="color:#a6e22e">6&lt;/span> &lt;span style="color:#f92672">*&lt;/span> 2 &lt;span style="color:#f92672">=&lt;/span> 1.&lt;span style="color:#a6e22e">2&lt;/span> &lt;span style="color:#f92672">-&amp;gt;&lt;/span> 1
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>0.&lt;span style="color:#a6e22e">2&lt;/span> &lt;span style="color:#f92672">*&lt;/span> 2 &lt;span style="color:#f92672">=&lt;/span> 0.&lt;span style="color:#a6e22e">4&lt;/span> &lt;span style="color:#f92672">-&amp;gt;&lt;/span> 0&lt;span style="color:#960050;background-color:#1e0010">（&lt;/span>发生循环&lt;span style="color:#960050;background-color:#1e0010">）&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>...
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>关于浮点数的更多内容，建议看一下&lt;a href="http://kaito-kidd.com/2018/08/08/computer-system-float-point/">计算机系统基础（四）浮点数&lt;/a>这篇文章。&lt;/p>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>关于浮点数的更多内容，建议看一下
+&lt;a href="http://kaito-kidd.com/2018/08/08/computer-system-float-point/">计算机系统基础（四）浮点数&lt;/a>这篇文章。&lt;/p>
 &lt;h2 id="bigdecimal-介绍">
  BigDecimal 介绍
  &lt;a class="anchor" href="#bigdecimal-%e4%bb%8b%e7%bb%8d">#&lt;/a>
@@ -65,10 +66,13 @@
 &lt;p>&lt;code>BigDecimal&lt;/code> 可以实现对浮点数的运算，不会造成精度丢失。&lt;/p>
 &lt;p>通常情况下，大部分需要浮点数精确运算结果的业务场景（比如涉及到钱的场景）都是通过 &lt;code>BigDecimal&lt;/code> 来做的。&lt;/p>
 &lt;p>《阿里巴巴 Java 开发手册》中提到：&lt;strong>浮点数之间的等值判断，基本数据类型不能用 == 来比较，包装数据类型不能用 equals 来判断。&lt;/strong>&lt;/p></description></item><item><title>Java SPI 机制详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/java/basis/spi/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/java/basis/spi/</guid><description>&lt;blockquote>
-&lt;p>本文来自 &lt;a href="https://github.com/jjx0708">Kingshion&lt;/a> 投稿。欢迎更多朋友参与到 JavaGuide 的维护工作，这是一件非常有意义的事情。详细信息请看：&lt;a href="https://javaguide.cn/javaguide/contribution-guideline.html">JavaGuide 贡献指南&lt;/a> 。&lt;/p>
+&lt;p>本文来自 
+&lt;a href="https://github.com/jjx0708">Kingshion&lt;/a> 投稿。欢迎更多朋友参与到 JavaGuide 的维护工作，这是一件非常有意义的事情。详细信息请看：
+&lt;a href="https://javaguide.cn/javaguide/contribution-guideline.html">JavaGuide 贡献指南&lt;/a> 。&lt;/p>
 &lt;/blockquote>
 &lt;p>面向对象设计鼓励模块间基于接口而非具体实现编程，以降低模块间的耦合，遵循依赖倒置原则，并支持开闭原则（对扩展开放，对修改封闭）。然而，直接依赖具体实现会导致在替换实现时需要修改代码，违背了开闭原则。为了解决这个问题，SPI 应运而生，它提供了一种服务发现机制，允许在程序外部动态指定具体实现。这与控制反转（IoC）的思想相似，将组件装配的控制权移交给了程序之外。&lt;/p>
-&lt;p>SPI 机制也解决了 Java 类加载体系中双亲委派模型带来的限制。&lt;a href="https://javaguide.cn/java/jvm/classloader.html">双亲委派模型&lt;/a>虽然保证了核心库的安全性和一致性，但也限制了核心库或扩展库加载应用程序类路径上的类（通常由第三方实现）。SPI 允许核心或扩展库定义服务接口，第三方开发者提供并部署实现，SPI 服务加载机制则在运行时动态发现并加载这些实现。例如，JDBC 4.0 及之后版本利用 SPI 自动发现和加载数据库驱动，开发者只需将驱动 JAR 包放置在类路径下即可，无需使用&lt;code>Class.forName()&lt;/code>显式加载驱动类。&lt;/p>
+&lt;p>SPI 机制也解决了 Java 类加载体系中双亲委派模型带来的限制。
+&lt;a href="https://javaguide.cn/java/jvm/classloader.html">双亲委派模型&lt;/a>虽然保证了核心库的安全性和一致性，但也限制了核心库或扩展库加载应用程序类路径上的类（通常由第三方实现）。SPI 允许核心或扩展库定义服务接口，第三方开发者提供并部署实现，SPI 服务加载机制则在运行时动态发现并加载这些实现。例如，JDBC 4.0 及之后版本利用 SPI 自动发现和加载数据库驱动，开发者只需将驱动 JAR 包放置在类路径下即可，无需使用&lt;code>Class.forName()&lt;/code>显式加载驱动类。&lt;/p>
 &lt;h2 id="spi-介绍">
  SPI 介绍
  &lt;a class="anchor" href="#spi-%e4%bb%8b%e7%bb%8d">#&lt;/a>
@@ -182,8 +186,10 @@
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>另外，像 Java 中的一大利器 &lt;strong>注解&lt;/strong> 的实现也用到了反射。&lt;/p></description></item><item><title>Java 魔法类 Unsafe 详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/java/basis/unsafe/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/java/basis/unsafe/</guid><description>&lt;blockquote>
 &lt;p>本文整理完善自下面这两篇优秀的文章：&lt;/p>
 &lt;ul>
-&lt;li>&lt;a href="https://tech.meituan.com/2019/02/14/talk-about-java-magic-class-unsafe.html">Java 魔法类：Unsafe 应用解析 - 美团技术团队 -2019&lt;/a>&lt;/li>
-&lt;li>&lt;a href="https://xie.infoq.cn/article/8b6ed4195e475bfb32dacc5cb">Java 双刃剑之 Unsafe 类详解 - 码农参上 - 2021&lt;/a>&lt;/li>
+&lt;li>
+&lt;a href="https://tech.meituan.com/2019/02/14/talk-about-java-magic-class-unsafe.html">Java 魔法类：Unsafe 应用解析 - 美团技术团队 -2019&lt;/a>&lt;/li>
+&lt;li>
+&lt;a href="https://xie.infoq.cn/article/8b6ed4195e475bfb32dacc5cb">Java 双刃剑之 Unsafe 类详解 - 码农参上 - 2021&lt;/a>&lt;/li>
 &lt;/ul>
 &lt;/blockquote>
 &lt;p>阅读过 JUC 源码的同学，一定会发现很多并发工具类都调用了一个叫做 &lt;code>Unsafe&lt;/code> 的类。&lt;/p>
@@ -201,7 +207,12 @@
 &lt;li>对于其他语言已经完成的一些现成功能，可以使用 Java 直接调用。&lt;/li>
 &lt;li>程序对时间敏感或对性能要求非常高时，有必要使用更加底层的语言，例如 C/C++甚至是汇编。&lt;/li>
 &lt;/ol>
-&lt;p>在 JUC 包的很多并发工具类在实现并发机制时，都调用了本地方法，通过它们打破了 Java 运行时的界限，能够接触到操作系统底层的某些功能。对于同一本地方法，不同的操作系统可能会通过不同的方式来实现，但是对于使用者来说是透明的，最终都会得到相同的结果。&lt;/p></description></item><item><title>Java 序列化详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/java/basis/serialization/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/java/basis/serialization/</guid><description>&lt;h2 id="什么是序列化和反序列化">
+&lt;p>在 JUC 包的很多并发工具类在实现并发机制时，都调用了本地方法，通过它们打破了 Java 运行时的界限，能够接触到操作系统底层的某些功能。对于同一本地方法，不同的操作系统可能会通过不同的方式来实现，但是对于使用者来说是透明的，最终都会得到相同的结果。&lt;/p>
+&lt;h2 id="unsafe-创建">
+ Unsafe 创建
+ &lt;a class="anchor" href="#unsafe-%e5%88%9b%e5%bb%ba">#&lt;/a>
+&lt;/h2>
+&lt;p>&lt;code>sun.misc.Unsafe&lt;/code> 部分源码如下：&lt;/p></description></item><item><title>Java 序列化详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/java/basis/serialization/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/java/basis/serialization/</guid><description>&lt;h2 id="什么是序列化和反序列化">
  什么是序列化和反序列化?
  &lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e5%ba%8f%e5%88%97%e5%8c%96%e5%92%8c%e5%8f%8d%e5%ba%8f%e5%88%97%e5%8c%96">#&lt;/a>
 &lt;/h2>
@@ -249,7 +260,8 @@
 &lt;/h3>
 &lt;p>JDK 自带的序列化，只需实现 &lt;code>java.io.Serializable&lt;/code>接口即可。&lt;/p></description></item><item><title>Java 语法糖详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/java/basis/syntactic-sugar/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/java/basis/syntactic-sugar/</guid><description>&lt;blockquote>
 &lt;p>作者：Hollis&lt;/p>
-&lt;p>原文：&lt;a href="https://mp.weixin.qq.com/s/o4XdEMq1DL-nBS-f8Za5Aw">https://mp.weixin.qq.com/s/o4XdEMq1DL-nBS-f8Za5Aw&lt;/a>&lt;/p>
+&lt;p>原文：
+&lt;a href="https://mp.weixin.qq.com/s/o4XdEMq1DL-nBS-f8Za5Aw">https://mp.weixin.qq.com/s/o4XdEMq1DL-nBS-f8Za5Aw&lt;/a>&lt;/p>
 &lt;/blockquote>
 &lt;p>语法糖是大厂 Java 面试常问的一个知识点。&lt;/p>
 &lt;p>本文从 Java 编译原理角度，深入字节码及 class 文件，抽丝剥茧，了解 Java 中的语法糖原理及用法，帮助大家在学会如何使用 Java 语法糖的同时，了解这些语法糖背后的原理。&lt;/p>
@@ -270,7 +282,9 @@
 &lt;p>前面提到过，语法糖的存在主要是方便开发人员使用。但其实， &lt;strong>Java 虚拟机并不支持这些语法糖。这些语法糖在编译阶段就会被还原成简单的基础语法结构，这个过程就是解语法糖。&lt;/strong>&lt;/p>
 &lt;p>说到编译，大家肯定都知道，Java 语言中，&lt;code>javac&lt;/code>命令可以将后缀名为&lt;code>.java&lt;/code>的源文件编译为后缀名为&lt;code>.class&lt;/code>的可以运行于 Java 虚拟机的字节码。如果你去看&lt;code>com.sun.tools.javac.main.JavaCompiler&lt;/code>的源码，你会发现在&lt;code>compile()&lt;/code>中有一个步骤就是调用&lt;code>desugar()&lt;/code>，这个方法就是负责解语法糖的实现的。&lt;/p>
 &lt;p>Java 中最常用的语法糖主要有泛型、变长参数、条件编译、自动拆装箱、内部类等。本文主要来分析下这些语法糖背后的原理。一步一步剥去糖衣，看看其本质。&lt;/p>
-&lt;p>我们这里会用到&lt;a href="https://mp.weixin.qq.com/s?__biz=MzI3NzE0NjcwMg==&amp;amp;mid=2650120609&amp;amp;idx=1&amp;amp;sn=5659f96310963ad57d55b48cee63c788&amp;amp;chksm=f36bbc80c41c3596a1e4bf9501c6280481f1b9e06d07af354474e6f3ed366fef016df673a7ba&amp;amp;scene=21#wechat_redirect">反编译&lt;/a>，你可以通过 &lt;a href="http://www.javadecompilers.com/">Decompilers online&lt;/a> 对 Class 文件进行在线反编译。&lt;/p>
+&lt;p>我们这里会用到
+&lt;a href="https://mp.weixin.qq.com/s?__biz=MzI3NzE0NjcwMg==&amp;amp;mid=2650120609&amp;amp;idx=1&amp;amp;sn=5659f96310963ad57d55b48cee63c788&amp;amp;chksm=f36bbc80c41c3596a1e4bf9501c6280481f1b9e06d07af354474e6f3ed366fef016df673a7ba&amp;amp;scene=21#wechat_redirect">反编译&lt;/a>，你可以通过 
+&lt;a href="http://www.javadecompilers.com/">Decompilers online&lt;/a> 对 Class 文件进行在线反编译。&lt;/p>
 &lt;h3 id="switch-支持-string-与枚举">
  switch 支持 String 与枚举
  &lt;a class="anchor" href="#switch-%e6%94%af%e6%8c%81-string-%e4%b8%8e%e6%9e%9a%e4%b8%be">#&lt;/a>
@@ -352,7 +366,9 @@
 &lt;li>……&lt;/li>
 &lt;/ol>
 &lt;blockquote>
-&lt;p>&lt;strong>🐛 修正（参见：&lt;a href="https://github.com/Snailclimb/JavaGuide/issues/544">issue#544&lt;/a>）&lt;/strong>：C&lt;ins>11 开始（2011 年的时候）,C&lt;/ins>就引入了多线程库，在 windows、linux、macos 都可以使用&lt;code>std::thread&lt;/code>和&lt;code>std::async&lt;/code>来创建线程。参考链接：&lt;a href="http://www.cplusplus.com/reference/thread/thread/?kw=thread">http://www.cplusplus.com/reference/thread/thread/?kw=thread&lt;/a>&lt;/p>
+&lt;p>&lt;strong>🐛 修正（参见：
+&lt;a href="https://github.com/Snailclimb/JavaGuide/issues/544">issue#544&lt;/a>）&lt;/strong>：C&lt;ins>11 开始（2011 年的时候）,C&lt;/ins>就引入了多线程库，在 windows、linux、macos 都可以使用&lt;code>std::thread&lt;/code>和&lt;code>std::async&lt;/code>来创建线程。参考链接：
+&lt;a href="http://www.cplusplus.com/reference/thread/thread/?kw=thread">http://www.cplusplus.com/reference/thread/thread/?kw=thread&lt;/a>&lt;/p>
 &lt;/blockquote>
 &lt;p>🌈 拓展一下：&lt;/p>
 &lt;p>“Write Once, Run Anywhere（一次编写，随处运行）”这句宣传口号，真心经典，流传了好多年！以至于，直到今天，依然有很多人觉得跨平台是 Java 语言最大的优势。实际上，跨平台已经不是 Java 最大的卖点了，各种 JDK 新特性也不是。目前市面上虚拟化技术已经非常成熟，比如你&lt;strong>通过 Docker 就很容易实现跨平台&lt;/strong>了。在我看来，&lt;strong>Java 强大的生态&lt;/strong>才是！&lt;/p>
@@ -407,7 +423,8 @@
 &lt;li>&lt;strong>易扩展&lt;/strong>：模块化设计使得系统扩展变得更加容易和灵活。&lt;/li>
 &lt;/ul>
 &lt;p>POP 的编程方式通常更为简单和直接，适合处理一些较简单的任务。&lt;/p>
-&lt;p>POP 和 OOP 的性能差异主要取决于它们的运行机制，而不仅仅是编程范式本身。因此，简单地比较两者的性能是一个常见的误区（相关 issue : &lt;a href="https://github.com/Snailclimb/JavaGuide/issues/431">面向过程：面向过程性能比面向对象高？？&lt;/a> ）。&lt;/p>
+&lt;p>POP 和 OOP 的性能差异主要取决于它们的运行机制，而不仅仅是编程范式本身。因此，简单地比较两者的性能是一个常见的误区（相关 issue : 
+&lt;a href="https://github.com/Snailclimb/JavaGuide/issues/431">面向过程：面向过程性能比面向对象高？？&lt;/a> ）。&lt;/p>
 &lt;p>&lt;img src="https://oss.javaguide.cn/github/javaguide/java/basis/pop-vs-oop-performance.png" alt=" POP 和 OOP 性能比较不合适" />&lt;/p>
 &lt;p>在选择编程范式时，性能并不是唯一的考虑因素。代码的可维护性、可扩展性和开发效率同样重要。&lt;/p>
 &lt;p>现代编程语言基本都支持多种编程范式，既可以用来进行面向过程编程，也可以进行面向对象编程。&lt;/p>
@@ -441,8 +458,14 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> System.&lt;span style="color:#a6e22e">out&lt;/span>.&lt;span style="color:#a6e22e">println&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;圆的周长为：&amp;#34;&lt;/span> &lt;span style="color:#f92672">+&lt;/span> circle.&lt;span style="color:#a6e22e">getPerimeter&lt;/span>());
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>我们定义了一个 &lt;code>Circle&lt;/code> 类来表示圆，该类包含了圆的半径属性和计算面积、周长的方法。&lt;/p></description></item><item><title>泛型&amp;通配符详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/java/basis/generics-and-wildcards/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/java/basis/generics-and-wildcards/</guid><description>&lt;p>&lt;strong>泛型&amp;amp;通配符&lt;/strong> 相关的面试题为我的&lt;a href="https://javaguide.cn/about-the-author/zhishixingqiu-two-years.html">知识星球&lt;/a>（点击链接即可查看详细介绍以及加入方法）专属内容，已经整理到了&lt;a href="https://javaguide.cn/zhuanlan/java-mian-shi-zhi-bei.html">《Java 面试指北》&lt;/a>（点击链接即可查看详细介绍以及获取方法）中。&lt;/p>
-&lt;p>&lt;a href="hhttps://javaguide.cn/zhuanlan/java-mian-shi-zhi-bei.html">《Java 面试指北》&lt;/a> 的部分内容展示如下，你可以将其看作是 &lt;a href="https://javaguide.cn/#/">JavaGuide&lt;/a> 的补充完善，两者可以配合使用。&lt;/p>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>我们定义了一个 &lt;code>Circle&lt;/code> 类来表示圆，该类包含了圆的半径属性和计算面积、周长的方法。&lt;/p></description></item><item><title>泛型&amp;通配符详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/java/basis/generics-and-wildcards/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/java/basis/generics-and-wildcards/</guid><description>&lt;p>&lt;strong>泛型&amp;amp;通配符&lt;/strong> 相关的面试题为我的
+&lt;a href="https://javaguide.cn/about-the-author/zhishixingqiu-two-years.html">知识星球&lt;/a>（点击链接即可查看详细介绍以及加入方法）专属内容，已经整理到了
+&lt;a href="https://javaguide.cn/zhuanlan/java-mian-shi-zhi-bei.html">《Java 面试指北》&lt;/a>（点击链接即可查看详细介绍以及获取方法）中。&lt;/p>
+&lt;p>
+&lt;a href="hhttps://javaguide.cn/zhuanlan/java-mian-shi-zhi-bei.html">《Java 面试指北》&lt;/a> 的部分内容展示如下，你可以将其看作是 
+&lt;a href="https://javaguide.cn/#/">JavaGuide&lt;/a> 的补充完善，两者可以配合使用。&lt;/p>
 &lt;p>&lt;img src="https://oss.javaguide.cn/xingqiu/image-20220304102536445.png" alt="" />&lt;/p>
-&lt;p>&lt;a href="hhttps://javaguide.cn/zhuanlan/java-mian-shi-zhi-bei.html">《Java 面试指北》&lt;/a>只是星球内部众多资料中的一个，星球还有很多其他优质资料比如&lt;a href="https://javaguide.cn/zhuanlan/">专属专栏&lt;/a>、Java 编程视频、PDF 资料。&lt;/p>
+&lt;p>
+&lt;a href="hhttps://javaguide.cn/zhuanlan/java-mian-shi-zhi-bei.html">《Java 面试指北》&lt;/a>只是星球内部众多资料中的一个，星球还有很多其他优质资料比如
+&lt;a href="https://javaguide.cn/zhuanlan/">专属专栏&lt;/a>、Java 编程视频、PDF 资料。&lt;/p>
 &lt;p>&lt;img src="https://oss.javaguide.cn/xingqiu/image-20220211231206733.png" alt="" />&lt;/p></description></item></channel></rss>

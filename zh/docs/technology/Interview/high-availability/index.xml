@@ -27,7 +27,8 @@
 &lt;p>超时到底设置多长时间是一个难题！超时值设置太高或者太低都有风险。如果设置太高的话，会降低超时机制的有效性，比如你设置超时为 10s 的话，那设置超时就没啥意义了，系统依然可能会出现大量慢请求堆积的问题。如果设置太低的话，就可能会导致在系统或者服务在某些处理请求速度变慢的情况下（比如请求突然增多），大量请求重试（超时通常会结合重试）继续加重系统或者服务的压力，进而导致整个系统或者服务被拖垮的问题。&lt;/p>
 &lt;p>通常情况下，我们建议读取超时设置为 &lt;strong>1500ms&lt;/strong> ,这是一个比较普适的值。如果你的系统或者服务对于延迟比较敏感的话，那读取超时值可以适当在 &lt;strong>1500ms&lt;/strong> 的基础上进行缩短。反之，读取超时值也可以在 &lt;strong>1500ms&lt;/strong> 的基础上进行加长，不过，尽量还是不要超过 &lt;strong>1500ms&lt;/strong> 。连接超时可以适当设置长一些，建议在 &lt;strong>1000ms ~ 5000ms&lt;/strong> 之内。&lt;/p>
 &lt;p>没有银弹！超时值具体该设置多大，还是要根据实际项目的需求和情况慢慢调整优化得到。&lt;/p>
-&lt;p>更上一层，参考&lt;a href="https://tech.meituan.com/2020/04/02/java-pooling-pratice-in-meituan.html">美团的 Java 线程池参数动态配置&lt;/a>思想，我们也可以将超时弄成可配置化的参数而不是固定的，比较简单的一种办法就是将超时的值放在配置中心中。这样的话，我们就可以根据系统或者服务的状态动态调整超时值了。&lt;/p>
+&lt;p>更上一层，参考
+&lt;a href="https://tech.meituan.com/2020/04/02/java-pooling-pratice-in-meituan.html">美团的 Java 线程池参数动态配置&lt;/a>思想，我们也可以将超时弄成可配置化的参数而不是固定的，比较简单的一种办法就是将超时的值放在配置中心中。这样的话，我们就可以根据系统或者服务的状态动态调整超时值了。&lt;/p>
 &lt;h2 id="重试机制">
  重试机制
  &lt;a class="anchor" href="#%e9%87%8d%e8%af%95%e6%9c%ba%e5%88%b6">#&lt;/a>
@@ -57,7 +58,8 @@
 &lt;/h2>
 &lt;p>简单介绍 4 种非常好理解并且容易实现的限流算法！&lt;/p>
 &lt;blockquote>
-&lt;p>图片来源于 InfoQ 的一篇文章&lt;a href="https://www.infoq.cn/article/Qg2tX8fyw5Vt-f3HH673">《分布式服务限流实战，已经为你排好坑了》&lt;/a>。&lt;/p>
+&lt;p>图片来源于 InfoQ 的一篇文章
+&lt;a href="https://www.infoq.cn/article/Qg2tX8fyw5Vt-f3HH673">《分布式服务限流实战，已经为你排好坑了》&lt;/a>。&lt;/p>
 &lt;/blockquote>
 &lt;h3 id="固定窗口计数器算法">
  固定窗口计数器算法
@@ -113,16 +115,27 @@
 &lt;p>我觉得这个是最最最重要的，代码质量有问题比如比较常见的内存泄漏、循环依赖都是对系统可用性极大的损害。大家都喜欢谈限流、降级、熔断，但是我觉得从代码质量这个源头把关是首先要做好的一件很重要的事情。如何提高代码质量？比较实际可用的就是 CodeReview，不要在乎每天多花的那 1 个小时左右的时间，作用可大着呢！&lt;/p>
 &lt;p>另外，安利几个对提高代码质量有实际效果的神器：&lt;/p>
 &lt;ul>
-&lt;li>&lt;a href="https://www.sonarqube.org/">Sonarqube&lt;/a>；&lt;/li>
-&lt;li>Alibaba 开源的 Java 诊断工具 &lt;a href="https://arthas.aliyun.com/doc/">Arthas&lt;/a>；&lt;/li>
-&lt;li>&lt;a href="https://github.com/alibaba/p3c">阿里巴巴 Java 代码规范&lt;/a>（Alibaba Java Code Guidelines）；&lt;/li>
+&lt;li>
+&lt;a href="https://www.sonarqube.org/">Sonarqube&lt;/a>；&lt;/li>
+&lt;li>Alibaba 开源的 Java 诊断工具 
+&lt;a href="https://arthas.aliyun.com/doc/">Arthas&lt;/a>；&lt;/li>
+&lt;li>
+&lt;a href="https://github.com/alibaba/p3c">阿里巴巴 Java 代码规范&lt;/a>（Alibaba Java Code Guidelines）；&lt;/li>
 &lt;li>IDEA 自带的代码分析等工具。&lt;/li>
 &lt;/ul>
 &lt;h3 id="使用集群减少单点故障">
  使用集群，减少单点故障
  &lt;a class="anchor" href="#%e4%bd%bf%e7%94%a8%e9%9b%86%e7%be%a4%e5%87%8f%e5%b0%91%e5%8d%95%e7%82%b9%e6%95%85%e9%9a%9c">#&lt;/a>
 &lt;/h3>
-&lt;p>先拿常用的 Redis 举个例子！我们如何保证我们的 Redis 缓存高可用呢？答案就是使用集群，避免单点故障。当我们使用一个 Redis 实例作为缓存的时候，这个 Redis 实例挂了之后，整个缓存服务可能就挂了。使用了集群之后，即使一台 Redis 实例挂了，不到一秒就会有另外一台 Redis 实例顶上。&lt;/p></description></item><item><title>降级&amp;熔断详解(付费)</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/high-availability/fallback-and-circuit-breaker/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/high-availability/fallback-and-circuit-breaker/</guid><description>&lt;p>&lt;strong>降级&amp;amp;熔断&lt;/strong> 相关的面试题为我的&lt;a href="https://javaguide.cn/about-the-author/zhishixingqiu-two-years.html">知识星球&lt;/a>（点击链接即可查看详细介绍以及加入方法）专属内容，已经整理到了&lt;a href="https://javaguide.cn/zhuanlan/java-mian-shi-zhi-bei.html">《Java 面试指北》&lt;/a>中。&lt;/p></description></item><item><title>冗余设计详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/high-availability/redundancy/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/high-availability/redundancy/</guid><description>&lt;p>冗余设计是保证系统和数据高可用的最常的手段。&lt;/p>
+&lt;p>先拿常用的 Redis 举个例子！我们如何保证我们的 Redis 缓存高可用呢？答案就是使用集群，避免单点故障。当我们使用一个 Redis 实例作为缓存的时候，这个 Redis 实例挂了之后，整个缓存服务可能就挂了。使用了集群之后，即使一台 Redis 实例挂了，不到一秒就会有另外一台 Redis 实例顶上。&lt;/p>
+&lt;h3 id="限流">
+ 限流
+ &lt;a class="anchor" href="#%e9%99%90%e6%b5%81">#&lt;/a>
+&lt;/h3>
+&lt;p>流量控制（flow control），其原理是监控应用流量的 QPS 或并发线程数等指标，当达到指定的阈值时对流量进行控制，以避免被瞬时的流量高峰冲垮，从而保障应用的高可用性。——来自 
+&lt;a href="https://github.com/alibaba/Sentinel" title="Sentinel">alibaba-Sentinel&lt;/a> 的 wiki。&lt;/p></description></item><item><title>降级&amp;熔断详解(付费)</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/high-availability/fallback-and-circuit-breaker/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/high-availability/fallback-and-circuit-breaker/</guid><description>&lt;p>&lt;strong>降级&amp;amp;熔断&lt;/strong> 相关的面试题为我的
+&lt;a href="https://javaguide.cn/about-the-author/zhishixingqiu-two-years.html">知识星球&lt;/a>（点击链接即可查看详细介绍以及加入方法）专属内容，已经整理到了
+&lt;a href="https://javaguide.cn/zhuanlan/java-mian-shi-zhi-bei.html">《Java 面试指北》&lt;/a>中。&lt;/p></description></item><item><title>冗余设计详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/high-availability/redundancy/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/high-availability/redundancy/</guid><description>&lt;p>冗余设计是保证系统和数据高可用的最常的手段。&lt;/p>
 &lt;p>对于服务来说，冗余的思想就是相同的服务部署多份，如果正在使用的服务突然挂掉的话，系统可以很快切换到备份服务上，大大减少系统的不可用时间，提高系统的可用性。&lt;/p>
 &lt;p>对于数据来说，冗余的思想就是相同的数据备份多份，这样就可以很简单地提高数据的安全性。&lt;/p>
 &lt;p>实际上，日常生活中就有非常多的冗余思想的应用。&lt;/p>
@@ -139,14 +152,19 @@
 &lt;p>同城和异地的主要区别在于机房之间的距离。异地通常距离较远，甚至是在不同的城市或者国家。&lt;/p>
 &lt;p>和传统的灾备设计相比，同城多活和异地多活最明显的改变在于“多活”，即所有站点都是同时在对外提供服务的。异地多活是为了应对突发状况比如火灾、地震等自然或者人为灾害。&lt;/p>
 &lt;p>光做好冗余还不够，必须要配合上 &lt;strong>故障转移&lt;/strong> 才可以！ 所谓故障转移，简单来说就是实现不可用服务快速且自动地切换到可用服务，整个过程不需要人为干涉。&lt;/p>
-&lt;p>举个例子：哨兵模式的 Redis 集群中，如果 Sentinel（哨兵） 检测到 master 节点出现故障的话， 它就会帮助我们实现故障转移，自动将某一台 slave 升级为 master，确保整个 Redis 系统的可用性。整个过程完全自动，不需要人工介入。我在&lt;a href="https://www.yuque.com/docs/share/f37fc804-bfe6-4b0d-b373-9c462188fec7">《Java 面试指北》&lt;/a>的「技术面试题篇」中的数据库部分详细介绍了 Redis 集群相关的知识点&amp;amp;面试题，感兴趣的小伙伴可以看看。&lt;/p>
-&lt;p>再举个例子：Nginx 可以结合 Keepalived 来实现高可用。如果 Nginx 主服务器宕机的话，Keepalived 可以自动进行故障转移，备用 Nginx 主服务器升级为主服务。并且，这个切换对外是透明的，因为使用的虚拟 IP，虚拟 IP 不会改变。我在&lt;a href="https://www.yuque.com/docs/share/f37fc804-bfe6-4b0d-b373-9c462188fec7">《Java 面试指北》&lt;/a>的「技术面试题篇」中的「服务器」部分详细介绍了 Nginx 相关的知识点&amp;amp;面试题，感兴趣的小伙伴可以看看。&lt;/p>
+&lt;p>举个例子：哨兵模式的 Redis 集群中，如果 Sentinel（哨兵） 检测到 master 节点出现故障的话， 它就会帮助我们实现故障转移，自动将某一台 slave 升级为 master，确保整个 Redis 系统的可用性。整个过程完全自动，不需要人工介入。我在
+&lt;a href="https://www.yuque.com/docs/share/f37fc804-bfe6-4b0d-b373-9c462188fec7">《Java 面试指北》&lt;/a>的「技术面试题篇」中的数据库部分详细介绍了 Redis 集群相关的知识点&amp;amp;面试题，感兴趣的小伙伴可以看看。&lt;/p>
+&lt;p>再举个例子：Nginx 可以结合 Keepalived 来实现高可用。如果 Nginx 主服务器宕机的话，Keepalived 可以自动进行故障转移，备用 Nginx 主服务器升级为主服务。并且，这个切换对外是透明的，因为使用的虚拟 IP，虚拟 IP 不会改变。我在
+&lt;a href="https://www.yuque.com/docs/share/f37fc804-bfe6-4b0d-b373-9c462188fec7">《Java 面试指北》&lt;/a>的「技术面试题篇」中的「服务器」部分详细介绍了 Nginx 相关的知识点&amp;amp;面试题，感兴趣的小伙伴可以看看。&lt;/p>
 &lt;p>异地多活架构实施起来非常难，需要考虑的因素非常多。本人不才，实际项目中并没有实践过异地多活架构，我对其了解还停留在书本知识。&lt;/p>
 &lt;p>如果你想要深入学习异地多活相关的知识，我这里推荐几篇我觉得还不错的文章：&lt;/p>
 &lt;ul>
-&lt;li>&lt;a href="https://mp.weixin.qq.com/s/T6mMDdtTfBuIiEowCpqu6Q">搞懂异地多活，看这篇就够了- 水滴与银弹 - 2021&lt;/a>&lt;/li>
-&lt;li>&lt;a href="https://mp.weixin.qq.com/s/hMD-IS__4JE5_nQhYPYSTg">四步构建异地多活&lt;/a>&lt;/li>
-&lt;li>&lt;a href="http://gk.link/a/10pKZ">《从零开始学架构》— 28 | 业务高可用的保障：异地多活架构&lt;/a>&lt;/li>
+&lt;li>
+&lt;a href="https://mp.weixin.qq.com/s/T6mMDdtTfBuIiEowCpqu6Q">搞懂异地多活，看这篇就够了- 水滴与银弹 - 2021&lt;/a>&lt;/li>
+&lt;li>
+&lt;a href="https://mp.weixin.qq.com/s/hMD-IS__4JE5_nQhYPYSTg">四步构建异地多活&lt;/a>&lt;/li>
+&lt;li>
+&lt;a href="http://gk.link/a/10pKZ">《从零开始学架构》— 28 | 业务高可用的保障：异地多活架构&lt;/a>&lt;/li>
 &lt;/ul>
 &lt;p>不过，这些文章大多也都是在介绍概念知识。目前，网上还缺少真正介绍具体要如何去实践落地异地多活架构的资料。&lt;/p></description></item><item><title>性能测试入门</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/high-availability/performance-test/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/high-availability/performance-test/</guid><description>&lt;p>性能测试一般情况下都是由测试这个职位去做的，那还需要我们开发学这个干嘛呢？了解性能测试的指标、分类以及工具等知识有助于我们更好地去写出性能更好的程序，另外作为开发这个角色，如果你会性能测试的话，相信也会为你的履历加分不少。&lt;/p>
 &lt;p>这篇文章是我会结合自己的实际经历以及在测试这里取的经所得，除此之外，我还借鉴了一些优秀书籍，希望对你有帮助。&lt;/p>

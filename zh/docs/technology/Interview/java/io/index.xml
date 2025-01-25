@@ -89,14 +89,16 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>} &lt;span style="color:#66d9ef">catch&lt;/span> (IOException e) {
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> e.&lt;span style="color:#a6e22e">printStackTrace&lt;/span>();
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>这个时候，你可以会想了：&lt;strong>为啥我们直接不弄一个&lt;code>BufferedFileInputStream&lt;/code>（字符缓冲文件输入流）呢？&lt;/strong>&lt;/p></description></item><item><title>Java NIO 核心知识总结</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/java/io/nio-basis/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/java/io/nio-basis/</guid><description>&lt;p>在学习 NIO 之前，需要先了解一下计算机 I/O 模型的基础理论知识。还不了解的话，可以参考我写的这篇文章：&lt;a href="https://javaguide.cn/java/io/io-model.html">Java IO 模型详解&lt;/a>。&lt;/p>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>这个时候，你可以会想了：&lt;strong>为啥我们直接不弄一个&lt;code>BufferedFileInputStream&lt;/code>（字符缓冲文件输入流）呢？&lt;/strong>&lt;/p></description></item><item><title>Java NIO 核心知识总结</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/java/io/nio-basis/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/java/io/nio-basis/</guid><description>&lt;p>在学习 NIO 之前，需要先了解一下计算机 I/O 模型的基础理论知识。还不了解的话，可以参考我写的这篇文章：
+&lt;a href="https://javaguide.cn/java/io/io-model.html">Java IO 模型详解&lt;/a>。&lt;/p>
 &lt;h2 id="nio-简介">
  NIO 简介
  &lt;a class="anchor" href="#nio-%e7%ae%80%e4%bb%8b">#&lt;/a>
 &lt;/h2>
 &lt;p>在传统的 Java I/O 模型（BIO）中，I/O 操作是以阻塞的方式进行的。也就是说，当一个线程执行一个 I/O 操作时，它会被阻塞直到操作完成。这种阻塞模型在处理多个并发连接时可能会导致性能瓶颈，因为需要为每个连接创建一个线程，而线程的创建和切换都是有开销的。&lt;/p>
 &lt;p>为了解决这个问题，在 Java1.4 版本引入了一种新的 I/O 模型 — &lt;strong>NIO&lt;/strong> （New IO，也称为 Non-blocking IO） 。NIO 弥补了同步阻塞 I/O 的不足，它在标准 Java 代码中提供了非阻塞、面向缓冲、基于通道的 I/O，可以使用少量的线程来处理多个连接，大大提高了 I/O 效率和并发。&lt;/p>
-&lt;p>下图是 BIO、NIO 和 AIO 处理客户端请求的简单对比图（关于 AIO 的介绍，可以看我写的这篇文章：&lt;a href="https://javaguide.cn/java/io/io-model.html">Java IO 模型详解&lt;/a>，不是重点，了解即可）。&lt;/p>
+&lt;p>下图是 BIO、NIO 和 AIO 处理客户端请求的简单对比图（关于 AIO 的介绍，可以看我写的这篇文章：
+&lt;a href="https://javaguide.cn/java/io/io-model.html">Java IO 模型详解&lt;/a>，不是重点，了解即可）。&lt;/p>
 &lt;p>&lt;img src="https://oss.javaguide.cn/github/javaguide/java/nio/bio-aio-nio.png" alt="BIO、NIO 和 AIO 对比" />&lt;/p>
 &lt;p>⚠️需要注意：使用 NIO 并不一定意味着高性能，它的性能优势主要体现在高并发和高延迟的网络环境下。当连接数较少、并发程度较低或者网络传输速度较快时，NIO 的性能并不一定优于传统的 BIO 。&lt;/p>
 &lt;h2 id="nio-核心组件">
