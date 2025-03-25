@@ -1,4 +1,98 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>施磊 on 随记</title><link>https://lwmfjc.github.io/zh/tags/%E6%96%BD%E7%A3%8A/</link><description>Recent content in 施磊 on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Fri, 21 Mar 2025 16:28:40 +0800</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/tags/%E6%96%BD%E7%A3%8A/index.xml" rel="self" type="application/rss+xml"/><item><title>04事务</title><link>https://lwmfjc.github.io/zh/docs/technology/MySQL/advanced_shilei/04/</link><pubDate>Fri, 21 Mar 2025 16:28:40 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/MySQL/advanced_shilei/04/</guid><description>&lt;h1 id="关闭自动提交">
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>施磊 on 随记</title><link>https://lwmfjc.github.io/zh/tags/%E6%96%BD%E7%A3%8A/</link><description>Recent content in 施磊 on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Mon, 24 Mar 2025 19:14:08 +0800</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/tags/%E6%96%BD%E7%A3%8A/index.xml" rel="self" type="application/rss+xml"/><item><title>05日志</title><link>https://lwmfjc.github.io/zh/docs/technology/MySQL/advanced_shilei/05/</link><pubDate>Mon, 24 Mar 2025 19:14:08 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/MySQL/advanced_shilei/05/</guid><description>&lt;h1 id="undolog">
+ undolog
+ &lt;a class="anchor" href="#undolog">#&lt;/a>
+&lt;/h1>
+&lt;h2 id="作用">
+ 作用
+ &lt;a class="anchor" href="#%e4%bd%9c%e7%94%a8">#&lt;/a>
+&lt;/h2>
+&lt;ol>
+&lt;li>恢复某条记录原始状态&lt;/li>
+&lt;li>记录修改过程，MVCC的原理，结合事务id知道哪些数据可见
+&lt;code>undo log的修改本身会被记录到redo log中。即使undo log未刷盘，崩溃恢复时也可以通过redo log重建undo log。&lt;/code>&lt;/li>
+&lt;/ol>
+&lt;h1 id="redolog">
+ redolog
+ &lt;a class="anchor" href="#redolog">#&lt;/a>
+&lt;/h1>
+&lt;ol>
+&lt;li>&lt;code>数据持久性&lt;/code>&amp;ndash;事务提交后，buffer pool一些脏页没有写入数据库磁盘文件。重启时，利用redolog恢复&lt;code>(表空间、页号、偏移量、数值)&lt;/code>的数据（磁盘数据）&lt;/li>
+&lt;li>由于redolog有几种策略时机刷入磁盘。另有额外线程每隔1s不断刷入redolog buffer pool数据到redolog磁盘日志文件中，如果事务未提交但是刷入了redolog日志文件也无妨。可以根据一些标识，找到哪个事务是未提交的，然后再用undolog恢复原始状态。&lt;/li>
+&lt;/ol>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>root@db211:/var/lib/mysql# ls
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>auto.cnf	 ibdata1	 public_key.pem
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>ca-key.pem	 ib_logfile0 &lt;span style="color:#f92672">(&lt;/span>redolog&lt;span style="color:#f92672">)&lt;/span>	 server-cert.pem
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>ca.pem		 ib_logfile1 &lt;span style="color:#f92672">(&lt;/span>redolog&lt;span style="color:#f92672">)&lt;/span>		 server-key.pem
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>client-cert.pem ibtmp1		 sys
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>client-key.pem	 mysql		 test
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>db211-slow.log	 performance_schema xx
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>ib_buffer_pool 	 private_key.pem
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h1 id="大小配置">
+ 大小配置
+ &lt;a class="anchor" href="#%e5%a4%a7%e5%b0%8f%e9%85%8d%e7%bd%ae">#&lt;/a>
+&lt;/h1>
+&lt;ol>
+&lt;li>Buffer Pool
+参数：innodb_buffer_pool_size
+默认值：128MB（适用于MySQL 5.7及更高版本，包括MySQL 8.0）。
+作用：缓存表数据和索引，加速数据读写操作。它是InnoDB性能的核心，建议在生产环境中设置为物理内存的50%~80%。
+调整建议：&lt;/li>
+&lt;/ol>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-mysql" data-lang="mysql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">-- 查看当前配置
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">SHOW&lt;/span> VARIABLES &lt;span style="color:#66d9ef">LIKE&lt;/span> &lt;span style="color:#e6db74">&amp;#39;innodb_buffer_pool_size&amp;#39;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">-- 动态调整（需重启生效）
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">SET&lt;/span> GLOBAL innodb_buffer_pool_size &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">2147483648&lt;/span>; &lt;span style="color:#75715e">-- 设置为2GB
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;ol start="2">
+&lt;li>Redo Log Buffer
+参数：innodb_log_buffer_size
+默认值：16MB（适用于MySQL 5.7及更高版本）。
+作用：临时存储事务产生的Redo Log，用于崩溃恢复。事务提交时，Redo Log会先写入此缓冲区，再按策略刷到磁盘的Redo Log文件（ib_logfile0、ib_logfile1）。
+调整建议：若事务频繁或有大事务（如批量插入），可适当增大此值以减少磁盘I/O。&lt;/li>
+&lt;/ol>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-mysql" data-lang="mysql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">-- 查看当前配置
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">SHOW&lt;/span> VARIABLES &lt;span style="color:#66d9ef">LIKE&lt;/span> &lt;span style="color:#e6db74">&amp;#39;innodb_log_buffer_size&amp;#39;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">-- 动态调整（需修改配置文件并重启）
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">SET&lt;/span> GLOBAL innodb_log_buffer_size &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">33554432&lt;/span>; &lt;span style="color:#75715e">-- 设置为32MB（需重启生效）
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;ol start="3">
+&lt;li>Undo Log Buffer
+参数：innodb_undo_log_buffer_size
+默认值：16MB（适用于MySQL 8.0+；MySQL 5.7中默认为1MB）。
+作用：临时存储事务产生的Undo Log，用于回滚和MVCC多版本控制。Undo Log在事务提交前会先写入此缓冲区，再异步刷到磁盘的Undo表空间。
+版本差异：
+MySQL 5.7：默认1MB，需手动调整。
+MySQL 8.0+：默认16MB，并支持动态调整。
+调整建议：&lt;/li>
+&lt;/ol>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-mysql" data-lang="mysql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">-- 查看当前配置
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">SHOW&lt;/span> VARIABLES &lt;span style="color:#66d9ef">LIKE&lt;/span> &lt;span style="color:#e6db74">&amp;#39;innodb_undo_log_buffer_size&amp;#39;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">-- 动态调整（MySQL 8.0+支持）
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">SET&lt;/span> GLOBAL innodb_undo_log_buffer_size &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">67108864&lt;/span>; &lt;span style="color:#75715e">-- 设置为64MB
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h1 id="顺序">
+ 顺序
+ &lt;a class="anchor" href="#%e9%a1%ba%e5%ba%8f">#&lt;/a>
+&lt;/h1>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>UPDATE语句执行流程：
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>1. 事务开始
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ├─ 1. 写Undo Log到Undo Log Buffer（记录旧值）
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ├─ 2. 修改Buffer Pool中的数据页（生成脏页）
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ├─ 3. 写Redo Log到Redo Log Buffer（记录物理变更）
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> └─ 4. 事务提交
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ├─ 4.1 Redo Log Prepare阶段（刷盘）
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ├─ 4.2 写Binlog并刷盘
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> └─ 4.3 Redo Log Commit阶段（标记提交）
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> └─ 5. 后台异步刷脏页到磁盘
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item><item><title>04事务</title><link>https://lwmfjc.github.io/zh/docs/technology/MySQL/advanced_shilei/04/</link><pubDate>Fri, 21 Mar 2025 16:28:40 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/MySQL/advanced_shilei/04/</guid><description>&lt;h1 id="关闭自动提交">
  关闭自动提交
  &lt;a class="anchor" href="#%e5%85%b3%e9%97%ad%e8%87%aa%e5%8a%a8%e6%8f%90%e4%ba%a4">#&lt;/a>
 &lt;/h1>
