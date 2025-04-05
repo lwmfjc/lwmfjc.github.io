@@ -76,22 +76,26 @@
 &lt;/h1>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#镜像下载 https://mirrors-i.tuna.tsinghua.edu.cn/lxc-images/images/debian/bookworm/arm64/&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#发行版 [rootfs.tar]&lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#源地址 ${EXTERNAL_STORAGE}/linuxdeploy/....tar.xz&lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#安装类型[ 目录]&lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#安装路径[ ${ENV_DIR}/rootfs/bookworm ] --&amp;gt; [ /data/data/ru.meefik.linuxdeploy/files/rootfs/bookworm ]&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#源地址 ${EXTERNAL_STORAGE}/linuxdeploy/bookworm.tar.xz&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#=====!!!!安装类型[ 目录]会有一些问题，比如ssh提示权限过高，不太懂..=======&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#安装路径[ ${ENV_DIR}/rootfs/bookworm ] --&amp;gt; [ /data/data/ru.meefik.linuxdeploy/files/rootfs/bookworm ]----安装类型[ 目录]&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#安装路径[ /data/media/0/linuxdeploy/bookworm ]----安装类型[ 目录] &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#建议放镜像&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#安装路径{EXTERNAL_STORAGE}/linuxdeploy/bookworm.img----安装类型[ 镜像文件]&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#用户名--用户密码--特权用户--本地化--DNS--networktrigger--powertrigger--随便弃用&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#(弃用)初始化-启用-run-parts--路径/etc/rc.local--初始用户root&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#!!!!初始化我这里使用sysv，通过systemctl enable ssh可以让ssh开机自启动，但是systemctl start ssh不能使用，需要用service ssh start替代&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#挂载目录--挂载点--source使用/data/media/0 （data开头的，android14中其他的好像都不行不知道为什么，给ly加了 aid_media_rw 这个组权限） sudo usermod -aG aid_media_rw username&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#其他都不需要&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#设置 telnet守护模式打开&lt;/span>
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;pre tabindex="0">&lt;code>
-telnet 192.168.1.106 5023
-su
-/data/user/0/ru.meefik.linuxdeploy/files/bin/linuxdeploy shell -u root
-#修改默认密码
-passwd
-&lt;/code>&lt;/pre>&lt;p>安装证书并重启&lt;/p></description></item><item><title>Linux操作符问题</title><link>https://lwmfjc.github.io/zh/docs/problem/Linux/20230919/</link><pubDate>Tue, 19 Sep 2023 17:59:37 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/problem/Linux/20230919/</guid><description>&lt;h1 id="函数退出">
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="镜像相关">
+ 镜像相关
+ &lt;a class="anchor" href="#%e9%95%9c%e5%83%8f%e7%9b%b8%e5%85%b3">#&lt;/a>
+&lt;/h2>
+&lt;p>扩容和缩容最好都是关了镜像系统再操作，否则需要到&lt;code>扩容后df未正确显示容量&lt;/code>这步骤再操作一次&lt;/p></description></item><item><title>Linux操作符问题</title><link>https://lwmfjc.github.io/zh/docs/problem/Linux/20230919/</link><pubDate>Tue, 19 Sep 2023 17:59:37 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/problem/Linux/20230919/</guid><description>&lt;h1 id="函数退出">
  函数退出
  &lt;a class="anchor" href="#%e5%87%bd%e6%95%b0%e9%80%80%e5%87%ba">#&lt;/a>
 &lt;/h1>
