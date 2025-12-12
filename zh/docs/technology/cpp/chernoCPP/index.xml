@@ -1,9 +1,56 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>随记</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/</link><description>Recent content on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Thu, 11 Dec 2025 19:56:24 +0800</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/index.xml" rel="self" type="application/rss+xml"/><item><title>05-</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/05-/</link><pubDate>Thu, 11 Dec 2025 19:56:24 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/05-/</guid><description>&lt;h1 id="c是如何工作的">
- C++是如何工作的
- &lt;a class="anchor" href="#c%e6%98%af%e5%a6%82%e4%bd%95%e5%b7%a5%e4%bd%9c%e7%9a%84">#&lt;/a>
-&lt;/h1>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>随记</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/</link><description>Recent content on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Sat, 13 Dec 2025 01:06:00 +0800</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/index.xml" rel="self" type="application/rss+xml"/><item><title>06</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/06/</link><pubDate>Sat, 13 Dec 2025 01:06:00 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/06/</guid><description>&lt;p>&lt;em>&lt;strong>编译器的工作原理&lt;/strong>&lt;/em>&lt;/p></description></item><item><title>05</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/05/</link><pubDate>Thu, 11 Dec 2025 19:56:24 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/05/</guid><description>&lt;p>&lt;em>&lt;strong>C++是如何工作的&lt;/strong>&lt;/em>&lt;/p>
 &lt;p>源代码 &amp;ndash;&amp;gt; 程序启动文件&lt;/p>
-&lt;p>多个源文件 &lt;em>(编译器)&amp;ndash;&amp;gt;&lt;/em> 二进制(可执行)文件&lt;/p></description></item><item><title>01-04</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/01-04/</link><pubDate>Thu, 15 May 2025 09:43:53 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/01-04/</guid><description>&lt;h1 id="welcometocpp">
+&lt;p>多个源文件 &lt;em>(编译器)&amp;ndash;&amp;gt;&lt;/em> 二进制(可执行)文件&lt;/p>
+&lt;h1 id="分析源码">
+ 分析源码
+ &lt;a class="anchor" href="#%e5%88%86%e6%9e%90%e6%ba%90%e7%a0%81">#&lt;/a>
+&lt;/h1>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-c++" data-lang="c++">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/*试着编译单个cpp文件 ctrl+f7
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">会生成Main.obj文件*/&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/*/①（编译器处理）include是预处理指令，会在编
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">译前找到iostream这个文件并插入该文件内容*/&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;iostream&amp;gt;&lt;/span>&lt;span style="color:#75715e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/*②.h文件是在预编译时被处理（插入），并不会被编译；只有
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">.cpp文件会被编译成 .obj文件，链接器把这些合并成 .exe文件*/&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/*③声明，确实有Log函数存在*/&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/*④链接器，编译整个项目时，链接器链接时才会去查找这个
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">函数是否真是存在,如果不存在，则会提示&amp;#34;unresolved external
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">symbol&amp;#34;：未解析的外部符号，链接器无法找到定义
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">---链接器的工作是将函数体链接到其标识符(名称)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">*/&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//参数名message可以省略
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//void Log(const char* message);
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>() {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">// &amp;lt;&amp;lt; 重载运算符, 运算符可以理解成函数
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//类似下面这句：
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">// std::cout.print(&amp;#34;hello world!&amp;#34;).print(std:endl);//!!编译无法通过
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;hello world!&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//Log(&amp;#34;helloworld!&amp;#34;);
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//等待按下回车键来移动到程序的下一行
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	std&lt;span style="color:#f92672">::&lt;/span>cin.get();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//可以不写return，默认返回0，表示正确返回程序
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h1 id="编译">
+ 编译
+ &lt;a class="anchor" href="#%e7%bc%96%e8%af%91">#&lt;/a>
+&lt;/h1>
+&lt;p>&lt;img src="img/ly-20251212234000724.png" alt="" />&lt;/p>
+&lt;p>项目配置：Debug/Release&lt;/p>
+&lt;p>平台配置：x64(windows64位系统),x86(windows32位系统)，android&amp;hellip;.&lt;/p>
+&lt;h2 id="项目属性">
+ 项目属性
+ &lt;a class="anchor" href="#%e9%a1%b9%e7%9b%ae%e5%b1%9e%e6%80%a7">#&lt;/a>
+&lt;/h2>
+&lt;p>&lt;img src="img/ly-20251212234311524.png" alt="" />&lt;/p></description></item><item><title>01-04</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/01-04/</link><pubDate>Thu, 15 May 2025 09:43:53 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/01-04/</guid><description>&lt;h1 id="welcometocpp">
  WelcomeToCpp
  &lt;a class="anchor" href="#welcometocpp">#&lt;/a>
 &lt;/h1>
@@ -42,8 +89,9 @@
 &lt;p>新建项目
 &lt;img src="img/ly-20251211003119486.png" alt="" />
 &lt;img src="img/ly-20251211003146818.png" alt="" />&lt;br>
-&lt;img src="img/ly-20251211003426171.png" alt="" />&lt;br>
-解决方案，solution，是一组相互关联的项目，他们有各种项目类型，解决方案就像工作台，每个项目本质上是一组文件，会编译成目标二进制文件（无论是库还是实际的可执行文件）&lt;/p>
+&lt;img src="img/ly-20251213002433105.png" alt="" /> &lt;br>
+&lt;em>不要勾选 Place solution and project in the same directory&lt;/em>&lt;/p>
+&lt;p>解决方案，solution，是一组相互关联的项目，他们有各种项目类型，解决方案就像工作台，每个项目本质上是一组文件，会编译成目标二进制文件（无论是库还是实际的可执行文件）&lt;/p>
 &lt;/li>
 &lt;li>
 &lt;p>添加新项
@@ -59,7 +107,16 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;hello world!&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cin.get();
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="运行">
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="配置文件修改">
+ 配置文件修改
+ &lt;a class="anchor" href="#%e9%85%8d%e7%bd%ae%e6%96%87%e4%bb%b6%e4%bf%ae%e6%94%b9">#&lt;/a>
+&lt;/h3>
+&lt;p>下载ChernoVS.vssettings文件，并放到下面的位置&lt;br>
+&lt;em>C:\Users\ly\AppData\Local\Microsoft\VisualStudio\17.0_f89cedea\Settings&lt;/em>&lt;/p>
+&lt;p>在vs工具栏中-tools-ImportAndExportSettings-&lt;/p>
+&lt;p>ImportSelectedEnvironmentSettings&lt;/p>
+&lt;p>选择no,just Import new，选择 ChernoVS.vssetings即可&lt;/p>
+&lt;h3 id="运行">
  运行
  &lt;a class="anchor" href="#%e8%bf%90%e8%a1%8c">#&lt;/a>
 &lt;/h3>
@@ -68,22 +125,4 @@
 &lt;p>右键，构建（项目）&lt;br>
 &lt;img src="img/ly-20251211004402649.png" alt="" />&lt;br>
 &lt;img src="img/ly-20251211004420988.png" alt="" />&lt;br>
-文件系统查看：&lt;/p>
-&lt;p>&lt;img src="img/ly-20251211004533630.png" alt="" />&lt;/p>
-&lt;/li>
-&lt;li>
-&lt;p>双击.exe文件，结果：&lt;/p>
-&lt;p>&lt;img src="img/ly-20251211004642375.png" alt="" />&lt;br>
-按任意键终止&lt;/p>
-&lt;/li>
-&lt;/ol>
-&lt;hr>
-&lt;p>或者单机本地的Windows调试器来运行它&lt;/p>
-&lt;p>&lt;img src="img/ly-20251211005056104.png" alt="" />&lt;/p>
-&lt;p>会自动弹出终端程序&lt;/p>
-&lt;p>&lt;img src="img/ly-20251211005147359.png" alt="" />&lt;/p>
-&lt;h2 id="linux平台">
- Linux平台
- &lt;a class="anchor" href="#linux%e5%b9%b3%e5%8f%b0">#&lt;/a>
-&lt;/h2>
-&lt;p>视频演示使用cmake为一个名为code light的IDE生成项目文件&lt;/p></description></item></channel></rss>
+文件系统查看：&lt;/p></description></item></channel></rss>
