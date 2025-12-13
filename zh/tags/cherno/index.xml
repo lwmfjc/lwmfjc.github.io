@@ -1,4 +1,96 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Cherno on 随记</title><link>https://lwmfjc.github.io/zh/tags/cherno/</link><description>Recent content in Cherno on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Sat, 13 Dec 2025 01:06:00 +0800</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/tags/cherno/index.xml" rel="self" type="application/rss+xml"/><item><title>06</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/06/</link><pubDate>Sat, 13 Dec 2025 01:06:00 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/06/</guid><description>&lt;p>&lt;em>&lt;strong>编译器的工作原理&lt;/strong>&lt;/em>&lt;/p></description></item><item><title>05</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/05/</link><pubDate>Thu, 11 Dec 2025 19:56:24 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/05/</guid><description>&lt;p>&lt;em>&lt;strong>C++是如何工作的&lt;/strong>&lt;/em>&lt;/p>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Cherno on 随记</title><link>https://lwmfjc.github.io/zh/tags/cherno/</link><description>Recent content in Cherno on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Sat, 13 Dec 2025 17:12:49 +0800</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/tags/cherno/index.xml" rel="self" type="application/rss+xml"/><item><title>07链接器</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/07/</link><pubDate>Sat, 13 Dec 2025 17:12:49 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/07/</guid><description>&lt;p>&lt;em>&lt;strong>07链接器&lt;/strong>&lt;/em>&lt;/p>
+&lt;h1 id="visualstudio">
+ VisualStudio
+ &lt;a class="anchor" href="#visualstudio">#&lt;/a>
+&lt;/h1>
+&lt;p>编译器将C++ 源文件编译成.obj目标文件后，需要进行&lt;mark>链接&lt;/mark>：&lt;mark>找到每个符号和函数的位置并将它们链接在一起&lt;/mark>，在这之前每个文件都已经被编译成了一个单独的目标文件作为翻译单元，它们彼此之间没有任何联系&lt;/p>
+&lt;p>Ctrl+F7只会编译文件，不会将文件链接；build项目会链接文件。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-c++" data-lang="c++">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;iostream&amp;gt;&lt;/span>&lt;span style="color:#75715e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#66d9ef">char&lt;/span>&lt;span style="color:#f92672">*&lt;/span> &lt;span style="color:#a6e22e">Log&lt;/span>(&lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#66d9ef">char&lt;/span>&lt;span style="color:#f92672">*&lt;/span> message) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">return&lt;/span> message;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">Multiply&lt;/span>(&lt;span style="color:#66d9ef">int&lt;/span> a,&lt;span style="color:#66d9ef">int&lt;/span> b ) { 
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	Log(&lt;span style="color:#e6db74">&amp;#34;Multiply&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">return&lt;/span> a &lt;span style="color:#f92672">*&lt;/span> b;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>编译实际上分为编译和链接两个阶段。如果上面代码去掉一个分号，则出现错误&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>1&amp;gt;E:&lt;span style="color:#ae81ff">\c&lt;/span>ppStudyTemp&lt;span style="color:#ae81ff">\C&lt;/span>hernoCpp&lt;span style="color:#ae81ff">\H&lt;/span>elloWorld01&lt;span style="color:#ae81ff">\H&lt;/span>elloWorld01&lt;span style="color:#ae81ff">\M&lt;/span>ath.cpp&lt;span style="color:#f92672">(&lt;/span>10,1&lt;span style="color:#f92672">)&lt;/span>: error 
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>C2143: syntax error: missing &lt;span style="color:#e6db74">&amp;#39;;&amp;#39;&lt;/span> before &lt;span style="color:#e6db74">&amp;#39;}&amp;#39;&lt;/span> 
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>1&amp;gt;Done building project &lt;span style="color:#e6db74">&amp;#34;HelloWorld01.vcxproj&amp;#34;&lt;/span> -- FAILED.
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">==========&lt;/span> Build: &lt;span style="color:#ae81ff">0&lt;/span> succeeded, &lt;span style="color:#ae81ff">1&lt;/span> failed, &lt;span style="color:#ae81ff">0&lt;/span> up-to-date, &lt;span style="color:#ae81ff">0&lt;/span> skipped &lt;span style="color:#f92672">==========&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">==========&lt;/span> Build completed at 17:51 and took 05.115 seconds &lt;span style="color:#f92672">==========&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>这里C2143，&lt;mark>C开头表示是编译阶段的错误&lt;/mark>&lt;/p>
+&lt;p>补上后将整个项目build构建后，出现另一个错误：&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>1&amp;gt;MSVCRTD.lib&lt;span style="color:#f92672">(&lt;/span>exe_main.obj&lt;span style="color:#f92672">)&lt;/span> : error LNK2019: unresolved external symbol main referenced in &lt;span style="color:#66d9ef">function&lt;/span> &lt;span style="color:#e6db74">&amp;#34;int __cdecl invoke_main(void)&amp;#34;&lt;/span> &lt;span style="color:#f92672">(&lt;/span>?invoke_main@@YAHXZ&lt;span style="color:#f92672">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>1&amp;gt;E:&lt;span style="color:#ae81ff">\c&lt;/span>ppStudyTemp&lt;span style="color:#ae81ff">\C&lt;/span>hernoCpp&lt;span style="color:#ae81ff">\H&lt;/span>elloWorld01&lt;span style="color:#ae81ff">\x&lt;/span>64&lt;span style="color:#ae81ff">\D&lt;/span>ebug&lt;span style="color:#ae81ff">\H&lt;/span>elloWorld01.exe : fatal error LNK1120: &lt;span style="color:#ae81ff">1&lt;/span> unresolved externals
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>1&amp;gt;Done building project &lt;span style="color:#e6db74">&amp;#34;HelloWorld01.vcxproj&amp;#34;&lt;/span> -- FAILED.
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>这里出现LNK1120，&lt;mark>LNK开头表示链接阶段出现错误&lt;/mark>&lt;/p></description></item><item><title>06编译器</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/06/</link><pubDate>Sat, 13 Dec 2025 01:06:00 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/06/</guid><description>&lt;p>&lt;em>&lt;strong>编译器的工作原理&lt;/strong>&lt;/em>&lt;/p>
+&lt;h1 id="介绍">
+ 介绍
+ &lt;a class="anchor" href="#%e4%bb%8b%e7%bb%8d">#&lt;/a>
+&lt;/h1>
+&lt;blockquote>
+&lt;p>源文件 &lt;em>编译&amp;ndash;&amp;gt;&lt;/em> .obj文件 &lt;em>链接&amp;ndash;&amp;gt;&lt;/em> .exe可执行文件&lt;/p>
+&lt;/blockquote>
+&lt;ul>
+&lt;li>预处理(包括标记) &amp;ndash;&amp;gt; 创建一棵抽象语法树(将所有代码转换为常量数据或指令) &amp;ndash;&amp;gt; 创建代码(CPU将执行的实际机器码)&lt;/li>
+&lt;li>编译器：为每个C++文件（先经过预处理成为翻译单元）生成&lt;em>目标文件&lt;/em>&lt;/li>
+&lt;li>文件只是C++向编译器提供源代码的方式（并不需要像java那样文件名必须和类名等同）&lt;/li>
+&lt;li>将.cpp当做C++文件，把.c当做C文件，把.h当做头文件。(默认，也可以改变这个默认约定)&lt;/li>
+&lt;li>C++文件先经过预处理后成为翻译单元，之后编译器将翻译单元生成为一个目标文件，有时将CPP文件包含在其他CPP文件中并创建一个包含大量文件的大CPP文件。这种情况下只需要编译这个大的CPP文件并生成一个翻译单元，从而生成一个目标文件&lt;/li>
+&lt;/ul>
+&lt;h1 id="hash-include">
+ hash include
+ &lt;a class="anchor" href="#hash-include">#&lt;/a>
+&lt;/h1>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-c++" data-lang="c++">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//Math.cpp
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">Multiply&lt;/span>(&lt;span style="color:#66d9ef">int&lt;/span> a, &lt;span style="color:#66d9ef">int&lt;/span> b) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">int&lt;/span> result &lt;span style="color:#f92672">=&lt;/span> a &lt;span style="color:#f92672">*&lt;/span> b;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">return&lt;/span> result;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>并编译&lt;/p>
+&lt;p>再添加一个文件&lt;mark>EndBrace.h&lt;/mark>&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-c++" data-lang="c++">&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>修改Math.cpp，修改前删除结束括号，会编译出错，之后修改为：&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-c++" data-lang="c++">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//Math.cpp
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">Multiply&lt;/span>(&lt;span style="color:#66d9ef">int&lt;/span> a, &lt;span style="color:#66d9ef">int&lt;/span> b) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">int&lt;/span> result &lt;span style="color:#f92672">=&lt;/span> a &lt;span style="color:#f92672">*&lt;/span> b;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">return&lt;/span> result;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;#34;EndBrace.h&amp;#34;&lt;/span>&lt;span style="color:#75715e">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>编译成功&lt;/p>
+&lt;h2 id="告诉编译器输出一个包含所有结果的文件">
+ 告诉编译器输出一个包含所有结果的文件
+ &lt;a class="anchor" href="#%e5%91%8a%e8%af%89%e7%bc%96%e8%af%91%e5%99%a8%e8%be%93%e5%87%ba%e4%b8%80%e4%b8%aa%e5%8c%85%e5%90%ab%e6%89%80%e6%9c%89%e7%bb%93%e6%9e%9c%e7%9a%84%e6%96%87%e4%bb%b6">#&lt;/a>
+&lt;/h2>
+&lt;h1 id="简单例子">
+ 简单例子
+ &lt;a class="anchor" href="#%e7%ae%80%e5%8d%95%e4%be%8b%e5%ad%90">#&lt;/a>
+&lt;/h1>
+&lt;p>修改配置&lt;/p>
+&lt;p>&lt;mark>这个选项会导致不会生成obj文件&lt;/mark>&lt;/p>
+&lt;p>&lt;img src="img/ly-20251213123430917.png" alt="" />&lt;/p>
+&lt;p>&lt;img src="img/ly-20251213123454072.png" alt="" />&lt;/p>
+&lt;p>Math.i&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-c++" data-lang="c++">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#line 1 &amp;#34;E:\\cppStudyTemp\\ChernoCpp\\HelloWorld\\HelloWorld\\Math.cpp&amp;#34;
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">Multiply&lt;/span>(&lt;span style="color:#66d9ef">int&lt;/span> a, &lt;span style="color:#66d9ef">int&lt;/span> b) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">int&lt;/span> result &lt;span style="color:#f92672">=&lt;/span> a &lt;span style="color:#f92672">*&lt;/span> b;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">return&lt;/span> result;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#line 1 &amp;#34;E:\\cppStudyTemp\\ChernoCpp\\HelloWorld\\HelloWorld\\EndBrace.h&amp;#34;
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#line 5 &amp;#34;E:\\cppStudyTemp\\ChernoCpp\\HelloWorld\\HelloWorld\\Math.cpp&amp;#34;
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h1 id="例子增强">
+ 例子增强
+ &lt;a class="anchor" href="#%e4%be%8b%e5%ad%90%e5%a2%9e%e5%bc%ba">#&lt;/a>
+&lt;/h1>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-c++" data-lang="c++">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#define INTEGER int
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>INTEGER &lt;span style="color:#a6e22e">Multiply&lt;/span>(&lt;span style="color:#66d9ef">int&lt;/span> a, &lt;span style="color:#66d9ef">int&lt;/span> b) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	INTEGER result &lt;span style="color:#f92672">=&lt;/span> a &lt;span style="color:#f92672">*&lt;/span> b;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">return&lt;/span> result;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Math.i&lt;/p></description></item><item><title>05</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/05/</link><pubDate>Thu, 11 Dec 2025 19:56:24 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/05/</guid><description>&lt;p>&lt;em>&lt;strong>C++是如何工作的&lt;/strong>&lt;/em>&lt;/p>
 &lt;p>源代码 &amp;ndash;&amp;gt; 程序启动文件&lt;/p>
 &lt;p>多个源文件 &lt;em>(编译器)&amp;ndash;&amp;gt;&lt;/em> 二进制(可执行)文件&lt;/p>
 &lt;h1 id="分析源码">
