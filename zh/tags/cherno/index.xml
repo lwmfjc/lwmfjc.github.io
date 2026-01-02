@@ -1,4 +1,60 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Cherno on 随记</title><link>https://lwmfjc.github.io/zh/tags/cherno/</link><description>Recent content in Cherno on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Thu, 01 Jan 2026 18:04:34 +0800</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/tags/cherno/index.xml" rel="self" type="application/rss+xml"/><item><title>31字符串</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/31%E5%AD%97%E7%AC%A6%E4%B8%B2/</link><pubDate>Thu, 01 Jan 2026 18:04:34 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/31%E5%AD%97%E7%AC%A6%E4%B8%B2/</guid><description/></item><item><title>30数组</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/30%E6%95%B0%E7%BB%84/</link><pubDate>Thu, 01 Jan 2026 10:40:02 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/30%E6%95%B0%E7%BB%84/</guid><description>&lt;p>数组：一个集合，一堆元素按照特定的顺序排列起来&lt;/p>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Cherno on 随记</title><link>https://lwmfjc.github.io/zh/tags/cherno/</link><description>Recent content in Cherno on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Thu, 01 Jan 2026 18:04:34 +0800</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/tags/cherno/index.xml" rel="self" type="application/rss+xml"/><item><title>31字符串</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/31%E5%AD%97%E7%AC%A6%E4%B8%B2/</link><pubDate>Thu, 01 Jan 2026 18:04:34 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/31%E5%AD%97%E7%AC%A6%E4%B8%B2/</guid><description>&lt;ul>
+&lt;li>字符串本质上是&lt;mark>一组字符(字符数组)&lt;/mark>，字符，即数字、字母等等&lt;/li>
+&lt;li>需要在计算机上以某种形式表示文本&lt;/li>
+&lt;li>如果想要在C++中实现字符串功能，先要了解字符的工作原理，以及字符是什么。&lt;/li>
+&lt;li>如果我们只用一个字节(8位)来表示一个字符，那么就有2^8=256种可能性。但是如果考虑到字母、数字、特殊符号、中文、韩文远超过256种。所以后面才有16字符编码(UTF-16),即用16字节表示一个字符(65536种可能性)。但在C++种不使用库就只能使用UTF-8&lt;/li>
+&lt;/ul>
+&lt;p>本章节中，其实字符串指的是字符指针&lt;/p>
+&lt;h1 id="字符串修改问题">
+ 字符串修改问题
+ &lt;a class="anchor" href="#%e5%ad%97%e7%ac%a6%e4%b8%b2%e4%bf%ae%e6%94%b9%e9%97%ae%e9%a2%98">#&lt;/a>
+&lt;/h1>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;iostream&amp;gt;&lt;/span>&lt;span style="color:#75715e"> 
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//C风格的定义字符串的方式
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//char* name = &amp;#34;Cherno&amp;#34;;
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//正常情况下不修改字符串的值,
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//如果想要新的字符串，那么就要进行全新
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//的内存分配并删除旧字符串(这里不是new，不
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//需要手动delete)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#66d9ef">char&lt;/span>&lt;span style="color:#f92672">*&lt;/span> name &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Cherno&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">char&lt;/span> &lt;span style="color:#66d9ef">const&lt;/span>&lt;span style="color:#f92672">*&lt;/span> name1 &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Cherno&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//const在*前面，不允许修改数据
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//name[2] = &amp;#39;1&amp;#39;;//报错!
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//name1[2] = &amp;#39;1&amp;#39;;//报错!
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">char&lt;/span> buffer[] &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Hello&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">char&lt;/span>&lt;span style="color:#f92672">*&lt;/span> &lt;span style="color:#66d9ef">const&lt;/span> ptr &lt;span style="color:#f92672">=&lt;/span> buffer;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//const在*后面，不允许指向另一个字符串
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//ptr = new char[3] {&amp;#39;a&amp;#39;,&amp;#39;b&amp;#39;,&amp;#39;c&amp;#39;};//报错!
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cin.get();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h1 id="字符串在内存中">
+ 字符串在内存中
+ &lt;a class="anchor" href="#%e5%ad%97%e7%ac%a6%e4%b8%b2%e5%9c%a8%e5%86%85%e5%ad%98%e4%b8%ad">#&lt;/a>
+&lt;/h1>
+&lt;p>&lt;img src="img/ly-20260102145214909.png" alt="" />&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;iostream&amp;gt;&lt;/span>&lt;span style="color:#75715e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//关闭编译器的安全检查来强制通过下一行代码
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//项目-属性-c++-语言:符合模式--&amp;gt;否,宽松模式。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">// 编译器会允许一些非标准或旧版本 C++ 的写法
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//char* name = &amp;#34;Charno&amp;#34;;
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//ASCII码: 43 68 61 72 6E 6F 00
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#66d9ef">char&lt;/span>&lt;span style="color:#f92672">*&lt;/span> name &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Charno&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	name &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> &lt;span style="color:#66d9ef">char&lt;/span>[&lt;span style="color:#ae81ff">3&lt;/span>] {&lt;span style="color:#e6db74">&amp;#39;a&amp;#39;&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;b&amp;#39;&lt;/span>,&lt;span style="color:#e6db74">&amp;#39;\0&amp;#39;&lt;/span>};
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//name[2] = &amp;#39;a&amp;#39;; //不允许
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> name &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;&lt;span style="color:#75715e">//允许
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cin.get();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>字符串在内存中&lt;/p></description></item><item><title>30数组</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/30%E6%95%B0%E7%BB%84/</link><pubDate>Thu, 01 Jan 2026 10:40:02 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/30%E6%95%B0%E7%BB%84/</guid><description>&lt;p>数组：一个集合，一堆元素按照特定的顺序排列起来&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;iostream&amp;gt;&lt;/span>&lt;span style="color:#75715e"> 
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
