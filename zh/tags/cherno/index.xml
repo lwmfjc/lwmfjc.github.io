@@ -1,4 +1,63 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Cherno on 随记</title><link>https://lwmfjc.github.io/zh/tags/cherno/</link><description>Recent content in Cherno on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Fri, 09 Jan 2026 23:24:46 +0800</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/tags/cherno/index.xml" rel="self" type="application/rss+xml"/><item><title>35成员变量初始化</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/35%E6%88%90%E5%91%98%E5%8F%98%E9%87%8F%E5%88%9D%E5%A7%8B%E5%8C%96/</link><pubDate>Fri, 09 Jan 2026 23:24:46 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/35%E6%88%90%E5%91%98%E5%8F%98%E9%87%8F%E5%88%9D%E5%A7%8B%E5%8C%96/</guid><description>&lt;h1 id="普通的初始化方法">
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Cherno on 随记</title><link>https://lwmfjc.github.io/zh/tags/cherno/</link><description>Recent content in Cherno on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Sat, 10 Jan 2026 22:39:57 +0800</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/tags/cherno/index.xml" rel="self" type="application/rss+xml"/><item><title>37-38创建对象、new关键字</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/37-38%E5%88%9B%E5%BB%BA%E5%AF%B9%E8%B1%A1new%E5%85%B3%E9%94%AE%E5%AD%97/</link><pubDate>Sat, 10 Jan 2026 22:39:57 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/37-38%E5%88%9B%E5%BB%BA%E5%AF%B9%E8%B1%A1new%E5%85%B3%E9%94%AE%E5%AD%97/</guid><description>&lt;h1 id="创建对象">
+ 创建对象
+ &lt;a class="anchor" href="#%e5%88%9b%e5%bb%ba%e5%af%b9%e8%b1%a1">#&lt;/a>
+&lt;/h1>
+&lt;p>两种方式，取决于我们在内存的哪个位置创建对象(堆heap或栈stack)&lt;/p>
+&lt;p>C++ 有一条基本准则：任何不同的对象在内存中都必须有唯一的地址。所以如果创建了两个对象&lt;code>class Empty {};Empty e1;Empty e2;&lt;/code>，只有他们都有1字节大小的情况下，e1和e2才会有不同的内存地址&lt;/p>
+&lt;ul>
+&lt;li>栈上创建的对象，有自动的生命周期，由他们的作用域决定的，离开作用域则消失&lt;/li>
+&lt;li>堆上创建的对象，会一直在，直到你手动释放它&lt;/li>
+&lt;/ul></description></item><item><title>36三元运算符</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/36%E4%B8%89%E5%85%83%E8%BF%90%E7%AE%97%E7%AC%A6/</link><pubDate>Sat, 10 Jan 2026 22:03:11 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/36%E4%B8%89%E5%85%83%E8%BF%90%E7%AE%97%E7%AC%A6/</guid><description>&lt;p>if-else的语法糖&lt;/p>
+&lt;h1 id="初试">
+ 初试
+ &lt;a class="anchor" href="#%e5%88%9d%e8%af%95">#&lt;/a>
+&lt;/h1>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;iostream&amp;gt;&lt;/span>&lt;span style="color:#75715e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;string&amp;gt;&lt;/span>&lt;span style="color:#75715e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">int&lt;/span> s_Level &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">12&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">int&lt;/span> s_Speed &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">2&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">if&lt;/span> (s_Level &lt;span style="color:#f92672">&amp;gt;&lt;/span> &lt;span style="color:#ae81ff">5&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		s_Speed &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">10&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">else&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		s_Speed &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">5&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	s_Speed &lt;span style="color:#f92672">=&lt;/span> s_Level &lt;span style="color:#f92672">&amp;gt;&lt;/span> &lt;span style="color:#ae81ff">5&lt;/span> &lt;span style="color:#f92672">?&lt;/span> &lt;span style="color:#ae81ff">10&lt;/span> &lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#ae81ff">5&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//嵌套
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">// 
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//s_Level &amp;gt; 5 &amp;amp;&amp;amp; s_Level &amp;lt; 100 这个会先被连接在一起判断
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	s_Speed &lt;span style="color:#f92672">=&lt;/span> s_Level &lt;span style="color:#f92672">&amp;gt;&lt;/span> &lt;span style="color:#ae81ff">5&lt;/span> &lt;span style="color:#f92672">&amp;amp;&amp;amp;&lt;/span> s_Level &lt;span style="color:#f92672">&amp;lt;&lt;/span> &lt;span style="color:#ae81ff">100&lt;/span> &lt;span style="color:#f92672">?&lt;/span> s_Level &lt;span style="color:#f92672">&amp;gt;&lt;/span> &lt;span style="color:#ae81ff">10&lt;/span> &lt;span style="color:#f92672">?&lt;/span> &lt;span style="color:#ae81ff">15&lt;/span> &lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#ae81ff">10&lt;/span> &lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#ae81ff">5&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//如果&amp;gt;5的情况下，如果还&amp;gt;10，则15，如果不大于10则10；否则(不
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//&amp;gt;5)，则5
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	s_Speed &lt;span style="color:#f92672">=&lt;/span> s_Level &lt;span style="color:#f92672">&amp;gt;&lt;/span> &lt;span style="color:#ae81ff">5&lt;/span> &lt;span style="color:#f92672">?&lt;/span> s_Level &lt;span style="color:#f92672">&amp;gt;&lt;/span> &lt;span style="color:#ae81ff">10&lt;/span> &lt;span style="color:#f92672">?&lt;/span> &lt;span style="color:#ae81ff">15&lt;/span> &lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#ae81ff">10&lt;/span> &lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#ae81ff">5&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//方式1：这里没有多构造空对象其实和编译器有关，后面会说到
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	std&lt;span style="color:#f92672">::&lt;/span>string rank &lt;span style="color:#f92672">=&lt;/span> s_Level &lt;span style="color:#f92672">&amp;gt;&lt;/span> &lt;span style="color:#ae81ff">10&lt;/span> &lt;span style="color:#f92672">?&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Master&amp;#34;&lt;/span> &lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Beginer&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//方式2：这种声明方式，还会比上面额外多构造一个空字符串对象
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	std&lt;span style="color:#f92672">::&lt;/span>string otherRank;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">if&lt;/span> (s_Level &lt;span style="color:#f92672">&amp;gt;&lt;/span> &lt;span style="color:#ae81ff">10&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		otherRank &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Master&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">else&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		otherRank &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Beginer&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> s_Speed &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl; &lt;span style="color:#75715e">//15
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cin.get();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h1 id="解释一下方式2">
+ 解释一下方式2
+ &lt;a class="anchor" href="#%e8%a7%a3%e9%87%8a%e4%b8%80%e4%b8%8b%e6%96%b9%e5%bc%8f2">#&lt;/a>
+&lt;/h1>
+&lt;p>编译器并不会先创建一个临时的 std::string 之后再拷贝给 rank。它的执行逻辑如下：&lt;/p></description></item><item><title>35成员变量初始化</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/35%E6%88%90%E5%91%98%E5%8F%98%E9%87%8F%E5%88%9D%E5%A7%8B%E5%8C%96/</link><pubDate>Fri, 09 Jan 2026 23:24:46 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/35%E6%88%90%E5%91%98%E5%8F%98%E9%87%8F%E5%88%9D%E5%A7%8B%E5%8C%96/</guid><description>&lt;h1 id="普通的初始化方法">
  普通的初始化方法
  &lt;a class="anchor" href="#%e6%99%ae%e9%80%9a%e7%9a%84%e5%88%9d%e5%a7%8b%e5%8c%96%e6%96%b9%e6%b3%95">#&lt;/a>
 &lt;/h1>
@@ -79,7 +138,8 @@
  构造函数的“幕后”过程
  &lt;a class="anchor" href="#%e6%9e%84%e9%80%a0%e5%87%bd%e6%95%b0%e7%9a%84%e5%b9%95%e5%90%8e%e8%bf%87%e7%a8%8b">#&lt;/a>
 &lt;/h2>
-&lt;p>当你调用一个构造函数时，程序执行并不是直接跳到 { 里的第一行代码，而是经历了两个阶段：&lt;/p></description></item><item><title>33-34const、mutable关键字</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/33constmutable%E5%85%B3%E9%94%AE%E5%AD%97/</link><pubDate>Sun, 04 Jan 2026 00:44:12 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/33constmutable%E5%85%B3%E9%94%AE%E5%AD%97/</guid><description>&lt;h1 id="常量折叠类型强转">
+&lt;blockquote>
+&lt;p>初始化阶段：以下只针对类对象，基本类型不会被自动初始化（除非是全局变量：全局变量会被清零），它们的值是内存中残留的随机垃圾值。&lt;/p></description></item><item><title>33-34const、mutable关键字</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/33-34constmutable%E5%85%B3%E9%94%AE%E5%AD%97/</link><pubDate>Sun, 04 Jan 2026 00:44:12 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/33-34constmutable%E5%85%B3%E9%94%AE%E5%AD%97/</guid><description>&lt;h1 id="常量折叠类型强转">
  常量折叠、类型强转
  &lt;a class="anchor" href="#%e5%b8%b8%e9%87%8f%e6%8a%98%e5%8f%a0%e7%b1%bb%e5%9e%8b%e5%bc%ba%e8%bd%ac">#&lt;/a>
 &lt;/h1>
