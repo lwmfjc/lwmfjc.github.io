@@ -1,20 +1,9 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>集合 on 随记</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Collection/</link><description>Recent content in 集合 on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Sat, 22 Oct 2022 18:26:52 +0000</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Collection/index.xml" rel="self" type="application/rss+xml"/><item><title>ConcurrentHashMap源码</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Collection/ly0105lysource-code-concurrenthashmap/</link><pubDate>Sat, 22 Oct 2022 18:26:52 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Collection/ly0105lysource-code-concurrenthashmap/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide （添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;h2 id="总结">
- 总结
- &lt;a class="anchor" href="#%e6%80%bb%e7%bb%93">#&lt;/a>
-&lt;/h2>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>集合 on 随记</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Collection/</link><description>Recent content in 集合 on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Sat, 22 Oct 2022 18:26:52 +0000</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Collection/index.xml" rel="self" type="application/rss+xml"/><item><title>ConcurrentHashMap源码</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Collection/ly0105lysource-code-concurrenthashmap/</link><pubDate>Sat, 22 Oct 2022 18:26:52 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Collection/ly0105lysource-code-concurrenthashmap/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide （添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;h2 id="总结">总结&lt;a class="anchor" href="#%e6%80%bb%e7%bb%93">#&lt;/a>&lt;/h2>
 &lt;p>Java7 中 &lt;code>ConcurrentHashMap&lt;/code> 使用的&lt;strong>分段锁&lt;/strong>，也就是&lt;strong>每一个 Segment&lt;/strong> 上同时只有一个线程可以操作，&lt;strong>每一个 &lt;code>Segment&lt;/code>&lt;/strong> 都是一个类似 &lt;code>HashMap&lt;/code> 数组的结构，每一个HashMap&lt;strong>可以扩容&lt;/strong>，它的&lt;strong>冲突会转化为链表&lt;/strong>。但是 &lt;code>Segment&lt;/code> 的个数一但初始化就不能改变。&lt;/p>
 &lt;p>Java8 中的 &lt;code>ConcurrentHashMap&lt;/code> 使用的 &lt;code>Synchronized&lt;/code> 锁加 CAS 的机制。结构也由 Java7 中的 &lt;strong>&lt;code>Segment&lt;/code> 数组 + &lt;code>HashEntry&lt;/code> 数组 + 链表&lt;/strong> 进化成了 &lt;strong>Node 数组 + 链表 / 红黑树&lt;/strong>，&lt;strong>Node 是类似于一个 HashEntry 的结构&lt;/strong>。它的冲突再达到一定大小时会转化成红黑树，在冲突小于一定数量时又退回链表。&lt;/p>
-&lt;h2 id="源码-略过">
- 源码 （略过）
- &lt;a class="anchor" href="#%e6%ba%90%e7%a0%81-%e7%95%a5%e8%bf%87">#&lt;/a>
-&lt;/h2>
-&lt;h2 id="concurrenthashmap17">
- ConcurrentHashMap1.7
- &lt;a class="anchor" href="#concurrenthashmap17">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="源码-略过">源码 （略过）&lt;a class="anchor" href="#%e6%ba%90%e7%a0%81-%e7%95%a5%e8%bf%87">#&lt;/a>&lt;/h2>
+&lt;h2 id="concurrenthashmap17">ConcurrentHashMap1.7&lt;a class="anchor" href="#concurrenthashmap17">#&lt;/a>&lt;/h2>
 &lt;ul>
 &lt;li>存储结构
 &lt;ul>
@@ -24,31 +13,20 @@
 &lt;/ul>
 &lt;/li>
 &lt;/ul>
-&lt;h2 id="concurrenthashmap18">
- ConcurrentHashMap1.8
- &lt;a class="anchor" href="#concurrenthashmap18">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="concurrenthashmap18">ConcurrentHashMap1.8&lt;a class="anchor" href="#concurrenthashmap18">#&lt;/a>&lt;/h2>
 &lt;ul>
 &lt;li>
 &lt;p>存储结构
 &lt;img src="img/ly-20241212141931187.png" alt="ly-20241212141931187" />
-可以发现 Java8 的 ConcurrentHashMap 相对于 Java7 来说变化比较大，不再是之前的 &lt;strong>Segment 数组 + HashEntry 数组 + 链表&lt;/strong>，而是 &lt;strong>Node 数组 + 链表 / 红黑树&lt;/strong>。当冲突链表达到一定长度时，链表会转换成红黑树。&lt;/p></description></item><item><title>HashMap源码</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Collection/ly0106lysource-code-hashmap/</link><pubDate>Fri, 21 Oct 2022 15:30:09 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Collection/ly0106lysource-code-hashmap/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide （添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;h2 id="hashmap简介">
- HashMap简介
- &lt;a class="anchor" href="#hashmap%e7%ae%80%e4%bb%8b">#&lt;/a>
-&lt;/h2>
+可以发现 Java8 的 ConcurrentHashMap 相对于 Java7 来说变化比较大，不再是之前的 &lt;strong>Segment 数组 + HashEntry 数组 + 链表&lt;/strong>，而是 &lt;strong>Node 数组 + 链表 / 红黑树&lt;/strong>。当冲突链表达到一定长度时，链表会转换成红黑树。&lt;/p></description></item><item><title>HashMap源码</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Collection/ly0106lysource-code-hashmap/</link><pubDate>Fri, 21 Oct 2022 15:30:09 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Collection/ly0106lysource-code-hashmap/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide （添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;h2 id="hashmap简介">HashMap简介&lt;a class="anchor" href="#hashmap%e7%ae%80%e4%bb%8b">#&lt;/a>&lt;/h2>
 &lt;ul>
 &lt;li>HashMap用来存放&lt;strong>键值对&lt;/strong>，基于哈希表的Map接口实现，是&lt;strong>非线程安全&lt;/strong>的&lt;/li>
 &lt;li>可以存储null的key和value，但null作为键只能有一个&lt;/li>
 &lt;li>JDK8之前，HashMap由&lt;strong>数组和链表&lt;/strong>组成，链表是为了解决哈希冲突而存在；JDK8之后，当链表大于阈值（默认8），则会选择&lt;strong>转为红黑树&lt;/strong>（当数组长度大于64则进行转换，否则只是扩容），以&lt;strong>减少搜索时间&lt;/strong>&lt;/li>
 &lt;li>HashMap默认初始化大小为16，每次&lt;strong>扩容为原容量2倍&lt;/strong>，且总是使用2的幂作为哈希表的大小&lt;/li>
 &lt;/ul>
-&lt;h2 id="底层数据结构分析">
- 底层数据结构分析
- &lt;a class="anchor" href="#%e5%ba%95%e5%b1%82%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84%e5%88%86%e6%9e%90">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="底层数据结构分析">底层数据结构分析&lt;a class="anchor" href="#%e5%ba%95%e5%b1%82%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84%e5%88%86%e6%9e%90">#&lt;/a>&lt;/h2>
 &lt;ul>
 &lt;li>
 &lt;p>JDK8之前，HashMap底层是&lt;strong>数组和链表&lt;/strong>，即&lt;strong>链表散列&lt;/strong>；通过key的hashCode，经过扰动函数，获得hash值，然后再通过(n-1) &amp;amp; hash 判断当前元素存放位置（n指的是数组长度），如果当前位置存在元素，就判断元素与要存入的元素的hash值以及key是否相同，相同则覆盖，否则通过&lt;strong>拉链法&lt;/strong>解决&lt;br>
@@ -63,8 +41,7 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// ^ ：按位异或&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// &amp;gt;&amp;gt;&amp;gt;:无符号右移，忽略符号位，空位都以0补齐&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> (key &lt;span style="color:#f92672">==&lt;/span> &lt;span style="color:#66d9ef">null&lt;/span>) &lt;span style="color:#f92672">?&lt;/span> 0 : (h &lt;span style="color:#f92672">=&lt;/span> key.&lt;span style="color:#a6e22e">hashCode&lt;/span>()) &lt;span style="color:#f92672">^&lt;/span> (h &lt;span style="color:#f92672">&amp;gt;&amp;gt;&amp;gt;&lt;/span> 16);
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
 &lt;li>
 &lt;p>JDK1.7&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//JDK1.7 , 则扰动了4次，性能较差&lt;/span>
@@ -75,25 +52,18 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> h &lt;span style="color:#f92672">^=&lt;/span> (h &lt;span style="color:#f92672">&amp;gt;&amp;gt;&amp;gt;&lt;/span> 20) &lt;span style="color:#f92672">^&lt;/span> (h &lt;span style="color:#f92672">&amp;gt;&amp;gt;&amp;gt;&lt;/span> 12);
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> h &lt;span style="color:#f92672">^&lt;/span> (h &lt;span style="color:#f92672">&amp;gt;&amp;gt;&amp;gt;&lt;/span> 7) &lt;span style="color:#f92672">^&lt;/span> (h &lt;span style="color:#f92672">&amp;gt;&amp;gt;&amp;gt;&lt;/span> 4);
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
 &lt;/ul>
 &lt;/li>
 &lt;li>
-&lt;p>JDK1.8之后，当链表长度大于阈值（默认为 8）时，会首先调用 &lt;code>treeifyBin()&lt;/code>方法。这个方法会根据 HashMap 数组来决定是否转换为红黑树。只有&lt;strong>当数组长度大于或者等于 64&lt;/strong> 的情况下，才会执行转换红黑树操作，以减少搜索时间。&lt;strong>否则，就是只是执行 &lt;code>resize()&lt;/code> 方法对数组扩容&lt;/strong>。相关源码这里就不贴了，重点关注 &lt;code>treeifyBin()&lt;/code>方法即可！&lt;/p></description></item><item><title>ArrayList源码</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Collection/ly0104lysource-code-ArrayList/</link><pubDate>Thu, 20 Oct 2022 17:01:47 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Collection/ly0104lysource-code-ArrayList/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide （添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;h2 id="简介">
- 简介
- &lt;a class="anchor" href="#%e7%ae%80%e4%bb%8b">#&lt;/a>
-&lt;/h2>
+&lt;p>JDK1.8之后，当链表长度大于阈值（默认为 8）时，会首先调用 &lt;code>treeifyBin()&lt;/code>方法。这个方法会根据 HashMap 数组来决定是否转换为红黑树。只有&lt;strong>当数组长度大于或者等于 64&lt;/strong> 的情况下，才会执行转换红黑树操作，以减少搜索时间。&lt;strong>否则，就是只是执行 &lt;code>resize()&lt;/code> 方法对数组扩容&lt;/strong>。相关源码这里就不贴了，重点关注 &lt;code>treeifyBin()&lt;/code>方法即可！&lt;/p></description></item><item><title>ArrayList源码</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Collection/ly0104lysource-code-ArrayList/</link><pubDate>Thu, 20 Oct 2022 17:01:47 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Collection/ly0104lysource-code-ArrayList/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide （添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;h2 id="简介">简介&lt;a class="anchor" href="#%e7%ae%80%e4%bb%8b">#&lt;/a>&lt;/h2>
 &lt;ul>
 &lt;li>
 &lt;p>底层是数组队列，相当于&lt;strong>动态数组&lt;/strong>，能&lt;strong>动态增长&lt;/strong>，可以在添加大量元素前先使用&lt;strong>ensureCapacity&lt;/strong>来增加ArrayList容量，&lt;strong>减少递增式再分配的数量&lt;/strong>
 源码：&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">ArrayList&lt;/span>&lt;span style="color:#f92672">&amp;lt;&lt;/span>E&lt;span style="color:#f92672">&amp;gt;&lt;/span> &lt;span style="color:#66d9ef">extends&lt;/span> AbstractList&lt;span style="color:#f92672">&amp;lt;&lt;/span>E&lt;span style="color:#f92672">&amp;gt;&lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">implements&lt;/span> List&lt;span style="color:#f92672">&amp;lt;&lt;/span>E&lt;span style="color:#f92672">&amp;gt;&lt;/span>, RandomAccess, Cloneable, java.&lt;span style="color:#a6e22e">io&lt;/span>.&lt;span style="color:#a6e22e">Serializable&lt;/span>{ }
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;ol>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">implements&lt;/span> List&lt;span style="color:#f92672">&amp;lt;&lt;/span>E&lt;span style="color:#f92672">&amp;gt;&lt;/span>, RandomAccess, Cloneable, java.&lt;span style="color:#a6e22e">io&lt;/span>.&lt;span style="color:#a6e22e">Serializable&lt;/span>{ }&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;ol>
 &lt;li>Random Access，标志接口，表明这个接口的List集合支持&lt;strong>快速随机访问&lt;/strong>，这里是指可&lt;strong>通过元素序号快速访问&lt;/strong>&lt;/li>
 &lt;li>实现Cloneable接口，能&lt;strong>被克隆&lt;/strong>&lt;/li>
 &lt;li>实现java.io.Serializable，&lt;strong>支持序列化&lt;/strong>&lt;/li>
@@ -128,8 +98,7 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">boolean&lt;/span> &lt;span style="color:#a6e22e">add&lt;/span>(E e) {
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> linkLast(e);
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#66d9ef">true&lt;/span>;
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
 &lt;li>
 &lt;p>LinkedList&lt;strong>不支持高效随机元素访问&lt;/strong>，而ArrayList支持（通过get(int index))&lt;/p>
 &lt;/li>
@@ -142,10 +111,7 @@ ArrayList的空间浪费主要体现在list列表的结尾会预留一定的容�
 &lt;/ul>
 &lt;/li>
 &lt;/ul>
-&lt;h2 id="3-扩容机制分析--jdk8-">
- 3. 扩容机制分析 ( JDK8 )
- &lt;a class="anchor" href="#3-%e6%89%a9%e5%ae%b9%e6%9c%ba%e5%88%b6%e5%88%86%e6%9e%90--jdk8-">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="3-扩容机制分析--jdk8-">3. 扩容机制分析 ( JDK8 )&lt;a class="anchor" href="#3-%e6%89%a9%e5%ae%b9%e6%9c%ba%e5%88%b6%e5%88%86%e6%9e%90--jdk8-">#&lt;/a>&lt;/h2>
 &lt;ol>
 &lt;li>
 &lt;p>ArrayList的构造函数&lt;/p>
@@ -201,22 +167,14 @@ ArrayList的空间浪费主要体现在list列表的结尾会预留一定的容�
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// replace with empty array.&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">this&lt;/span>.&lt;span style="color:#a6e22e">elementData&lt;/span> &lt;span style="color:#f92672">=&lt;/span> EMPTY_ELEMENTDATA;
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
 &lt;li>
 &lt;p>以无参构造参数函数为例
-&lt;strong>先看下面的 add()方法扩容&lt;/strong>&lt;/p></description></item><item><title>集合使用注意事项</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Collection/ly0103lycollections-precautions-for-use/</link><pubDate>Wed, 19 Oct 2022 17:26:07 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Collection/ly0103lycollections-precautions-for-use/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide （添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;h2 id="集合判空">
- 集合判空
- &lt;a class="anchor" href="#%e9%9b%86%e5%90%88%e5%88%a4%e7%a9%ba">#&lt;/a>
-&lt;/h2>
-&lt;blockquote>
+&lt;strong>先看下面的 add()方法扩容&lt;/strong>&lt;/p></description></item><item><title>集合使用注意事项</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Collection/ly0103lycollections-precautions-for-use/</link><pubDate>Wed, 19 Oct 2022 17:26:07 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Collection/ly0103lycollections-precautions-for-use/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide （添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;h2 id="集合判空">集合判空&lt;a class="anchor" href="#%e9%9b%86%e5%90%88%e5%88%a4%e7%a9%ba">#&lt;/a>&lt;/h2>
+&lt;blockquote class='book-hint '>
 &lt;p>//阿里巴巴开发手册&lt;/p>
-&lt;p>&lt;strong>判断所有集合内部的元素是否为空，使用 &lt;code>isEmpty()&lt;/code> 方法，而不是 &lt;code>size()==0&lt;/code> 的方式。&lt;/strong>&lt;/p>
-&lt;/blockquote>
-&lt;ul>
+&lt;p>&lt;strong>判断所有集合内部的元素是否为空，使用 &lt;code>isEmpty()&lt;/code> 方法，而不是 &lt;code>size()==0&lt;/code> 的方式。&lt;/strong>&lt;/p>&lt;/blockquote>&lt;ul>
 &lt;li>
 &lt;p>isEmpty()可读性更好，且&lt;strong>绝大部分情况下时间复杂度为O(1)&lt;/strong>&lt;/p>
 &lt;/li>
@@ -241,21 +199,12 @@ ArrayList的空间浪费主要体现在list列表的结尾会预留一定的容�
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">boolean&lt;/span> &lt;span style="color:#a6e22e">isEmpty&lt;/span>() {
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> sumCount() &lt;span style="color:#f92672">&amp;lt;=&lt;/span> 0L; &lt;span style="color:#75715e">// ignore transient negative values&lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
 &lt;/ul>
-&lt;h2 id="集合转map">
- 集合转Map
- &lt;a class="anchor" href="#%e9%9b%86%e5%90%88%e8%bd%acmap">#&lt;/a>
-&lt;/h2>
-&lt;blockquote>
-&lt;p>//阿里巴巴开发手册&lt;/p></description></item><item><title>集合_2</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Collection/ly0102lycollection_2/</link><pubDate>Tue, 18 Oct 2022 08:54:49 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Collection/ly0102lycollection_2/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide （添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;h2 id="map">
- Map
- &lt;a class="anchor" href="#map">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="集合转map">集合转Map&lt;a class="anchor" href="#%e9%9b%86%e5%90%88%e8%bd%acmap">#&lt;/a>&lt;/h2>
+&lt;blockquote class='book-hint '>
+&lt;p>//阿里巴巴开发手册&lt;/p></description></item><item><title>集合_2</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Collection/ly0102lycollection_2/</link><pubDate>Tue, 18 Oct 2022 08:54:49 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Collection/ly0102lycollection_2/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide （添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;h2 id="map">Map&lt;a class="anchor" href="#map">#&lt;/a>&lt;/h2>
 &lt;ul>
 &lt;li>
 &lt;p>HashMap和Hashtable的区别&lt;/p>
@@ -314,33 +263,21 @@ ArrayList的空间浪费主要体现在list列表的结尾会预留一定的容�
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> n &lt;span style="color:#f92672">|=&lt;/span> n &lt;span style="color:#f92672">&amp;gt;&amp;gt;&amp;gt;&lt;/span> 8;
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> n &lt;span style="color:#f92672">|=&lt;/span> n &lt;span style="color:#f92672">&amp;gt;&amp;gt;&amp;gt;&lt;/span> 16;
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> (n &lt;span style="color:#f92672">&amp;lt;&lt;/span> 0) &lt;span style="color:#f92672">?&lt;/span> 1 : (n &lt;span style="color:#f92672">&amp;gt;=&lt;/span> MAXIMUM_CAPACITY) &lt;span style="color:#f92672">?&lt;/span> MAXIMUM_CAPACITY : n &lt;span style="color:#f92672">+&lt;/span> 1;
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> } 
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> } &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
 &lt;/ul>
 &lt;/li>
 &lt;li>
-&lt;p>HashMap和hashSet区别&lt;/p></description></item><item><title>集合_1</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Collection/ly0101lycollection_1/</link><pubDate>Mon, 17 Oct 2022 08:55:24 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Collection/ly0101lycollection_1/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide （添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;h2 id="集合包括collection和mapcollection-存放单一元素map-存放键值对">
- 集合包括&lt;code>Collection&lt;/code>和&lt;code>Map&lt;/code>，Collection 存放单一元素。Map 存放键值对
- &lt;a class="anchor" href="#%e9%9b%86%e5%90%88%e5%8c%85%e6%8b%accollection%e5%92%8cmapcollection-%e5%ad%98%e6%94%be%e5%8d%95%e4%b8%80%e5%85%83%e7%b4%a0map-%e5%ad%98%e6%94%be%e9%94%ae%e5%80%bc%e5%af%b9">#&lt;/a>
-&lt;/h2>
+&lt;p>HashMap和hashSet区别&lt;/p></description></item><item><title>集合_1</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Collection/ly0101lycollection_1/</link><pubDate>Mon, 17 Oct 2022 08:55:24 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Collection/ly0101lycollection_1/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide （添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;h2 id="集合包括collection和mapcollection-存放单一元素map-存放键值对">集合包括&lt;code>Collection&lt;/code>和&lt;code>Map&lt;/code>，Collection 存放单一元素。Map 存放键值对&lt;a class="anchor" href="#%e9%9b%86%e5%90%88%e5%8c%85%e6%8b%accollection%e5%92%8cmapcollection-%e5%ad%98%e6%94%be%e5%8d%95%e4%b8%80%e5%85%83%e7%b4%a0map-%e5%ad%98%e6%94%be%e9%94%ae%e5%80%bc%e5%af%b9">#&lt;/a>&lt;/h2>
 &lt;p>&lt;img src="img/ly-20241212141928129.png" alt="ly-20241212141928129" />&lt;/p>
-&lt;h2 id="listsetqueuemap区别">
- List，Set，Queue，Map区别
- &lt;a class="anchor" href="#listsetqueuemap%e5%8c%ba%e5%88%ab">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="listsetqueuemap区别">List，Set，Queue，Map区别&lt;a class="anchor" href="#listsetqueuemap%e5%8c%ba%e5%88%ab">#&lt;/a>&lt;/h2>
 &lt;ul>
 &lt;li>&lt;code>List&lt;/code>(对付顺序的好帮手): 存储的元素是有序的、可重复的。&lt;/li>
 &lt;li>&lt;code>Set&lt;/code>(注重独一无二的性质): 存储的元素是无序的、不可重复的。&lt;/li>
 &lt;li>&lt;code>Queue&lt;/code>(实现排队功能的叫号机): 按特定的排队规则来确定先后顺序，存储的元素是有序的、可重复的。&lt;/li>
 &lt;li>&lt;code>Map&lt;/code>(用 key 来搜索的专家): 使用键值对（key-value）存储，类似于数学上的函数 y=f(x)，&amp;ldquo;x&amp;rdquo; 代表 key，&amp;ldquo;y&amp;rdquo; 代表 value，key 是无序的、不可重复的，value 是无序的、可重复的，每个键最多映射到一个值。&lt;/li>
 &lt;/ul>
-&lt;h2 id="各种集合框架--底层数据结构">
- 各种集合框架&amp;ndash;底层数据结构
- &lt;a class="anchor" href="#%e5%90%84%e7%a7%8d%e9%9b%86%e5%90%88%e6%a1%86%e6%9e%b6--%e5%ba%95%e5%b1%82%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="各种集合框架底层数据结构">各种集合框架&amp;ndash;底层数据结构&lt;a class="anchor" href="#%e5%90%84%e7%a7%8d%e9%9b%86%e5%90%88%e6%a1%86%e6%9e%b6%e5%ba%95%e5%b1%82%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84">#&lt;/a>&lt;/h2>
 &lt;ul>
 &lt;li>List
 &lt;ul>
@@ -365,4 +302,7 @@ ArrayList的空间浪费主要体现在list列表的结尾会预留一定的容�
 &lt;li>Map
 &lt;ul>
 &lt;li>
-&lt;p>&lt;code>HashMap&lt;/code>： JDK1.8 之前 &lt;code>HashMap&lt;/code> 由&lt;strong>数组+链表&lt;/strong>组成的，数组是 &lt;code>HashMap&lt;/code> 的主体，链表则是主要为了解决哈希冲突而存在的（“拉链法”解决冲突）。JDK1.8 以后在解决哈希冲突时有了较大的变化，当&lt;strong>链表长度大于阈值&lt;/strong>（&lt;strong>默认为 8&lt;/strong>）（将&lt;strong>链表转换成红黑树前&lt;/strong>会判断，如果&lt;strong>当前数组的长度小于 64&lt;/strong>，那么会选择&lt;strong>先进行数组扩容&lt;/strong>，而不是转换为红黑树）时，将链表转化为红黑树，以减少搜索时间&lt;/p></description></item></channel></rss>
+&lt;p>&lt;code>HashMap&lt;/code>： JDK1.8 之前 &lt;code>HashMap&lt;/code> 由&lt;strong>数组+链表&lt;/strong>组成的，数组是 &lt;code>HashMap&lt;/code> 的主体，链表则是主要为了解决哈希冲突而存在的（“拉链法”解决冲突）。JDK1.8 以后在解决哈希冲突时有了较大的变化，当&lt;strong>链表长度大于阈值&lt;/strong>（&lt;strong>默认为 8&lt;/strong>）（将&lt;strong>链表转换成红黑树前&lt;/strong>会判断，如果&lt;strong>当前数组的长度小于 64&lt;/strong>，那么会选择&lt;strong>先进行数组扩容&lt;/strong>，而不是转换为红黑树）时，将链表转化为红黑树，以减少搜索时间&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;code>LinkedHashMap&lt;/code>： &lt;code>LinkedHashMap&lt;/code> 继承自 &lt;code>HashMap&lt;/code>，所以它的底层仍然是基于拉链式散列结构 即由&lt;strong>数组和链表或红黑树&lt;/strong>组成。另外，&lt;code>LinkedHashMap&lt;/code> 在上面结构的基础上，增加了一条双向链表，使得上面的结构可以&lt;strong>保持键值对的插入顺序&lt;/strong>。同时通过对链表进行相应的操作，实现了&lt;strong>访问顺序&lt;/strong>相关逻辑。&lt;/p></description></item></channel></rss>

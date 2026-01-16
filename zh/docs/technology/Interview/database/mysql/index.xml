@@ -1,7 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>随记</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/</link><description>Recent content on 随记</description><generator>Hugo</generator><language>zh</language><atom:link href="https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/index.xml" rel="self" type="application/rss+xml"/><item><title>InnoDB存储引擎对MVCC的实现</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/innodb-implementation-of-mvcc/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/innodb-implementation-of-mvcc/</guid><description>&lt;h2 id="多版本并发控制-multi-version-concurrency-control">
- 多版本并发控制 (Multi-Version Concurrency Control)
- &lt;a class="anchor" href="#%e5%a4%9a%e7%89%88%e6%9c%ac%e5%b9%b6%e5%8f%91%e6%8e%a7%e5%88%b6-multi-version-concurrency-control">#&lt;/a>
-&lt;/h2>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>随记</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/</link><description>Recent content on 随记</description><generator>Hugo</generator><language>zh</language><atom:link href="https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/index.xml" rel="self" type="application/rss+xml"/><item><title>InnoDB存储引擎对MVCC的实现</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/innodb-implementation-of-mvcc/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/innodb-implementation-of-mvcc/</guid><description>&lt;h2 id="多版本并发控制-multi-version-concurrency-control">多版本并发控制 (Multi-Version Concurrency Control)&lt;a class="anchor" href="#%e5%a4%9a%e7%89%88%e6%9c%ac%e5%b9%b6%e5%8f%91%e6%8e%a7%e5%88%b6-multi-version-concurrency-control">#&lt;/a>&lt;/h2>
 &lt;p>MVCC 是一种并发控制机制，用于在多个并发事务同时读写数据库时保持数据的一致性和隔离性。它是通过在每个数据行上维护多个版本的数据来实现的。当一个事务要对数据库中的数据进行修改时，MVCC 会为该事务创建一个数据快照，而不是直接修改实际的数据行。&lt;/p>
 &lt;p>1、读操作（SELECT）：&lt;/p>
 &lt;p>当一个事务执行读操作时，它会使用快照读取。快照读取是基于事务开始时数据库中的状态创建的，因此事务不会读取其他事务尚未提交的修改。具体工作情况如下：&lt;/p>
@@ -25,14 +22,8 @@
 &lt;p>4、版本的回收：&lt;/p>
 &lt;p>为了防止数据库中的版本无限增长，MVCC 会定期进行版本的回收。回收机制会删除已经不再需要的旧版本数据，从而释放空间。&lt;/p>
 &lt;p>MVCC 通过创建数据的多个版本和使用快照读取来实现并发控制。读操作使用旧版本数据的快照，写操作创建新版本，并确保原始版本仍然可用。这样，不同的事务可以在一定程度上并发执行，而不会相互干扰，从而提高了数据库的并发性能和数据一致性。&lt;/p>
-&lt;h2 id="一致性非锁定读和锁定读">
- 一致性非锁定读和锁定读
- &lt;a class="anchor" href="#%e4%b8%80%e8%87%b4%e6%80%a7%e9%9d%9e%e9%94%81%e5%ae%9a%e8%af%bb%e5%92%8c%e9%94%81%e5%ae%9a%e8%af%bb">#&lt;/a>
-&lt;/h2>
-&lt;h3 id="一致性非锁定读">
- 一致性非锁定读
- &lt;a class="anchor" href="#%e4%b8%80%e8%87%b4%e6%80%a7%e9%9d%9e%e9%94%81%e5%ae%9a%e8%af%bb">#&lt;/a>
-&lt;/h3>
+&lt;h2 id="一致性非锁定读和锁定读">一致性非锁定读和锁定读&lt;a class="anchor" href="#%e4%b8%80%e8%87%b4%e6%80%a7%e9%9d%9e%e9%94%81%e5%ae%9a%e8%af%bb%e5%92%8c%e9%94%81%e5%ae%9a%e8%af%bb">#&lt;/a>&lt;/h2>
+&lt;h3 id="一致性非锁定读">一致性非锁定读&lt;a class="anchor" href="#%e4%b8%80%e8%87%b4%e6%80%a7%e9%9d%9e%e9%94%81%e5%ae%9a%e8%af%bb">#&lt;/a>&lt;/h3>
 &lt;p>对于 
 &lt;a target="_blank" href="https://dev.mysql.com/doc/refman/5.7/en/innodb-consistent-read.html">&lt;mark>一致性非锁定读（Consistent Nonlocking Reads）&lt;/mark>&lt;/a>的实现，通常做法是加一个版本号或者时间戳字段，在更新数据的同时版本号 + 1 或者更新时间戳。查询时，将当前可见的版本号与对应记录的版本号进行比对，如果记录的版本小于可见版本，则表示该记录可见&lt;/p>
 &lt;p>在 &lt;code>InnoDB&lt;/code> 存储引擎中，
@@ -47,10 +38,7 @@
 &lt;li>MySQL 缓存的优缺点是什么？&lt;/li>
 &lt;li>MySQL 缓存对性能有什么影响？&lt;/li>
 &lt;/ul>
-&lt;h2 id="mysql-查询缓存介绍">
- MySQL 查询缓存介绍
- &lt;a class="anchor" href="#mysql-%e6%9f%a5%e8%af%a2%e7%bc%93%e5%ad%98%e4%bb%8b%e7%bb%8d">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="mysql-查询缓存介绍">MySQL 查询缓存介绍&lt;a class="anchor" href="#mysql-%e6%9f%a5%e8%af%a2%e7%bc%93%e5%ad%98%e4%bb%8b%e7%bb%8d">#&lt;/a>&lt;/h2>
 &lt;p>MySQL 体系架构如下图所示：&lt;/p>
 &lt;p>&lt;img src="img/9cbc0650cc11a8753b5eef2c63fae486_MD5.jpg" alt="" />&lt;/p>
 &lt;p>为了提高完全相同的查询语句的响应速度，MySQL Server 会对查询语句进行 Hash 计算得到一个 Hash 值。MySQL Server 不会对 SQL 做任何处理，SQL 必须完全一致 Hash 值才会一样。得到 Hash 值之后，通过该 Hash 值到查询缓存中匹配该查询的结果。&lt;/p>
@@ -60,29 +48,29 @@
 &lt;/ul>
 &lt;p>也就是说，&lt;mark>一个查询语句（select）到了 MySQL Server 之后，会先到查询缓存看看，如果曾经执行过的话，就直接返回结果集给客户端。&lt;/mark>&lt;/p>
 &lt;p>&lt;img src="img/36f1b6dccabc6d8a9be3c90b664afe6a_MD5.jpg" alt="" />&lt;/p>
-&lt;h2 id="mysql-查询缓存管理和配置">
- MySQL 查询缓存管理和配置
- &lt;a class="anchor" href="#mysql-%e6%9f%a5%e8%af%a2%e7%bc%93%e5%ad%98%e7%ae%a1%e7%90%86%e5%92%8c%e9%85%8d%e7%bd%ae">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="mysql-查询缓存管理和配置">MySQL 查询缓存管理和配置&lt;a class="anchor" href="#mysql-%e6%9f%a5%e8%af%a2%e7%bc%93%e5%ad%98%e7%ae%a1%e7%90%86%e5%92%8c%e9%85%8d%e7%bd%ae">#&lt;/a>&lt;/h2>
 &lt;p>通过 &lt;code>show variables like '%query_cache%'&lt;/code>命令可以查看查询缓存相关的信息。&lt;/p>
-&lt;p>8.0 版本之前的话，打印的信息可能是下面这样的：&lt;/p></description></item><item><title>MySQL常见面试题总结</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/mysql-questions-01/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/mysql-questions-01/</guid><description>&lt;h2 id="mysql-基础">
- MySQL 基础
- &lt;a class="anchor" href="#mysql-%e5%9f%ba%e7%a1%80">#&lt;/a>
-&lt;/h2>
-&lt;h3 id="什么是关系型数据库">
- 什么是关系型数据库？
- &lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e5%85%b3%e7%b3%bb%e5%9e%8b%e6%95%b0%e6%8d%ae%e5%ba%93">#&lt;/a>
-&lt;/h3>
+&lt;p>8.0 版本之前的话，打印的信息可能是下面这样的：&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>mysql&amp;gt; show variables like &lt;span style="color:#e6db74">&amp;#39;%query_cache%&amp;#39;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>+------------------------------+---------+
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| Variable_name | Value |
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>+------------------------------+---------+
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| have_query_cache | YES |
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| query_cache_limit | &lt;span style="color:#ae81ff">1048576&lt;/span> |
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| query_cache_min_res_unit | &lt;span style="color:#ae81ff">4096&lt;/span> |
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| query_cache_size | &lt;span style="color:#ae81ff">599040&lt;/span> |
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| query_cache_type | ON |
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| query_cache_wlock_invalidate | OFF |
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>+------------------------------+---------+
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">6&lt;/span> rows in set &lt;span style="color:#f92672">(&lt;/span>0.02 sec&lt;span style="color:#f92672">)&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>8.0 以及之后版本之后，打印的信息是下面这样的：&lt;/p></description></item><item><title>MySQL常见面试题总结</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/mysql-questions-01/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/mysql-questions-01/</guid><description>&lt;h2 id="mysql-基础">MySQL 基础&lt;a class="anchor" href="#mysql-%e5%9f%ba%e7%a1%80">#&lt;/a>&lt;/h2>
+&lt;h3 id="什么是关系型数据库">什么是关系型数据库？&lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e5%85%b3%e7%b3%bb%e5%9e%8b%e6%95%b0%e6%8d%ae%e5%ba%93">#&lt;/a>&lt;/h3>
 &lt;p>顾名思义，关系型数据库（RDB，Relational Database）就是一种建立在关系模型的基础上的数据库。关系模型表明了数据库中所存储的数据之间的联系（一对一、一对多、多对多）。&lt;/p>
 &lt;p>关系型数据库中，我们的数据都被存放在了各种表中（比如用户表），表中的每一行就存放着一条数据（比如一个用户的信息）。&lt;/p>
 &lt;p>&lt;img src="img/84d0cd82c9cbf1ccc2081445e8e29d4b_MD5.jpg" alt="关系型数据库表关系" />&lt;/p>
 &lt;p>大部分关系型数据库都使用 SQL 来操作数据库中的数据。并且，大部分关系型数据库都支持事务的四大特性(ACID)。&lt;/p>
 &lt;p>&lt;mark>有哪些常见的关系型数据库呢？&lt;/mark>&lt;/p>
 &lt;p>MySQL、PostgreSQL、Oracle、SQL Server、SQLite（微信本地的聊天记录的存储就是用的 SQLite） ……。&lt;/p>
-&lt;h3 id="什么是-sql">
- 什么是 SQL？
- &lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af-sql">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="什么是-sql">什么是 SQL？&lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af-sql">#&lt;/a>&lt;/h3>
 &lt;p>SQL 是一种结构化查询语言(Structured Query Language)，专门用来与数据库打交道，目的是提供一种从数据库中读写数据的简单有效的方法。&lt;/p>
 &lt;p>几乎所有的主流关系数据库都支持 SQL ，适用性非常强。并且，一些非关系型数据库也兼容 SQL 或者使用的是类似于 SQL 的查询语言。&lt;/p>
 &lt;p>SQL 可以帮助我们：&lt;/p>
@@ -95,26 +83,28 @@
 &lt;li>搭配 SQLFlow 做机器学习；&lt;/li>
 &lt;li>……&lt;/li>
 &lt;/ul>
-&lt;h3 id="什么是-mysql">
- 什么是 MySQL？
- &lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af-mysql">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="什么是-mysql">什么是 MySQL？&lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af-mysql">#&lt;/a>&lt;/h3>
 &lt;p>&lt;img src="img/140ccd8b9b5db4eacb5289b54da6da81_MD5.jpg" alt="" />&lt;/p>
 &lt;p>&lt;mark>MySQL 是一种关系型数据库，主要用于持久化存储我们的系统中的一些数据比如用户信息。&lt;/mark>&lt;/p>
 &lt;p>由于 MySQL 是开源免费并且比较成熟的数据库，因此，MySQL 被大量使用在各种系统中。任何人都可以在 GPL(General Public License) 的许可下下载并根据个性化的需要对其进行修改。MySQL 的默认端口号是&lt;mark>3306&lt;/mark>。&lt;/p>
-&lt;h3 id="mysql-有什么优点">
- MySQL 有什么优点？
- &lt;a class="anchor" href="#mysql-%e6%9c%89%e4%bb%80%e4%b9%88%e4%bc%98%e7%82%b9">#&lt;/a>
-&lt;/h3>
-&lt;p>这个问题本质上是在问 MySQL 如此流行的原因。&lt;/p></description></item><item><title>MySQL高性能优化规范建议总结</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/mysql-high-performance-optimization-specification-recommendations/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/mysql-high-performance-optimization-specification-recommendations/</guid><description>&lt;blockquote>
+&lt;h3 id="mysql-有什么优点">MySQL 有什么优点？&lt;a class="anchor" href="#mysql-%e6%9c%89%e4%bb%80%e4%b9%88%e4%bc%98%e7%82%b9">#&lt;/a>&lt;/h3>
+&lt;p>这个问题本质上是在问 MySQL 如此流行的原因。&lt;/p>
+&lt;p>MySQL 主要具有下面这些优点：&lt;/p>
+&lt;ol>
+&lt;li>成熟稳定，功能完善。&lt;/li>
+&lt;li>开源免费。&lt;/li>
+&lt;li>文档丰富，既有详细的官方文档，又有非常多优质文章可供参考学习。&lt;/li>
+&lt;li>开箱即用，操作简单，维护成本低。&lt;/li>
+&lt;li>兼容性好，支持常见的操作系统，支持多种开发语言。&lt;/li>
+&lt;li>社区活跃，生态完善。&lt;/li>
+&lt;li>事务支持优秀， InnoDB 存储引擎默认使用 REPEATABLE-READ 并不会有任何性能损失，并且，InnoDB 实现的 REPEATABLE-READ 隔离级别其实是可以解决幻读问题发生的。&lt;/li>
+&lt;li>支持分库分表、读写分离、高可用。&lt;/li>
+&lt;/ol>
+&lt;h2 id="mysql-字段类型">MySQL 字段类型&lt;a class="anchor" href="#mysql-%e5%ad%97%e6%ae%b5%e7%b1%bb%e5%9e%8b">#&lt;/a>&lt;/h2>
+&lt;p>MySQL 字段类型可以简单分为三大类：&lt;/p></description></item><item><title>MySQL高性能优化规范建议总结</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/mysql-high-performance-optimization-specification-recommendations/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/mysql-high-performance-optimization-specification-recommendations/</guid><description>&lt;blockquote class='book-hint '>
 &lt;p>作者: 听风 原文地址: 
 &lt;a target="_blank" href="https://www.cnblogs.com/huchong/p/10219318.html">https://www.cnblogs.com/huchong/p/10219318.html&lt;/a>。&lt;/p>
-&lt;p>JavaGuide 已获得作者授权，并对原文内容进行了完善补充。&lt;/p>
-&lt;/blockquote>
-&lt;h2 id="数据库命名规范">
- 数据库命名规范
- &lt;a class="anchor" href="#%e6%95%b0%e6%8d%ae%e5%ba%93%e5%91%bd%e5%90%8d%e8%a7%84%e8%8c%83">#&lt;/a>
-&lt;/h2>
+&lt;p>JavaGuide 已获得作者授权，并对原文内容进行了完善补充。&lt;/p>&lt;/blockquote>&lt;h2 id="数据库命名规范">数据库命名规范&lt;a class="anchor" href="#%e6%95%b0%e6%8d%ae%e5%ba%93%e5%91%bd%e5%90%8d%e8%a7%84%e8%8c%83">#&lt;/a>&lt;/h2>
 &lt;ul>
 &lt;li>所有数据库对象名称必须使用小写字母并用下划线分割&lt;/li>
 &lt;li>所有数据库对象名称禁止使用 MySQL 保留关键字（如果表名中包含关键字查询时，需要将其用单引号括起来）&lt;/li>
@@ -122,59 +112,44 @@
 &lt;li>临时库表必须以 &lt;code>tmp_&lt;/code> 为前缀并以日期为后缀，备份表必须以 &lt;code>bak_&lt;/code> 为前缀并以日期 (时间戳) 为后缀&lt;/li>
 &lt;li>所有存储相同数据的列名和列类型必须一致（一般作为关联列，如果查询时关联列类型不一致会自动进行数据类型隐式转换，会造成列上的索引失效，导致查询效率降低）&lt;/li>
 &lt;/ul>
-&lt;h2 id="数据库基本设计规范">
- 数据库基本设计规范
- &lt;a class="anchor" href="#%e6%95%b0%e6%8d%ae%e5%ba%93%e5%9f%ba%e6%9c%ac%e8%ae%be%e8%ae%a1%e8%a7%84%e8%8c%83">#&lt;/a>
-&lt;/h2>
-&lt;h3 id="所有表必须使用-innodb-存储引擎">
- 所有表必须使用 InnoDB 存储引擎
- &lt;a class="anchor" href="#%e6%89%80%e6%9c%89%e8%a1%a8%e5%bf%85%e9%a1%bb%e4%bd%bf%e7%94%a8-innodb-%e5%ad%98%e5%82%a8%e5%bc%95%e6%93%8e">#&lt;/a>
-&lt;/h3>
+&lt;h2 id="数据库基本设计规范">数据库基本设计规范&lt;a class="anchor" href="#%e6%95%b0%e6%8d%ae%e5%ba%93%e5%9f%ba%e6%9c%ac%e8%ae%be%e8%ae%a1%e8%a7%84%e8%8c%83">#&lt;/a>&lt;/h2>
+&lt;h3 id="所有表必须使用-innodb-存储引擎">所有表必须使用 InnoDB 存储引擎&lt;a class="anchor" href="#%e6%89%80%e6%9c%89%e8%a1%a8%e5%bf%85%e9%a1%bb%e4%bd%bf%e7%94%a8-innodb-%e5%ad%98%e5%82%a8%e5%bc%95%e6%93%8e">#&lt;/a>&lt;/h3>
 &lt;p>没有特殊要求（即 InnoDB 无法满足的功能如：列存储，存储空间数据等）的情况下，所有表必须使用 InnoDB 存储引擎（MySQL5.5 之前默认使用 Myisam，5.6 以后默认的为 InnoDB）。&lt;/p>
 &lt;p>InnoDB 支持事务，支持行级锁，更好的恢复性，高并发下性能更好。&lt;/p>
-&lt;h3 id="数据库和表的字符集统一使用-utf8">
- 数据库和表的字符集统一使用 UTF8
- &lt;a class="anchor" href="#%e6%95%b0%e6%8d%ae%e5%ba%93%e5%92%8c%e8%a1%a8%e7%9a%84%e5%ad%97%e7%ac%a6%e9%9b%86%e7%bb%9f%e4%b8%80%e4%bd%bf%e7%94%a8-utf8">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="数据库和表的字符集统一使用-utf8">数据库和表的字符集统一使用 UTF8&lt;a class="anchor" href="#%e6%95%b0%e6%8d%ae%e5%ba%93%e5%92%8c%e8%a1%a8%e7%9a%84%e5%ad%97%e7%ac%a6%e9%9b%86%e7%bb%9f%e4%b8%80%e4%bd%bf%e7%94%a8-utf8">#&lt;/a>&lt;/h3>
 &lt;p>兼容性更好，统一字符集可以避免由于字符集转换产生的乱码，不同的字符集进行比较前需要进行转换会造成索引失效，如果数据库中有存储 emoji 表情的需要，字符集需要采用 utf8mb4 字符集。&lt;/p>
 &lt;p>推荐阅读一下我写的这篇文章：
 &lt;a target="_blank" href="../character-set.md">MySQL 字符集详解&lt;/a> 。&lt;/p>
-&lt;h3 id="所有表和字段都需要添加注释">
- 所有表和字段都需要添加注释
- &lt;a class="anchor" href="#%e6%89%80%e6%9c%89%e8%a1%a8%e5%92%8c%e5%ad%97%e6%ae%b5%e9%83%bd%e9%9c%80%e8%a6%81%e6%b7%bb%e5%8a%a0%e6%b3%a8%e9%87%8a">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="所有表和字段都需要添加注释">所有表和字段都需要添加注释&lt;a class="anchor" href="#%e6%89%80%e6%9c%89%e8%a1%a8%e5%92%8c%e5%ad%97%e6%ae%b5%e9%83%bd%e9%9c%80%e8%a6%81%e6%b7%bb%e5%8a%a0%e6%b3%a8%e9%87%8a">#&lt;/a>&lt;/h3>
 &lt;p>使用 comment 从句添加表和列的备注，从一开始就进行数据字典的维护&lt;/p>
-&lt;h3 id="尽量控制单表数据量的大小建议控制在-500-万以内">
- 尽量控制单表数据量的大小，建议控制在 500 万以内
- &lt;a class="anchor" href="#%e5%b0%bd%e9%87%8f%e6%8e%a7%e5%88%b6%e5%8d%95%e8%a1%a8%e6%95%b0%e6%8d%ae%e9%87%8f%e7%9a%84%e5%a4%a7%e5%b0%8f%e5%bb%ba%e8%ae%ae%e6%8e%a7%e5%88%b6%e5%9c%a8-500-%e4%b8%87%e4%bb%a5%e5%86%85">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="尽量控制单表数据量的大小建议控制在-500-万以内">尽量控制单表数据量的大小，建议控制在 500 万以内&lt;a class="anchor" href="#%e5%b0%bd%e9%87%8f%e6%8e%a7%e5%88%b6%e5%8d%95%e8%a1%a8%e6%95%b0%e6%8d%ae%e9%87%8f%e7%9a%84%e5%a4%a7%e5%b0%8f%e5%bb%ba%e8%ae%ae%e6%8e%a7%e5%88%b6%e5%9c%a8-500-%e4%b8%87%e4%bb%a5%e5%86%85">#&lt;/a>&lt;/h3>
 &lt;p>500 万并不是 MySQL 数据库的限制，过大会造成修改表结构，备份，恢复都会有很大的问题。&lt;/p>
 &lt;p>可以用历史数据归档（应用于日志数据），分库分表（应用于业务数据）等手段来控制数据量大小&lt;/p>
-&lt;h3 id="谨慎使用-mysql-分区表">
- 谨慎使用 MySQL 分区表
- &lt;a class="anchor" href="#%e8%b0%a8%e6%85%8e%e4%bd%bf%e7%94%a8-mysql-%e5%88%86%e5%8c%ba%e8%a1%a8">#&lt;/a>
-&lt;/h3>
-&lt;p>分区表在物理上表现为多个文件，在逻辑上表现为一个表；&lt;/p></description></item><item><title>MySQL日期类型选择建议</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/some-thoughts-on-database-storage-time/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/some-thoughts-on-database-storage-time/</guid><description>&lt;p>我们平时开发中不可避免的就是要存储时间，比如我们要记录操作表中这条记录的时间、记录转账的交易时间、记录出发时间、用户下单时间等等。你会发现时间这个东西与我们开发的联系还是非常紧密的，用的好与不好会给我们的业务甚至功能带来很大的影响。所以，我们有必要重新出发，好好认识一下这个东西。&lt;/p>
-&lt;h2 id="不要用字符串存储日期">
- 不要用字符串存储日期
- &lt;a class="anchor" href="#%e4%b8%8d%e8%a6%81%e7%94%a8%e5%ad%97%e7%ac%a6%e4%b8%b2%e5%ad%98%e5%82%a8%e6%97%a5%e6%9c%9f">#&lt;/a>
-&lt;/h2>
+&lt;h3 id="谨慎使用-mysql-分区表">谨慎使用 MySQL 分区表&lt;a class="anchor" href="#%e8%b0%a8%e6%85%8e%e4%bd%bf%e7%94%a8-mysql-%e5%88%86%e5%8c%ba%e8%a1%a8">#&lt;/a>&lt;/h3>
+&lt;p>分区表在物理上表现为多个文件，在逻辑上表现为一个表；&lt;/p>
+&lt;p>谨慎选择分区键，跨分区查询效率可能更低；&lt;/p>
+&lt;p>建议采用物理分表的方式管理大数据。&lt;/p>
+&lt;h3 id="经常一起使用的列放到一个表中">经常一起使用的列放到一个表中&lt;a class="anchor" href="#%e7%bb%8f%e5%b8%b8%e4%b8%80%e8%b5%b7%e4%bd%bf%e7%94%a8%e7%9a%84%e5%88%97%e6%94%be%e5%88%b0%e4%b8%80%e4%b8%aa%e8%a1%a8%e4%b8%ad">#&lt;/a>&lt;/h3>
+&lt;p>避免更多的关联操作。&lt;/p>
+&lt;h3 id="禁止在表中建立预留字段">禁止在表中建立预留字段&lt;a class="anchor" href="#%e7%a6%81%e6%ad%a2%e5%9c%a8%e8%a1%a8%e4%b8%ad%e5%bb%ba%e7%ab%8b%e9%a2%84%e7%95%99%e5%ad%97%e6%ae%b5">#&lt;/a>&lt;/h3>
+&lt;ul>
+&lt;li>预留字段的命名很难做到见名识义。&lt;/li>
+&lt;li>预留字段无法确认存储的数据类型，所以无法选择合适的类型。&lt;/li>
+&lt;li>对预留字段类型的修改，会对表进行锁定。&lt;/li>
+&lt;/ul>
+&lt;h3 id="禁止在数据库中存储文件比如图片这类大的二进制数据">禁止在数据库中存储文件（比如图片）这类大的二进制数据&lt;a class="anchor" href="#%e7%a6%81%e6%ad%a2%e5%9c%a8%e6%95%b0%e6%8d%ae%e5%ba%93%e4%b8%ad%e5%ad%98%e5%82%a8%e6%96%87%e4%bb%b6%e6%af%94%e5%a6%82%e5%9b%be%e7%89%87%e8%bf%99%e7%b1%bb%e5%a4%a7%e7%9a%84%e4%ba%8c%e8%bf%9b%e5%88%b6%e6%95%b0%e6%8d%ae">#&lt;/a>&lt;/h3>
+&lt;p>在数据库中存储文件会严重影响数据库性能，消耗过多存储空间。&lt;/p></description></item><item><title>MySQL日期类型选择建议</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/some-thoughts-on-database-storage-time/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/some-thoughts-on-database-storage-time/</guid><description>&lt;p>我们平时开发中不可避免的就是要存储时间，比如我们要记录操作表中这条记录的时间、记录转账的交易时间、记录出发时间、用户下单时间等等。你会发现时间这个东西与我们开发的联系还是非常紧密的，用的好与不好会给我们的业务甚至功能带来很大的影响。所以，我们有必要重新出发，好好认识一下这个东西。&lt;/p>
+&lt;h2 id="不要用字符串存储日期">不要用字符串存储日期&lt;a class="anchor" href="#%e4%b8%8d%e8%a6%81%e7%94%a8%e5%ad%97%e7%ac%a6%e4%b8%b2%e5%ad%98%e5%82%a8%e6%97%a5%e6%9c%9f">#&lt;/a>&lt;/h2>
 &lt;p>和绝大部分对数据库不太了解的新手一样，我在大学的时候就这样干过，甚至认为这样是一个不错的表示日期的方法。毕竟简单直白，容易上手。&lt;/p>
 &lt;p>但是，这是不正确的做法，主要会有下面两个问题：&lt;/p>
 &lt;ol>
 &lt;li>字符串占用的空间更大！&lt;/li>
 &lt;li>字符串存储的日期效率比较低（逐个字符进行比对），无法用日期相关的 API 进行计算和比较。&lt;/li>
 &lt;/ol>
-&lt;h2 id="datetime-和-timestamp-之间的抉择">
- Datetime 和 Timestamp 之间的抉择
- &lt;a class="anchor" href="#datetime-%e5%92%8c-timestamp-%e4%b9%8b%e9%97%b4%e7%9a%84%e6%8a%89%e6%8b%a9">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="datetime-和-timestamp-之间的抉择">Datetime 和 Timestamp 之间的抉择&lt;a class="anchor" href="#datetime-%e5%92%8c-timestamp-%e4%b9%8b%e9%97%b4%e7%9a%84%e6%8a%89%e6%8b%a9">#&lt;/a>&lt;/h2>
 &lt;p>Datetime 和 Timestamp 是 MySQL 提供的两种比较相似的保存时间的数据类型，可以精确到秒。他们两者究竟该如何选择呢？&lt;/p>
 &lt;p>下面我们来简单对比一下二者。&lt;/p>
-&lt;h3 id="时区信息">
- 时区信息
- &lt;a class="anchor" href="#%e6%97%b6%e5%8c%ba%e4%bf%a1%e6%81%af">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="时区信息">时区信息&lt;a class="anchor" href="#%e6%97%b6%e5%8c%ba%e4%bf%a1%e6%81%af">#&lt;/a>&lt;/h3>
 &lt;p>&lt;mark>DateTime 类型是没有时区信息的（时区无关）&lt;/mark> ，DateTime 类型保存的时间都是当前会话所设置的时区对应的时间。这样就会有什么问题呢？当你的时区更换之后，比如你的服务器更换地址或者更换客户端连接时区设置的话，就会导致你从数据库中读出的时间错误。&lt;/p>
 &lt;p>&lt;mark>Timestamp 和时区有关&lt;/mark>。Timestamp 类型字段的值会随着服务器时区的变化而变化，自动换算成相应的时间，说简单点就是在不同时区，查询到同一个条记录此字段的值会不一样。&lt;/p>
 &lt;p>下面实际演示一下！&lt;/p>
@@ -184,31 +159,26 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">`&lt;/span>date_time&lt;span style="color:#f92672">`&lt;/span> datetime &lt;span style="color:#66d9ef">DEFAULT&lt;/span> &lt;span style="color:#66d9ef">NULL&lt;/span>,
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">`&lt;/span>time_stamp&lt;span style="color:#f92672">`&lt;/span> &lt;span style="color:#66d9ef">timestamp&lt;/span> &lt;span style="color:#66d9ef">NOT&lt;/span> &lt;span style="color:#66d9ef">NULL&lt;/span> &lt;span style="color:#66d9ef">DEFAULT&lt;/span> &lt;span style="color:#66d9ef">CURRENT_TIMESTAMP&lt;/span> &lt;span style="color:#66d9ef">ON&lt;/span> &lt;span style="color:#66d9ef">UPDATE&lt;/span> &lt;span style="color:#66d9ef">CURRENT_TIMESTAMP&lt;/span>,
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">PRIMARY&lt;/span> &lt;span style="color:#66d9ef">KEY&lt;/span> (&lt;span style="color:#f92672">`&lt;/span>id&lt;span style="color:#f92672">`&lt;/span>)
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>) ENGINE&lt;span style="color:#f92672">=&lt;/span>InnoDB &lt;span style="color:#66d9ef">DEFAULT&lt;/span> CHARSET&lt;span style="color:#f92672">=&lt;/span>utf8;
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>插入数据：&lt;/p>
-&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sql" data-lang="sql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">INSERT&lt;/span> &lt;span style="color:#66d9ef">INTO&lt;/span> time_zone_test(date_time,time_stamp) &lt;span style="color:#66d9ef">VALUES&lt;/span>(NOW(),NOW());
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>查看数据：&lt;/p>
-&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sql" data-lang="sql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">select&lt;/span> date_time,time_stamp &lt;span style="color:#66d9ef">from&lt;/span> time_zone_test;
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>结果：&lt;/p>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>) ENGINE&lt;span style="color:#f92672">=&lt;/span>InnoDB &lt;span style="color:#66d9ef">DEFAULT&lt;/span> CHARSET&lt;span style="color:#f92672">=&lt;/span>utf8;&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>插入数据：&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sql" data-lang="sql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">INSERT&lt;/span> &lt;span style="color:#66d9ef">INTO&lt;/span> time_zone_test(date_time,time_stamp) &lt;span style="color:#66d9ef">VALUES&lt;/span>(NOW(),NOW());&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>查看数据：&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sql" data-lang="sql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">select&lt;/span> date_time,time_stamp &lt;span style="color:#66d9ef">from&lt;/span> time_zone_test;&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>结果：&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-plain" data-lang="plain">&lt;span style="display:flex;">&lt;span>+---------------------+---------------------+
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| date_time | time_stamp |
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>+---------------------+---------------------+
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| 2020-01-11 09:53:32 | 2020-01-11 09:53:32 |
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>+---------------------+---------------------+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>现在我们运行&lt;/p>
+&lt;p>修改当前会话的时区:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sql" data-lang="sql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">set&lt;/span> time_zone&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#e6db74">&amp;#39;+8:00&amp;#39;&lt;/span>;&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>再次查看数据：&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-plain" data-lang="plain">&lt;span style="display:flex;">&lt;span>+---------------------+---------------------+
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| date_time | time_stamp |
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>+---------------------+---------------------+
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>现在我们运行&lt;/p></description></item><item><title>MySQL三大日志(binlog、redo log和undo log)详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/mysql-logs/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/mysql-logs/</guid><description>&lt;blockquote>
-&lt;p>本文来自公号程序猿阿星投稿，JavaGuide 对其做了补充完善。&lt;/p>
-&lt;/blockquote>
-&lt;h2 id="前言">
- 前言
- &lt;a class="anchor" href="#%e5%89%8d%e8%a8%80">#&lt;/a>
-&lt;/h2>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| 2020-01-11 09:53:32 | 2020-01-11 17:53:32 |
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>+---------------------+---------------------+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;mark>扩展：一些关于 MySQL 时区设置的一个常用 sql 命令&lt;/mark>&lt;/p></description></item><item><title>MySQL三大日志(binlog、redo log和undo log)详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/mysql-logs/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/mysql-logs/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>本文来自公号程序猿阿星投稿，JavaGuide 对其做了补充完善。&lt;/p>&lt;/blockquote>&lt;h2 id="前言">前言&lt;a class="anchor" href="#%e5%89%8d%e8%a8%80">#&lt;/a>&lt;/h2>
 &lt;p>MySQL 日志 主要包括错误日志、查询日志、慢查询日志、事务日志、二进制日志几大类。其中，比较重要的还要属二进制日志 binlog（归档日志）和事务日志 redo log（重做日志）和 undo log（回滚日志）。&lt;/p>
 &lt;p>&lt;img src="img/b142674f9fa11c25bc99742901f9b080_MD5.jpg" alt="" />&lt;/p>
 &lt;p>今天就来聊聊 redo log（重做日志）、binlog（归档日志）、两阶段提交、undo log（回滚日志）。&lt;/p>
-&lt;h2 id="redo-log">
- redo log
- &lt;a class="anchor" href="#redo-log">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="redo-log">redo log&lt;a class="anchor" href="#redo-log">#&lt;/a>&lt;/h2>
 &lt;p>redo log（重做日志）是 InnoDB 存储引擎独有的，它让 MySQL 拥有了崩溃恢复能力。&lt;/p>
 &lt;p>比如 MySQL 实例挂了或宕机了，重启时，InnoDB 存储引擎会使用 redo log 恢复数据，保证数据的持久性与完整性。&lt;/p>
 &lt;p>&lt;img src="img/94d6dbfea0831fe4e663ea5a30c99bb2_MD5.jpg" alt="" />&lt;/p>
@@ -217,18 +187,13 @@
 &lt;p>更新表数据的时候，也是如此，发现 &lt;code>Buffer Pool&lt;/code> 里存在要更新的数据，就直接在 &lt;code>Buffer Pool&lt;/code> 里更新。&lt;/p>
 &lt;p>然后会把“在某个数据页上做了什么修改”记录到重做日志缓存（&lt;code>redo log buffer&lt;/code>）里，接着刷盘到 redo log 文件里。&lt;/p>
 &lt;p>&lt;img src="img/dae03566d23d2bcb4797007e7720c18b_MD5.jpg" alt="" />&lt;/p>
-&lt;blockquote>
-&lt;p>图片笔误提示：第 4 步 “清空 redo log buffe 刷盘到 redo 日志中”这句话中的 buffe 应该是 buffer。&lt;/p></description></item><item><title>MySQL事务隔离级别详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/transaction-isolation-level/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/transaction-isolation-level/</guid><description>&lt;blockquote>
+&lt;blockquote class='book-hint '>
+&lt;p>图片笔误提示：第 4 步 “清空 redo log buffe 刷盘到 redo 日志中”这句话中的 buffe 应该是 buffer。&lt;/p></description></item><item><title>MySQL事务隔离级别详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/transaction-isolation-level/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/transaction-isolation-level/</guid><description>&lt;blockquote class='book-hint '>
 &lt;p>本文由 
 &lt;a target="_blank" href="https://github.com/Snailclimb">SnailClimb&lt;/a> 和 
-&lt;a target="_blank" href="https://github.com/guang19">guang19&lt;/a> 共同完成。&lt;/p>
-&lt;/blockquote>
-&lt;p>关于事务基本概览的介绍，请看这篇文章的介绍：
+&lt;a target="_blank" href="https://github.com/guang19">guang19&lt;/a> 共同完成。&lt;/p>&lt;/blockquote>&lt;p>关于事务基本概览的介绍，请看这篇文章的介绍：
 &lt;a target="_blank" href="./mysql-questions-01.md#MySQL-%E4%BA%8B%E5%8A%A1">MySQL 常见知识点&amp;amp;面试题总结&lt;/a>&lt;/p>
-&lt;h2 id="事务隔离级别总结">
- 事务隔离级别总结
- &lt;a class="anchor" href="#%e4%ba%8b%e5%8a%a1%e9%9a%94%e7%a6%bb%e7%ba%a7%e5%88%ab%e6%80%bb%e7%bb%93">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="事务隔离级别总结">事务隔离级别总结&lt;a class="anchor" href="#%e4%ba%8b%e5%8a%a1%e9%9a%94%e7%a6%bb%e7%ba%a7%e5%88%ab%e6%80%bb%e7%bb%93">#&lt;/a>&lt;/h2>
 &lt;p>SQL 标准定义了四个隔离级别：&lt;/p>
 &lt;ul>
 &lt;li>&lt;mark>READ-UNCOMMITTED(读取未提交)&lt;/mark> ：最低的隔离级别，允许读取尚未提交的数据变更，可能会导致脏读、幻读或不可重复读。&lt;/li>
@@ -279,31 +244,22 @@
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#f92672">@@&lt;/span>tx_isolation &lt;span style="color:#f92672">|&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">+&lt;/span>&lt;span style="color:#75715e">-----------------+
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#66d9ef">REPEATABLE&lt;/span>&lt;span style="color:#f92672">-&lt;/span>&lt;span style="color:#66d9ef">READ&lt;/span> &lt;span style="color:#f92672">|&lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">+&lt;/span>&lt;span style="color:#75715e">-----------------+
-&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>从上面对 SQL 标准定义了四个隔离级别的介绍可以看出，标准的 SQL 隔离级别定义里，REPEATABLE-READ(可重复读)是不可以防止幻读的。&lt;/p>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">+&lt;/span>&lt;span style="color:#75715e">-----------------+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>从上面对 SQL 标准定义了四个隔离级别的介绍可以看出，标准的 SQL 隔离级别定义里，REPEATABLE-READ(可重复读)是不可以防止幻读的。&lt;/p>
 &lt;p>但是！InnoDB 实现的 REPEATABLE-READ 隔离级别其实是可以解决幻读问题发生的，主要有下面两种情况：&lt;/p>
 &lt;ul>
 &lt;li>&lt;mark>快照读&lt;/mark>：由 MVCC 机制来保证不出现幻读。&lt;/li>
 &lt;li>&lt;mark>当前读&lt;/mark>：使用 Next-Key Lock 进行加锁来保证不出现幻读，Next-Key Lock 是行锁（Record Lock）和间隙锁（Gap Lock）的结合，行锁只能锁住已经存在的行，为了避免插入新行，需要依赖间隙锁。&lt;/li>
 &lt;/ul>
-&lt;p>因为隔离级别越低，事务请求的锁越少，所以大部分数据库系统的隔离级别都是 &lt;mark>READ-COMMITTED&lt;/mark> ，但是你要知道的是 InnoDB 存储引擎默认使用 &lt;mark>REPEATABLE-READ&lt;/mark> 并不会有任何性能损失。&lt;/p></description></item><item><title>MySQL索引详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/mysql-index/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/mysql-index/</guid><description>&lt;blockquote>
+&lt;p>因为隔离级别越低，事务请求的锁越少，所以大部分数据库系统的隔离级别都是 &lt;mark>READ-COMMITTED&lt;/mark> ，但是你要知道的是 InnoDB 存储引擎默认使用 &lt;mark>REPEATABLE-READ&lt;/mark> 并不会有任何性能损失。&lt;/p></description></item><item><title>MySQL索引详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/mysql-index/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/mysql-index/</guid><description>&lt;blockquote class='book-hint '>
 &lt;p>感谢
 &lt;a target="_blank" href="https://github.com/WT-AHA">WT-AHA&lt;/a>对本文的完善，相关 PR：
-&lt;a target="_blank" href="https://github.com/Snailclimb/JavaGuide/pull/1648">https://github.com/Snailclimb/JavaGuide/pull/1648&lt;/a> 。&lt;/p>
-&lt;/blockquote>
-&lt;p>但凡经历过几场面试的小伙伴，应该都清楚，数据库索引这个知识点在面试中出现的频率高到离谱。&lt;/p>
+&lt;a target="_blank" href="https://github.com/Snailclimb/JavaGuide/pull/1648">https://github.com/Snailclimb/JavaGuide/pull/1648&lt;/a> 。&lt;/p>&lt;/blockquote>&lt;p>但凡经历过几场面试的小伙伴，应该都清楚，数据库索引这个知识点在面试中出现的频率高到离谱。&lt;/p>
 &lt;p>除了对于准备面试来说非常重要之外，善用索引对 SQL 的性能提升非常明显，是一个性价比较高的 SQL 优化手段。&lt;/p>
-&lt;h2 id="索引介绍">
- 索引介绍
- &lt;a class="anchor" href="#%e7%b4%a2%e5%bc%95%e4%bb%8b%e7%bb%8d">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="索引介绍">索引介绍&lt;a class="anchor" href="#%e7%b4%a2%e5%bc%95%e4%bb%8b%e7%bb%8d">#&lt;/a>&lt;/h2>
 &lt;p>&lt;mark>索引是一种用于快速查询和检索数据的数据结构，其本质可以看成是一种排序好的数据结构。&lt;/mark>&lt;/p>
 &lt;p>索引的作用就相当于书的目录。打个比方: 我们在查字典的时候，如果没有目录，那我们就只能一页一页的去找我们需要查的那个字，速度很慢。如果有目录了，我们只需要先去目录里查找字的位置，然后直接翻到那一页就行了。&lt;/p>
 &lt;p>索引底层数据结构存在很多种类型，常见的索引结构有: B 树， B+树 和 Hash、红黑树。在 MySQL 中，无论是 Innodb 还是 MyIsam，都使用了 B+树作为索引结构。&lt;/p>
-&lt;h2 id="索引的优缺点">
- 索引的优缺点
- &lt;a class="anchor" href="#%e7%b4%a2%e5%bc%95%e7%9a%84%e4%bc%98%e7%bc%ba%e7%82%b9">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="索引的优缺点">索引的优缺点&lt;a class="anchor" href="#%e7%b4%a2%e5%bc%95%e7%9a%84%e4%bc%98%e7%bc%ba%e7%82%b9">#&lt;/a>&lt;/h2>
 &lt;p>&lt;mark>优点&lt;/mark>：&lt;/p>
 &lt;ul>
 &lt;li>使用索引可以大大加快数据的检索速度（大大减少检索的数据量）, 减少 IO 次数，这也是创建索引的最主要的原因。&lt;/li>
@@ -316,33 +272,19 @@
 &lt;/ul>
 &lt;p>但是，&lt;mark>使用索引一定能提高查询性能吗?&lt;/mark>&lt;/p>
 &lt;p>大多数情况下，索引查询都是比全表扫描要快的。但是如果数据库的数据量不大，那么使用索引也不一定能够带来很大提升。&lt;/p>
-&lt;h2 id="索引底层数据结构选型">
- 索引底层数据结构选型
- &lt;a class="anchor" href="#%e7%b4%a2%e5%bc%95%e5%ba%95%e5%b1%82%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84%e9%80%89%e5%9e%8b">#&lt;/a>
-&lt;/h2>
-&lt;h3 id="hash-表">
- Hash 表
- &lt;a class="anchor" href="#hash-%e8%a1%a8">#&lt;/a>
-&lt;/h3>
+&lt;h2 id="索引底层数据结构选型">索引底层数据结构选型&lt;a class="anchor" href="#%e7%b4%a2%e5%bc%95%e5%ba%95%e5%b1%82%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84%e9%80%89%e5%9e%8b">#&lt;/a>&lt;/h2>
+&lt;h3 id="hash-表">Hash 表&lt;a class="anchor" href="#hash-%e8%a1%a8">#&lt;/a>&lt;/h3>
 &lt;p>哈希表是键值对的集合，通过键(key)即可快速取出对应的值(value)，因此哈希表可以快速检索数据（接近 O（1））。&lt;/p>
 &lt;p>&lt;mark>为何能够通过 key 快速取出 value 呢？&lt;/mark> 原因在于 &lt;mark>哈希算法&lt;/mark>（也叫散列算法）。通过哈希算法，我们可以快速找到 key 对应的 index，找到了 index 也就找到了对应的 value。&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>hash &lt;span style="color:#f92672">=&lt;/span> hashfunc(key)
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>index &lt;span style="color:#f92672">=&lt;/span> hash &lt;span style="color:#f92672">%&lt;/span> array_size
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;img src="img/4930b481ac6ff93aab2423d403bad7a8_MD5.jpg" alt="" />&lt;/p></description></item><item><title>MySQL隐式转换造成索引失效</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/index-invalidation-caused-by-implicit-conversion/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/index-invalidation-caused-by-implicit-conversion/</guid><description>&lt;blockquote>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>index &lt;span style="color:#f92672">=&lt;/span> hash &lt;span style="color:#f92672">%&lt;/span> array_size&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;img src="img/4930b481ac6ff93aab2423d403bad7a8_MD5.jpg" alt="" />&lt;/p>
+&lt;p>但是！哈希算法有个 &lt;mark>Hash 冲突&lt;/mark> 问题，也就是说多个不同的 key 最后得到的 index 相同。通常情况下，我们常用的解决办法是 &lt;mark>链地址法&lt;/mark>。链地址法就是将哈希冲突数据存放在链表中。就比如 JDK1.8 之前 &lt;code>HashMap&lt;/code> 就是通过链地址法来解决哈希冲突的。不过，JDK1.8 以后&lt;code>HashMap&lt;/code>为了减少链表过长的时候搜索时间过长引入了红黑树。&lt;/p></description></item><item><title>MySQL隐式转换造成索引失效</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/index-invalidation-caused-by-implicit-conversion/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/index-invalidation-caused-by-implicit-conversion/</guid><description>&lt;blockquote class='book-hint '>
 &lt;p>本次测试使用的 MySQL 版本是 &lt;code>5.7.26&lt;/code>，随着 MySQL 版本的更新某些特性可能会发生改变，本文不代表所述观点和结论于 MySQL 所有版本均准确无误，版本差异请自行甄别。&lt;/p>
 &lt;p>原文：
-&lt;a target="_blank" href="https://www.guitu18.com/post/2019/11/24/61.html">https://www.guitu18.com/post/2019/11/24/61.html&lt;/a>&lt;/p>
-&lt;/blockquote>
-&lt;h2 id="前言">
- 前言
- &lt;a class="anchor" href="#%e5%89%8d%e8%a8%80">#&lt;/a>
-&lt;/h2>
+&lt;a target="_blank" href="https://www.guitu18.com/post/2019/11/24/61.html">https://www.guitu18.com/post/2019/11/24/61.html&lt;/a>&lt;/p>&lt;/blockquote>&lt;h2 id="前言">前言&lt;a class="anchor" href="#%e5%89%8d%e8%a8%80">#&lt;/a>&lt;/h2>
 &lt;p>数据库优化是一个任重而道远的任务，想要做优化必须深入理解数据库的各种特性。在开发过程中我们经常会遇到一些原因很简单但造成的后果却很严重的疑难杂症，这类问题往往还不容易定位，排查费时费力最后发现是一个很小的疏忽造成的，又或者是因为不了解某个技术特性产生的。&lt;/p>
 &lt;p>于数据库层面，最常见的恐怕就是索引失效了，且一开始因为数据量小还不易被发现。但随着业务的拓展数据量的提升，性能问题慢慢的就体现出来了，处理不及时还很容易造成雪球效应，最终导致数据库卡死甚至瘫痪。造成索引失效的原因可能有很多种，相关技术博客已经有太多了，今天我要记录的是&lt;mark>隐式转换造成的索引失效&lt;/mark>。&lt;/p>
-&lt;h2 id="数据准备">
- 数据准备
- &lt;a class="anchor" href="#%e6%95%b0%e6%8d%ae%e5%87%86%e5%a4%87">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="数据准备">数据准备&lt;a class="anchor" href="#%e6%95%b0%e6%8d%ae%e5%87%86%e5%a4%87">#&lt;/a>&lt;/h2>
 &lt;p>首先使用存储过程生成 1000 万条测试数据，
 测试表一共建立了 7 个字段（包括主键），&lt;code>num1&lt;/code>和&lt;code>num2&lt;/code>保存的是和&lt;code>ID&lt;/code>一样的顺序数字，其中&lt;code>num2&lt;/code>是字符串类型。
 &lt;code>type1&lt;/code>和&lt;code>type2&lt;/code>保存的都是主键对 5 的取模，目的是模拟实际应用中常用类似 type 类型的数据，但是&lt;code>type2&lt;/code>是没有建立索引的。
@@ -392,47 +334,91 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">END&lt;/span>;
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">//&lt;/span> &lt;span style="color:#66d9ef">DELIMITER&lt;/span> ;
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">-- 执行存储过程
-&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">CALL&lt;/span> pre_test1();
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>数据量比较大，还涉及使用&lt;code>MD5&lt;/code>生成随机字符串，所以速度有点慢，稍安勿躁，耐心等待即可。&lt;/p></description></item><item><title>MySQL执行计划分析</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/mysql-query-execution-plan/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/mysql-query-execution-plan/</guid><description>&lt;blockquote>
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">CALL&lt;/span> pre_test1();&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>数据量比较大，还涉及使用&lt;code>MD5&lt;/code>生成随机字符串，所以速度有点慢，稍安勿躁，耐心等待即可。&lt;/p></description></item><item><title>MySQL执行计划分析</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/mysql-query-execution-plan/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/mysql-query-execution-plan/</guid><description>&lt;blockquote class='book-hint '>
 &lt;p>本文来自公号 MySQL 技术，JavaGuide 对其做了补充完善。原文地址：
-&lt;a target="_blank" href="https://mp.weixin.qq.com/s/d5OowNLtXBGEAbT31sSH4g">https://mp.weixin.qq.com/s/d5OowNLtXBGEAbT31sSH4g&lt;/a>&lt;/p>
-&lt;/blockquote>
-&lt;p>优化 SQL 的第一步应该是读懂 SQL 的执行计划。本篇文章，我们一起来学习下 MySQL &lt;code>EXPLAIN&lt;/code> 执行计划相关知识。&lt;/p>
-&lt;h2 id="什么是执行计划">
- 什么是执行计划？
- &lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e6%89%a7%e8%a1%8c%e8%ae%a1%e5%88%92">#&lt;/a>
-&lt;/h2>
+&lt;a target="_blank" href="https://mp.weixin.qq.com/s/d5OowNLtXBGEAbT31sSH4g">https://mp.weixin.qq.com/s/d5OowNLtXBGEAbT31sSH4g&lt;/a>&lt;/p>&lt;/blockquote>&lt;p>优化 SQL 的第一步应该是读懂 SQL 的执行计划。本篇文章，我们一起来学习下 MySQL &lt;code>EXPLAIN&lt;/code> 执行计划相关知识。&lt;/p>
+&lt;h2 id="什么是执行计划">什么是执行计划？&lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e6%89%a7%e8%a1%8c%e8%ae%a1%e5%88%92">#&lt;/a>&lt;/h2>
 &lt;p>&lt;mark>执行计划&lt;/mark> 是指一条 SQL 语句在经过 &lt;mark>MySQL 查询优化器&lt;/mark> 的优化后，具体的执行方式。&lt;/p>
 &lt;p>执行计划通常用于 SQL 性能分析、优化等场景。通过 &lt;code>EXPLAIN&lt;/code> 的结果，可以了解到如数据表的查询顺序、数据查询操作的操作类型、哪些索引可以被命中、哪些索引实际会命中、每个数据表有多少行记录被查询等信息。&lt;/p>
-&lt;h2 id="如何获取执行计划">
- 如何获取执行计划？
- &lt;a class="anchor" href="#%e5%a6%82%e4%bd%95%e8%8e%b7%e5%8f%96%e6%89%a7%e8%a1%8c%e8%ae%a1%e5%88%92">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="如何获取执行计划">如何获取执行计划？&lt;a class="anchor" href="#%e5%a6%82%e4%bd%95%e8%8e%b7%e5%8f%96%e6%89%a7%e8%a1%8c%e8%ae%a1%e5%88%92">#&lt;/a>&lt;/h2>
 &lt;p>MySQL 为我们提供了 &lt;code>EXPLAIN&lt;/code> 命令，来获取执行计划的相关信息。&lt;/p>
 &lt;p>需要注意的是，&lt;code>EXPLAIN&lt;/code> 语句并不会真的去执行相关的语句，而是通过查询优化器对语句进行分析，找出最优的查询方案，并显示对应的信息。&lt;/p>
 &lt;p>&lt;code>EXPLAIN&lt;/code> 执行计划支持 &lt;code>SELECT&lt;/code>、&lt;code>DELETE&lt;/code>、&lt;code>INSERT&lt;/code>、&lt;code>REPLACE&lt;/code> 以及 &lt;code>UPDATE&lt;/code> 语句。我们一般多用于分析 &lt;code>SELECT&lt;/code> 查询语句，使用起来非常简单，语法如下：&lt;/p>
-&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sql" data-lang="sql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">EXPLAIN&lt;/span> &lt;span style="color:#f92672">+&lt;/span> &lt;span style="color:#66d9ef">SELECT&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">查询语句；&lt;/span>
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>我们简单来看下一条查询语句的执行计划：&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sql" data-lang="sql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">EXPLAIN&lt;/span> &lt;span style="color:#f92672">+&lt;/span> &lt;span style="color:#66d9ef">SELECT&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">查询语句；&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>我们简单来看下一条查询语句的执行计划：&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sql" data-lang="sql">&lt;span style="display:flex;">&lt;span>mysql&lt;span style="color:#f92672">&amp;gt;&lt;/span> &lt;span style="color:#66d9ef">explain&lt;/span> &lt;span style="color:#66d9ef">SELECT&lt;/span> &lt;span style="color:#f92672">*&lt;/span> &lt;span style="color:#66d9ef">FROM&lt;/span> dept_emp &lt;span style="color:#66d9ef">WHERE&lt;/span> emp_no &lt;span style="color:#66d9ef">IN&lt;/span> (&lt;span style="color:#66d9ef">SELECT&lt;/span> emp_no &lt;span style="color:#66d9ef">FROM&lt;/span> dept_emp &lt;span style="color:#66d9ef">GROUP&lt;/span> &lt;span style="color:#66d9ef">BY&lt;/span> emp_no &lt;span style="color:#66d9ef">HAVING&lt;/span> &lt;span style="color:#66d9ef">COUNT&lt;/span>(emp_no)&lt;span style="color:#f92672">&amp;gt;&lt;/span>&lt;span style="color:#ae81ff">1&lt;/span>);
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">+&lt;/span>&lt;span style="color:#75715e">----+-------------+----------+------------+-------+-----------------+---------+---------+------+--------+----------+-------------+
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#f92672">|&lt;/span> id &lt;span style="color:#f92672">|&lt;/span> select_type &lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#66d9ef">table&lt;/span> &lt;span style="color:#f92672">|&lt;/span> partitions &lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#66d9ef">type&lt;/span> &lt;span style="color:#f92672">|&lt;/span> possible_keys &lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#66d9ef">key&lt;/span> &lt;span style="color:#f92672">|&lt;/span> key_len &lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#66d9ef">ref&lt;/span> &lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#66d9ef">rows&lt;/span> &lt;span style="color:#f92672">|&lt;/span> filtered &lt;span style="color:#f92672">|&lt;/span> Extra &lt;span style="color:#f92672">|&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">+&lt;/span>&lt;span style="color:#75715e">----+-------------+----------+------------+-------+-----------------+---------+---------+------+--------+----------+-------------+
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#ae81ff">1&lt;/span> &lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#66d9ef">PRIMARY&lt;/span> &lt;span style="color:#f92672">|&lt;/span> dept_emp &lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#66d9ef">NULL&lt;/span> &lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#66d9ef">ALL&lt;/span> &lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#66d9ef">NULL&lt;/span> &lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#66d9ef">NULL&lt;/span> &lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#66d9ef">NULL&lt;/span> &lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#66d9ef">NULL&lt;/span> &lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#ae81ff">331143&lt;/span> &lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#ae81ff">100&lt;/span>.&lt;span style="color:#ae81ff">00&lt;/span> &lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#66d9ef">Using&lt;/span> &lt;span style="color:#66d9ef">where&lt;/span> &lt;span style="color:#f92672">|&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#ae81ff">2&lt;/span> &lt;span style="color:#f92672">|&lt;/span> SUBQUERY &lt;span style="color:#f92672">|&lt;/span> dept_emp &lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#66d9ef">NULL&lt;/span> &lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#66d9ef">index&lt;/span> &lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#66d9ef">PRIMARY&lt;/span>,dept_no &lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#66d9ef">PRIMARY&lt;/span> &lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#ae81ff">16&lt;/span> &lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#66d9ef">NULL&lt;/span> &lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#ae81ff">331143&lt;/span> &lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#ae81ff">100&lt;/span>.&lt;span style="color:#ae81ff">00&lt;/span> &lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#66d9ef">Using&lt;/span> &lt;span style="color:#66d9ef">index&lt;/span> &lt;span style="color:#f92672">|&lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">+&lt;/span>&lt;span style="color:#75715e">----+-------------+----------+------------+-------+-----------------+---------+---------+------+--------+----------+-------------+
-&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>可以看到，执行计划结果中共有 12 列，各列代表的含义总结如下表：&lt;/p></description></item><item><title>MySQL自增主键一定是连续的吗</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/mysql-auto-increment-primary-key-continuous/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/mysql-auto-increment-primary-key-continuous/</guid><description>&lt;blockquote>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">+&lt;/span>&lt;span style="color:#75715e">----+-------------+----------+------------+-------+-----------------+---------+---------+------+--------+----------+-------------+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>可以看到，执行计划结果中共有 12 列，各列代表的含义总结如下表：&lt;/p>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>&lt;mark>列名&lt;/mark>&lt;/th>
+ &lt;th>&lt;mark>含义&lt;/mark>&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>id&lt;/td>
+ &lt;td>SELECT 查询的序列标识符&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>select_type&lt;/td>
+ &lt;td>SELECT 关键字对应的查询类型&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>table&lt;/td>
+ &lt;td>用到的表名&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>partitions&lt;/td>
+ &lt;td>匹配的分区，对于未分区的表，值为 NULL&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>type&lt;/td>
+ &lt;td>表的访问方法&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>possible_keys&lt;/td>
+ &lt;td>可能用到的索引&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>key&lt;/td>
+ &lt;td>实际用到的索引&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>key_len&lt;/td>
+ &lt;td>所选索引的长度&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>ref&lt;/td>
+ &lt;td>当使用索引等值查询时，与索引作比较的列或常量&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>rows&lt;/td>
+ &lt;td>预计要读取的行数&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>filtered&lt;/td>
+ &lt;td>按表条件过滤后，留存的记录数的百分比&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>Extra&lt;/td>
+ &lt;td>附加信息&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h2 id="如何分析-explain-结果">如何分析 EXPLAIN 结果？&lt;a class="anchor" href="#%e5%a6%82%e4%bd%95%e5%88%86%e6%9e%90-explain-%e7%bb%93%e6%9e%9c">#&lt;/a>&lt;/h2>
+&lt;p>为了分析 &lt;code>EXPLAIN&lt;/code> 语句的执行结果，我们需要搞懂执行计划中的重要字段。&lt;/p></description></item><item><title>MySQL自增主键一定是连续的吗</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/mysql-auto-increment-primary-key-continuous/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/mysql-auto-increment-primary-key-continuous/</guid><description>&lt;blockquote class='book-hint '>
 &lt;p>作者：飞天小牛肉&lt;/p>
 &lt;p>原文：
-&lt;a target="_blank" href="https://mp.weixin.qq.com/s/qci10h9rJx_COZbHV3aygQ">https://mp.weixin.qq.com/s/qci10h9rJx_COZbHV3aygQ&lt;/a>&lt;/p>
-&lt;/blockquote>
-&lt;p>众所周知，自增主键可以让聚集索引尽量地保持递增顺序插入，避免了随机查询，从而提高了查询效率。&lt;/p>
+&lt;a target="_blank" href="https://mp.weixin.qq.com/s/qci10h9rJx_COZbHV3aygQ">https://mp.weixin.qq.com/s/qci10h9rJx_COZbHV3aygQ&lt;/a>&lt;/p>&lt;/blockquote>&lt;p>众所周知，自增主键可以让聚集索引尽量地保持递增顺序插入，避免了随机查询，从而提高了查询效率。&lt;/p>
 &lt;p>但实际上，MySQL 的自增主键并不能保证一定是连续递增的。&lt;/p>
 &lt;p>下面举个例子来看下，如下所示创建一张表：&lt;/p>
 &lt;p>&lt;img src="img/ff98ddd77eae3291669b07474cd376f0_MD5.jpg" alt="" />&lt;/p>
-&lt;h2 id="自增值保存在哪里">
- 自增值保存在哪里？
- &lt;a class="anchor" href="#%e8%87%aa%e5%a2%9e%e5%80%bc%e4%bf%9d%e5%ad%98%e5%9c%a8%e5%93%aa%e9%87%8c">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="自增值保存在哪里">自增值保存在哪里？&lt;a class="anchor" href="#%e8%87%aa%e5%a2%9e%e5%80%bc%e4%bf%9d%e5%ad%98%e5%9c%a8%e5%93%aa%e9%87%8c">#&lt;/a>&lt;/h2>
 &lt;p>使用 &lt;code>insert into test_pk values(null, 1, 1)&lt;/code> 插入一行数据，再执行 &lt;code>show create table&lt;/code> 命令来看一下表的结构定义：&lt;/p>
 &lt;p>&lt;img src="img/fc507df80e0f393f4f173ac7bd7c4c40_MD5.jpg" alt="" />&lt;/p>
 &lt;p>上述表的结构定义存放在后缀名为 &lt;code>.frm&lt;/code> 的本地文件中，在 MySQL 安装目录下的 data 文件夹下可以找到这个 &lt;code>.frm&lt;/code> 文件：&lt;/p>
@@ -443,20 +429,12 @@
 &lt;p>2）InnoDB 引擎的自增值，其实是保存在了内存里，并没有持久化。第一次打开表的时候，都会去找自增值的最大值 &lt;code>max(id)&lt;/code>，然后将 &lt;code>max(id)+1&lt;/code> 作为这个表当前的自增值。&lt;/p>
 &lt;p>举个例子：我们现在表里当前数据行里最大的 id 是 1，AUTO_INCREMENT=2，对吧。这时候，我们删除 id=1 的行，AUTO_INCREMENT 还是 2。&lt;/p>
 &lt;p>&lt;img src="img/22c648aff4df2679268bbc9dc2b9a25a_MD5.jpg" alt="" />&lt;/p>
-&lt;p>但如果马上重启 MySQL 实例，重启后这个表的 AUTO_INCREMENT 就会变成 1。﻿ 也就是说，MySQL 重启可能会修改一个表的 AUTO_INCREMENT 的值。&lt;/p></description></item><item><title>SQL语句在MySQL中的执行过程</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/how-sql-executed-in-mysql/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/how-sql-executed-in-mysql/</guid><description>&lt;blockquote>
+&lt;p>但如果马上重启 MySQL 实例，重启后这个表的 AUTO_INCREMENT 就会变成 1。﻿ 也就是说，MySQL 重启可能会修改一个表的 AUTO_INCREMENT 的值。&lt;/p></description></item><item><title>SQL语句在MySQL中的执行过程</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/how-sql-executed-in-mysql/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/how-sql-executed-in-mysql/</guid><description>&lt;blockquote class='book-hint '>
 &lt;p>本文来自
-&lt;a target="_blank" href="https://github.com/kinglaw1204">木木匠&lt;/a>投稿。&lt;/p>
-&lt;/blockquote>
-&lt;p>本篇文章会分析下一个 SQL 语句在 MySQL 中的执行流程，包括 SQL 的查询在 MySQL 内部会怎么流转，SQL 语句的更新是怎么完成的。&lt;/p>
+&lt;a target="_blank" href="https://github.com/kinglaw1204">木木匠&lt;/a>投稿。&lt;/p>&lt;/blockquote>&lt;p>本篇文章会分析下一个 SQL 语句在 MySQL 中的执行流程，包括 SQL 的查询在 MySQL 内部会怎么流转，SQL 语句的更新是怎么完成的。&lt;/p>
 &lt;p>在分析之前我会先带着你看看 MySQL 的基础架构，知道了 MySQL 由那些组件组成以及这些组件的作用是什么，可以帮助我们理解和解决这些问题。&lt;/p>
-&lt;h2 id="一-mysql-基础架构分析">
- 一 MySQL 基础架构分析
- &lt;a class="anchor" href="#%e4%b8%80-mysql-%e5%9f%ba%e7%a1%80%e6%9e%b6%e6%9e%84%e5%88%86%e6%9e%90">#&lt;/a>
-&lt;/h2>
-&lt;h3 id="11-mysql-基本架构概览">
- 1.1 MySQL 基本架构概览
- &lt;a class="anchor" href="#11-mysql-%e5%9f%ba%e6%9c%ac%e6%9e%b6%e6%9e%84%e6%a6%82%e8%a7%88">#&lt;/a>
-&lt;/h3>
+&lt;h2 id="一-mysql-基础架构分析">一 MySQL 基础架构分析&lt;a class="anchor" href="#%e4%b8%80-mysql-%e5%9f%ba%e7%a1%80%e6%9e%b6%e6%9e%84%e5%88%86%e6%9e%90">#&lt;/a>&lt;/h2>
+&lt;h3 id="11-mysql-基本架构概览">1.1 MySQL 基本架构概览&lt;a class="anchor" href="#11-mysql-%e5%9f%ba%e6%9c%ac%e6%9e%b6%e6%9e%84%e6%a6%82%e8%a7%88">#&lt;/a>&lt;/h3>
 &lt;p>下图是 MySQL 的一个简要架构图，从下图你可以很清晰的看到用户的 SQL 语句在 MySQL 内部是如何执行的。&lt;/p>
 &lt;p>先简单介绍一下下图涉及的一些组件的基本作用帮助大家理解这幅图，在 1.2 节中会详细介绍到这些组件的作用。&lt;/p>
 &lt;ul>
@@ -472,23 +450,12 @@
 &lt;li>&lt;mark>Server 层&lt;/mark>：主要包括连接器、查询缓存、分析器、优化器、执行器等，所有跨存储引擎的功能都在这一层实现，比如存储过程、触发器、视图，函数等，还有一个通用的日志模块 binlog 日志模块。&lt;/li>
 &lt;li>&lt;mark>存储引擎&lt;/mark>：主要负责数据的存储和读取，采用可以替换的插件式架构，支持 InnoDB、MyISAM、Memory 等多个存储引擎，其中 InnoDB 引擎有自有的日志模块 redolog 模块。&lt;mark>现在最常用的存储引擎是 InnoDB，它从 MySQL 5.5 版本开始就被当做默认存储引擎了。&lt;/mark>&lt;/li>
 &lt;/ul>
-&lt;h3 id="12-server-层基本组件介绍">
- 1.2 Server 层基本组件介绍
- &lt;a class="anchor" href="#12-server-%e5%b1%82%e5%9f%ba%e6%9c%ac%e7%bb%84%e4%bb%b6%e4%bb%8b%e7%bb%8d">#&lt;/a>
-&lt;/h3>
-&lt;h4 id="1-连接器">
- 1) 连接器
- &lt;a class="anchor" href="#1-%e8%bf%9e%e6%8e%a5%e5%99%a8">#&lt;/a>
-&lt;/h4>
-&lt;p>连接器主要和身份认证和权限相关的功能相关，就好比一个级别很高的门卫一样。&lt;/p></description></item><item><title>一千行 MySQL 学习笔记</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/a-thousand-lines-of-mysql-study-notes/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/a-thousand-lines-of-mysql-study-notes/</guid><description>&lt;blockquote>
+&lt;h3 id="12-server-层基本组件介绍">1.2 Server 层基本组件介绍&lt;a class="anchor" href="#12-server-%e5%b1%82%e5%9f%ba%e6%9c%ac%e7%bb%84%e4%bb%b6%e4%bb%8b%e7%bb%8d">#&lt;/a>&lt;/h3>
+&lt;h4 id="1-连接器">1) 连接器&lt;a class="anchor" href="#1-%e8%bf%9e%e6%8e%a5%e5%99%a8">#&lt;/a>&lt;/h4>
+&lt;p>连接器主要和身份认证和权限相关的功能相关，就好比一个级别很高的门卫一样。&lt;/p></description></item><item><title>一千行 MySQL 学习笔记</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/a-thousand-lines-of-mysql-study-notes/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/database/mysql/a-thousand-lines-of-mysql-study-notes/</guid><description>&lt;blockquote class='book-hint '>
 &lt;p>原文地址：
-&lt;a target="_blank" href="https://shockerli.net/post/1000-line-mysql-note/">https://shockerli.net/post/1000-line-mysql-note/&lt;/a> ，JavaGuide 对本文进行了简答排版，新增了目录。&lt;/p>
-&lt;/blockquote>
-&lt;p>非常不错的总结，强烈建议保存下来，需要的时候看一看。&lt;/p>
-&lt;h3 id="基本操作">
- 基本操作
- &lt;a class="anchor" href="#%e5%9f%ba%e6%9c%ac%e6%93%8d%e4%bd%9c">#&lt;/a>
-&lt;/h3>
+&lt;a target="_blank" href="https://shockerli.net/post/1000-line-mysql-note/">https://shockerli.net/post/1000-line-mysql-note/&lt;/a> ，JavaGuide 对本文进行了简答排版，新增了目录。&lt;/p>&lt;/blockquote>&lt;p>非常不错的总结，强烈建议保存下来，需要的时候看一看。&lt;/p>
+&lt;h3 id="基本操作">基本操作&lt;a class="anchor" href="#%e5%9f%ba%e6%9c%ac%e6%93%8d%e4%bd%9c">#&lt;/a>&lt;/h3>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sql" data-lang="sql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/* Windows服务 */&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">-- 启动 MySQL
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			net &lt;span style="color:#66d9ef">start&lt;/span> mysql
@@ -500,11 +467,7 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">-- 显示哪些线程正在运行
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>				&lt;span style="color:#66d9ef">SHOW&lt;/span> PROCESSLIST
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">-- 显示系统变量信息
-&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>				&lt;span style="color:#66d9ef">SHOW&lt;/span> VARIABLES
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="数据库操作">
- 数据库操作
- &lt;a class="anchor" href="#%e6%95%b0%e6%8d%ae%e5%ba%93%e6%93%8d%e4%bd%9c">#&lt;/a>
-&lt;/h3>
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>				&lt;span style="color:#66d9ef">SHOW&lt;/span> VARIABLES&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="数据库操作">数据库操作&lt;a class="anchor" href="#%e6%95%b0%e6%8d%ae%e5%ba%93%e6%93%8d%e4%bd%9c">#&lt;/a>&lt;/h3>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sql" data-lang="sql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/* 数据库操作 */&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">-- 查看当前数据库
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#66d9ef">SELECT&lt;/span> &lt;span style="color:#66d9ef">DATABASE&lt;/span>();
@@ -523,11 +486,7 @@
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#66d9ef">ALTER&lt;/span> &lt;span style="color:#66d9ef">DATABASE&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">库名&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">选项信息&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">-- 删除库
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#66d9ef">DROP&lt;/span> &lt;span style="color:#66d9ef">DATABASE&lt;/span>[ &lt;span style="color:#66d9ef">IF&lt;/span> &lt;span style="color:#66d9ef">EXISTS&lt;/span>] &lt;span style="color:#960050;background-color:#1e0010">数据库名&lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#960050;background-color:#1e0010">同时删除该数据库相关的目录及其目录内容&lt;/span>
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="表的操作">
- 表的操作
- &lt;a class="anchor" href="#%e8%a1%a8%e7%9a%84%e6%93%8d%e4%bd%9c">#&lt;/a>
-&lt;/h3>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#960050;background-color:#1e0010">同时删除该数据库相关的目录及其目录内容&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="表的操作">表的操作&lt;a class="anchor" href="#%e8%a1%a8%e7%9a%84%e6%93%8d%e4%bd%9c">#&lt;/a>&lt;/h3>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sql" data-lang="sql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/* 表的操作 */&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">-- 创建表
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#66d9ef">CREATE&lt;/span> [&lt;span style="color:#66d9ef">TEMPORARY&lt;/span>] &lt;span style="color:#66d9ef">TABLE&lt;/span>[ &lt;span style="color:#66d9ef">IF&lt;/span> &lt;span style="color:#66d9ef">NOT&lt;/span> &lt;span style="color:#66d9ef">EXISTS&lt;/span>] [&lt;span style="color:#960050;background-color:#1e0010">库名&lt;/span>.]&lt;span style="color:#960050;background-color:#1e0010">表名&lt;/span> ( &lt;span style="color:#960050;background-color:#1e0010">表的结构定义&lt;/span> )[ &lt;span style="color:#960050;background-color:#1e0010">表选项&lt;/span>]
@@ -604,11 +563,7 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">-- 修复表
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> REPAIR [&lt;span style="color:#66d9ef">LOCAL&lt;/span> &lt;span style="color:#f92672">|&lt;/span> NO_WRITE_TO_BINLOG] &lt;span style="color:#66d9ef">TABLE&lt;/span> tbl_name [, tbl_name] ... [QUICK] [EXTENDED] [USE_FRM]
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">-- 分析表
-&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#66d9ef">ANALYZE&lt;/span> [&lt;span style="color:#66d9ef">LOCAL&lt;/span> &lt;span style="color:#f92672">|&lt;/span> NO_WRITE_TO_BINLOG] &lt;span style="color:#66d9ef">TABLE&lt;/span> tbl_name [, tbl_name] ...
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="数据操作">
- 数据操作
- &lt;a class="anchor" href="#%e6%95%b0%e6%8d%ae%e6%93%8d%e4%bd%9c">#&lt;/a>
-&lt;/h3>
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#66d9ef">ANALYZE&lt;/span> [&lt;span style="color:#66d9ef">LOCAL&lt;/span> &lt;span style="color:#f92672">|&lt;/span> NO_WRITE_TO_BINLOG] &lt;span style="color:#66d9ef">TABLE&lt;/span> tbl_name [, tbl_name] ...&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="数据操作">数据操作&lt;a class="anchor" href="#%e6%95%b0%e6%8d%ae%e6%93%8d%e4%bd%9c">#&lt;/a>&lt;/h3>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sql" data-lang="sql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/* 数据操作 */&lt;/span> &lt;span style="color:#75715e">------------------
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">-- 增
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#66d9ef">INSERT&lt;/span> [&lt;span style="color:#66d9ef">INTO&lt;/span>] &lt;span style="color:#960050;background-color:#1e0010">表名&lt;/span> [(&lt;span style="color:#960050;background-color:#1e0010">字段列表&lt;/span>)] &lt;span style="color:#66d9ef">VALUES&lt;/span> (&lt;span style="color:#960050;background-color:#1e0010">值列表&lt;/span>)[, (&lt;span style="color:#960050;background-color:#1e0010">值列表&lt;/span>), ...]
@@ -625,11 +580,7 @@
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#66d9ef">DELETE&lt;/span> &lt;span style="color:#66d9ef">FROM&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">表名&lt;/span>[ &lt;span style="color:#960050;background-color:#1e0010">删除条件子句&lt;/span>]
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#960050;background-color:#1e0010">没有条件子句，则会删除全部&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">-- 改
-&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#66d9ef">UPDATE&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">表名&lt;/span> &lt;span style="color:#66d9ef">SET&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">字段名&lt;/span>&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">新值&lt;/span>[, &lt;span style="color:#960050;background-color:#1e0010">字段名&lt;/span>&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">新值&lt;/span>] [&lt;span style="color:#960050;background-color:#1e0010">更新条件&lt;/span>]
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="字符集编码">
- 字符集编码
- &lt;a class="anchor" href="#%e5%ad%97%e7%ac%a6%e9%9b%86%e7%bc%96%e7%a0%81">#&lt;/a>
-&lt;/h3>
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#66d9ef">UPDATE&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">表名&lt;/span> &lt;span style="color:#66d9ef">SET&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">字段名&lt;/span>&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">新值&lt;/span>[, &lt;span style="color:#960050;background-color:#1e0010">字段名&lt;/span>&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">新值&lt;/span>] [&lt;span style="color:#960050;background-color:#1e0010">更新条件&lt;/span>]&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="字符集编码">字符集编码&lt;a class="anchor" href="#%e5%ad%97%e7%ac%a6%e9%9b%86%e7%bc%96%e7%a0%81">#&lt;/a>&lt;/h3>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sql" data-lang="sql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/* 字符集编码 */&lt;/span> &lt;span style="color:#75715e">------------------
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">-- MySQL、数据库、表、字段均可设置编码
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">-- 数据编码与客户端编码不需一致
@@ -647,11 +598,7 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">SHOW&lt;/span> CHARACTER &lt;span style="color:#66d9ef">SET&lt;/span> [&lt;span style="color:#66d9ef">LIKE&lt;/span> &lt;span style="color:#e6db74">&amp;#39;pattern&amp;#39;&lt;/span>]&lt;span style="color:#f92672">/&lt;/span>&lt;span style="color:#66d9ef">SHOW&lt;/span> CHARSET [&lt;span style="color:#66d9ef">LIKE&lt;/span> &lt;span style="color:#e6db74">&amp;#39;pattern&amp;#39;&lt;/span>] &lt;span style="color:#960050;background-color:#1e0010">查看所有字符集&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">SHOW&lt;/span> &lt;span style="color:#66d9ef">COLLATION&lt;/span> [&lt;span style="color:#66d9ef">LIKE&lt;/span> &lt;span style="color:#e6db74">&amp;#39;pattern&amp;#39;&lt;/span>] &lt;span style="color:#960050;background-color:#1e0010">查看所有校对集&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> CHARSET &lt;span style="color:#960050;background-color:#1e0010">字符集编码&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">设置字符集编码&lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">COLLATE&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">校对集编码&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">设置校对集编码&lt;/span>
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="数据类型列类型">
- 数据类型(列类型)
- &lt;a class="anchor" href="#%e6%95%b0%e6%8d%ae%e7%b1%bb%e5%9e%8b%e5%88%97%e7%b1%bb%e5%9e%8b">#&lt;/a>
-&lt;/h3>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">COLLATE&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">校对集编码&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">设置校对集编码&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="数据类型列类型">数据类型(列类型)&lt;a class="anchor" href="#%e6%95%b0%e6%8d%ae%e7%b1%bb%e5%9e%8b%e5%88%97%e7%b1%bb%e5%9e%8b">#&lt;/a>&lt;/h3>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sql" data-lang="sql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/* 数据类型（列类型） */&lt;/span> &lt;span style="color:#75715e">------------------
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#ae81ff">1&lt;/span>. &lt;span style="color:#960050;background-color:#1e0010">数值类型&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">-- a. 整型 ----------
@@ -748,11 +695,7 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">create&lt;/span> &lt;span style="color:#66d9ef">table&lt;/span> tab ( gender &lt;span style="color:#66d9ef">set&lt;/span>(&lt;span style="color:#e6db74">&amp;#39;男&amp;#39;&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;女&amp;#39;&lt;/span>, &lt;span style="color:#e6db74">&amp;#39;无&amp;#39;&lt;/span>) );
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">insert&lt;/span> &lt;span style="color:#66d9ef">into&lt;/span> tab &lt;span style="color:#66d9ef">values&lt;/span> (&lt;span style="color:#e6db74">&amp;#39;男, 女&amp;#39;&lt;/span>);
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#960050;background-color:#1e0010">最多可以有&lt;/span>&lt;span style="color:#ae81ff">64&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">个不同的成员。以&lt;/span>bigint存储&lt;span style="color:#960050;background-color:#1e0010">，共&lt;/span>&lt;span style="color:#ae81ff">8&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">个字节。采取位运算的形式。&lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#960050;background-color:#1e0010">当创建表时，&lt;/span>SET成员值的尾部空格将自动被删除&lt;span style="color:#960050;background-color:#1e0010">。&lt;/span>
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="列属性列约束">
- 列属性(列约束)
- &lt;a class="anchor" href="#%e5%88%97%e5%b1%9e%e6%80%a7%e5%88%97%e7%ba%a6%e6%9d%9f">#&lt;/a>
-&lt;/h3>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#960050;background-color:#1e0010">当创建表时，&lt;/span>SET成员值的尾部空格将自动被删除&lt;span style="color:#960050;background-color:#1e0010">。&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="列属性列约束">列属性(列约束)&lt;a class="anchor" href="#%e5%88%97%e5%b1%9e%e6%80%a7%e5%88%97%e7%ba%a6%e6%9d%9f">#&lt;/a>&lt;/h3>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sql" data-lang="sql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/* 列属性（列约束） */&lt;/span> &lt;span style="color:#75715e">------------------
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#ae81ff">1&lt;/span>. &lt;span style="color:#66d9ef">PRIMARY&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">主键&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">-&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">能唯一标识记录的字段，可以作为主键。&lt;/span>
@@ -801,11 +744,7 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#ae81ff">1&lt;/span>. &lt;span style="color:#66d9ef">cascade&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">，级联操作。主表数据被更新（主键值更新），从表也被更新（外键值更新）。主表记录被删除，从表相关记录也被删除。&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#ae81ff">2&lt;/span>. &lt;span style="color:#66d9ef">set&lt;/span> &lt;span style="color:#66d9ef">null&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">，设置为&lt;/span>&lt;span style="color:#66d9ef">null&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">。主表数据被更新（主键值更新），从表的外键被设置为&lt;/span>&lt;span style="color:#66d9ef">null&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">。主表记录被删除，从表相关记录外键被设置成&lt;/span>&lt;span style="color:#66d9ef">null&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">。但注意，要求该外键列，没有&lt;/span>&lt;span style="color:#66d9ef">not&lt;/span> null属性约束&lt;span style="color:#960050;background-color:#1e0010">。&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#ae81ff">3&lt;/span>. &lt;span style="color:#66d9ef">restrict&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">，拒绝父表删除和更新。&lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#960050;background-color:#1e0010">注意，外键只被&lt;/span>InnoDB存储引擎所支持&lt;span style="color:#960050;background-color:#1e0010">。其他引擎是不支持的。&lt;/span>
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="建表规范">
- 建表规范
- &lt;a class="anchor" href="#%e5%bb%ba%e8%a1%a8%e8%a7%84%e8%8c%83">#&lt;/a>
-&lt;/h3>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#960050;background-color:#1e0010">注意，外键只被&lt;/span>InnoDB存储引擎所支持&lt;span style="color:#960050;background-color:#1e0010">。其他引擎是不支持的。&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="建表规范">建表规范&lt;a class="anchor" href="#%e5%bb%ba%e8%a1%a8%e8%a7%84%e8%8c%83">#&lt;/a>&lt;/h3>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sql" data-lang="sql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/* 建表规范 */&lt;/span> &lt;span style="color:#75715e">------------------
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#75715e">-- Normal Format, NF
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#f92672">-&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">每个表保存一个实体信息&lt;/span>
@@ -819,11 +758,7 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">-- 3NF, 第三范式
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">满足第二范式的前提下，不能出现传递依赖。&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#960050;background-color:#1e0010">某个字段依赖于主键，而有其他字段依赖于该字段。这就是传递依赖。&lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#960050;background-color:#1e0010">将一个实体信息的数据放在一个表内实现。&lt;/span>
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="select">
- SELECT
- &lt;a class="anchor" href="#select">#&lt;/a>
-&lt;/h3>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#960050;background-color:#1e0010">将一个实体信息的数据放在一个表内实现。&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="select">SELECT&lt;a class="anchor" href="#select">#&lt;/a>&lt;/h3>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sql" data-lang="sql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/* SELECT */&lt;/span> &lt;span style="color:#75715e">------------------
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">SELECT&lt;/span> [&lt;span style="color:#66d9ef">ALL&lt;/span>&lt;span style="color:#f92672">|&lt;/span>&lt;span style="color:#66d9ef">DISTINCT&lt;/span>] select_expr &lt;span style="color:#66d9ef">FROM&lt;/span> &lt;span style="color:#f92672">-&amp;gt;&lt;/span> &lt;span style="color:#66d9ef">WHERE&lt;/span> &lt;span style="color:#f92672">-&amp;gt;&lt;/span> &lt;span style="color:#66d9ef">GROUP&lt;/span> &lt;span style="color:#66d9ef">BY&lt;/span> [&lt;span style="color:#960050;background-color:#1e0010">合计函数&lt;/span>] &lt;span style="color:#f92672">-&amp;gt;&lt;/span> &lt;span style="color:#66d9ef">HAVING&lt;/span> &lt;span style="color:#f92672">-&amp;gt;&lt;/span> &lt;span style="color:#66d9ef">ORDER&lt;/span> &lt;span style="color:#66d9ef">BY&lt;/span> &lt;span style="color:#f92672">-&amp;gt;&lt;/span> &lt;span style="color:#66d9ef">LIMIT&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>a. select_expr
@@ -883,11 +818,7 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#960050;background-color:#1e0010">省略第一个参数，表示从索引&lt;/span>&lt;span style="color:#ae81ff">0&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">开始。&lt;/span>&lt;span style="color:#66d9ef">limit&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">获取条数&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>h. &lt;span style="color:#66d9ef">DISTINCT&lt;/span>, &lt;span style="color:#66d9ef">ALL&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">选项&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">distinct&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">去除重复记录&lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#960050;background-color:#1e0010">默认为&lt;/span> &lt;span style="color:#66d9ef">all&lt;/span>, &lt;span style="color:#960050;background-color:#1e0010">全部记录&lt;/span>
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="union">
- UNION
- &lt;a class="anchor" href="#union">#&lt;/a>
-&lt;/h3>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#960050;background-color:#1e0010">默认为&lt;/span> &lt;span style="color:#66d9ef">all&lt;/span>, &lt;span style="color:#960050;background-color:#1e0010">全部记录&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="union">UNION&lt;a class="anchor" href="#union">#&lt;/a>&lt;/h3>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sql" data-lang="sql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/* UNION */&lt;/span> &lt;span style="color:#75715e">------------------
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">将多个&lt;/span>select查询的结果组合成一个结果集合&lt;span style="color:#960050;background-color:#1e0010">。&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">SELECT&lt;/span> ... &lt;span style="color:#66d9ef">UNION&lt;/span> [&lt;span style="color:#66d9ef">ALL&lt;/span>&lt;span style="color:#f92672">|&lt;/span>&lt;span style="color:#66d9ef">DISTINCT&lt;/span>] &lt;span style="color:#66d9ef">SELECT&lt;/span> ...
@@ -895,11 +826,7 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#960050;background-color:#1e0010">建议，对每个&lt;/span>SELECT查询加上小括号包裹&lt;span style="color:#960050;background-color:#1e0010">。&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">ORDER&lt;/span> &lt;span style="color:#66d9ef">BY&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">排序时，需加上&lt;/span> &lt;span style="color:#66d9ef">LIMIT&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">进行结合。&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#960050;background-color:#1e0010">需要各&lt;/span>select查询的字段数量一样&lt;span style="color:#960050;background-color:#1e0010">。&lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#960050;background-color:#1e0010">每个&lt;/span>select查询的字段列表(&lt;span style="color:#960050;background-color:#1e0010">数量、类型&lt;/span>)&lt;span style="color:#960050;background-color:#1e0010">应一致，因为结果中的字段名以第一条&lt;/span>select语句为准&lt;span style="color:#960050;background-color:#1e0010">。&lt;/span>
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="子查询">
- 子查询
- &lt;a class="anchor" href="#%e5%ad%90%e6%9f%a5%e8%af%a2">#&lt;/a>
-&lt;/h3>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#960050;background-color:#1e0010">每个&lt;/span>select查询的字段列表(&lt;span style="color:#960050;background-color:#1e0010">数量、类型&lt;/span>)&lt;span style="color:#960050;background-color:#1e0010">应一致，因为结果中的字段名以第一条&lt;/span>select语句为准&lt;span style="color:#960050;background-color:#1e0010">。&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="子查询">子查询&lt;a class="anchor" href="#%e5%ad%90%e6%9f%a5%e8%af%a2">#&lt;/a>&lt;/h3>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sql" data-lang="sql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/* 子查询 */&lt;/span> &lt;span style="color:#75715e">------------------
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#f92672">-&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">子查询需用括号包裹。&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">-- from型
@@ -928,11 +855,7 @@
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#66d9ef">all&lt;/span>() &lt;span style="color:#960050;background-color:#1e0010">相当于&lt;/span> &lt;span style="color:#66d9ef">not&lt;/span> &lt;span style="color:#66d9ef">in&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">some&lt;/span>() &lt;span style="color:#960050;background-color:#1e0010">相当于&lt;/span> &lt;span style="color:#66d9ef">in&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">。&lt;/span>&lt;span style="color:#66d9ef">any&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">是&lt;/span> &lt;span style="color:#66d9ef">some&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">的别名&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#66d9ef">some&lt;/span>() &lt;span style="color:#960050;background-color:#1e0010">不等同于&lt;/span> &lt;span style="color:#66d9ef">not&lt;/span> &lt;span style="color:#66d9ef">in&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">，不等于其中某一个。&lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">all&lt;/span>, &lt;span style="color:#66d9ef">some&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">可以配合其他运算符一起使用。&lt;/span>
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="连接查询join">
- 连接查询(join)
- &lt;a class="anchor" href="#%e8%bf%9e%e6%8e%a5%e6%9f%a5%e8%af%a2join">#&lt;/a>
-&lt;/h3>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">all&lt;/span>, &lt;span style="color:#66d9ef">some&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">可以配合其他运算符一起使用。&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="连接查询join">连接查询(join)&lt;a class="anchor" href="#%e8%bf%9e%e6%8e%a5%e6%9f%a5%e8%af%a2join">#&lt;/a>&lt;/h3>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sql" data-lang="sql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/* 连接查询(join) */&lt;/span> &lt;span style="color:#75715e">------------------
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">将多个表的字段进行连接，可以指定连接条件。&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">-- 内连接(inner join)
@@ -956,11 +879,7 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">natural&lt;/span> &lt;span style="color:#66d9ef">join&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">natural&lt;/span> &lt;span style="color:#66d9ef">left&lt;/span> &lt;span style="color:#66d9ef">join&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">natural&lt;/span> &lt;span style="color:#66d9ef">right&lt;/span> &lt;span style="color:#66d9ef">join&lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">select&lt;/span> info.id, info.name, info.stu_num, extra_info.hobby, extra_info.sex &lt;span style="color:#66d9ef">from&lt;/span> info, extra_info &lt;span style="color:#66d9ef">where&lt;/span> info.stu_num &lt;span style="color:#f92672">=&lt;/span> extra_info.stu_id;
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="truncate">
- TRUNCATE
- &lt;a class="anchor" href="#truncate">#&lt;/a>
-&lt;/h3>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">select&lt;/span> info.id, info.name, info.stu_num, extra_info.hobby, extra_info.sex &lt;span style="color:#66d9ef">from&lt;/span> info, extra_info &lt;span style="color:#66d9ef">where&lt;/span> info.stu_num &lt;span style="color:#f92672">=&lt;/span> extra_info.stu_id;&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="truncate">TRUNCATE&lt;a class="anchor" href="#truncate">#&lt;/a>&lt;/h3>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sql" data-lang="sql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/* TRUNCATE */&lt;/span> &lt;span style="color:#75715e">------------------
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">TRUNCATE&lt;/span> [&lt;span style="color:#66d9ef">TABLE&lt;/span>] tbl_name
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">清空数据&lt;/span>
@@ -969,11 +888,7 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">1&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">，&lt;/span>&lt;span style="color:#66d9ef">truncate&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">是删除表再创建，&lt;/span>&lt;span style="color:#66d9ef">delete&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">是逐条删除&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">2&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">，&lt;/span>&lt;span style="color:#66d9ef">truncate&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">重置&lt;/span>auto_increment的值&lt;span style="color:#960050;background-color:#1e0010">。而&lt;/span>delete不会
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">3&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">，&lt;/span>&lt;span style="color:#66d9ef">truncate&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">不知道删除了几条，而&lt;/span>delete知道&lt;span style="color:#960050;background-color:#1e0010">。&lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">4&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">，当被用于带分区的表时，&lt;/span>&lt;span style="color:#66d9ef">truncate&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">会保留分区&lt;/span>
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="备份与还原">
- 备份与还原
- &lt;a class="anchor" href="#%e5%a4%87%e4%bb%bd%e4%b8%8e%e8%bf%98%e5%8e%9f">#&lt;/a>
-&lt;/h3>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">4&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">，当被用于带分区的表时，&lt;/span>&lt;span style="color:#66d9ef">truncate&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">会保留分区&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="备份与还原">备份与还原&lt;a class="anchor" href="#%e5%a4%87%e4%bb%bd%e4%b8%8e%e8%bf%98%e5%8e%9f">#&lt;/a>&lt;/h3>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sql" data-lang="sql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/* 备份与还原 */&lt;/span> &lt;span style="color:#75715e">------------------
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">备份，将数据的结构与表内数据保存起来。&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">利用&lt;/span> mysqldump &lt;span style="color:#960050;background-color:#1e0010">指令完成。&lt;/span>
@@ -994,11 +909,7 @@
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#ae81ff">1&lt;/span>. &lt;span style="color:#960050;background-color:#1e0010">在登录&lt;/span>mysql的情况下&lt;span style="color:#960050;background-color:#1e0010">：&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>　　&lt;span style="color:#66d9ef">source&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">备份文件&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">2&lt;/span>. &lt;span style="color:#960050;background-color:#1e0010">在不登录的情况下&lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>　　mysql &lt;span style="color:#f92672">-&lt;/span>u用户名 &lt;span style="color:#f92672">-&lt;/span>p密码 &lt;span style="color:#960050;background-color:#1e0010">库名&lt;/span> &lt;span style="color:#f92672">&amp;lt;&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">备份文件&lt;/span>
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="视图">
- 视图
- &lt;a class="anchor" href="#%e8%a7%86%e5%9b%be">#&lt;/a>
-&lt;/h3>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>　　mysql &lt;span style="color:#f92672">-&lt;/span>u用户名 &lt;span style="color:#f92672">-&lt;/span>p密码 &lt;span style="color:#960050;background-color:#1e0010">库名&lt;/span> &lt;span style="color:#f92672">&amp;lt;&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">备份文件&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="视图">视图&lt;a class="anchor" href="#%e8%a7%86%e5%9b%be">#&lt;/a>&lt;/h3>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sql" data-lang="sql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">什么是视图：&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#960050;background-color:#1e0010">视图是一个虚拟表，其内容由查询定义。同真实的表一样，视图包含一系列带有名称的列和行数据。但是，视图并不在数据库中以存储的数据值集形式存在。行和列数据来自由定义视图的查询所引用的表，并且在引用视图时动态生成。&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#960050;background-color:#1e0010">视图具有表结构文件，但不存在数据文件。&lt;/span>
@@ -1027,11 +938,7 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#960050;background-color:#1e0010">将视图的查询语句，与外部查询需要先合并再执行！&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> TEMPTABLE &lt;span style="color:#960050;background-color:#1e0010">临时表&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#960050;background-color:#1e0010">将视图执行完毕后，形成临时表，再做外层查询！&lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> UNDEFINED &lt;span style="color:#960050;background-color:#1e0010">未定义&lt;/span>(&lt;span style="color:#960050;background-color:#1e0010">默认&lt;/span>)&lt;span style="color:#960050;background-color:#1e0010">，指的是&lt;/span>MySQL自主去选择相应的算法&lt;span style="color:#960050;background-color:#1e0010">。&lt;/span>
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="事务transaction">
- 事务(transaction)
- &lt;a class="anchor" href="#%e4%ba%8b%e5%8a%a1transaction">#&lt;/a>
-&lt;/h3>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> UNDEFINED &lt;span style="color:#960050;background-color:#1e0010">未定义&lt;/span>(&lt;span style="color:#960050;background-color:#1e0010">默认&lt;/span>)&lt;span style="color:#960050;background-color:#1e0010">，指的是&lt;/span>MySQL自主去选择相应的算法&lt;span style="color:#960050;background-color:#1e0010">。&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="事务transaction">事务(transaction)&lt;a class="anchor" href="#%e4%ba%8b%e5%8a%a1transaction">#&lt;/a>&lt;/h3>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sql" data-lang="sql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">事务是指逻辑上的一组操作，组成这组操作的各个单元，要不全成功要不全失败。&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">-&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">支持连续&lt;/span>SQL的集体成功或集体撤销&lt;span style="color:#960050;background-color:#1e0010">。&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">-&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">事务是数据库在数据完整性方面的一个功能。&lt;/span>
@@ -1076,22 +983,14 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">-&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">如果关闭了，那普通操作的结果对其他客户端也不可见，需要&lt;/span>commit提交后才能持久化数据操作&lt;span style="color:#960050;background-color:#1e0010">。&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">-&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">也可以关闭自动提交来开启事务。但与&lt;/span>&lt;span style="color:#66d9ef">START&lt;/span> TRANSACTION不同的是&lt;span style="color:#960050;background-color:#1e0010">，&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">SET&lt;/span> autocommit是永久改变服务器的设置&lt;span style="color:#960050;background-color:#1e0010">，直到下次再次修改该设置。&lt;/span>(&lt;span style="color:#960050;background-color:#1e0010">针对当前连接&lt;/span>)
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#960050;background-color:#1e0010">而&lt;/span>&lt;span style="color:#66d9ef">START&lt;/span> TRANSACTION记录开启前的状态&lt;span style="color:#960050;background-color:#1e0010">，而一旦事务提交或回滚后就需要再次开启事务。&lt;/span>(&lt;span style="color:#960050;background-color:#1e0010">针对当前事务&lt;/span>)
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="锁表">
- 锁表
- &lt;a class="anchor" href="#%e9%94%81%e8%a1%a8">#&lt;/a>
-&lt;/h3>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#960050;background-color:#1e0010">而&lt;/span>&lt;span style="color:#66d9ef">START&lt;/span> TRANSACTION记录开启前的状态&lt;span style="color:#960050;background-color:#1e0010">，而一旦事务提交或回滚后就需要再次开启事务。&lt;/span>(&lt;span style="color:#960050;background-color:#1e0010">针对当前事务&lt;/span>)&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="锁表">锁表&lt;a class="anchor" href="#%e9%94%81%e8%a1%a8">#&lt;/a>&lt;/h3>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sql" data-lang="sql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/* 锁表 */&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">表锁定只用于防止其它客户端进行不正当地读取和写入&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>MyISAM &lt;span style="color:#960050;background-color:#1e0010">支持表锁，&lt;/span>InnoDB &lt;span style="color:#960050;background-color:#1e0010">支持行锁&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">-- 锁定
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#66d9ef">LOCK&lt;/span> TABLES tbl_name [&lt;span style="color:#66d9ef">AS&lt;/span> &lt;span style="color:#66d9ef">alias&lt;/span>]
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">-- 解锁
-&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> UNLOCK TABLES
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="触发器">
- 触发器
- &lt;a class="anchor" href="#%e8%a7%a6%e5%8f%91%e5%99%a8">#&lt;/a>
-&lt;/h3>
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> UNLOCK TABLES&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="触发器">触发器&lt;a class="anchor" href="#%e8%a7%a6%e5%8f%91%e5%99%a8">#&lt;/a>&lt;/h3>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sql" data-lang="sql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/* 触发器 */&lt;/span> &lt;span style="color:#75715e">------------------
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">触发程序是与表有关的命名数据库对象，当该表出现特定事件时，将激活该对象&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#960050;background-color:#1e0010">监听：记录的增加、修改、删除。&lt;/span>
@@ -1139,11 +1038,7 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#960050;background-color:#1e0010">如果没有重复记录，会触发&lt;/span> &lt;span style="color:#66d9ef">before&lt;/span> &lt;span style="color:#66d9ef">insert&lt;/span>, &lt;span style="color:#66d9ef">after&lt;/span> &lt;span style="color:#66d9ef">insert&lt;/span>;
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#960050;background-color:#1e0010">如果有重复记录并更新，会触发&lt;/span> &lt;span style="color:#66d9ef">before&lt;/span> &lt;span style="color:#66d9ef">insert&lt;/span>, &lt;span style="color:#66d9ef">before&lt;/span> &lt;span style="color:#66d9ef">update&lt;/span>, &lt;span style="color:#66d9ef">after&lt;/span> &lt;span style="color:#66d9ef">update&lt;/span>;
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#960050;background-color:#1e0010">如果有重复记录但是没有发生更新，则触发&lt;/span> &lt;span style="color:#66d9ef">before&lt;/span> &lt;span style="color:#66d9ef">insert&lt;/span>, &lt;span style="color:#66d9ef">before&lt;/span> &lt;span style="color:#66d9ef">update&lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">3&lt;/span>. &lt;span style="color:#66d9ef">Replace&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">语法&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">如果有记录，则执行&lt;/span> &lt;span style="color:#66d9ef">before&lt;/span> &lt;span style="color:#66d9ef">insert&lt;/span>, &lt;span style="color:#66d9ef">before&lt;/span> &lt;span style="color:#66d9ef">delete&lt;/span>, &lt;span style="color:#66d9ef">after&lt;/span> &lt;span style="color:#66d9ef">delete&lt;/span>, &lt;span style="color:#66d9ef">after&lt;/span> &lt;span style="color:#66d9ef">insert&lt;/span>
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="sql-编程">
- SQL 编程
- &lt;a class="anchor" href="#sql-%e7%bc%96%e7%a8%8b">#&lt;/a>
-&lt;/h3>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">3&lt;/span>. &lt;span style="color:#66d9ef">Replace&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">语法&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">如果有记录，则执行&lt;/span> &lt;span style="color:#66d9ef">before&lt;/span> &lt;span style="color:#66d9ef">insert&lt;/span>, &lt;span style="color:#66d9ef">before&lt;/span> &lt;span style="color:#66d9ef">delete&lt;/span>, &lt;span style="color:#66d9ef">after&lt;/span> &lt;span style="color:#66d9ef">delete&lt;/span>, &lt;span style="color:#66d9ef">after&lt;/span> &lt;span style="color:#66d9ef">insert&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="sql-编程">SQL 编程&lt;a class="anchor" href="#sql-%e7%bc%96%e7%a8%8b">#&lt;/a>&lt;/h3>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sql" data-lang="sql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/* SQL编程 */&lt;/span> &lt;span style="color:#75715e">------------------
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">--// 局部变量 ----------
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">-- 变量声明
@@ -1273,11 +1168,7 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">IN&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">，表示输入型&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">OUT&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">，表示输出型&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">INOUT&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">，表示混合型&lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">注意，没有返回值。&lt;/span>
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="存储过程">
- 存储过程
- &lt;a class="anchor" href="#%e5%ad%98%e5%82%a8%e8%bf%87%e7%a8%8b">#&lt;/a>
-&lt;/h3>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">注意，没有返回值。&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="存储过程">存储过程&lt;a class="anchor" href="#%e5%ad%98%e5%82%a8%e8%bf%87%e7%a8%8b">#&lt;/a>&lt;/h3>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sql" data-lang="sql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/* 存储过程 */&lt;/span> &lt;span style="color:#75715e">------------------
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">存储过程是一段可执行性代码的集合。相比函数，更偏向于业务逻辑。&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">调用：&lt;/span>&lt;span style="color:#66d9ef">CALL&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">过程名&lt;/span>
@@ -1293,11 +1184,7 @@
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">CREATE&lt;/span> &lt;span style="color:#66d9ef">PROCEDURE&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">过程名&lt;/span> (&lt;span style="color:#960050;background-color:#1e0010">参数列表&lt;/span>)
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">BEGIN&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#960050;background-color:#1e0010">过程体&lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">END&lt;/span>
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="用户和权限管理">
- 用户和权限管理
- &lt;a class="anchor" href="#%e7%94%a8%e6%88%b7%e5%92%8c%e6%9d%83%e9%99%90%e7%ae%a1%e7%90%86">#&lt;/a>
-&lt;/h3>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">END&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="用户和权限管理">用户和权限管理&lt;a class="anchor" href="#%e7%94%a8%e6%88%b7%e5%92%8c%e6%9d%83%e9%99%90%e7%ae%a1%e7%90%86">#&lt;/a>&lt;/h3>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sql" data-lang="sql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/* 用户和权限管理 */&lt;/span> &lt;span style="color:#75715e">------------------
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">-- root密码重置
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#ae81ff">1&lt;/span>. &lt;span style="color:#960050;background-color:#1e0010">停止&lt;/span>MySQL服务
@@ -1374,11 +1261,7 @@
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>SUPER &lt;span style="color:#75715e">-- 允许使用CHANGE MASTER, KILL, PURGE MASTER LOGS和SET GLOBAL语句，mysqladmin debug命令；允许您连接（一次），即使已达到max_connections。
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">UPDATE&lt;/span> &lt;span style="color:#75715e">-- 允许使用UPDATE
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">USAGE&lt;/span> &lt;span style="color:#75715e">-- “无权限”的同义词
-&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">GRANT&lt;/span> &lt;span style="color:#66d9ef">OPTION&lt;/span> &lt;span style="color:#75715e">-- 允许授予权限
-&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="表维护">
- 表维护
- &lt;a class="anchor" href="#%e8%a1%a8%e7%bb%b4%e6%8a%a4">#&lt;/a>
-&lt;/h3>
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">GRANT&lt;/span> &lt;span style="color:#66d9ef">OPTION&lt;/span> &lt;span style="color:#75715e">-- 允许授予权限&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="表维护">表维护&lt;a class="anchor" href="#%e8%a1%a8%e7%bb%b4%e6%8a%a4">#&lt;/a>&lt;/h3>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sql" data-lang="sql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/* 表维护 */&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">-- 分析和存储表的关键字分布
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">ANALYZE&lt;/span> [&lt;span style="color:#66d9ef">LOCAL&lt;/span> &lt;span style="color:#f92672">|&lt;/span> NO_WRITE_TO_BINLOG] &lt;span style="color:#66d9ef">TABLE&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">表名&lt;/span> ...
@@ -1386,11 +1269,7 @@
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">CHECK&lt;/span> &lt;span style="color:#66d9ef">TABLE&lt;/span> tbl_name [, tbl_name] ... [&lt;span style="color:#66d9ef">option&lt;/span>] ...
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">option&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">{&lt;/span>QUICK &lt;span style="color:#f92672">|&lt;/span> FAST &lt;span style="color:#f92672">|&lt;/span> MEDIUM &lt;span style="color:#f92672">|&lt;/span> EXTENDED &lt;span style="color:#f92672">|&lt;/span> CHANGED&lt;span style="color:#960050;background-color:#1e0010">}&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">-- 整理数据文件的碎片
-&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>OPTIMIZE [&lt;span style="color:#66d9ef">LOCAL&lt;/span> &lt;span style="color:#f92672">|&lt;/span> NO_WRITE_TO_BINLOG] &lt;span style="color:#66d9ef">TABLE&lt;/span> tbl_name [, tbl_name] ...
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="杂项">
- 杂项
- &lt;a class="anchor" href="#%e6%9d%82%e9%a1%b9">#&lt;/a>
-&lt;/h3>
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>OPTIMIZE [&lt;span style="color:#66d9ef">LOCAL&lt;/span> &lt;span style="color:#f92672">|&lt;/span> NO_WRITE_TO_BINLOG] &lt;span style="color:#66d9ef">TABLE&lt;/span> tbl_name [, tbl_name] ...&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="杂项">杂项&lt;a class="anchor" href="#%e6%9d%82%e9%a1%b9">#&lt;/a>&lt;/h3>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sql" data-lang="sql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/* 杂项 */&lt;/span> &lt;span style="color:#75715e">------------------
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#ae81ff">1&lt;/span>. &lt;span style="color:#960050;background-color:#1e0010">可用反引号（&lt;/span>&lt;span style="color:#f92672">`&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">）为标识符（库名、表名、字段名、索引、别名）包裹，以避免与关键字重名！中文也可以作为标识符！&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">2&lt;/span>. &lt;span style="color:#960050;background-color:#1e0010">每个库目录存在一个保存当前数据库的选项文件&lt;/span>db.opt&lt;span style="color:#960050;background-color:#1e0010">。&lt;/span>
@@ -1404,5 +1283,4 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#960050;background-color:#1e0010">单引号需要进行转义&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">\&lt;/span>&lt;span style="color:#e6db74">&amp;#39;
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">5. CMD命令行内的语句结束符可以为 &amp;#34;;&amp;#34;, &amp;#34;\G&amp;#34;, &amp;#34;\g&amp;#34;，仅影响显示结果。其他地方还是用分号结束。delimiter 可修改当前对话的语句结束符。
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">6. SQL对大小写不敏感
-&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">7. 清除已有语句：\c
-&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item></channel></rss>
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">7. 清除已有语句：\c&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item></channel></rss>

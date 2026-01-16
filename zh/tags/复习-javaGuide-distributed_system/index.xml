@@ -1,17 +1,10 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>复习-JavaGuide-Distributed_system on 随记</title><link>https://lwmfjc.github.io/zh/tags/%E5%A4%8D%E4%B9%A0-javaGuide-distributed_system/</link><description>Recent content in 复习-JavaGuide-Distributed_system on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Tue, 21 Feb 2023 09:26:53 +0000</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/tags/%E5%A4%8D%E4%B9%A0-javaGuide-distributed_system/index.xml" rel="self" type="application/rss+xml"/><item><title>web-real-time-message-push</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/web-real-time-message-push/</link><pubDate>Tue, 21 Feb 2023 09:26:53 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/web-real-time-message-push/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;blockquote>
-&lt;p>原文地址：https://juejin.cn/post/7122014462181113887，JavaGuide 对本文进行了完善总结。&lt;/p>
-&lt;/blockquote>
-&lt;p>我有一个朋友做了一个小破站，现在要实现一个站内信 Web 消息推送的功能，对，就是下图这个小红点，一个很常用的功能。&lt;/p>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>复习-JavaGuide-Distributed_system on 随记</title><link>https://lwmfjc.github.io/zh/tags/%E5%A4%8D%E4%B9%A0-javaGuide-distributed_system/</link><description>Recent content in 复习-JavaGuide-Distributed_system on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Tue, 21 Feb 2023 09:26:53 +0000</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/tags/%E5%A4%8D%E4%B9%A0-javaGuide-distributed_system/index.xml" rel="self" type="application/rss+xml"/><item><title>web-real-time-message-push</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/web-real-time-message-push/</link><pubDate>Tue, 21 Feb 2023 09:26:53 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/web-real-time-message-push/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;blockquote class='book-hint '>
+&lt;p>原文地址：https://juejin.cn/post/7122014462181113887，JavaGuide 对本文进行了完善总结。&lt;/p>&lt;/blockquote>&lt;p>我有一个朋友做了一个小破站，现在要实现一个站内信 Web 消息推送的功能，对，就是下图这个小红点，一个很常用的功能。&lt;/p>
 &lt;p>&lt;img src="img/ly-20241212142025733.png" alt="站内信 Web 消息推送" />&lt;/p>
 &lt;p>不过他还没想好用什么方式做，这里我帮他整理了一下几种方案，并简单做了实现。&lt;/p>
-&lt;h2 id="什么是消息推送-什么是消息推送">
- 
-&lt;a target="_blank" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E6%B6%88%E6%81%AF%E6%8E%A8%E9%80%81">#&lt;/a> 什么是消息推送？
- &lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e6%b6%88%e6%81%af%e6%8e%a8%e9%80%81-%e4%bb%80%e4%b9%88%e6%98%af%e6%b6%88%e6%81%af%e6%8e%a8%e9%80%81">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="-什么是消息推送">
+&lt;a target="_blank" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E6%B6%88%E6%81%AF%E6%8E%A8%E9%80%81">#&lt;/a> 什么是消息推送？&lt;a class="anchor" href="#-%e4%bb%80%e4%b9%88%e6%98%af%e6%b6%88%e6%81%af%e6%8e%a8%e9%80%81">#&lt;/a>&lt;/h2>
 &lt;p>推送的场景比较多，比如有人关注我的公众号，这时我就会收到一条推送消息，以此来吸引我点击打开应用。&lt;/p>
 &lt;p>消息推送通常是指网站的运营工作等人员，通过某种工具对用户当前网页或移动设备 APP 进行的主动消息推送。&lt;/p>
 &lt;p>消息推送一般又分为 Web 端消息推送和移动端消息推送。&lt;/p>
@@ -23,16 +16,10 @@
 &lt;p>通常在服务端会有若干张消息推送表，用来记录用户触发不同事件所推送不同类型的消息，前端主动查询（拉）或者被动接收（推）用户所有未读的消息数。&lt;/p>
 &lt;p>&lt;img src="img/ly-20241212142026150.png" alt="ly-20241212142026150" />&lt;/p>
 &lt;p>消息推送无非是推（push）和拉（pull）两种形式，下边我们逐个了解下。&lt;/p>
-&lt;h2 id="消息推送常见方案-消息推送常见方案">
- 
-&lt;a target="_blank" href="#%E6%B6%88%E6%81%AF%E6%8E%A8%E9%80%81%E5%B8%B8%E8%A7%81%E6%96%B9%E6%A1%88">#&lt;/a> 消息推送常见方案
- &lt;a class="anchor" href="#%e6%b6%88%e6%81%af%e6%8e%a8%e9%80%81%e5%b8%b8%e8%a7%81%e6%96%b9%e6%a1%88-%e6%b6%88%e6%81%af%e6%8e%a8%e9%80%81%e5%b8%b8%e8%a7%81%e6%96%b9%e6%a1%88">#&lt;/a>
-&lt;/h2>
-&lt;h3 id="短轮询-短轮询">
- 
-&lt;a target="_blank" href="#%E7%9F%AD%E8%BD%AE%E8%AF%A2">#&lt;/a> 短轮询
- &lt;a class="anchor" href="#%e7%9f%ad%e8%bd%ae%e8%af%a2-%e7%9f%ad%e8%bd%ae%e8%af%a2">#&lt;/a>
-&lt;/h3>
+&lt;h2 id="-消息推送常见方案">
+&lt;a target="_blank" href="#%E6%B6%88%E6%81%AF%E6%8E%A8%E9%80%81%E5%B8%B8%E8%A7%81%E6%96%B9%E6%A1%88">#&lt;/a> 消息推送常见方案&lt;a class="anchor" href="#-%e6%b6%88%e6%81%af%e6%8e%a8%e9%80%81%e5%b8%b8%e8%a7%81%e6%96%b9%e6%a1%88">#&lt;/a>&lt;/h2>
+&lt;h3 id="-短轮询">
+&lt;a target="_blank" href="#%E7%9F%AD%E8%BD%AE%E8%AF%A2">#&lt;/a> 短轮询&lt;a class="anchor" href="#-%e7%9f%ad%e8%bd%ae%e8%af%a2">#&lt;/a>&lt;/h3>
 &lt;p>&lt;strong>轮询(polling)&lt;/strong> 应该是实现消息推送方案中最简单的一种，这里我们暂且将轮询分为&lt;strong>短轮询&lt;/strong>和&lt;strong>长轮询&lt;/strong>。&lt;/p>
 &lt;p>短轮询很好理解，&lt;strong>指定的时间间隔&lt;/strong>，&lt;strong>由浏览器向服务器发出 HTTP 请求&lt;/strong>，&lt;strong>服务器实时返回未读消息数据给客户端，浏览器再做渲染显示&lt;/strong>。&lt;/p>
 &lt;p>一个简单的 JS 定时器就可以搞定，&lt;strong>每秒钟请求一次未读消息数接口&lt;/strong>，返回的数据展示即可。&lt;/p>
@@ -43,20 +30,11 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">this&lt;/span>.&lt;span style="color:#a6e22e">messageCount&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">res&lt;/span>.&lt;span style="color:#a6e22e">data&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> })
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}, &lt;span style="color:#ae81ff">1000&lt;/span>);
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>效果还是可以的，短轮询实现固然简单，缺点也是显而易见，&lt;strong>由于推送数据并不会频繁变更，无论后端此时是否有新的消息产生，客户端都会进行请求&lt;/strong>，势必会对服务端造成很大压力，浪费带宽和服务器资源。&lt;/p>
-&lt;h3 id="长轮询-长轮询">
- 
-&lt;a target="_blank" href="#%E9%95%BF%E8%BD%AE%E8%AF%A2">#&lt;/a> 长轮询
- &lt;a class="anchor" href="#%e9%95%bf%e8%bd%ae%e8%af%a2-%e9%95%bf%e8%bd%ae%e8%af%a2">#&lt;/a>
-&lt;/h3>
-&lt;p>长轮询是对上边短轮询的一种改进版本，在尽可能减少对服务器资源浪费的同时，保证消息的相对实时性。长轮询在中间件中应用的很广泛，比如 Nacos 和 Apollo 配置中心，消息队列 Kafka、RocketMQ 中都有用到长轮询。&lt;/p></description></item><item><title>Java定时任务详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/schedule-task/</link><pubDate>Tue, 21 Feb 2023 09:17:31 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/schedule-task/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;h2 id="为什么需要定时任务">
- 为什么需要定时任务？
- &lt;a class="anchor" href="#%e4%b8%ba%e4%bb%80%e4%b9%88%e9%9c%80%e8%a6%81%e5%ae%9a%e6%97%b6%e4%bb%bb%e5%8a%a1">#&lt;/a>
-&lt;/h2>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}, &lt;span style="color:#ae81ff">1000&lt;/span>);&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>效果还是可以的，短轮询实现固然简单，缺点也是显而易见，&lt;strong>由于推送数据并不会频繁变更，无论后端此时是否有新的消息产生，客户端都会进行请求&lt;/strong>，势必会对服务端造成很大压力，浪费带宽和服务器资源。&lt;/p>
+&lt;h3 id="-长轮询">
+&lt;a target="_blank" href="#%E9%95%BF%E8%BD%AE%E8%AF%A2">#&lt;/a> 长轮询&lt;a class="anchor" href="#-%e9%95%bf%e8%bd%ae%e8%af%a2">#&lt;/a>&lt;/h3>
+&lt;p>长轮询是对上边短轮询的一种改进版本，在尽可能减少对服务器资源浪费的同时，保证消息的相对实时性。长轮询在中间件中应用的很广泛，比如 Nacos 和 Apollo 配置中心，消息队列 Kafka、RocketMQ 中都有用到长轮询。&lt;/p></description></item><item><title>Java定时任务详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/schedule-task/</link><pubDate>Tue, 21 Feb 2023 09:17:31 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/schedule-task/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;h2 id="为什么需要定时任务">为什么需要定时任务？&lt;a class="anchor" href="#%e4%b8%ba%e4%bb%80%e4%b9%88%e9%9c%80%e8%a6%81%e5%ae%9a%e6%97%b6%e4%bb%bb%e5%8a%a1">#&lt;/a>&lt;/h2>
 &lt;p>我们来看一下几个非常常见的业务场景：&lt;/p>
 &lt;ol>
 &lt;li>某系统&lt;strong>凌晨要进行数据备份&lt;/strong>。&lt;/li>
@@ -67,14 +45,8 @@
 &lt;li>&amp;hellip;&amp;hellip;&lt;/li>
 &lt;/ol>
 &lt;p>这些场景往往都要求我们在某个特定的时间去做某个事情。&lt;/p>
-&lt;h2 id="单机定时任务技术选型">
- 单机定时任务技术选型
- &lt;a class="anchor" href="#%e5%8d%95%e6%9c%ba%e5%ae%9a%e6%97%b6%e4%bb%bb%e5%8a%a1%e6%8a%80%e6%9c%af%e9%80%89%e5%9e%8b">#&lt;/a>
-&lt;/h2>
-&lt;h3 id="timer">
- Timer
- &lt;a class="anchor" href="#timer">#&lt;/a>
-&lt;/h3>
+&lt;h2 id="单机定时任务技术选型">单机定时任务技术选型&lt;a class="anchor" href="#%e5%8d%95%e6%9c%ba%e5%ae%9a%e6%97%b6%e4%bb%bb%e5%8a%a1%e6%8a%80%e6%9c%af%e9%80%89%e5%9e%8b">#&lt;/a>&lt;/h2>
+&lt;h3 id="timer">Timer&lt;a class="anchor" href="#timer">#&lt;/a>&lt;/h3>
 &lt;p>&lt;code>java.util.Timer&lt;/code>是 JDK 1.3 开始就已经支持的一种定时任务的实现方式。&lt;/p>
 &lt;p>&lt;code>Timer&lt;/code> 内部使用一个叫做 &lt;code>TaskQueue&lt;/code> 的类存放定时任务，它是一个&lt;strong>基于最小堆实现的优先级队列&lt;/strong>。&lt;code>TaskQueue&lt;/code> 会按照&lt;strong>任务距离下一次执行时间的大小&lt;/strong>将任务排序，保证在堆顶的任务最先执行。这样在需要执行任务时，每次&lt;strong>只需要取出堆顶的任务&lt;/strong>运行即可！&lt;/p>
 &lt;p>&lt;code>Timer&lt;/code> 使用起来比较简单，通过下面的方式我们就能创建一个 1s 之后执行的定时任务。&lt;/p>
@@ -94,20 +66,11 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//输出：&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>当前时间: Fri May 28 15:18:47 CST 2021n线程名称: main
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>当前时间: Fri May 28 15:18:48 CST 2021n线程名称: Timer
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>不过其缺陷较多，比如一个 &lt;code>Timer&lt;/code> 一个线程，这就导致 &lt;code>Timer&lt;/code> 的任务的执行&lt;strong>只能串行执行，一个任务执行时间过长的话会影响其他任务（性能非常差），再比如发生异常时任务直接停止（&lt;code>Timer&lt;/code> 只捕获了 &lt;code>InterruptedException&lt;/code> ）&lt;/strong>。&lt;/p></description></item><item><title>敏感词过滤方案总结</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/security/ly06ly_sentive-words-filter/</link><pubDate>Tue, 21 Feb 2023 08:57:26 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/security/ly06ly_sentive-words-filter/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;p>系统需要对用户输入的文本进行&lt;strong>敏感词过滤&lt;/strong>如色情、政治、暴力相关的词汇。&lt;/p>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>当前时间: Fri May 28 15:18:48 CST 2021n线程名称: Timer&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>不过其缺陷较多，比如一个 &lt;code>Timer&lt;/code> 一个线程，这就导致 &lt;code>Timer&lt;/code> 的任务的执行&lt;strong>只能串行执行，一个任务执行时间过长的话会影响其他任务（性能非常差），再比如发生异常时任务直接停止（&lt;code>Timer&lt;/code> 只捕获了 &lt;code>InterruptedException&lt;/code> ）&lt;/strong>。&lt;/p></description></item><item><title>敏感词过滤方案总结</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/security/ly06ly_sentive-words-filter/</link><pubDate>Tue, 21 Feb 2023 08:57:26 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/security/ly06ly_sentive-words-filter/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;p>系统需要对用户输入的文本进行&lt;strong>敏感词过滤&lt;/strong>如色情、政治、暴力相关的词汇。&lt;/p>
 &lt;p>敏感词过滤用的使用比较多的 &lt;strong>Trie 树算法&lt;/strong> 和 &lt;strong>DFA 算法&lt;/strong>。&lt;/p>
-&lt;h2 id="算法实现">
- 算法实现
- &lt;a class="anchor" href="#%e7%ae%97%e6%b3%95%e5%ae%9e%e7%8e%b0">#&lt;/a>
-&lt;/h2>
-&lt;h3 id="trie-树">
- Trie 树
- &lt;a class="anchor" href="#trie-%e6%a0%91">#&lt;/a>
-&lt;/h3>
+&lt;h2 id="算法实现">算法实现&lt;a class="anchor" href="#%e7%ae%97%e6%b3%95%e5%ae%9e%e7%8e%b0">#&lt;/a>&lt;/h2>
+&lt;h3 id="trie-树">Trie 树&lt;a class="anchor" href="#trie-%e6%a0%91">#&lt;/a>&lt;/h3>
 &lt;p>&lt;strong>Trie 树&lt;/strong> 也称为&lt;strong>字典树&lt;/strong>、&lt;strong>单词查找树&lt;/strong>，&lt;strong>哈系树&lt;/strong>(&lt;strong>这里是不是写错了，哈希树？&lt;/strong>)的一种变种，通常被用于&lt;strong>字符串匹配&lt;/strong>，用来解决在一组字符串集合中快速查找某个字符串的问题。像&lt;strong>浏览器搜索的关键词提示&lt;/strong>一般就是基于 Trie 树来做的。&lt;/p>
 &lt;p>&lt;img src="img/ly-20241212142025084.png" alt="img" />&lt;/p>
 &lt;p>假如我们的敏感词库中有以下敏感词：&lt;/p>
@@ -132,21 +95,12 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>trie.&lt;span style="color:#a6e22e">put&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;Chris&amp;#34;&lt;/span>, &lt;span style="color:#e6db74">&amp;#34;doctor&amp;#34;&lt;/span>);
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Assertions.&lt;span style="color:#a6e22e">assertTrue&lt;/span>(trie.&lt;span style="color:#a6e22e">containsKey&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;Abigail&amp;#34;&lt;/span>));
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>assertEquals(&lt;span style="color:#e6db74">&amp;#34;{Abi=doctor, Abigail=student}&amp;#34;&lt;/span>, trie.&lt;span style="color:#a6e22e">prefixMap&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;Abi&amp;#34;&lt;/span>).&lt;span style="color:#a6e22e">toString&lt;/span>());
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>assertEquals(&lt;span style="color:#e6db74">&amp;#34;{Chris=doctor, Christina=student}&amp;#34;&lt;/span>, trie.&lt;span style="color:#a6e22e">prefixMap&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;Chr&amp;#34;&lt;/span>).&lt;span style="color:#a6e22e">toString&lt;/span>());
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Aho-Corasick（AC）自动机是一种建立在 Trie 树上的一种改进算法，是一种多模式匹配算法，由贝尔实验室的研究人员 Alfred V. Aho 和 Margaret J.Corasick 发明。&lt;/p></description></item><item><title>权限系统设计详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/security/ly05ly_design-of-authority-system/</link><pubDate>Mon, 20 Feb 2023 15:54:05 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/security/ly05ly_design-of-authority-system/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;blockquote>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>assertEquals(&lt;span style="color:#e6db74">&amp;#34;{Chris=doctor, Christina=student}&amp;#34;&lt;/span>, trie.&lt;span style="color:#a6e22e">prefixMap&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;Chr&amp;#34;&lt;/span>).&lt;span style="color:#a6e22e">toString&lt;/span>());&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Aho-Corasick（AC）自动机是一种建立在 Trie 树上的一种改进算法，是一种多模式匹配算法，由贝尔实验室的研究人员 Alfred V. Aho 和 Margaret J.Corasick 发明。&lt;/p>
+&lt;p>AC 自动机算法使用 Trie 树来存放模式串的前缀，通过失败匹配指针（失配指针）来处理匹配失败的跳转。&lt;/p></description></item><item><title>权限系统设计详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/security/ly05ly_design-of-authority-system/</link><pubDate>Mon, 20 Feb 2023 15:54:05 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/security/ly05ly_design-of-authority-system/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;blockquote class='book-hint '>
 &lt;p>作者：转转技术团队&lt;/p>
-&lt;p>原文：https://mp.weixin.qq.com/s/ONMuELjdHYa0yQceTj01Iw&lt;/p>
-&lt;/blockquote>
-&lt;blockquote>
-&lt;p>ly：比较繁琐，大概看了前面的部分&lt;/p>
-&lt;/blockquote>
-&lt;h2 id="老权限系统的问题与现状">
- 老权限系统的问题与现状
- &lt;a class="anchor" href="#%e8%80%81%e6%9d%83%e9%99%90%e7%b3%bb%e7%bb%9f%e7%9a%84%e9%97%ae%e9%a2%98%e4%b8%8e%e7%8e%b0%e7%8a%b6">#&lt;/a>
-&lt;/h2>
+&lt;p>原文：https://mp.weixin.qq.com/s/ONMuELjdHYa0yQceTj01Iw&lt;/p>&lt;/blockquote>&lt;blockquote class='book-hint '>
+&lt;p>ly：比较繁琐，大概看了前面的部分&lt;/p>&lt;/blockquote>&lt;h2 id="老权限系统的问题与现状">老权限系统的问题与现状&lt;a class="anchor" href="#%e8%80%81%e6%9d%83%e9%99%90%e7%b3%bb%e7%bb%9f%e7%9a%84%e9%97%ae%e9%a2%98%e4%b8%8e%e7%8e%b0%e7%8a%b6">#&lt;/a>&lt;/h2>
 &lt;p>转转公司在过去并没有一个统一的权限管理系统，权限管理由各业务自行研发或是使用其他业务的权限系统，权限管理的不统一带来了不少问题：&lt;/p>
 &lt;ol>
 &lt;li>&lt;strong>各业务重复造轮子&lt;/strong>，维护成本高&lt;/li>
@@ -154,19 +108,13 @@
 &lt;li>&lt;strong>缺乏统一的日志管理&lt;/strong>与&lt;strong>审批流程&lt;/strong>，在授权信息追溯上十分困难&lt;/li>
 &lt;/ol>
 &lt;p>基于上述问题，去年底公司启动建设转转统一权限系统，目标是开发一套灵活、易用、安全的权限管理系统，供各业务使用。&lt;/p>
-&lt;h2 id="业界权限系统的设计方式">
- 业界权限系统的设计方式
- &lt;a class="anchor" href="#%e4%b8%9a%e7%95%8c%e6%9d%83%e9%99%90%e7%b3%bb%e7%bb%9f%e7%9a%84%e8%ae%be%e8%ae%a1%e6%96%b9%e5%bc%8f">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="业界权限系统的设计方式">业界权限系统的设计方式&lt;a class="anchor" href="#%e4%b8%9a%e7%95%8c%e6%9d%83%e9%99%90%e7%b3%bb%e7%bb%9f%e7%9a%84%e8%ae%be%e8%ae%a1%e6%96%b9%e5%bc%8f">#&lt;/a>&lt;/h2>
 &lt;p>目前业界主流的权限模型有两种，下面分别介绍下：&lt;/p>
 &lt;ul>
 &lt;li>&lt;strong>基于角色的访问控制（RBAC）&lt;/strong>&lt;/li>
 &lt;li>&lt;strong>基于属性的访问控制（ABAC）&lt;/strong>&lt;/li>
 &lt;/ul>
-&lt;h3 id="rbac-模型">
- RBAC 模型
- &lt;a class="anchor" href="#rbac-%e6%a8%a1%e5%9e%8b">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="rbac-模型">RBAC 模型&lt;a class="anchor" href="#rbac-%e6%a8%a1%e5%9e%8b">#&lt;/a>&lt;/h3>
 &lt;p>&lt;strong>基于角色的访问控制（Role-Based Access Control，简称 RBAC）&lt;/strong> 指的是通过用户的&lt;strong>角色（Role）&lt;strong>授权其&lt;/strong>相关权限&lt;/strong>，实现了灵活的访问控制，&lt;strong>相比直接授予用户权限&lt;/strong>，要更加简单、高效、可扩展。&lt;/p>
 &lt;p>一个用户可以拥有若干角色，每一个角色又可以被&lt;strong>分配若干权限&lt;/strong>这样，就构造成“&lt;strong>用户-角色-权限&lt;/strong>” 的授权模型。在这种模型中，用户与角色、角色与权限之间构成了多对多的关系。&lt;/p>
 &lt;p>用一个图来描述如下：&lt;/p>
@@ -174,10 +122,7 @@
 &lt;p>当使用 &lt;code>RBAC模型&lt;/code> 时，通过分析用户的实际情况，基于共同的职责和需求，&lt;strong>授予他们不同角色&lt;/strong>。这种 &lt;strong>&lt;code>用户 -&amp;gt; 角色 -&amp;gt; 权限&lt;/code>&lt;/strong> 间的关系，让我们可以不用再单独管理单个用户权限，用户&lt;strong>从授予的角色里面获取所需的权限&lt;/strong>。&lt;/p>
 &lt;p>以一个简单的场景（Gitlab 的权限系统）为例，用户系统中有 &lt;code>Admin&lt;/code>、&lt;code>Maintainer&lt;/code>、&lt;code>Operator&lt;/code> 三种角色，这三种角色分别具备不同的权限，比如只有 &lt;code>Admin&lt;/code> 具备创建代码仓库、删除代码仓库的权限，其他的角色都不具备。我们授予某个用户 &lt;code>Admin&lt;/code> 这个角色，他就具备了 &lt;strong>创建代码仓库&lt;/strong> 和 &lt;strong>删除代码仓库&lt;/strong> 这两个权限。&lt;/p>
 &lt;p>通过 &lt;code>RBAC模型&lt;/code> ，当存在多个用户拥有相同权限时，我们只需要创建好拥有该权限的角色，然后给不同的用户分配不同的角色，后续只需要修改角色的权限，就能自动修改角色内所有用户的权限。&lt;/p>
-&lt;h3 id="abac-模型">
- ABAC 模型
- &lt;a class="anchor" href="#abac-%e6%a8%a1%e5%9e%8b">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="abac-模型">ABAC 模型&lt;a class="anchor" href="#abac-%e6%a8%a1%e5%9e%8b">#&lt;/a>&lt;/h3>
 &lt;p>&lt;strong>基于属性的访问控制（Attribute-Based Access Control，简称 ABAC）&lt;/strong> 是一种比 &lt;code>RBAC模型&lt;/code> 更加灵活的授权模型，它的原理是&lt;strong>通过各种属性来动态判断一个操作是否可以被允许&lt;/strong>。这个模型在云系统中使用的比较多，比如 AWS，阿里云等。&lt;/p>
 &lt;p>考虑下面这些场景的权限控制：&lt;/p>
 &lt;ol>
@@ -188,21 +133,11 @@
 &lt;li>在&lt;strong>除了上海以外的地方禁止以管理员身份访问&lt;/strong> A 系统&lt;/li>
 &lt;li>用户&lt;strong>对 2022-06-07 之前创建的订单&lt;/strong>有操作权限&lt;/li>
 &lt;/ol>
-&lt;p>可以发现上述的场景通过 &lt;code>RBAC模型&lt;/code> 很难去实现，因为 &lt;code>RBAC模型&lt;/code> 仅仅描述了用户可以做什么操作，但是操作的条件，以及操作的数据，&lt;code>RBAC模型&lt;/code> 本身是没有这些限制的。但这恰恰是 &lt;code>ABAC模型&lt;/code> 的长处，&lt;code>ABAC模型&lt;/code> 的思想是基于&lt;strong>用户&lt;/strong>、访问的&lt;strong>数据的属性&lt;/strong>、以及各&lt;strong>种环境因素&lt;/strong>去动态计算用户是否有权限进行操作。&lt;/p></description></item><item><title>sso单点登录</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/security/ly04ly_sso-intro/</link><pubDate>Mon, 20 Feb 2023 15:20:23 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/security/ly04ly_sso-intro/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;blockquote>
+&lt;p>可以发现上述的场景通过 &lt;code>RBAC模型&lt;/code> 很难去实现，因为 &lt;code>RBAC模型&lt;/code> 仅仅描述了用户可以做什么操作，但是操作的条件，以及操作的数据，&lt;code>RBAC模型&lt;/code> 本身是没有这些限制的。但这恰恰是 &lt;code>ABAC模型&lt;/code> 的长处，&lt;code>ABAC模型&lt;/code> 的思想是基于&lt;strong>用户&lt;/strong>、访问的&lt;strong>数据的属性&lt;/strong>、以及各&lt;strong>种环境因素&lt;/strong>去动态计算用户是否有权限进行操作。&lt;/p></description></item><item><title>sso单点登录</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/security/ly04ly_sso-intro/</link><pubDate>Mon, 20 Feb 2023 15:20:23 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/security/ly04ly_sso-intro/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;blockquote class='book-hint '>
 &lt;p>本文授权转载自 ： 
-&lt;a target="_blank" href="https://ken.io/note/sso-design-implement">https://ken.io/note/sso-design-implement&lt;/a> 作者：ken.io&lt;/p>
-&lt;/blockquote>
-&lt;h2 id="sso-介绍">
- SSO 介绍
- &lt;a class="anchor" href="#sso-%e4%bb%8b%e7%bb%8d">#&lt;/a>
-&lt;/h2>
-&lt;h3 id="什么是-sso">
- 什么是 SSO？
- &lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af-sso">#&lt;/a>
-&lt;/h3>
+&lt;a target="_blank" href="https://ken.io/note/sso-design-implement">https://ken.io/note/sso-design-implement&lt;/a> 作者：ken.io&lt;/p>&lt;/blockquote>&lt;h2 id="sso-介绍">SSO 介绍&lt;a class="anchor" href="#sso-%e4%bb%8b%e7%bb%8d">#&lt;/a>&lt;/h2>
+&lt;h3 id="什么是-sso">什么是 SSO？&lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af-sso">#&lt;/a>&lt;/h3>
 &lt;p>SSO 英文全称 &lt;strong>Single Sign On&lt;/strong>，单点登录。SSO 是在多个应用系统中，用户只需要登录一次就可以访问所有相互信任的应用系统。&lt;/p>
 &lt;p>例如你登录网易账号中心（https://reg.163.com/ ）之后访问以下站点都是登录状态。&lt;/p>
 &lt;ul>
@@ -217,19 +152,13 @@
 &lt;li>网易 Lofter 
 &lt;a target="_blank" href="http://www.lofter.com/">http://www.lofter.com&lt;/a>&lt;/li>
 &lt;/ul>
-&lt;h3 id="sso-有什么好处">
- SSO 有什么好处？
- &lt;a class="anchor" href="#sso-%e6%9c%89%e4%bb%80%e4%b9%88%e5%a5%bd%e5%a4%84">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="sso-有什么好处">SSO 有什么好处？&lt;a class="anchor" href="#sso-%e6%9c%89%e4%bb%80%e4%b9%88%e5%a5%bd%e5%a4%84">#&lt;/a>&lt;/h3>
 &lt;ol>
 &lt;li>&lt;strong>用户角度&lt;/strong> :用户能够做到一次登录多次使用，无需记录多套用户名和密码，省心。&lt;/li>
 &lt;li>&lt;strong>系统管理员角度&lt;/strong> : 管理员只需维护好一个统一的账号中心就可以了，方便。&lt;/li>
 &lt;li>&lt;strong>新系统开发角度:&lt;/strong> 新系统开发时只需直接对接统一的账号中心即可，简化开发流程，省时。&lt;/li>
 &lt;/ol>
-&lt;h2 id="sso-设计与实现">
- SSO 设计与实现
- &lt;a class="anchor" href="#sso-%e8%ae%be%e8%ae%a1%e4%b8%8e%e5%ae%9e%e7%8e%b0">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="sso-设计与实现">SSO 设计与实现&lt;a class="anchor" href="#sso-%e8%ae%be%e8%ae%a1%e4%b8%8e%e5%ae%9e%e7%8e%b0">#&lt;/a>&lt;/h2>
 &lt;p>本篇文章也主要是为了探讨如何设计&amp;amp;实现一个 SSO 系统&lt;/p>
 &lt;p>以下为需要实现的核心功能：&lt;/p>
 &lt;ul>
@@ -238,10 +167,7 @@
 &lt;li>支持&lt;strong>跨域单点登录&lt;/strong>&lt;/li>
 &lt;li>支持&lt;strong>跨域单点登出&lt;/strong>&lt;/li>
 &lt;/ul>
-&lt;h3 id="核心应用与依赖">
- 核心应用与依赖
- &lt;a class="anchor" href="#%e6%a0%b8%e5%bf%83%e5%ba%94%e7%94%a8%e4%b8%8e%e4%be%9d%e8%b5%96">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="核心应用与依赖">核心应用与依赖&lt;a class="anchor" href="#%e6%a0%b8%e5%bf%83%e5%ba%94%e7%94%a8%e4%b8%8e%e4%be%9d%e8%b5%96">#&lt;/a>&lt;/h3>
 &lt;p>&lt;img src="img/ly-20241212142023133.jpg" alt="单点登录（SSO）设计" />&lt;/p>
 &lt;table>
  &lt;thead>
@@ -285,16 +211,11 @@
  &lt;/tr>
  &lt;/tbody>
 &lt;/table>
-&lt;h3 id="用户登录状态的存储与校验">
- 用户登录状态的存储与校验
- &lt;a class="anchor" href="#%e7%94%a8%e6%88%b7%e7%99%bb%e5%bd%95%e7%8a%b6%e6%80%81%e7%9a%84%e5%ad%98%e5%82%a8%e4%b8%8e%e6%a0%a1%e9%aa%8c">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="用户登录状态的存储与校验">用户登录状态的存储与校验&lt;a class="anchor" href="#%e7%94%a8%e6%88%b7%e7%99%bb%e5%bd%95%e7%8a%b6%e6%80%81%e7%9a%84%e5%ad%98%e5%82%a8%e4%b8%8e%e6%a0%a1%e9%aa%8c">#&lt;/a>&lt;/h3>
 &lt;p>常见的 Web 框架对于 Session 的实现都是&lt;strong>生成一个 SessionId 存储在浏览器 Cookie&lt;/strong> 中。然后&lt;strong>将 Session 内容存储在服务器端内存&lt;/strong>中，这个 
 &lt;a target="_blank" href="https://ken.io/">ken.io&lt;/a> 在之前
-&lt;a target="_blank" href="https://ken.io/note/session-principle-skill">Session 工作原理&lt;/a>中也提到过。整体也是借鉴这个思路。&lt;/p></description></item><item><title>jwt身份认证优缺点</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/security/ly03ly_jwt-advantages-disadvantages/</link><pubDate>Mon, 20 Feb 2023 14:40:15 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/security/ly03ly_jwt-advantages-disadvantages/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;p>在 
+&lt;a target="_blank" href="https://ken.io/note/session-principle-skill">Session 工作原理&lt;/a>中也提到过。整体也是借鉴这个思路。&lt;/p></description></item><item><title>jwt身份认证优缺点</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/security/ly03ly_jwt-advantages-disadvantages/</link><pubDate>Mon, 20 Feb 2023 14:40:15 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/security/ly03ly_jwt-advantages-disadvantages/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;p>在 
 &lt;a target="_blank" href="https://javaguide.cn/system-design/security/jwt-intro.html">JWT 基本概念详解&lt;/a>这篇文章中，我介绍了：&lt;/p>
 &lt;ul>
 &lt;li>什么是 JWT?&lt;/li>
@@ -304,56 +225,33 @@
 &lt;li>如何加强 JWT 的安全性？&lt;/li>
 &lt;/ul>
 &lt;p>这篇文章，我们一起探讨一下 JWT 身份认证的&lt;strong>优缺点&lt;/strong>以及&lt;strong>常见问题的解决办法&lt;/strong>。&lt;/p>
-&lt;h2 id="jwt-的优势">
- JWT 的优势
- &lt;a class="anchor" href="#jwt-%e7%9a%84%e4%bc%98%e5%8a%bf">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="jwt-的优势">JWT 的优势&lt;a class="anchor" href="#jwt-%e7%9a%84%e4%bc%98%e5%8a%bf">#&lt;/a>&lt;/h2>
 &lt;p>相比于 Session 认证的方式来说，使用 JWT 进行身份认证主要有下面 4 个优势。&lt;/p>
-&lt;h3 id="无状态">
- 无状态
- &lt;a class="anchor" href="#%e6%97%a0%e7%8a%b6%e6%80%81">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="无状态">无状态&lt;a class="anchor" href="#%e6%97%a0%e7%8a%b6%e6%80%81">#&lt;/a>&lt;/h3>
 &lt;p>JWT 自身&lt;strong>包含了身份验证所需要的所有信息&lt;/strong>，因此，我们的&lt;strong>服务器不需要存储 Session&lt;/strong> 信息。这显然增加了系统的可用性和伸缩性，大大减轻了服务端的压力。&lt;/p>
 &lt;p>不过，也正是由于 JWT 的无状态，也导致了它最大的缺点：&lt;strong>不可控！&lt;/strong>&lt;/p>
 &lt;p>就比如说，我们想要在 &lt;strong>JWT 有效期内废弃一个 JWT&lt;/strong> 或者&lt;strong>更改它的权限&lt;/strong>的话，&lt;strong>并不会立即生效&lt;/strong>，通常需要等到有效期过后才可以。再比如说，&lt;strong>当用户 Logout 的话，JWT 也还有效&lt;/strong>。除非，我们在&lt;strong>后端增加额外的处理&lt;/strong>逻辑比如&lt;strong>将失效的 JWT 存储&lt;/strong>起来，后端先验证 JWT 是否有效再进行处理。具体的解决办法，我们会在后面的内容中详细介绍到，这里只是简单提一下。&lt;/p>
-&lt;h3 id="有效避免了-csrf-攻击">
- 有效避免了 CSRF 攻击
- &lt;a class="anchor" href="#%e6%9c%89%e6%95%88%e9%81%bf%e5%85%8d%e4%ba%86-csrf-%e6%94%bb%e5%87%bb">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="有效避免了-csrf-攻击">有效避免了 CSRF 攻击&lt;a class="anchor" href="#%e6%9c%89%e6%95%88%e9%81%bf%e5%85%8d%e4%ba%86-csrf-%e6%94%bb%e5%87%bb">#&lt;/a>&lt;/h3>
 &lt;p>&lt;code>[ˈfɔːdʒəri] forgery 伪造&lt;/code>&lt;/p>
-&lt;p>&lt;strong>CSRF（Cross Site Request Forgery）&lt;/strong> 一般被翻译为 &lt;strong>跨站请求伪造&lt;/strong>，属于网络攻击领域范围。相比于 SQL 脚本注入、XSS 等安全攻击方式，&lt;strong>CSRF&lt;/strong> 的知名度并没有它们高。但是，它的确是我们开发系统时必须要考虑的安全隐患。就连业内技术标杆 Google 的产品 Gmail 也曾在 2007 年的时候爆出过 CSRF 漏洞，这给 Gmail 的用户造成了很大的损失。&lt;/p></description></item><item><title>jwt-intro</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/security/ly02ly_jwt-intro/</link><pubDate>Mon, 20 Feb 2023 14:28:07 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/security/ly02ly_jwt-intro/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;p>&lt;img src="img/ly-20241212142022219.png" alt="image.png" />&lt;/p>
-&lt;h2 id="什么是-jwt">
- 什么是 JWT?
- &lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af-jwt">#&lt;/a>
-&lt;/h2>
+&lt;p>&lt;strong>CSRF（Cross Site Request Forgery）&lt;/strong> 一般被翻译为 &lt;strong>跨站请求伪造&lt;/strong>，属于网络攻击领域范围。相比于 SQL 脚本注入、XSS 等安全攻击方式，&lt;strong>CSRF&lt;/strong> 的知名度并没有它们高。但是，它的确是我们开发系统时必须要考虑的安全隐患。就连业内技术标杆 Google 的产品 Gmail 也曾在 2007 年的时候爆出过 CSRF 漏洞，这给 Gmail 的用户造成了很大的损失。&lt;/p></description></item><item><title>jwt-intro</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/security/ly02ly_jwt-intro/</link><pubDate>Mon, 20 Feb 2023 14:28:07 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/security/ly02ly_jwt-intro/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;p>&lt;img src="img/ly-20241212142022219.png" alt="image.png" />&lt;/p>
+&lt;h2 id="什么是-jwt">什么是 JWT?&lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af-jwt">#&lt;/a>&lt;/h2>
 &lt;p>JWT （JSON Web Token） 是目前&lt;strong>最流行的跨域认证解决方案&lt;/strong>，是一种&lt;strong>基于 Token 的认证授权机制&lt;/strong>。 从 JWT 的全称可以看出，JWT 本身也是 Token，一种规范化之后的 JSON 结构的 Token。&lt;/p>
-&lt;blockquote>
+&lt;blockquote class='book-hint '>
 &lt;p>跨域认证的问题&lt;br>
 互联网服务离不开用户认证。一般流程是下面这样。&lt;/p>
 &lt;p>这种模式的问题在于，扩展性（scaling）不好。单机当然没有问题，如果是&lt;strong>服务器集群，或者是跨域的服务导向架构&lt;/strong>，就要求 &lt;strong>session 数据共享&lt;/strong>，&lt;strong>每台服务器都能够读取 session&lt;/strong>。&lt;/p>
 &lt;p>举例来说，A 网站和 B 网站是同一家公司的关联服务。现在要求，用户只要在其中一个网站登录，再访问另一个网站就会自动登录，请问怎么实现？&lt;/p>
 &lt;p>一种解决方案是 &lt;strong>session 数据持久化&lt;/strong>，&lt;strong>写入数据库&lt;/strong>或&lt;strong>别的持久层&lt;/strong>。各种服务收到请求后，都&lt;strong>向持久层请求数据&lt;/strong>。这种方案的优点是架构清晰，缺点是工程量比较大。另外，&lt;strong>持久层&lt;/strong>万一挂了，就会单点失败。&lt;/p>
-&lt;p>另一种方案是服务器索性&lt;strong>不保存 session 数据&lt;/strong>了，所有&lt;strong>数据都保存在客户端&lt;/strong>，每次请求都发回服务器。JWT 就是这种方案的一个代表。&lt;/p>
-&lt;/blockquote>
-&lt;p>JWT 自身包含了身份验证所需要的所有信息，因此，我们的&lt;strong>服务器不需要存储 Session 信息&lt;/strong>。这显然增加了系统的可用性和伸缩性，大大减轻了服务端的压力。&lt;/p>
-&lt;blockquote>
-&lt;p>ly：我觉得这里的重点就是，服务器不存储Session以维护&amp;quot;用户&amp;quot;和cookie(session id)的关系了&lt;/p>
-&lt;/blockquote>
-&lt;p>可以看出，&lt;strong>JWT 更符合设计 RESTful API 时的「Stateless（无状态）」原则&lt;/strong> 。&lt;/p>
+&lt;p>另一种方案是服务器索性&lt;strong>不保存 session 数据&lt;/strong>了，所有&lt;strong>数据都保存在客户端&lt;/strong>，每次请求都发回服务器。JWT 就是这种方案的一个代表。&lt;/p>&lt;/blockquote>&lt;p>JWT 自身包含了身份验证所需要的所有信息，因此，我们的&lt;strong>服务器不需要存储 Session 信息&lt;/strong>。这显然增加了系统的可用性和伸缩性，大大减轻了服务端的压力。&lt;/p>
+&lt;blockquote class='book-hint '>
+&lt;p>ly：我觉得这里的重点就是，服务器不存储Session以维护&amp;quot;用户&amp;quot;和cookie(session id)的关系了&lt;/p>&lt;/blockquote>&lt;p>可以看出，&lt;strong>JWT 更符合设计 RESTful API 时的「Stateless（无状态）」原则&lt;/strong> 。&lt;/p>
 &lt;p>并且， 使用 JWT 认证可以有效&lt;strong>避免 CSRF 攻击&lt;/strong>，因为 JWT 一般是&lt;strong>存在在 localStorage&lt;/strong> 中，使用 JWT 进行身份验证的过程中是不会涉及到 Cookie 的。&lt;/p>
 &lt;p>我在 
 &lt;a target="_blank" href="https://github.com/Snailclimb/JavaGuide/blob/main/docs/system-design/security/advantages&amp;amp;disadvantages-of-jwt.md">JWT 优缺点分析&lt;/a>这篇文章中有详细介绍到使用 JWT 做身份认证的优势和劣势。&lt;/p>
 &lt;p>下面是 
-&lt;a target="_blank" href="https://tools.ietf.org/html/rfc7519">RFC 7519&lt;/a> 对 JWT 做的较为正式的定义。&lt;/p></description></item><item><title>认证授权基础概念详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/security/ly01ly_basis-of-authority-certification/</link><pubDate>Mon, 20 Feb 2023 09:44:23 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/security/ly01ly_basis-of-authority-certification/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;h2 id="认证-authentication-和授权-authorization的区别是什么">
- 认证 (Authentication) 和授权 (Authorization)的区别是什么？
- &lt;a class="anchor" href="#%e8%ae%a4%e8%af%81-authentication-%e5%92%8c%e6%8e%88%e6%9d%83-authorization%e7%9a%84%e5%8c%ba%e5%88%ab%e6%98%af%e4%bb%80%e4%b9%88">#&lt;/a>
-&lt;/h2>
+&lt;a target="_blank" href="https://tools.ietf.org/html/rfc7519">RFC 7519&lt;/a> 对 JWT 做的较为正式的定义。&lt;/p></description></item><item><title>认证授权基础概念详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/security/ly01ly_basis-of-authority-certification/</link><pubDate>Mon, 20 Feb 2023 09:44:23 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/security/ly01ly_basis-of-authority-certification/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;h2 id="认证-authentication-和授权-authorization的区别是什么">认证 (Authentication) 和授权 (Authorization)的区别是什么？&lt;a class="anchor" href="#%e8%ae%a4%e8%af%81-authentication-%e5%92%8c%e6%8e%88%e6%9d%83-authorization%e7%9a%84%e5%8c%ba%e5%88%ab%e6%98%af%e4%bb%80%e4%b9%88">#&lt;/a>&lt;/h2>
 &lt;p>这是一个绝大多数人都会混淆的问题。首先先从读音上来认识这两个名词，很多人都会把它俩的读音搞混，所以我建议你先先去查一查这两个单词到底该怎么读，他们的具体含义是什么。&lt;/p>
 &lt;p>说简单点就是：&lt;/p>
 &lt;ul>
@@ -370,10 +268,7 @@
 &lt;p>授权：&lt;/p>
 &lt;p>&lt;img src="img/ly-20241212142020901.jpg" alt="img" />&lt;/p>
 &lt;p>这两个一般在我们的系统中被结合在一起使用，目的就是为了保护我们系统的安全性。&lt;/p>
-&lt;h2 id="rbac-模型了解吗">
- RBAC 模型了解吗？
- &lt;a class="anchor" href="#rbac-%e6%a8%a1%e5%9e%8b%e4%ba%86%e8%a7%a3%e5%90%97">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="rbac-模型了解吗">RBAC 模型了解吗？&lt;a class="anchor" href="#rbac-%e6%a8%a1%e5%9e%8b%e4%ba%86%e8%a7%a3%e5%90%97">#&lt;/a>&lt;/h2>
 &lt;p>系统权限控制最常采用的访问控制模型就是 &lt;strong>RBAC 模型&lt;/strong> 。&lt;/p>
 &lt;p>&lt;strong>什么是 RBAC 呢？&lt;/strong>&lt;/p>
 &lt;p>RBAC 即&lt;strong>基于角色的权限访问控制&lt;/strong>（&lt;strong>Role-Based Access Control&lt;/strong>）。这是一种通过角色关联权限，角色同时又关联用户的授权的方式。&lt;/p>
@@ -385,87 +280,55 @@
 &lt;p>通过这个权限模型，我们可以创建不同的角色并为不同的角色分配不同的权限范围（菜单）。&lt;/p>
 &lt;p>&lt;img src="img/ly-20241212142021421.png" alt="ly-20241212142021421" />&lt;/p>
 &lt;p>通常来说，如果系统对于权限控制要求&lt;strong>比较严格&lt;/strong>的话，一般都会选择使用 &lt;strong>RBAC&lt;/strong> 模型来做权限控制。&lt;/p>
-&lt;h2 id="什么是-cookie--cookie-的作用是什么">
- 什么是 Cookie ? Cookie 的作用是什么?
- &lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af-cookie--cookie-%e7%9a%84%e4%bd%9c%e7%94%a8%e6%98%af%e4%bb%80%e4%b9%88">#&lt;/a>
-&lt;/h2>
-&lt;p>&lt;img src="img/ly-20241212142021557.jpg" alt="img" />&lt;/p></description></item><item><title>单元测试</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/basis/unit-test/</link><pubDate>Mon, 20 Feb 2023 09:38:24 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/basis/unit-test/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;h2 id="何谓单元测试">
- 何谓单元测试？
- &lt;a class="anchor" href="#%e4%bd%95%e8%b0%93%e5%8d%95%e5%85%83%e6%b5%8b%e8%af%95">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="什么是-cookie--cookie-的作用是什么">什么是 Cookie ? Cookie 的作用是什么?&lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af-cookie--cookie-%e7%9a%84%e4%bd%9c%e7%94%a8%e6%98%af%e4%bb%80%e4%b9%88">#&lt;/a>&lt;/h2>
+&lt;p>&lt;img src="img/ly-20241212142021557.jpg" alt="img" />&lt;/p></description></item><item><title>单元测试</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/basis/unit-test/</link><pubDate>Mon, 20 Feb 2023 09:38:24 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/basis/unit-test/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;h2 id="何谓单元测试">何谓单元测试？&lt;a class="anchor" href="#%e4%bd%95%e8%b0%93%e5%8d%95%e5%85%83%e6%b5%8b%e8%af%95">#&lt;/a>&lt;/h2>
 &lt;p>维基百科是这样介绍单元测试的：&lt;/p>
-&lt;blockquote>
+&lt;blockquote class='book-hint '>
 &lt;p>在计算机编程中，单元测试（Unit Testing）是针对&lt;strong>程序模块&lt;/strong>（软件设计的最小单位）进行的&lt;strong>正确性检验测试&lt;/strong>工作。&lt;/p>
-&lt;p>程序单元是应用的 &lt;strong>最小可测试部件&lt;/strong> 。在过程化编程中，一个单元就是单个程序、函数、过程等；对于面向对象编程，最小单元就是&lt;strong>方法&lt;/strong>，包括基类（超类）、抽象类、或者派生类（子类）中的方法。&lt;/p>
-&lt;/blockquote>
-&lt;p>由于每个单元有独立的逻辑，在做单元测试时，为了隔离外部依赖，确保这些依赖&lt;strong>不影响验证逻辑&lt;/strong>，我们经常会用到 Fake、Stub 与 Mock 。&lt;/p>
+&lt;p>程序单元是应用的 &lt;strong>最小可测试部件&lt;/strong> 。在过程化编程中，一个单元就是单个程序、函数、过程等；对于面向对象编程，最小单元就是&lt;strong>方法&lt;/strong>，包括基类（超类）、抽象类、或者派生类（子类）中的方法。&lt;/p>&lt;/blockquote>&lt;p>由于每个单元有独立的逻辑，在做单元测试时，为了隔离外部依赖，确保这些依赖&lt;strong>不影响验证逻辑&lt;/strong>，我们经常会用到 Fake、Stub 与 Mock 。&lt;/p>
 &lt;p>关于 Fake、Mock 与 Stub 这几个概念的解读，可以看看这篇文章：
 &lt;a target="_blank" href="https://zhuanlan.zhihu.com/p/26942686">测试中 Fakes、Mocks 以及 Stubs 概念明晰 - 王下邀月熊 - 2018&lt;/a> 。&lt;/p>
-&lt;h2 id="为什么需要单元测试">
- 为什么需要单元测试？
- &lt;a class="anchor" href="#%e4%b8%ba%e4%bb%80%e4%b9%88%e9%9c%80%e8%a6%81%e5%8d%95%e5%85%83%e6%b5%8b%e8%af%95">#&lt;/a>
-&lt;/h2>
-&lt;h3 id="为重构保驾护航">
- 为重构保驾护航
- &lt;a class="anchor" href="#%e4%b8%ba%e9%87%8d%e6%9e%84%e4%bf%9d%e9%a9%be%e6%8a%a4%e8%88%aa">#&lt;/a>
-&lt;/h3>
+&lt;h2 id="为什么需要单元测试">为什么需要单元测试？&lt;a class="anchor" href="#%e4%b8%ba%e4%bb%80%e4%b9%88%e9%9c%80%e8%a6%81%e5%8d%95%e5%85%83%e6%b5%8b%e8%af%95">#&lt;/a>&lt;/h2>
+&lt;h3 id="为重构保驾护航">为重构保驾护航&lt;a class="anchor" href="#%e4%b8%ba%e9%87%8d%e6%9e%84%e4%bf%9d%e9%a9%be%e6%8a%a4%e8%88%aa">#&lt;/a>&lt;/h3>
 &lt;p>我在
 &lt;a target="_blank" href="https://github.com/Snailclimb/JavaGuide/blob/main/docs/system-design/basis/refactoring.md">重构&lt;/a>这篇文章中这样写到：&lt;/p>
-&lt;blockquote>
-&lt;p>单元测试可以&lt;strong>为重构提供信心&lt;/strong>，降低重构的成本。我们要像重视生产代码那样，重视单元测试。&lt;/p>
-&lt;/blockquote>
-&lt;p>每个开发者都会经历重构，重构后把代码改坏了的情况并不少见，很可能你只是修改了一个很简单的方法就导致系统出现了一个比较严重的错误。&lt;/p>
+&lt;blockquote class='book-hint '>
+&lt;p>单元测试可以&lt;strong>为重构提供信心&lt;/strong>，降低重构的成本。我们要像重视生产代码那样，重视单元测试。&lt;/p>&lt;/blockquote>&lt;p>每个开发者都会经历重构，重构后把代码改坏了的情况并不少见，很可能你只是修改了一个很简单的方法就导致系统出现了一个比较严重的错误。&lt;/p>
 &lt;p>如果有了单元测试的话，就不会存在这个隐患了。写完一个类，把单元测试写了，确保这个类逻辑正确；写第二个类，单元测试&amp;hellip;..写 100 个类，道理一样，每个类做到第一点“&lt;strong>保证逻辑正确性&lt;/strong>”，100 个类拼在一起肯定不出问题。你大可以放心一边重构，一边运行 APP；而不是整体重构完，提心吊胆地 run。&lt;/p>
-&lt;h3 id="提高代码质量">
- 提高代码质量
- &lt;a class="anchor" href="#%e6%8f%90%e9%ab%98%e4%bb%a3%e7%a0%81%e8%b4%a8%e9%87%8f">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="提高代码质量">提高代码质量&lt;a class="anchor" href="#%e6%8f%90%e9%ab%98%e4%bb%a3%e7%a0%81%e8%b4%a8%e9%87%8f">#&lt;/a>&lt;/h3>
 &lt;p>由于每个单元有独立的逻辑，做单元测试时需要&lt;strong>隔离外部依赖&lt;/strong>，确保这些依赖&lt;strong>不影响验证逻辑&lt;/strong>。因为要把各种依赖分离，单元测试会&lt;strong>促进工程进行组件拆分&lt;/strong>，整理工程依赖关系，更大程度减少代码耦合。这样写出来的代码，更好维护，更好扩展，从而提高代码质量。&lt;/p>
-&lt;h3 id="减少-bug">
- 减少 bug
- &lt;a class="anchor" href="#%e5%87%8f%e5%b0%91-bug">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="减少-bug">减少 bug&lt;a class="anchor" href="#%e5%87%8f%e5%b0%91-bug">#&lt;/a>&lt;/h3>
 &lt;p>一个机器，由各种细小的零件组成，如果其中某件零件坏了，机器运行故障。必须保证每个零件都按设计图要求的规格，机器才能正常运行。&lt;/p>
 &lt;p>一个&lt;strong>可单元测试的工程&lt;/strong>，会把&lt;strong>业务&lt;/strong>、&lt;strong>功能&lt;/strong>分割成规模更小、有独立的逻辑部件，称为单元。单元测试的目标，就是保证&lt;strong>各个单元的逻辑正确性&lt;/strong>。单元测试保障工程各个“零件”按“规格”（需求）执行，从而保证整个“机器”（项目）运行正确，最大限度减少 bug。&lt;/p>
-&lt;h3 id="快速定位-bug">
- 快速定位 bug
- &lt;a class="anchor" href="#%e5%bf%ab%e9%80%9f%e5%ae%9a%e4%bd%8d-bug">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="快速定位-bug">快速定位 bug&lt;a class="anchor" href="#%e5%bf%ab%e9%80%9f%e5%ae%9a%e4%bd%8d-bug">#&lt;/a>&lt;/h3>
 &lt;p>如果程序有 bug，我们运行一次全部单元测试，找到&lt;strong>不通过的测试&lt;/strong>，可以很快地定位对应的执行代码。修复代码后，运行对应的单元测试；如还不通过，继续修改，运行测试&amp;hellip;..直到&lt;strong>测试通过&lt;/strong>。&lt;/p>
-&lt;h3 id="持续集成依赖单元测试">
- 持续集成依赖单元测试
- &lt;a class="anchor" href="#%e6%8c%81%e7%bb%ad%e9%9b%86%e6%88%90%e4%be%9d%e8%b5%96%e5%8d%95%e5%85%83%e6%b5%8b%e8%af%95">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="持续集成依赖单元测试">持续集成依赖单元测试&lt;a class="anchor" href="#%e6%8c%81%e7%bb%ad%e9%9b%86%e6%88%90%e4%be%9d%e8%b5%96%e5%8d%95%e5%85%83%e6%b5%8b%e8%af%95">#&lt;/a>&lt;/h3>
 &lt;p>持续集成需要依赖单元测试，当持续集成服务自动构建新代码之后，会自动运行单元测试来发现代码错误。&lt;/p>
-&lt;h2 id="谁逼你写单元测试">
- 谁逼你写单元测试？
- &lt;a class="anchor" href="#%e8%b0%81%e9%80%bc%e4%bd%a0%e5%86%99%e5%8d%95%e5%85%83%e6%b5%8b%e8%af%95">#&lt;/a>
-&lt;/h2>
-&lt;h3 id="领导要求">
- 领导要求
- &lt;a class="anchor" href="#%e9%a2%86%e5%af%bc%e8%a6%81%e6%b1%82">#&lt;/a>
-&lt;/h3>
-&lt;p>有些经验丰富的领导，或多或少都会要求团队写单元测试。对于有一定工作经验的队友，这要求挺合理；对于经验尚浅的、毕业生，恐怕要死要活了，连代码都写不好，还要写单元测试，are you kidding me？&lt;/p></description></item><item><title>代码重构指南</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/basis/refactoring/</link><pubDate>Fri, 17 Feb 2023 17:28:30 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/basis/refactoring/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;p>前段时间重读了
+&lt;h2 id="谁逼你写单元测试">谁逼你写单元测试？&lt;a class="anchor" href="#%e8%b0%81%e9%80%bc%e4%bd%a0%e5%86%99%e5%8d%95%e5%85%83%e6%b5%8b%e8%af%95">#&lt;/a>&lt;/h2>
+&lt;h3 id="领导要求">领导要求&lt;a class="anchor" href="#%e9%a2%86%e5%af%bc%e8%a6%81%e6%b1%82">#&lt;/a>&lt;/h3>
+&lt;p>有些经验丰富的领导，或多或少都会要求团队写单元测试。对于有一定工作经验的队友，这要求挺合理；对于经验尚浅的、毕业生，恐怕要死要活了，连代码都写不好，还要写单元测试，are you kidding me？&lt;/p>
+&lt;p>培训新人单元测试用法，是一项艰巨的任务。新人代码风格未形成，也不知道单元测试多重要，强制单元测试会让他们感到困惑，没办法按自己思路写代码。&lt;/p>
+&lt;h3 id="大牛都写单元测试">大牛都写单元测试&lt;a class="anchor" href="#%e5%a4%a7%e7%89%9b%e9%83%bd%e5%86%99%e5%8d%95%e5%85%83%e6%b5%8b%e8%af%95">#&lt;/a>&lt;/h3>
+&lt;p>国外很多家喻户晓的开源项目，都有大量单元测试。例如，
+&lt;a target="_blank" href="https://link.jianshu.com/?t=https://github.com/square/retrofit/tree/master/retrofit/src/test/java/retrofit2">retrofit&lt;/a>、
+&lt;a target="_blank" href="https://link.jianshu.com/?t=https://github.com/square/okhttp/tree/master/okhttp-tests/src/test/java/okhttp3">okhttp&lt;/a>、
+&lt;a target="_blank" href="https://link.jianshu.com/?t=https://github.com/JakeWharton/butterknife/tree/master/butterknife-compiler/src/test/java/butterknife">butterknife&lt;/a>&amp;hellip;. 国外大牛都写单元测试，我们也写吧！&lt;/p>
+&lt;p>很多读者都有这种想法，一开始满腔热血。当真要对自己项目单元测试时，便困难重重，很大原因是项目对单元测试不友好。最后只能对一些不痛不痒的工具类做单元测试，久而久之，当初美好愿望也不了了之。&lt;/p>
+&lt;h3 id="保住面子">保住面子&lt;a class="anchor" href="#%e4%bf%9d%e4%bd%8f%e9%9d%a2%e5%ad%90">#&lt;/a>&lt;/h3>
+&lt;p>都是有些许年经验的老鸟，还天天被测试同学追 bug，好意思么？花多一点时间写单元测试，确保没低级 bug，还能彰显大牛风范，何乐而不为？&lt;/p>
+&lt;h3 id="心虚">心虚&lt;a class="anchor" href="#%e5%bf%83%e8%99%9a">#&lt;/a>&lt;/h3>
+&lt;p>笔者也是个不太相信自己代码的人，总觉得哪里会突然冒出莫名其妙的 bug，也怕别人不小心改了自己的代码（被害妄想症），新版本上线提心吊胆&amp;hellip;&amp;hellip;花点时间写单元测试，有事没事跑一下测试，确保原逻辑没问题，至少能睡安稳一点。&lt;/p></description></item><item><title>代码重构指南</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/basis/refactoring/</link><pubDate>Fri, 17 Feb 2023 17:28:30 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/basis/refactoring/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;p>前段时间重读了
 &lt;a target="_blank" href="https://book.douban.com/subject/30468597/">《重构：改善代码既有设计》&lt;/a>，收货颇多。于是，简单写了一篇文章来聊聊我对重构的看法。&lt;/p>
 &lt;p>&lt;img src="img/ly-20241212142016683.jpg" alt="img" />&lt;/p>
-&lt;h2 id="何谓重构">
- 何谓重构？
- &lt;a class="anchor" href="#%e4%bd%95%e8%b0%93%e9%87%8d%e6%9e%84">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="何谓重构">何谓重构？&lt;a class="anchor" href="#%e4%bd%95%e8%b0%93%e9%87%8d%e6%9e%84">#&lt;/a>&lt;/h2>
 &lt;p>学习重构必看的一本神书《重构：改善代码既有设计》从两个角度给出了重构的定义：&lt;/p>
-&lt;blockquote>
+&lt;blockquote class='book-hint '>
 &lt;ul>
 &lt;li>重构（名词）：对&lt;strong>软件内部结构的一种调整&lt;/strong>，目的是在&lt;strong>不改变软件可观察行为&lt;/strong>的前提下，&lt;strong>提高其可理解性&lt;/strong>，&lt;strong>降低其修改成本&lt;/strong>。&lt;/li>
 &lt;li>重构（动词）：使用一系列重构手法，在不改变软件可观察行为的前提下，&lt;strong>调整&lt;/strong>其结构。&lt;/li>
-&lt;/ul>
-&lt;/blockquote>
-&lt;p>用更贴近工程师的语言来说： &lt;strong>重构就是利用设计模式(如组合模式、策略模式、责任链模式)、软件设计原则（如 SOLID 原则、YAGNI 原则、KISS 原则）和重构手段（如封装、继承、构建测试体系）来让代码更容易理解，更易于修改。&lt;/strong>&lt;/p>
+&lt;/ul>&lt;/blockquote>&lt;p>用更贴近工程师的语言来说： &lt;strong>重构就是利用设计模式(如组合模式、策略模式、责任链模式)、软件设计原则（如 SOLID 原则、YAGNI 原则、KISS 原则）和重构手段（如封装、继承、构建测试体系）来让代码更容易理解，更易于修改。&lt;/strong>&lt;/p>
 &lt;p>软件设计原则指导着我们组织和规范代码，同时，重构也是为了能够尽量设计出尽量满足软件设计原则的软件。&lt;/p>
 &lt;p>正确重构的核心在于 &lt;strong>步子一定要小，每一步的重构都不会影响软件的正常运行，可以随时停止重构。&lt;/strong>&lt;/p>
 &lt;p>&lt;strong>常见的设计模式如下&lt;/strong> ：&lt;/p>
@@ -477,10 +340,7 @@
 &lt;p>更全面的设计原则总结，可以看 &lt;strong>
 &lt;a target="_blank" href="https://github.com/iluwatar/java-design-patterns">java-design-patterns&lt;/a>&lt;/strong> 和 &lt;strong>
 &lt;a target="_blank" href="https://github.com/nusr/hacker-laws-zh">hacker-laws-zh&lt;/a>&lt;/strong> 这两个开源项目。&lt;/p>
-&lt;h2 id="为什么要重构">
- 为什么要重构？
- &lt;a class="anchor" href="#%e4%b8%ba%e4%bb%80%e4%b9%88%e8%a6%81%e9%87%8d%e6%9e%84">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="为什么要重构">为什么要重构？&lt;a class="anchor" href="#%e4%b8%ba%e4%bb%80%e4%b9%88%e8%a6%81%e9%87%8d%e6%9e%84">#&lt;/a>&lt;/h2>
 &lt;p>在上面介绍重构定义的时候，我从比较抽象的角度介绍了重构的好处：重构的主要目的主要是&lt;strong>提升代码&amp;amp;架构&lt;/strong>的&lt;strong>灵活性/可扩展性&lt;/strong>以及复用性。&lt;/p>
 &lt;p>如果对应到一个真实的项目，重构具体能为我们带来什么好处呢？&lt;/p>
 &lt;ol>
@@ -494,33 +354,21 @@
 &lt;p>重构并不会减慢软件开发速度，相反，如果代码质量和软件设计较差，当我们想要添加新功能的话，开发速度会越来越慢。到了最后，甚至都有想要重写整个系统的冲动。&lt;/p>
 &lt;p>[&lt;img src="img/ly-20241212142017203.jpg" alt="img" />&lt;/p>
 &lt;p>《重构：改善代码既有设计》这本书中这样说：&lt;/p>
-&lt;blockquote>
-&lt;p>重构的唯一目的就是让我们开发更快，用更少的工作量创造更大的价值。&lt;/p>
-&lt;/blockquote>
-&lt;h2 id="何时进行重构">
- 何时进行重构？
- &lt;a class="anchor" href="#%e4%bd%95%e6%97%b6%e8%bf%9b%e8%a1%8c%e9%87%8d%e6%9e%84">#&lt;/a>
-&lt;/h2>
+&lt;blockquote class='book-hint '>
+&lt;p>重构的唯一目的就是让我们开发更快，用更少的工作量创造更大的价值。&lt;/p>&lt;/blockquote>&lt;h2 id="何时进行重构">何时进行重构？&lt;a class="anchor" href="#%e4%bd%95%e6%97%b6%e8%bf%9b%e8%a1%8c%e9%87%8d%e6%9e%84">#&lt;/a>&lt;/h2>
 &lt;p>重构在是开发过程中随时可以进行的，&lt;strong>见机行事&lt;/strong>即可，并不需要单独分配一两天的时间专门用来重构。&lt;/p>
-&lt;h3 id="提交代码之前">
- 提交代码之前
- &lt;a class="anchor" href="#%e6%8f%90%e4%ba%a4%e4%bb%a3%e7%a0%81%e4%b9%8b%e5%89%8d">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="提交代码之前">提交代码之前&lt;a class="anchor" href="#%e6%8f%90%e4%ba%a4%e4%bb%a3%e7%a0%81%e4%b9%8b%e5%89%8d">#&lt;/a>&lt;/h3>
 &lt;p>《重构：改善代码既有设计》这本书介绍了一个 &lt;strong>营地法则&lt;/strong> 的概念:&lt;/p>
-&lt;blockquote>
-&lt;p>编程时，需要遵循营地法则：保证&lt;strong>你离开时的代码库一定比来时更健康&lt;/strong>。&lt;/p>
-&lt;/blockquote>
-&lt;p>这个概念表达的核心思想其实很简单：在你提交代码的之前，花一会时间想一想，我这次的提交是让项目代码变得更健康了，还是更腐化了，或者说没什么变化？&lt;/p>
+&lt;blockquote class='book-hint '>
+&lt;p>编程时，需要遵循营地法则：保证&lt;strong>你离开时的代码库一定比来时更健康&lt;/strong>。&lt;/p>&lt;/blockquote>&lt;p>这个概念表达的核心思想其实很简单：在你提交代码的之前，花一会时间想一想，我这次的提交是让项目代码变得更健康了，还是更腐化了，或者说没什么变化？&lt;/p>
 &lt;p>项目团队的每一个人只有保证自己的提交没有让项目代码变得更腐化，项目代码才会朝着健康的方向发展。&lt;/p>
 &lt;p>&lt;strong>当我们离开营地（项目代码）的时候，请不要留下垃圾（代码坏味道）！尽量确保营地变得更干净了！&lt;/strong>&lt;/p>
-&lt;h3 id="开发一个新功能之后之前">
- 开发一个新功能之后&amp;amp;之前
- &lt;a class="anchor" href="#%e5%bc%80%e5%8f%91%e4%b8%80%e4%b8%aa%e6%96%b0%e5%8a%9f%e8%83%bd%e4%b9%8b%e5%90%8e%e4%b9%8b%e5%89%8d">#&lt;/a>
-&lt;/h3>
-&lt;p>在开发一个新功能之后，我们应该回过头看看是不是有可以改进的地方。在添加一个新功能之前，我们可以思考一下自己是否可以&lt;strong>重构代码以让新功能的开发更容易&lt;/strong>。&lt;/p></description></item><item><title>代码命名指南</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/basis/naming/</link><pubDate>Fri, 17 Feb 2023 17:22:14 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/basis/naming/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;p>我还记得我刚工作那一段时间， 项目 Code Review 的时候，我经常因为变量命名不规范而被 “diss”!&lt;/p>
+&lt;h3 id="开发一个新功能之后之前">开发一个新功能之后&amp;amp;之前&lt;a class="anchor" href="#%e5%bc%80%e5%8f%91%e4%b8%80%e4%b8%aa%e6%96%b0%e5%8a%9f%e8%83%bd%e4%b9%8b%e5%90%8e%e4%b9%8b%e5%89%8d">#&lt;/a>&lt;/h3>
+&lt;p>在开发一个新功能之后，我们应该回过头看看是不是有可以改进的地方。在添加一个新功能之前，我们可以思考一下自己是否可以&lt;strong>重构代码以让新功能的开发更容易&lt;/strong>。&lt;/p>
+&lt;p>一个新功能的开发不应该仅仅只有&lt;strong>功能验证通过&lt;/strong>那么简单，我们还应该尽量保证&lt;strong>代码质量&lt;/strong>。&lt;/p>
+&lt;p>有一个两顶帽子的比喻：在我开发新功能之前，我发现&lt;strong>重构可以让新功能的开发更容易&lt;/strong>，于是我戴上了重构的帽子。重构之后，我换回原来的帽子，继续开发新能功能。新功能开发完成之后，我又发现自己的代码难以理解，于是我又戴上了重构帽子。比较好的开发状态就是就是这样在&lt;strong>重构和开发新功能之间来回切换&lt;/strong>。&lt;/p>
+&lt;p>&lt;img src="img/ly-20241212142017337.jpg" alt="refractor-two-hats" />&lt;/p></description></item><item><title>代码命名指南</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/basis/naming/</link><pubDate>Fri, 17 Feb 2023 17:22:14 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/basis/naming/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;p>我还记得我刚工作那一段时间， 项目 Code Review 的时候，我经常因为变量命名不规范而被 “diss”!&lt;/p>
 &lt;p>究其原因还是自己那会经验不足，而且，大学那会写项目的时候不太注意这些问题，想着只要把功能实现出来就行了。&lt;/p>
 &lt;p>但是，工作中就不一样，为了代码的可读性、可维护性，项目组对于代码质量的要求还是很高的！&lt;/p>
 &lt;p>前段时间，项目组新来的一个实习生也经常在 Code Review 因为变量命名不规范而被 “diss”，这让我想到自己刚到公司写代码那会的日子。&lt;/p>
@@ -537,30 +385,21 @@
 &lt;p>今天咱们就单独拎出 “&lt;strong>命名&lt;/strong>” 来聊聊！&lt;/p>
 &lt;p>这篇文章配合我之前发的 
 &lt;a target="_blank" href="https://mp.weixin.qq.com/s?__biz=Mzg2OTA0Njk0OA==&amp;amp;mid=2247486449&amp;amp;idx=1&amp;amp;sn=c3b502529ff991c7180281bcc22877af&amp;amp;chksm=cea2443af9d5cd2c1c87049ed15ccf6f88275419c7dbe542406166a703b27d0f3ecf2af901f8&amp;amp;token=999884676&amp;amp;lang=zh_CN#rd">《编码 5 分钟，命名 2 小时？史上最全的 Java 命名规范参考！》&lt;/a> 这篇文章阅读效果更佳哦！&lt;/p>
-&lt;h2 id="为什么需要重视命名">
- 为什么需要重视命名？
- &lt;a class="anchor" href="#%e4%b8%ba%e4%bb%80%e4%b9%88%e9%9c%80%e8%a6%81%e9%87%8d%e8%a7%86%e5%91%bd%e5%90%8d">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="为什么需要重视命名">为什么需要重视命名？&lt;a class="anchor" href="#%e4%b8%ba%e4%bb%80%e4%b9%88%e9%9c%80%e8%a6%81%e9%87%8d%e8%a7%86%e5%91%bd%e5%90%8d">#&lt;/a>&lt;/h2>
 &lt;p>咱们需要先搞懂为什么要重视编程中的命名这一行为，它对于我们的编码工作有着什么意义。&lt;/p>
 &lt;p>&lt;strong>为什么命名很重要呢？&lt;/strong> 这是因为 &lt;strong>好的命名即是注释，别人一看到你的命名就知道你的变量、方法或者类是做什么的！&lt;/strong>&lt;/p>
 &lt;p>简单来说就是 &lt;strong>别人根据你的命名就能知道你的代码要表达的意思&lt;/strong> （不过，前提这个人也要有&lt;strong>基本的英语&lt;/strong>知识，对于一些编程中常见的单词比较熟悉）。&lt;/p>
 &lt;p>简单举个例子说明一下命名的重要性。&lt;/p>
 &lt;p>《Clean Code》这本书明确指出：&lt;/p>
-&lt;blockquote>
+&lt;blockquote class='book-hint '>
 &lt;p>&lt;strong>好的代码本身就是注释，我们要尽量规范和美化自己的代码来减少不必要的注释。&lt;/strong>&lt;/p>
 &lt;p>&lt;strong>若编程语言足够有表达力，就不需要注释，尽量通过代码来阐述。&lt;/strong>&lt;/p>
 &lt;p>举个例子：&lt;/p>
 &lt;p>去掉下面复杂的注释，只需要创建一个&lt;strong>与注释所言同一事物的函数&lt;/strong>即可&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// check to see if the employee is eligible for full benefits&lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">if&lt;/span> ((employee.&lt;span style="color:#a6e22e">flags&lt;/span> &lt;span style="color:#f92672">&amp;amp;&lt;/span> HOURLY_FLAG) &lt;span style="color:#f92672">&amp;amp;&amp;amp;&lt;/span> (employee.&lt;span style="color:#a6e22e">age&lt;/span> &lt;span style="color:#f92672">&amp;gt;&lt;/span> 65))
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>应替换为&lt;/p></description></item><item><title>软件工程简明教程</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/basis/software-engineering/</link><pubDate>Fri, 17 Feb 2023 15:38:09 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/basis/software-engineering/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;p>大部分软件开发从业者，都会忽略软件开发中的一些最基础、最底层的一些概念。但是，这些软件开发的概念对于软件开发来说非常重要，就像是软件开发的基石一样。这也是我写这篇文章的原因。&lt;/p>
-&lt;h2 id="何为软件工程">
- 何为软件工程？
- &lt;a class="anchor" href="#%e4%bd%95%e4%b8%ba%e8%bd%af%e4%bb%b6%e5%b7%a5%e7%a8%8b">#&lt;/a>
-&lt;/h2>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">if&lt;/span> ((employee.&lt;span style="color:#a6e22e">flags&lt;/span> &lt;span style="color:#f92672">&amp;amp;&lt;/span> HOURLY_FLAG) &lt;span style="color:#f92672">&amp;amp;&amp;amp;&lt;/span> (employee.&lt;span style="color:#a6e22e">age&lt;/span> &lt;span style="color:#f92672">&amp;gt;&lt;/span> 65))&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>应替换为&lt;/p></description></item><item><title>软件工程简明教程</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/basis/software-engineering/</link><pubDate>Fri, 17 Feb 2023 15:38:09 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/basis/software-engineering/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;p>大部分软件开发从业者，都会忽略软件开发中的一些最基础、最底层的一些概念。但是，这些软件开发的概念对于软件开发来说非常重要，就像是软件开发的基石一样。这也是我写这篇文章的原因。&lt;/p>
+&lt;h2 id="何为软件工程">何为软件工程？&lt;a class="anchor" href="#%e4%bd%95%e4%b8%ba%e8%bd%af%e4%bb%b6%e5%b7%a5%e7%a8%8b">#&lt;/a>&lt;/h2>
 &lt;p>1968 年 NATO（北大西洋公约组织）提出了&lt;strong>软件危机&lt;/strong>（&lt;strong>Software crisis&lt;/strong>）一词。同年，为了解决软件危机问题，“&lt;strong>软件工程&lt;/strong>”的概念诞生了。一门叫做软件工程的学科也就应运而生。&lt;/p>
 &lt;p>随着时间的推移，软件工程这门学科也经历了一轮又一轮的完善，其中的一些核心内容比如软件开发模型越来越丰富实用！&lt;/p>
 &lt;p>&lt;strong>什么是软件危机呢？&lt;/strong>&lt;/p>
@@ -570,16 +409,11 @@
 &lt;p>工程是&lt;strong>为了解决实际的问题将理论应用于实践&lt;/strong>。软件工程指的就是将&lt;strong>工程思想&lt;/strong>应用于&lt;strong>软件开发&lt;/strong>。&lt;/p>
 &lt;p>上面是我对软件工程的定义，我们再来看看比较权威的定义。IEEE 软件工程汇刊给出的定义是这样的：　(1)将&lt;strong>系统化&lt;/strong>的、&lt;strong>规范&lt;/strong>的、&lt;strong>可量化&lt;/strong>的方法应用到软件的&lt;strong>开发&lt;/strong>、运&lt;strong>行&lt;/strong>及&lt;strong>维护&lt;/strong>中，即将工程化方法应用于软件。　(2)在(1)中所述方法的研究。&lt;/p>
 &lt;p>总之，软件工程的终极目标就是：&lt;strong>在更少资源消耗的情况下，创造出更好、更容易维护的软件。&lt;/strong>&lt;/p>
-&lt;h2 id="软件开发过程">
- 软件开发过程
- &lt;a class="anchor" href="#%e8%bd%af%e4%bb%b6%e5%bc%80%e5%8f%91%e8%bf%87%e7%a8%8b">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="软件开发过程">软件开发过程&lt;a class="anchor" href="#%e8%bd%af%e4%bb%b6%e5%bc%80%e5%8f%91%e8%bf%87%e7%a8%8b">#&lt;/a>&lt;/h2>
 &lt;p>
 &lt;a target="_blank" href="https://zh.wikipedia.org/wiki/%E8%BD%AF%E4%BB%B6%E5%BC%80%E5%8F%91%E8%BF%87%E7%A8%8B">维基百科是这样定义软件开发过程&lt;/a>的：&lt;/p>
-&lt;blockquote>
-&lt;p>软件开发过程（英语：software development process），或软件过程（英语：software process），是软件开发的开发生命周期（software development life cycle），其各个阶段实现了软件的&lt;strong>需求定义与分析&lt;/strong>、&lt;strong>设计&lt;/strong>、&lt;strong>实现&lt;/strong>、&lt;strong>测试&lt;/strong>、交付和&lt;strong>维护&lt;/strong>。软件过程是在开发与构建系统时应遵循的步骤，是软件开发的路线图。&lt;/p>
-&lt;/blockquote>
-&lt;ul>
+&lt;blockquote class='book-hint '>
+&lt;p>软件开发过程（英语：software development process），或软件过程（英语：software process），是软件开发的开发生命周期（software development life cycle），其各个阶段实现了软件的&lt;strong>需求定义与分析&lt;/strong>、&lt;strong>设计&lt;/strong>、&lt;strong>实现&lt;/strong>、&lt;strong>测试&lt;/strong>、交付和&lt;strong>维护&lt;/strong>。软件过程是在开发与构建系统时应遵循的步骤，是软件开发的路线图。&lt;/p>&lt;/blockquote>&lt;ul>
 &lt;li>需求分析 ：分析用户的需求，建立逻辑模型。&lt;/li>
 &lt;li>软件设计 ： 根据需求分析的结果对软件架构进行设计。&lt;/li>
 &lt;li>编码 ：编写程序运行的源代码。&lt;/li>
@@ -589,29 +423,19 @@
 &lt;/ul>
 &lt;p>软件开发过程只是比较笼统的层面上，一定义了一个软件开发可能涉及到的一些流程。&lt;/p>
 &lt;p>软件开发模型更具体地定义了软件开发过程，对开发过程提供了强有力的理论支持。&lt;/p>
-&lt;h2 id="软件开发模型">
- 软件开发模型
- &lt;a class="anchor" href="#%e8%bd%af%e4%bb%b6%e5%bc%80%e5%8f%91%e6%a8%a1%e5%9e%8b">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="软件开发模型">软件开发模型&lt;a class="anchor" href="#%e8%bd%af%e4%bb%b6%e5%bc%80%e5%8f%91%e6%a8%a1%e5%9e%8b">#&lt;/a>&lt;/h2>
 &lt;p>软件开发模型有很多种，比如&lt;strong>瀑布模型（Waterfall Model）&lt;/strong>、&lt;strong>快速原型模型（Rapid Prototype Model）&lt;/strong>、&lt;strong>V模型（V-model）&lt;/strong>、&lt;strong>W模型（W-model）&lt;/strong>、&lt;strong>敏捷开发模型&lt;/strong>。其中最具有代表性的还是 &lt;strong>瀑布模型&lt;/strong> 和 &lt;strong>敏捷开发&lt;/strong> 。&lt;/p>
 &lt;p>&lt;strong>瀑布模型&lt;/strong> 定义了一套完成的软件开发周期，完整地展示了一个软件的的生命周期。&lt;/p>
 &lt;p>&lt;img src="img/ly-20241212142018153.png" alt="ly-20241212142018153" />&lt;/p>
 &lt;p>&lt;strong>敏捷开发模型&lt;/strong> 是目前使用的最多的一种软件开发模型。
 &lt;a target="_blank" href="https://wiki.mbalib.com/wiki/%E6%95%8F%E6%8D%B7%E5%BC%80%E5%8F%91">MBA智库百科对敏捷开发的描述&lt;/a>是这样的:&lt;/p>
-&lt;blockquote>
-&lt;p>&lt;strong>敏捷开发&lt;/strong> 是一种以人为核心、迭代、循序渐进的开发方法。在敏捷开发中，软件项目的构建被切分成多个子项目，各个子项目的成果都经过&lt;strong>测试&lt;/strong>，具备&lt;strong>集成&lt;/strong>和&lt;strong>可运行&lt;/strong>的特征。换言之，就是把一个大项目分为多个相互联系，但也可独立运行的小项目，并分别完成，在此过程中软件一直处于可使用状态。&lt;/p>
-&lt;/blockquote>
-&lt;p>像现在比较常见的一些概念比如 &lt;strong>持续集成&lt;/strong> 、&lt;strong>重构&lt;/strong> 、&lt;strong>小版本发布&lt;/strong> 、&lt;strong>低文档&lt;/strong> 、&lt;strong>站会&lt;/strong> 、&lt;strong>结对编程&lt;/strong> 、&lt;strong>测试驱动开发&lt;/strong> 都是敏捷开发的核心。&lt;/p></description></item><item><title>restFul</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/basis/restful/</link><pubDate>Fri, 17 Feb 2023 14:35:02 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/basis/restful/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;p>&lt;img src="img/ly-20241212142017481.png" alt="img" />&lt;/p>
+&lt;blockquote class='book-hint '>
+&lt;p>&lt;strong>敏捷开发&lt;/strong> 是一种以人为核心、迭代、循序渐进的开发方法。在敏捷开发中，软件项目的构建被切分成多个子项目，各个子项目的成果都经过&lt;strong>测试&lt;/strong>，具备&lt;strong>集成&lt;/strong>和&lt;strong>可运行&lt;/strong>的特征。换言之，就是把一个大项目分为多个相互联系，但也可独立运行的小项目，并分别完成，在此过程中软件一直处于可使用状态。&lt;/p>&lt;/blockquote>&lt;p>像现在比较常见的一些概念比如 &lt;strong>持续集成&lt;/strong> 、&lt;strong>重构&lt;/strong> 、&lt;strong>小版本发布&lt;/strong> 、&lt;strong>低文档&lt;/strong> 、&lt;strong>站会&lt;/strong> 、&lt;strong>结对编程&lt;/strong> 、&lt;strong>测试驱动开发&lt;/strong> 都是敏捷开发的核心。&lt;/p></description></item><item><title>restFul</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/basis/restful/</link><pubDate>Fri, 17 Feb 2023 14:35:02 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lycly_system-design/basis/restful/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;p>&lt;img src="img/ly-20241212142017481.png" alt="img" />&lt;/p>
 &lt;p>这篇文章简单聊聊后端程序员必备的 RESTful API 相关的知识。&lt;/p>
 &lt;p>开始正式介绍 RESTful API 之前，我们需要首先搞清 ：&lt;strong>API 到底是什么？&lt;/strong>&lt;/p>
-&lt;h2 id="何为-api-何为-api">
- 
-&lt;a target="_blank" href="#%E4%BD%95%E4%B8%BA-api">#&lt;/a> 何为 API？
- &lt;a class="anchor" href="#%e4%bd%95%e4%b8%ba-api-%e4%bd%95%e4%b8%ba-api">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="-何为-api">
+&lt;a target="_blank" href="#%E4%BD%95%E4%B8%BA-api">#&lt;/a> 何为 API？&lt;a class="anchor" href="#-%e4%bd%95%e4%b8%ba-api">#&lt;/a>&lt;/h2>
 &lt;p>&lt;img src="img/ly-20241212142017744.png" alt="img" />&lt;/p>
 &lt;p>&lt;strong>API（Application Programming Interface）&lt;/strong> 翻译过来是应用程序编程接口的意思。&lt;/p>
 &lt;p>我们在进行后端开发的时候，主要的工作就是&lt;strong>为前端&lt;/strong>或者&lt;strong>其他后端服务&lt;/strong>提供 &lt;strong>AP&lt;/strong>I 比如&lt;strong>查询用户数据的 API&lt;/strong> 。&lt;/p>
@@ -624,36 +448,22 @@
 &lt;li>&amp;hellip;&amp;hellip;&lt;/li>
 &lt;/ol>
 &lt;p>你可以把 API 理解为&lt;strong>程序与程序之间通信的桥梁&lt;/strong>，其本质就是一个&lt;strong>函数&lt;/strong>而已。另外，API 的使用也不是没有章法的，它的规则由（比如&lt;strong>数据输入&lt;/strong>和&lt;strong>输出&lt;/strong>的格式）API 提供方制定。&lt;/p>
-&lt;h2 id="何为-restful-api-何为-restful-api">
- 
-&lt;a target="_blank" href="#%E4%BD%95%E4%B8%BA-restful-api">#&lt;/a> 何为 RESTful API？
- &lt;a class="anchor" href="#%e4%bd%95%e4%b8%ba-restful-api-%e4%bd%95%e4%b8%ba-restful-api">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="-何为-restful-api">
+&lt;a target="_blank" href="#%E4%BD%95%E4%B8%BA-restful-api">#&lt;/a> 何为 RESTful API？&lt;a class="anchor" href="#-%e4%bd%95%e4%b8%ba-restful-api">#&lt;/a>&lt;/h2>
 &lt;p>&lt;strong>RESTful API&lt;/strong> 经常也被叫做 &lt;strong>REST API&lt;/strong>，它是基于 REST 构建的 API。这个 REST 到底是什么，我们后文在讲，涉及到的概念比较多。&lt;/p>
-&lt;p>如果你看 RESTful API 相关的文章的话一般都比较晦涩难懂，主要是因为 REST 涉及到的一些概念比较难以理解。但是，实际上，我们平时开发用到的 RESTful API 的知识非常简单也很容易概括！&lt;/p></description></item><item><title>性能测试入门</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lyfly_high-availability/ly05ly_performance-test/</link><pubDate>Fri, 17 Feb 2023 11:37:08 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lyfly_high-availability/ly05ly_performance-test/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;p>性能测试一般情况下都是由测试这个职位去做的，那还需要我们开发学这个干嘛呢？&lt;strong>了解性能测试的指标&lt;/strong>、&lt;strong>分类&lt;/strong>以及&lt;strong>工具&lt;/strong>等知识有助于我们更好地去&lt;strong>写出性能更好&lt;/strong>的程序，另外作为开发这个角色，如果你会性能测试的话，相信也会为你的履历加分不少。&lt;/p>
+&lt;p>如果你看 RESTful API 相关的文章的话一般都比较晦涩难懂，主要是因为 REST 涉及到的一些概念比较难以理解。但是，实际上，我们平时开发用到的 RESTful API 的知识非常简单也很容易概括！&lt;/p></description></item><item><title>性能测试入门</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lyfly_high-availability/ly05ly_performance-test/</link><pubDate>Fri, 17 Feb 2023 11:37:08 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lyfly_high-availability/ly05ly_performance-test/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;p>性能测试一般情况下都是由测试这个职位去做的，那还需要我们开发学这个干嘛呢？&lt;strong>了解性能测试的指标&lt;/strong>、&lt;strong>分类&lt;/strong>以及&lt;strong>工具&lt;/strong>等知识有助于我们更好地去&lt;strong>写出性能更好&lt;/strong>的程序，另外作为开发这个角色，如果你会性能测试的话，相信也会为你的履历加分不少。&lt;/p>
 &lt;p>这篇文章是我会结合自己的实际经历以及在测试这里取的经所得，除此之外，我还借鉴了一些优秀书籍，希望对你有帮助。&lt;/p>
 &lt;p>本文思维导图：&lt;/p>
 &lt;p>&lt;img src="img/ly-20241212142046226.png" alt="img" />&lt;/p>
-&lt;h2 id="一-不同角色看网站性能-一-不同角色看网站性能">
- 
-&lt;a target="_blank" href="#%E4%B8%80-%E4%B8%8D%E5%90%8C%E8%A7%92%E8%89%B2%E7%9C%8B%E7%BD%91%E7%AB%99%E6%80%A7%E8%83%BD">#&lt;/a> 一 不同角色看网站性能
- &lt;a class="anchor" href="#%e4%b8%80-%e4%b8%8d%e5%90%8c%e8%a7%92%e8%89%b2%e7%9c%8b%e7%bd%91%e7%ab%99%e6%80%a7%e8%83%bd-%e4%b8%80-%e4%b8%8d%e5%90%8c%e8%a7%92%e8%89%b2%e7%9c%8b%e7%bd%91%e7%ab%99%e6%80%a7%e8%83%bd">#&lt;/a>
-&lt;/h2>
-&lt;h3 id="_1-1-用户-11-用户">
- 
-&lt;a target="_blank" href="#_1-1-%E7%94%A8%E6%88%B7">#&lt;/a> 1.1 用户
- &lt;a class="anchor" href="#_1-1-%e7%94%a8%e6%88%b7-11-%e7%94%a8%e6%88%b7">#&lt;/a>
-&lt;/h3>
+&lt;h2 id="-一-不同角色看网站性能">
+&lt;a target="_blank" href="#%E4%B8%80-%E4%B8%8D%E5%90%8C%E8%A7%92%E8%89%B2%E7%9C%8B%E7%BD%91%E7%AB%99%E6%80%A7%E8%83%BD">#&lt;/a> 一 不同角色看网站性能&lt;a class="anchor" href="#-%e4%b8%80-%e4%b8%8d%e5%90%8c%e8%a7%92%e8%89%b2%e7%9c%8b%e7%bd%91%e7%ab%99%e6%80%a7%e8%83%bd">#&lt;/a>&lt;/h2>
+&lt;h3 id="-11-用户">
+&lt;a target="_blank" href="#_1-1-%E7%94%A8%E6%88%B7">#&lt;/a> 1.1 用户&lt;a class="anchor" href="#-11-%e7%94%a8%e6%88%b7">#&lt;/a>&lt;/h3>
 &lt;p>当用户打开一个网站的时候，最关注的是什么？当然是&lt;strong>网站响应速度的快慢&lt;/strong>。比如我们点击了淘宝的主页，淘宝需要多久将首页的内容呈现在我的面前，我点击了提交订单按钮需要多久返回结果等等。&lt;/p>
 &lt;p>所以，用户在体验我们系统的时候往往根据你的响应速度的快慢来评判你的网站的性能。&lt;/p>
-&lt;h3 id="_1-2-开发人员-12-开发人员">
- 
-&lt;a target="_blank" href="#_1-2-%E5%BC%80%E5%8F%91%E4%BA%BA%E5%91%98">#&lt;/a> 1.2 开发人员
- &lt;a class="anchor" href="#_1-2-%e5%bc%80%e5%8f%91%e4%ba%ba%e5%91%98-12-%e5%bc%80%e5%8f%91%e4%ba%ba%e5%91%98">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="-12-开发人员">
+&lt;a target="_blank" href="#_1-2-%E5%BC%80%E5%8F%91%E4%BA%BA%E5%91%98">#&lt;/a> 1.2 开发人员&lt;a class="anchor" href="#-12-%e5%bc%80%e5%8f%91%e4%ba%ba%e5%91%98">#&lt;/a>&lt;/h3>
 &lt;p>用户与开发人员都关注速度，这个速度实际上就是我们的系统&lt;strong>处理用户请求的速度&lt;/strong>。&lt;/p>
 &lt;p>开发人员一般情况下很难直观的去评判自己网站的性能，我们往往会根据网站&lt;strong>当前的架构&lt;/strong>以及&lt;strong>基础设施&lt;/strong>情况给一个大概的值,比如：&lt;/p>
 &lt;ol>
@@ -666,11 +476,8 @@
 &lt;li>项目使用的 &lt;strong>Redis 缓存多大&lt;/strong>？服务器&lt;strong>性能&lt;/strong>如何？用的是&lt;strong>机械硬盘&lt;/strong>还是&lt;strong>固态硬盘&lt;/strong>？&lt;/li>
 &lt;li>&amp;hellip;&amp;hellip;&lt;/li>
 &lt;/ol>
-&lt;h3 id="_1-3-测试人员-13-测试人员">
- 
-&lt;a target="_blank" href="#_1-3-%E6%B5%8B%E8%AF%95%E4%BA%BA%E5%91%98">#&lt;/a> 1.3 测试人员
- &lt;a class="anchor" href="#_1-3-%e6%b5%8b%e8%af%95%e4%ba%ba%e5%91%98-13-%e6%b5%8b%e8%af%95%e4%ba%ba%e5%91%98">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="-13-测试人员">
+&lt;a target="_blank" href="#_1-3-%E6%B5%8B%E8%AF%95%E4%BA%BA%E5%91%98">#&lt;/a> 1.3 测试人员&lt;a class="anchor" href="#-13-%e6%b5%8b%e8%af%95%e4%ba%ba%e5%91%98">#&lt;/a>&lt;/h3>
 &lt;p>测试人员一般会根据性能测试工具来测试，然后一般会做出一个表格。这个表格可能会涵盖下面这些重要的内容：&lt;/p>
 &lt;ol>
 &lt;li>&lt;strong>响应时间&lt;/strong>；&lt;/li>
@@ -678,58 +485,33 @@
 &lt;li>吞吐量；&lt;/li>
 &lt;li>&amp;hellip;&amp;hellip;&lt;/li>
 &lt;/ol>
-&lt;h3 id="_1-4-运维人员-14-运维人员">
- 
-&lt;a target="_blank" href="#_1-4-%E8%BF%90%E7%BB%B4%E4%BA%BA%E5%91%98">#&lt;/a> 1.4 运维人员
- &lt;a class="anchor" href="#_1-4-%e8%bf%90%e7%bb%b4%e4%ba%ba%e5%91%98-14-%e8%bf%90%e7%bb%b4%e4%ba%ba%e5%91%98">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="-14-运维人员">
+&lt;a target="_blank" href="#_1-4-%E8%BF%90%E7%BB%B4%E4%BA%BA%E5%91%98">#&lt;/a> 1.4 运维人员&lt;a class="anchor" href="#-14-%e8%bf%90%e7%bb%b4%e4%ba%ba%e5%91%98">#&lt;/a>&lt;/h3>
 &lt;p>运维人员会倾向于根据&lt;strong>基础设施&lt;/strong>和&lt;strong>资源的利用率&lt;/strong>来判断网站的性能，比如我们的服务器资源使用是否合理、数据库资源是否存在滥用的情况、当然，这是传统的运维人员，现在 Devpos 火起来后，单纯干运维的很少了。我们这里暂且还保留有这个角色。&lt;/p>
-&lt;h2 id="二-性能测试需要注意的点-二-性能测试需要注意的点">
- 
-&lt;a target="_blank" href="#%E4%BA%8C-%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95%E9%9C%80%E8%A6%81%E6%B3%A8%E6%84%8F%E7%9A%84%E7%82%B9">#&lt;/a> 二 性能测试需要注意的点
- &lt;a class="anchor" href="#%e4%ba%8c-%e6%80%a7%e8%83%bd%e6%b5%8b%e8%af%95%e9%9c%80%e8%a6%81%e6%b3%a8%e6%84%8f%e7%9a%84%e7%82%b9-%e4%ba%8c-%e6%80%a7%e8%83%bd%e6%b5%8b%e8%af%95%e9%9c%80%e8%a6%81%e6%b3%a8%e6%84%8f%e7%9a%84%e7%82%b9">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="-二-性能测试需要注意的点">
+&lt;a target="_blank" href="#%E4%BA%8C-%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95%E9%9C%80%E8%A6%81%E6%B3%A8%E6%84%8F%E7%9A%84%E7%82%B9">#&lt;/a> 二 性能测试需要注意的点&lt;a class="anchor" href="#-%e4%ba%8c-%e6%80%a7%e8%83%bd%e6%b5%8b%e8%af%95%e9%9c%80%e8%a6%81%e6%b3%a8%e6%84%8f%e7%9a%84%e7%82%b9">#&lt;/a>&lt;/h2>
 &lt;p>几乎没有文章在讲性能测试的时候提到这个问题，大家都会讲如何去性能测试，有哪些性能测试指标这些东西。&lt;/p>
-&lt;h3 id="_2-1-了解系统的业务场景-21-了解系统的业务场景">
- 
-&lt;a target="_blank" href="#_2-1-%E4%BA%86%E8%A7%A3%E7%B3%BB%E7%BB%9F%E7%9A%84%E4%B8%9A%E5%8A%A1%E5%9C%BA%E6%99%AF">#&lt;/a> 2.1 了解系统的业务场景
- &lt;a class="anchor" href="#_2-1-%e4%ba%86%e8%a7%a3%e7%b3%bb%e7%bb%9f%e7%9a%84%e4%b8%9a%e5%8a%a1%e5%9c%ba%e6%99%af-21-%e4%ba%86%e8%a7%a3%e7%b3%bb%e7%bb%9f%e7%9a%84%e4%b8%9a%e5%8a%a1%e5%9c%ba%e6%99%af">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="-21-了解系统的业务场景">
+&lt;a target="_blank" href="#_2-1-%E4%BA%86%E8%A7%A3%E7%B3%BB%E7%BB%9F%E7%9A%84%E4%B8%9A%E5%8A%A1%E5%9C%BA%E6%99%AF">#&lt;/a> 2.1 了解系统的业务场景&lt;a class="anchor" href="#-21-%e4%ba%86%e8%a7%a3%e7%b3%bb%e7%bb%9f%e7%9a%84%e4%b8%9a%e5%8a%a1%e5%9c%ba%e6%99%af">#&lt;/a>&lt;/h3>
 &lt;p>&lt;strong>性能测试之前更需要你了解当前的系统的业务场景。&lt;/strong> 对系统业务了解的不够深刻，我们很容易犯测试方向偏执的错误，从而导致我们&lt;strong>忽略了对系统某些更需要性能测试的地方进行测试&lt;/strong>。比如我们的系统可以为用户提供发送邮件的功能，用户配置成功邮箱后只需输入相应的邮箱之后就能发送，系统每天&lt;strong>大概能处理上万次&lt;/strong>发邮件的请求。很多人看到这个可能就直接开始使用相关工具测试邮箱发送接口，但是，发送邮件这个场景可能不是当前系统的性能瓶颈，这么多人用我们的系统发邮件， 还可能有&lt;strong>很多人一起发&lt;/strong>邮件，单单这个场景就这么人用，那&lt;strong>用户管理可能才是性能瓶颈&lt;/strong>吧！&lt;/p>
-&lt;h3 id="_2-2-历史数据非常有用-22-历史数据非常有用">
- 
-&lt;a target="_blank" href="#_2-2-%E5%8E%86%E5%8F%B2%E6%95%B0%E6%8D%AE%E9%9D%9E%E5%B8%B8%E6%9C%89%E7%94%A8">#&lt;/a> 2.2 历史数据非常有用
- &lt;a class="anchor" href="#_2-2-%e5%8e%86%e5%8f%b2%e6%95%b0%e6%8d%ae%e9%9d%9e%e5%b8%b8%e6%9c%89%e7%94%a8-22-%e5%8e%86%e5%8f%b2%e6%95%b0%e6%8d%ae%e9%9d%9e%e5%b8%b8%e6%9c%89%e7%94%a8">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="-22-历史数据非常有用">
+&lt;a target="_blank" href="#_2-2-%E5%8E%86%E5%8F%B2%E6%95%B0%E6%8D%AE%E9%9D%9E%E5%B8%B8%E6%9C%89%E7%94%A8">#&lt;/a> 2.2 历史数据非常有用&lt;a class="anchor" href="#-22-%e5%8e%86%e5%8f%b2%e6%95%b0%e6%8d%ae%e9%9d%9e%e5%b8%b8%e6%9c%89%e7%94%a8">#&lt;/a>&lt;/h3>
 &lt;p>当前系统所留下的历史数据非常重要，一般情况下，我们可以&lt;strong>通过相应的些历史数据&lt;/strong>初步判定这个系统&lt;strong>哪些接口调用的比较多&lt;/strong>、&lt;strong>哪些 service&lt;/strong> 承受的压力最大，这样的话，我们就可以针对这些地方进行更细致的性能测试与分析。&lt;/p>
 &lt;p>另外，这些地方也就像这个系统的一个短板一样，优化好了这些地方会为我们的系统带来质的提升。&lt;/p>
-&lt;h3 id="三-性能测试的指标-三-性能测试的指标">
- 
-&lt;a target="_blank" href="#%E4%B8%89-%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95%E7%9A%84%E6%8C%87%E6%A0%87">#&lt;/a> 三 性能测试的指标
- &lt;a class="anchor" href="#%e4%b8%89-%e6%80%a7%e8%83%bd%e6%b5%8b%e8%af%95%e7%9a%84%e6%8c%87%e6%a0%87-%e4%b8%89-%e6%80%a7%e8%83%bd%e6%b5%8b%e8%af%95%e7%9a%84%e6%8c%87%e6%a0%87">#&lt;/a>
-&lt;/h3>
-&lt;h3 id="_3-1-响应时间-31-响应时间">
- 
-&lt;a target="_blank" href="#_3-1-%E5%93%8D%E5%BA%94%E6%97%B6%E9%97%B4">#&lt;/a> 3.1 响应时间
- &lt;a class="anchor" href="#_3-1-%e5%93%8d%e5%ba%94%e6%97%b6%e9%97%b4-31-%e5%93%8d%e5%ba%94%e6%97%b6%e9%97%b4">#&lt;/a>
-&lt;/h3>
-&lt;p>&lt;strong>响应时间就是用户发出请求到用户收到系统处理结果所需要的时间。&lt;/strong> 重要吗？实在太重要！&lt;/p></description></item><item><title>超时&amp;重试详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lyfly_high-availability/ly04ly_timout-and-retry/</link><pubDate>Fri, 17 Feb 2023 10:57:02 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lyfly_high-availability/ly04ly_timout-and-retry/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;p>由于&lt;strong>网络&lt;/strong>问题、&lt;strong>系统&lt;/strong>或者&lt;strong>服务内部&lt;/strong>的 Bug、服务器&lt;strong>宕机&lt;/strong>、操作&lt;strong>系统崩溃&lt;/strong>等问题的不确定性，我们的系统或者服务永远不可能保证时刻都是可用的状态。&lt;/p>
+&lt;h3 id="-三-性能测试的指标">
+&lt;a target="_blank" href="#%E4%B8%89-%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95%E7%9A%84%E6%8C%87%E6%A0%87">#&lt;/a> 三 性能测试的指标&lt;a class="anchor" href="#-%e4%b8%89-%e6%80%a7%e8%83%bd%e6%b5%8b%e8%af%95%e7%9a%84%e6%8c%87%e6%a0%87">#&lt;/a>&lt;/h3>
+&lt;h3 id="-31-响应时间">
+&lt;a target="_blank" href="#_3-1-%E5%93%8D%E5%BA%94%E6%97%B6%E9%97%B4">#&lt;/a> 3.1 响应时间&lt;a class="anchor" href="#-31-%e5%93%8d%e5%ba%94%e6%97%b6%e9%97%b4">#&lt;/a>&lt;/h3>
+&lt;p>&lt;strong>响应时间就是用户发出请求到用户收到系统处理结果所需要的时间。&lt;/strong> 重要吗？实在太重要！&lt;/p>
+&lt;p>比较出名的 2-5-8 原则是这样描述的：通常来说，&lt;strong>2到5秒&lt;/strong>，页面体验会比较好，5到8秒还可以接受，8秒以上基本就很难接受了。另外，据统计当网站慢一秒就会流失十分之一的客户。&lt;/p></description></item><item><title>超时&amp;重试详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lyfly_high-availability/ly04ly_timout-and-retry/</link><pubDate>Fri, 17 Feb 2023 10:57:02 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lyfly_high-availability/ly04ly_timout-and-retry/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;p>由于&lt;strong>网络&lt;/strong>问题、&lt;strong>系统&lt;/strong>或者&lt;strong>服务内部&lt;/strong>的 Bug、服务器&lt;strong>宕机&lt;/strong>、操作&lt;strong>系统崩溃&lt;/strong>等问题的不确定性，我们的系统或者服务永远不可能保证时刻都是可用的状态。&lt;/p>
 &lt;p>为了最大限度的减小系统或者服务出现故障之后带来的影响，我们需要用到的 &lt;strong>超时（Timeout）&lt;/strong> 和 &lt;strong>重试（Retry）&lt;/strong> 机制。&lt;/p>
 &lt;p>想要把超时和重试机制讲清楚其实很简单，因为它俩本身就不是什么高深的概念。&lt;/p>
 &lt;p>虽然超时和重试机制的思想很简单，但是它俩是真的非常实用。你平时接触到的绝大部分涉及到&lt;strong>远程调用&lt;/strong>的系统或者服务都会应用超时和重试机制。尤其是对于微服务系统来说，正确设置超时和重试非常重要。单体服务通常只涉及&lt;strong>数据库&lt;/strong>、&lt;strong>缓存&lt;/strong>、&lt;strong>第三方 API&lt;/strong>、&lt;strong>中间件&lt;/strong>等的网络调用，而微服务&lt;strong>系统内部各个服务之间还存在着网络调用&lt;/strong>。&lt;/p>
-&lt;h2 id="超时机制-超时机制">
- 
-&lt;a target="_blank" href="#%E8%B6%85%E6%97%B6%E6%9C%BA%E5%88%B6">#&lt;/a> 超时机制
- &lt;a class="anchor" href="#%e8%b6%85%e6%97%b6%e6%9c%ba%e5%88%b6-%e8%b6%85%e6%97%b6%e6%9c%ba%e5%88%b6">#&lt;/a>
-&lt;/h2>
-&lt;h3 id="什么是超时机制-什么是超时机制">
- 
-&lt;a target="_blank" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E8%B6%85%E6%97%B6%E6%9C%BA%E5%88%B6">#&lt;/a> 什么是超时机制？
- &lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e8%b6%85%e6%97%b6%e6%9c%ba%e5%88%b6-%e4%bb%80%e4%b9%88%e6%98%af%e8%b6%85%e6%97%b6%e6%9c%ba%e5%88%b6">#&lt;/a>
-&lt;/h3>
+&lt;h2 id="-超时机制">
+&lt;a target="_blank" href="#%E8%B6%85%E6%97%B6%E6%9C%BA%E5%88%B6">#&lt;/a> 超时机制&lt;a class="anchor" href="#-%e8%b6%85%e6%97%b6%e6%9c%ba%e5%88%b6">#&lt;/a>&lt;/h2>
+&lt;h3 id="-什么是超时机制">
+&lt;a target="_blank" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E8%B6%85%E6%97%B6%E6%9C%BA%E5%88%B6">#&lt;/a> 什么是超时机制？&lt;a class="anchor" href="#-%e4%bb%80%e4%b9%88%e6%98%af%e8%b6%85%e6%97%b6%e6%9c%ba%e5%88%b6">#&lt;/a>&lt;/h3>
 &lt;p>超时机制说的是&lt;strong>当一个请求超过指定的时间&lt;/strong>（比如 1s）还没有被处理的话，这个请求就会&lt;strong>直接被取消并抛出指定的异常&lt;/strong>或者&lt;strong>错误&lt;/strong>（比如 &lt;code>504 Gateway Timeout&lt;/code>）。&lt;/p>
 &lt;p>我们平时接触到的超时可以简单分为下面 2 种：&lt;/p>
 &lt;ul>
@@ -740,54 +522,33 @@
 &lt;p>如果没有设置超时的话，就可能会导致服务端&lt;strong>连接数爆炸&lt;/strong>和&lt;strong>大量请求堆积&lt;/strong>的问题。&lt;/p>
 &lt;p>这些堆积的连接和请求会&lt;strong>消耗系统资源&lt;/strong>，&lt;strong>影响新收到的请求&lt;/strong>的处理。严重的情况下，甚至会&lt;strong>拖垮整个系统或者服务&lt;/strong>。&lt;/p>
 &lt;p>我之前在实际项目就遇到过类似的问题，整个网站无法正常处理请求，服务器负载直接快被拉满。后面发现原因是项目超时设置错误加上客户端请求处理异常，导致服务端连接数直接接近 40w+，这么多堆积的连接直接把系统干趴了。&lt;/p>
-&lt;h3 id="超时时间应该如何设置-超时时间应该如何设置">
- 
-&lt;a target="_blank" href="#%E8%B6%85%E6%97%B6%E6%97%B6%E9%97%B4%E5%BA%94%E8%AF%A5%E5%A6%82%E4%BD%95%E8%AE%BE%E7%BD%AE">#&lt;/a> 超时时间应该如何设置？
- &lt;a class="anchor" href="#%e8%b6%85%e6%97%b6%e6%97%b6%e9%97%b4%e5%ba%94%e8%af%a5%e5%a6%82%e4%bd%95%e8%ae%be%e7%bd%ae-%e8%b6%85%e6%97%b6%e6%97%b6%e9%97%b4%e5%ba%94%e8%af%a5%e5%a6%82%e4%bd%95%e8%ae%be%e7%bd%ae">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="-超时时间应该如何设置">
+&lt;a target="_blank" href="#%E8%B6%85%E6%97%B6%E6%97%B6%E9%97%B4%E5%BA%94%E8%AF%A5%E5%A6%82%E4%BD%95%E8%AE%BE%E7%BD%AE">#&lt;/a> 超时时间应该如何设置？&lt;a class="anchor" href="#-%e8%b6%85%e6%97%b6%e6%97%b6%e9%97%b4%e5%ba%94%e8%af%a5%e5%a6%82%e4%bd%95%e8%ae%be%e7%bd%ae">#&lt;/a>&lt;/h3>
 &lt;p>超时到底设置多长时间是一个难题！超时值设置太高或者太低都有风险。如果设置太高的话，会&lt;strong>降低超时机制的有效性&lt;/strong>，比如你设置超时为 10s 的话，那设置超时就没啥意义了，系统&lt;strong>依然可能会出现大量慢请求堆积&lt;/strong>的问题。如果&lt;strong>设置太低&lt;/strong>的话，就可能会导致在&lt;strong>系统或者服务在某些处理请求速度变慢&lt;/strong>的情况下（比如请求突然增多），&lt;strong>大量请求重试（超时通常会结合重试）继续加重系统或者服务的压力&lt;/strong>，进而导致整个系统或者服务被拖垮的问题。&lt;/p>
 &lt;p>通常情况下，我们建议读取超时设置为 &lt;strong>1500ms&lt;/strong> ,这是一个比较普适的值。如果你的系统或者服务对于延迟比较敏感的话，那读取超时值可以适当在 &lt;strong>1500ms&lt;/strong> 的基础上进行缩短。反之，读取超时值也可以在 &lt;strong>1500ms&lt;/strong> 的基础上进行加长，不过，尽量还是不要超过 &lt;strong>1500ms&lt;/strong> 。连接超时可以适当设置长一些，建议在 &lt;strong>1000ms ~ 5000ms&lt;/strong> 之内。&lt;/p>
 &lt;p>没有银弹！超时值具体该设置多大，还是要根据实际项目的需求和情况慢慢调整优化得到。&lt;/p>
 &lt;p>更上一层，参考
 &lt;a target="_blank" href="https://tech.meituan.com/2020/04/02/java-pooling-pratice-in-meituan.html">美团的Java线程池参数动态配置open in new window&lt;/a>思想，我们也可以将超时弄成可配置化的参数而不是固定的，比较简单的一种办法就是将超时的值放在配置中心中。这样的话，我们就可以根据系统或者服务的状态动态调整超时值了。&lt;/p>
-&lt;h2 id="重试机制-重试机制">
- 
-&lt;a target="_blank" href="#%E9%87%8D%E8%AF%95%E6%9C%BA%E5%88%B6">#&lt;/a> 重试机制
- &lt;a class="anchor" href="#%e9%87%8d%e8%af%95%e6%9c%ba%e5%88%b6-%e9%87%8d%e8%af%95%e6%9c%ba%e5%88%b6">#&lt;/a>
-&lt;/h2>
-&lt;h3 id="什么是重试机制-什么是重试机制">
- 
-&lt;a target="_blank" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E9%87%8D%E8%AF%95%E6%9C%BA%E5%88%B6">#&lt;/a> 什么是重试机制？
- &lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e9%87%8d%e8%af%95%e6%9c%ba%e5%88%b6-%e4%bb%80%e4%b9%88%e6%98%af%e9%87%8d%e8%af%95%e6%9c%ba%e5%88%b6">#&lt;/a>
-&lt;/h3>
+&lt;h2 id="-重试机制">
+&lt;a target="_blank" href="#%E9%87%8D%E8%AF%95%E6%9C%BA%E5%88%B6">#&lt;/a> 重试机制&lt;a class="anchor" href="#-%e9%87%8d%e8%af%95%e6%9c%ba%e5%88%b6">#&lt;/a>&lt;/h2>
+&lt;h3 id="-什么是重试机制">
+&lt;a target="_blank" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E9%87%8D%E8%AF%95%E6%9C%BA%E5%88%B6">#&lt;/a> 什么是重试机制？&lt;a class="anchor" href="#-%e4%bb%80%e4%b9%88%e6%98%af%e9%87%8d%e8%af%95%e6%9c%ba%e5%88%b6">#&lt;/a>&lt;/h3>
 &lt;p>&lt;strong>重试机制一般配合超时机制&lt;/strong>一起使用，指的是&lt;strong>多次发送相同的请求&lt;/strong>来&lt;strong>避免瞬态故障&lt;/strong>和&lt;strong>偶然性故障&lt;/strong>。&lt;/p>
 &lt;p>瞬态故障可以简单理解为&lt;strong>某一瞬间系统偶然出现的故障&lt;/strong>，并不会持久。偶然性故障可以理解为哪些在&lt;strong>某些情况下偶尔出现的故障&lt;/strong>，频率通常较低。&lt;/p>
 &lt;p>重试的核心思想是&lt;strong>通过消耗服务器的资源来尽可能获得请求更大概率被成功处理&lt;/strong>。由于瞬态故障和偶然性故障是很少发生的，因此，重试对于服务器的资源消耗几乎是可以被忽略的。&lt;/p>
-&lt;h3 id="重试的次数如何设置-重试的次数如何设置">
- 
-&lt;a target="_blank" href="#%E9%87%8D%E8%AF%95%E7%9A%84%E6%AC%A1%E6%95%B0%E5%A6%82%E4%BD%95%E8%AE%BE%E7%BD%AE">#&lt;/a> 重试的次数如何设置？
- &lt;a class="anchor" href="#%e9%87%8d%e8%af%95%e7%9a%84%e6%ac%a1%e6%95%b0%e5%a6%82%e4%bd%95%e8%ae%be%e7%bd%ae-%e9%87%8d%e8%af%95%e7%9a%84%e6%ac%a1%e6%95%b0%e5%a6%82%e4%bd%95%e8%ae%be%e7%bd%ae">#&lt;/a>
-&lt;/h3>
-&lt;p>重试的次数不宜过多，否则依然会对系统负载造成比较大的压力。&lt;/p></description></item><item><title>服务限流详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lyfly_high-availability/ly03ly_limit-request/</link><pubDate>Thu, 16 Feb 2023 17:06:11 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lyfly_high-availability/ly03ly_limit-request/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;p>针对软件系统来说，限流就是&lt;strong>对请求的速率进行限制&lt;/strong>，&lt;strong>避免瞬时的大量请求击垮软件系统&lt;/strong>。毕竟，软件系统的处理能力是有限的。如果说超过了其处理能力的范围，软件系统可能直接就挂掉了。&lt;/p>
+&lt;h3 id="-重试的次数如何设置">
+&lt;a target="_blank" href="#%E9%87%8D%E8%AF%95%E7%9A%84%E6%AC%A1%E6%95%B0%E5%A6%82%E4%BD%95%E8%AE%BE%E7%BD%AE">#&lt;/a> 重试的次数如何设置？&lt;a class="anchor" href="#-%e9%87%8d%e8%af%95%e7%9a%84%e6%ac%a1%e6%95%b0%e5%a6%82%e4%bd%95%e8%ae%be%e7%bd%ae">#&lt;/a>&lt;/h3>
+&lt;p>重试的次数不宜过多，否则依然会对系统负载造成比较大的压力。&lt;/p>
+&lt;p>重试的次数&lt;strong>通常建议设为 3 次&lt;/strong>。并且，我们通常还会设置&lt;strong>重试的间隔&lt;/strong>，比如说我们要重试 3 次的话，第 1 次请求失败后，等待 1 秒再进行重试，第 2 次请求失败后，等待 2 秒再进行重试，第 3 次请求失败后，等待 3 秒再进行重试。&lt;/p></description></item><item><title>服务限流详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lyfly_high-availability/ly03ly_limit-request/</link><pubDate>Thu, 16 Feb 2023 17:06:11 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lyfly_high-availability/ly03ly_limit-request/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;p>针对软件系统来说，限流就是&lt;strong>对请求的速率进行限制&lt;/strong>，&lt;strong>避免瞬时的大量请求击垮软件系统&lt;/strong>。毕竟，软件系统的处理能力是有限的。如果说超过了其处理能力的范围，软件系统可能直接就挂掉了。&lt;/p>
 &lt;p>限流可能会&lt;strong>导致用户的请求无法被正确处理&lt;/strong>，不过，这往往也是&lt;strong>权衡了软件系统的稳定性之后得到的最优解&lt;/strong>。&lt;/p>
 &lt;p>现实生活中，处处都有限流的实际应用，就比如&lt;strong>排队买票&lt;/strong>是为了避免大量用户涌入购票而导致&lt;strong>售票员无法处理&lt;/strong>。&lt;/p>
 &lt;p>&lt;img src="img/ly-20241212142045484.jpg" alt="排队示意图" />&lt;/p>
-&lt;h2 id="常见限流算法有哪些">
- 常见限流算法有哪些？
- &lt;a class="anchor" href="#%e5%b8%b8%e8%a7%81%e9%99%90%e6%b5%81%e7%ae%97%e6%b3%95%e6%9c%89%e5%93%aa%e4%ba%9b">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="常见限流算法有哪些">常见限流算法有哪些？&lt;a class="anchor" href="#%e5%b8%b8%e8%a7%81%e9%99%90%e6%b5%81%e7%ae%97%e6%b3%95%e6%9c%89%e5%93%aa%e4%ba%9b">#&lt;/a>&lt;/h2>
 &lt;p>简单介绍 4 种非常好理解并且容易实现的限流算法！&lt;/p>
-&lt;blockquote>
+&lt;blockquote class='book-hint '>
 &lt;p>图片来源于 InfoQ 的一篇文章
-&lt;a target="_blank" href="https://www.infoq.cn/article/Qg2tX8fyw5Vt-f3HH673">《分布式服务限流实战，已经为你排好坑了》&lt;/a>。&lt;/p>
-&lt;/blockquote>
-&lt;h3 id="固定窗口计数器算法">
- 固定窗口计数器算法
- &lt;a class="anchor" href="#%e5%9b%ba%e5%ae%9a%e7%aa%97%e5%8f%a3%e8%ae%a1%e6%95%b0%e5%99%a8%e7%ae%97%e6%b3%95">#&lt;/a>
-&lt;/h3>
+&lt;a target="_blank" href="https://www.infoq.cn/article/Qg2tX8fyw5Vt-f3HH673">《分布式服务限流实战，已经为你排好坑了》&lt;/a>。&lt;/p>&lt;/blockquote>&lt;h3 id="固定窗口计数器算法">固定窗口计数器算法&lt;a class="anchor" href="#%e5%9b%ba%e5%ae%9a%e7%aa%97%e5%8f%a3%e8%ae%a1%e6%95%b0%e5%99%a8%e7%ae%97%e6%b3%95">#&lt;/a>&lt;/h3>
 &lt;p>固定窗口其实就是时间窗口。&lt;strong>固定窗口计数器算法&lt;/strong> 规定了我们&lt;strong>单位时间处理的请求数量&lt;/strong>。&lt;/p>
 &lt;p>假如我们规定系统中某个接口 1 分钟只能访问 33 次的话，使用固定窗口计数器算法的实现思路如下：&lt;/p>
 &lt;ul>
@@ -797,10 +558,10 @@
 &lt;/ul>
 &lt;p>&lt;strong>这种限流算法无法保证限流速率，因而无法保证突然激增的流量。&lt;/strong>&lt;/p>
 &lt;p>就比如说我们限制某个接口 1 分钟只能访问 1000 次，该接口的 QPS 为 500，前 55s 这个接口 1 个请求没有接收，后 1s 突然接收了 1000 个请求。然后，在当前场景下，这 1000 个请求在 1s 内是没办法被处理的，系统直接就被瞬时的大量请求给击垮了。&lt;/p>
-&lt;p>&lt;img src="img/ly-20241212142045643.jpg" alt="固定窗口计数器算法" />&lt;/p></description></item><item><title>冗余设计</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lyfly_high-availability/ly02ly_redundancy/</link><pubDate>Thu, 16 Feb 2023 16:54:24 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lyfly_high-availability/ly02ly_redundancy/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;table>
+&lt;p>&lt;img src="img/ly-20241212142045643.jpg" alt="固定窗口计数器算法" />&lt;/p>
+&lt;h3 id="滑动窗口计数器算法">滑动窗口计数器算法&lt;a class="anchor" href="#%e6%bb%91%e5%8a%a8%e7%aa%97%e5%8f%a3%e8%ae%a1%e6%95%b0%e5%99%a8%e7%ae%97%e6%b3%95">#&lt;/a>&lt;/h3>
+&lt;p>&lt;strong>滑动窗口计数器算法&lt;/strong> 算的上是固定窗口计数器算法的升级版。&lt;/p></description></item><item><title>冗余设计</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lyfly_high-availability/ly02ly_redundancy/</link><pubDate>Thu, 16 Feb 2023 16:54:24 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lyfly_high-availability/ly02ly_redundancy/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;table>
  &lt;thead>
  &lt;tr>
  &lt;th>title&lt;/th>
@@ -834,21 +595,12 @@
 &lt;p>举个例子：哨兵模式的 Redis 集群中，&lt;strong>如果 Sentinel（哨兵） 检测到 master 节点出现故障的话， 它就会帮助我们实现故障转移，自动将某一台 slave 升级为 master&lt;/strong>，确保整个 Redis 系统的可用性。整个过程完全自动，不需要人工介入。我在
 &lt;a target="_blank" href="https://www.yuque.com/docs/share/f37fc804-bfe6-4b0d-b373-9c462188fec7">《Java 面试指北》&lt;/a>的「技术面试题篇」中的数据库部分详细介绍了 Redis 集群相关的知识点&amp;amp;面试题，感兴趣的小伙伴可以看看。&lt;/p>
 &lt;p>再举个例子：&lt;strong>Nginx 可以结合 Keepalived 来实现高可用。如果 Nginx 主服务器宕机的话，Keepalived 可以自动进行故障转移，备用 Nginx 主服务器升级为主服务。并且，这个切换对外是透明的，因为使用的虚拟 IP，虚拟 IP 不会改变&lt;/strong>。我在
-&lt;a target="_blank" href="https://www.yuque.com/docs/share/f37fc804-bfe6-4b0d-b373-9c462188fec7">《Java 面试指北》&lt;/a>的「技术面试题篇」中的「服务器」部分详细介绍了 Nginx 相关的知识点&amp;amp;面试题，感兴趣的小伙伴可以看看。&lt;/p>
-&lt;p>&lt;strong>异地多活&lt;/strong>架构实施起来非常难，需要考虑的因素非常多。本人不才，实际项目中并没有实践过异地多活架构，我对其了解还停留在书本知识。&lt;/p></description></item><item><title>高可用系统设计指南</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lyfly_high-availability/ly01ly_high-availability-system-design/</link><pubDate>Thu, 16 Feb 2023 15:43:06 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lyfly_high-availability/ly01ly_high-availability-system-design/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;h2 id="什么是高可用可用性的判断标准是啥">
- 什么是高可用？可用性的判断标准是啥？
- &lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e9%ab%98%e5%8f%af%e7%94%a8%e5%8f%af%e7%94%a8%e6%80%a7%e7%9a%84%e5%88%a4%e6%96%ad%e6%a0%87%e5%87%86%e6%98%af%e5%95%a5">#&lt;/a>
-&lt;/h2>
+&lt;a target="_blank" href="https://www.yuque.com/docs/share/f37fc804-bfe6-4b0d-b373-9c462188fec7">《Java 面试指北》&lt;/a>的「技术面试题篇」中的「服务器」部分详细介绍了 Nginx 相关的知识点&amp;amp;面试题，感兴趣的小伙伴可以看看。&lt;/p></description></item><item><title>高可用系统设计指南</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lyfly_high-availability/ly01ly_high-availability-system-design/</link><pubDate>Thu, 16 Feb 2023 15:43:06 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lyfly_high-availability/ly01ly_high-availability-system-design/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;h2 id="什么是高可用可用性的判断标准是啥">什么是高可用？可用性的判断标准是啥？&lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e9%ab%98%e5%8f%af%e7%94%a8%e5%8f%af%e7%94%a8%e6%80%a7%e7%9a%84%e5%88%a4%e6%96%ad%e6%a0%87%e5%87%86%e6%98%af%e5%95%a5">#&lt;/a>&lt;/h2>
 &lt;p>高可用描述的是&lt;strong>一个系统在大部分时间都是可用的&lt;/strong>，可以为我们提供服务的。高可用代表系统即使在发生硬件故障或者系统升级的时候，&lt;strong>服务仍然是可用的&lt;/strong>。&lt;/p>
 &lt;p>一般情况下，我们使用多少个 9 来评判一个系统的可用性，比如 99.9999% 就是代表该系统在所有的运行时间中只有 0.0001% 的时间是不可用的，这样的系统就是非常非常高可用的了！当然，也会有系统如果可用性不太好的话，可能连 9 都上不了。&lt;/p>
 &lt;p>除此之外，系统的可用性还可以用&lt;strong>某功能的失败次数&lt;/strong>与&lt;strong>总的请求次数&lt;/strong>之比来衡量，比如对网站请求 1000 次，其中有 10 次请求失败，那么可用性就是 99%。&lt;/p>
-&lt;h2 id="哪些情况会导致系统不可用">
- 哪些情况会导致系统不可用？
- &lt;a class="anchor" href="#%e5%93%aa%e4%ba%9b%e6%83%85%e5%86%b5%e4%bc%9a%e5%af%bc%e8%87%b4%e7%b3%bb%e7%bb%9f%e4%b8%8d%e5%8f%af%e7%94%a8">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="哪些情况会导致系统不可用">哪些情况会导致系统不可用？&lt;a class="anchor" href="#%e5%93%aa%e4%ba%9b%e6%83%85%e5%86%b5%e4%bc%9a%e5%af%bc%e8%87%b4%e7%b3%bb%e7%bb%9f%e4%b8%8d%e5%8f%af%e7%94%a8">#&lt;/a>&lt;/h2>
 &lt;ol>
 &lt;li>黑客攻击；&lt;/li>
 &lt;li>&lt;strong>硬件故障&lt;/strong>，比如服务器坏掉。&lt;/li>
@@ -858,14 +610,8 @@
 &lt;li>自然灾害或者&lt;strong>人为破坏&lt;/strong>。&lt;/li>
 &lt;li>&amp;hellip;&amp;hellip;&lt;/li>
 &lt;/ol>
-&lt;h2 id="有哪些提高系统可用性的方法">
- 有哪些提高系统可用性的方法？
- &lt;a class="anchor" href="#%e6%9c%89%e5%93%aa%e4%ba%9b%e6%8f%90%e9%ab%98%e7%b3%bb%e7%bb%9f%e5%8f%af%e7%94%a8%e6%80%a7%e7%9a%84%e6%96%b9%e6%b3%95">#&lt;/a>
-&lt;/h2>
-&lt;h3 id="注重代码质量测试严格把关">
- 注重代码质量，测试严格把关
- &lt;a class="anchor" href="#%e6%b3%a8%e9%87%8d%e4%bb%a3%e7%a0%81%e8%b4%a8%e9%87%8f%e6%b5%8b%e8%af%95%e4%b8%a5%e6%a0%bc%e6%8a%8a%e5%85%b3">#&lt;/a>
-&lt;/h3>
+&lt;h2 id="有哪些提高系统可用性的方法">有哪些提高系统可用性的方法？&lt;a class="anchor" href="#%e6%9c%89%e5%93%aa%e4%ba%9b%e6%8f%90%e9%ab%98%e7%b3%bb%e7%bb%9f%e5%8f%af%e7%94%a8%e6%80%a7%e7%9a%84%e6%96%b9%e6%b3%95">#&lt;/a>&lt;/h2>
+&lt;h3 id="注重代码质量测试严格把关">注重代码质量，测试严格把关&lt;a class="anchor" href="#%e6%b3%a8%e9%87%8d%e4%bb%a3%e7%a0%81%e8%b4%a8%e9%87%8f%e6%b5%8b%e8%af%95%e4%b8%a5%e6%a0%bc%e6%8a%8a%e5%85%b3">#&lt;/a>&lt;/h3>
 &lt;p>我觉得这个是最最最重要的，代码质量有问题比如比较常见的内存泄漏、循环依赖都是对系统可用性极大的损害。大家都喜欢谈限流、降级、熔断，但是我觉得从代码质量这个源头把关是首先要做好的一件很重要的事情。如何提高代码质量？比较实际可用的就是 &lt;strong>CodeReview&lt;/strong>，不要在乎每天多花的那 1 个小时左右的时间，作用可大着呢！&lt;/p>
 &lt;p>另外，安利几个对提高代码质量有实际效果的神器：&lt;/p>
 &lt;ul>
@@ -877,24 +623,18 @@
 &lt;a target="_blank" href="https://github.com/alibaba/p3c">阿里巴巴 Java 代码规范&lt;/a>（Alibaba Java Code Guidelines）；&lt;/li>
 &lt;li>IDEA 自带的代码分析等工具。&lt;/li>
 &lt;/ul>
-&lt;h3 id="使用集群减少单点故障">
- 使用集群，减少单点故障
- &lt;a class="anchor" href="#%e4%bd%bf%e7%94%a8%e9%9b%86%e7%be%a4%e5%87%8f%e5%b0%91%e5%8d%95%e7%82%b9%e6%95%85%e9%9a%9c">#&lt;/a>
-&lt;/h3>
-&lt;p>先拿常用的 Redis 举个例子！我们如何保证我们的 Redis 缓存高可用呢？答案就是使用&lt;strong>集群&lt;/strong>，&lt;strong>避免单点故障&lt;/strong>。当我们使用一个 Redis 实例作为缓存的时候，这个 Redis 实例挂了之后，整个缓存服务可能就挂了。使用了集群之后，即使一台 Redis 实例挂了，不到一秒就会有另外一台 Redis 实例顶上。&lt;/p></description></item><item><title>rocketmq常见面试题</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lyely_high-performance/message-mq/rocketmq-questions/</link><pubDate>Wed, 15 Feb 2023 09:58:47 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lyely_high-performance/message-mq/rocketmq-questions/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;blockquote>
+&lt;h3 id="使用集群减少单点故障">使用集群，减少单点故障&lt;a class="anchor" href="#%e4%bd%bf%e7%94%a8%e9%9b%86%e7%be%a4%e5%87%8f%e5%b0%91%e5%8d%95%e7%82%b9%e6%95%85%e9%9a%9c">#&lt;/a>&lt;/h3>
+&lt;p>先拿常用的 Redis 举个例子！我们如何保证我们的 Redis 缓存高可用呢？答案就是使用&lt;strong>集群&lt;/strong>，&lt;strong>避免单点故障&lt;/strong>。当我们使用一个 Redis 实例作为缓存的时候，这个 Redis 实例挂了之后，整个缓存服务可能就挂了。使用了集群之后，即使一台 Redis 实例挂了，不到一秒就会有另外一台 Redis 实例顶上。&lt;/p>
+&lt;h3 id="限流">限流&lt;a class="anchor" href="#%e9%99%90%e6%b5%81">#&lt;/a>&lt;/h3>
+&lt;p>流量控制（flow control），其原理是&lt;strong>监控应用流量的 QPS&lt;/strong> 或&lt;strong>并发线程数&lt;/strong>等指标，当达到指定的阈值时对流量进行控制，以避免被瞬时的流量高峰冲垮，从而保障应用的高可用性。——来自 
+&lt;a target="_blank" href="https://github.com/alibaba/Sentinel">alibaba-Sentinel&lt;/a> 的 wiki。&lt;/p>
+&lt;h3 id="超时和重试机制设置">超时和重试机制设置&lt;a class="anchor" href="#%e8%b6%85%e6%97%b6%e5%92%8c%e9%87%8d%e8%af%95%e6%9c%ba%e5%88%b6%e8%ae%be%e7%bd%ae">#&lt;/a>&lt;/h3>
+&lt;p>&lt;strong>一旦用户请求超过某个时间的得不到响应，就抛出异常&lt;/strong>。这个是非常重要的，很多线上系统故障都是因为没有进行超时设置或者超时设置的方式不对导致的。我们在读取第三方服务的时候，尤其适合设置超时和重试机制。一般我们使用一些 RPC 框架的时候，这些框架都自带的超时重试的配置。&lt;strong>如果不进行超时设置可能会导致请求响应速度慢&lt;/strong>，甚至导致请求堆积进而让系统无法再处理请求。重试的次数一般设为 3 次，再多次的重试没有好处，反而会加重服务器压力（部分场景使用失败重试机制会不太适合）。&lt;/p></description></item><item><title>rocketmq常见面试题</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lyely_high-performance/message-mq/rocketmq-questions/</link><pubDate>Wed, 15 Feb 2023 09:58:47 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lyely_high-performance/message-mq/rocketmq-questions/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;blockquote class='book-hint '>
 &lt;p>本文来自读者 
 &lt;a target="_blank" href="https://github.com/Snailclimb/JavaGuide/pull/291">PR&lt;/a>。&lt;/p>
-&lt;blockquote>
-&lt;p>主要是rocket mq的几个问题&lt;/p>
-&lt;/blockquote>
-&lt;/blockquote>
-&lt;h2 id="1-单机版消息中心">
- 1 单机版消息中心
- &lt;a class="anchor" href="#1-%e5%8d%95%e6%9c%ba%e7%89%88%e6%b6%88%e6%81%af%e4%b8%ad%e5%bf%83">#&lt;/a>
-&lt;/h2>
+&lt;blockquote class='book-hint '>
+&lt;p>主要是rocket mq的几个问题&lt;/p>&lt;/blockquote>&lt;/blockquote>&lt;h2 id="1-单机版消息中心">1 单机版消息中心&lt;a class="anchor" href="#1-%e5%8d%95%e6%9c%ba%e7%89%88%e6%b6%88%e6%81%af%e4%b8%ad%e5%bf%83">#&lt;/a>&lt;/h2>
 &lt;p>一个消息中心，最基本的需要支持多生产者、多消费者，例如下：&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">Scratch&lt;/span> {
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
@@ -989,32 +729,17 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> });
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> sb.&lt;span style="color:#a6e22e">toString&lt;/span>();
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>问题：&lt;/p></description></item><item><title>rocketmq介绍</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lyely_high-performance/message-mq/rocketmq-intro/</link><pubDate>Wed, 15 Feb 2023 09:58:20 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lyely_high-performance/message-mq/rocketmq-intro/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;h2 id="消息队列扫盲">
- 消息队列扫盲
- &lt;a class="anchor" href="#%e6%b6%88%e6%81%af%e9%98%9f%e5%88%97%e6%89%ab%e7%9b%b2">#&lt;/a>
-&lt;/h2>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>问题：&lt;/p></description></item><item><title>rocketmq介绍</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lyely_high-performance/message-mq/rocketmq-intro/</link><pubDate>Wed, 15 Feb 2023 09:58:20 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lyely_high-performance/message-mq/rocketmq-intro/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;h2 id="消息队列扫盲">消息队列扫盲&lt;a class="anchor" href="#%e6%b6%88%e6%81%af%e9%98%9f%e5%88%97%e6%89%ab%e7%9b%b2">#&lt;/a>&lt;/h2>
 &lt;p>消息队列顾名思义就是存放消息的队列，队列我就不解释了，别告诉我你连队列都不知道是啥吧？&lt;/p>
 &lt;p>所以问题并不是消息队列是什么，而是 &lt;strong>消息队列为什么会出现？消息队列能用来干什么？用它来干这些事会带来什么好处？消息队列会带来副作用吗？&lt;/strong>&lt;/p>
-&lt;h3 id="消息队列为什么会出现-消息队列为什么会出现">
- 
-&lt;a target="_blank" href="#%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BC%9A%E5%87%BA%E7%8E%B0">#&lt;/a> 消息队列为什么会出现？
- &lt;a class="anchor" href="#%e6%b6%88%e6%81%af%e9%98%9f%e5%88%97%e4%b8%ba%e4%bb%80%e4%b9%88%e4%bc%9a%e5%87%ba%e7%8e%b0-%e6%b6%88%e6%81%af%e9%98%9f%e5%88%97%e4%b8%ba%e4%bb%80%e4%b9%88%e4%bc%9a%e5%87%ba%e7%8e%b0">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="-消息队列为什么会出现">
+&lt;a target="_blank" href="#%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BC%9A%E5%87%BA%E7%8E%B0">#&lt;/a> 消息队列为什么会出现？&lt;a class="anchor" href="#-%e6%b6%88%e6%81%af%e9%98%9f%e5%88%97%e4%b8%ba%e4%bb%80%e4%b9%88%e4%bc%9a%e5%87%ba%e7%8e%b0">#&lt;/a>&lt;/h3>
 &lt;p>消息队列算是作为后端程序员的一个必备技能吧，因为&lt;strong>分布式应用必定涉及到各个系统之间的通信问题&lt;/strong>，这个时候消息队列也应运而生了。可以说&lt;strong>分布式&lt;/strong>的产生是消息队列的基础，而分布式怕是一个很古老的概念了吧，所以消息队列也是一个很古老的&lt;strong>中间件&lt;/strong>了。&lt;/p>
-&lt;h3 id="消息队列能用来干什么-消息队列能用来干什么">
- 
-&lt;a target="_blank" href="#%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E8%83%BD%E7%94%A8%E6%9D%A5%E5%B9%B2%E4%BB%80%E4%B9%88">#&lt;/a> 消息队列能用来干什么？
- &lt;a class="anchor" href="#%e6%b6%88%e6%81%af%e9%98%9f%e5%88%97%e8%83%bd%e7%94%a8%e6%9d%a5%e5%b9%b2%e4%bb%80%e4%b9%88-%e6%b6%88%e6%81%af%e9%98%9f%e5%88%97%e8%83%bd%e7%94%a8%e6%9d%a5%e5%b9%b2%e4%bb%80%e4%b9%88">#&lt;/a>
-&lt;/h3>
-&lt;h4 id="异步-异步">
- 
-&lt;a target="_blank" href="#%E5%BC%82%E6%AD%A5">#&lt;/a> 异步
- &lt;a class="anchor" href="#%e5%bc%82%e6%ad%a5-%e5%bc%82%e6%ad%a5">#&lt;/a>
-&lt;/h4>
+&lt;h3 id="-消息队列能用来干什么">
+&lt;a target="_blank" href="#%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E8%83%BD%E7%94%A8%E6%9D%A5%E5%B9%B2%E4%BB%80%E4%B9%88">#&lt;/a> 消息队列能用来干什么？&lt;a class="anchor" href="#-%e6%b6%88%e6%81%af%e9%98%9f%e5%88%97%e8%83%bd%e7%94%a8%e6%9d%a5%e5%b9%b2%e4%bb%80%e4%b9%88">#&lt;/a>&lt;/h3>
+&lt;h4 id="-异步">
+&lt;a target="_blank" href="#%E5%BC%82%E6%AD%A5">#&lt;/a> 异步&lt;a class="anchor" href="#-%e5%bc%82%e6%ad%a5">#&lt;/a>&lt;/h4>
 &lt;p>你可能会反驳我，应用之间的通信又不是只能由消息队列解决，好好的通信为什么&lt;strong>中间非要插一个消息队列&lt;/strong>呢？我不能直接进行通信吗？&lt;/p>
 &lt;p>很好👍，你又提出了一个概念，&lt;strong>同步通信&lt;/strong>。就比如现在业界使用比较多的 &lt;code>Dubbo&lt;/code> 就是一个适用于各个系统之间&lt;strong>同步通信的 &lt;code>RPC&lt;/code> 框架&lt;/strong>。&lt;/p>
 &lt;p>我来举个🌰吧，比如我们有一个购票系统，需求是用户在购买完之后能接收到购买完成的短信。&lt;/p>
@@ -1033,26 +758,20 @@
 &lt;p>所以，为了解决这一个问题，聪明的程序员在中间也加了个类似于服务员的中间件——消息队列。这个时候我们就可以把模型给改造了。&lt;/p>
 &lt;p>&lt;img src="https://my-blog-to-use.oss-cn-beijing.aliyuncs.com/2019-11/16ef38124f55eaea.jpg" alt="img" />&lt;/p>
 &lt;p>这样，我们在将消息存入消息队列之后我们就可以直接返回了(我们告诉服务员我们要吃什么然后玩手机)，所以整个耗时只是 &lt;strong>150ms + 10ms = 160ms&lt;/strong>。&lt;/p>
-&lt;blockquote>
-&lt;p>但是你需要注意的是，整个流程的时长是没变的，就像你仅仅告诉服务员要吃什么是不会影响到做面的速度的。&lt;/p></description></item><item><title>message-queue</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lyely_high-performance/message-mq/base/</link><pubDate>Wed, 15 Feb 2023 09:56:36 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lyely_high-performance/message-mq/base/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;p>“RabbitMQ？”“Kafka？”“RocketMQ？”&amp;hellip;在日常学习与开发过程中，我们常常听到消息队列这个关键词。我也在我的多篇文章中提到了这个概念。可能你是熟练使用消息队列的老手，又或者你是不懂消息队列的新手，不论你了不了解消息队列，本文都将带你搞懂消息队列的一些&lt;strong>基本理论&lt;/strong>。&lt;/p>
+&lt;blockquote class='book-hint '>
+&lt;p>但是你需要注意的是，整个流程的时长是没变的，就像你仅仅告诉服务员要吃什么是不会影响到做面的速度的。&lt;/p>&lt;/blockquote>&lt;h4 id="-解耦">
+&lt;a target="_blank" href="#%E8%A7%A3%E8%80%A6">#&lt;/a> 解耦&lt;a class="anchor" href="#-%e8%a7%a3%e8%80%a6">#&lt;/a>&lt;/h4>
+&lt;p>回到最初同步调用的过程，我们写个伪代码简单概括一下。&lt;/p></description></item><item><title>message-queue</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lyely_high-performance/message-mq/base/</link><pubDate>Wed, 15 Feb 2023 09:56:36 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lyely_high-performance/message-mq/base/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;p>“RabbitMQ？”“Kafka？”“RocketMQ？”&amp;hellip;在日常学习与开发过程中，我们常常听到消息队列这个关键词。我也在我的多篇文章中提到了这个概念。可能你是熟练使用消息队列的老手，又或者你是不懂消息队列的新手，不论你了不了解消息队列，本文都将带你搞懂消息队列的一些&lt;strong>基本理论&lt;/strong>。&lt;/p>
 &lt;p>如果你是老手，你可能从本文学到你之前不曾注意的一些关于消息队列的重要概念，如果你是新手，相信本文将是你打开消息队列大门的一板砖。&lt;/p>
-&lt;h2 id="什么是消息队列">
- 什么是消息队列？
- &lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e6%b6%88%e6%81%af%e9%98%9f%e5%88%97">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="什么是消息队列">什么是消息队列？&lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e6%b6%88%e6%81%af%e9%98%9f%e5%88%97">#&lt;/a>&lt;/h2>
 &lt;p>我们可以把消息队列看作是一个&lt;strong>存放消息的容器&lt;/strong>，当我们需要使用消息的时候，直接&lt;strong>从容器中取出消息&lt;/strong>供自己使用即可。由于队列 Queue 是一种&lt;strong>先进先出&lt;/strong>的数据结构，所以消费消息时也是&lt;strong>按照顺序来消费&lt;/strong>的。&lt;/p>
 &lt;p>&lt;img src="img/ly-20241212142040452.jpg" alt="Message queue" />&lt;/p>
 &lt;p>参与消息传递的双方称为&lt;strong>生产者&lt;/strong>和&lt;strong>消费者&lt;/strong>，生产者负责&lt;strong>发送&lt;/strong>消息，消费者负责&lt;strong>处理&lt;/strong>消息。&lt;/p>
 &lt;p>&lt;img src="img/ly-20241212142040705.png" alt="发布/订阅（Pub/Sub）模型" />&lt;/p>
 &lt;p>我们知道操作系统中的进程通信的一种很重要的方式就是消息队列。我们这里提到的&lt;strong>消息队列&lt;/strong>稍微有点区别，更多指的是&lt;strong>各个服务&lt;/strong>以及&lt;strong>系统内部各个组件&lt;/strong>/&lt;strong>模块&lt;/strong>之前的通信，属于一种&lt;strong>中间件&lt;/strong>。&lt;/p>
 &lt;p>随着分布式和微服务系统的发展，消息队列在系统设计中有了&lt;strong>更大的发挥&lt;/strong>空间，使用消息队列可以&lt;strong>降低系统耦合性&lt;/strong>、&lt;strong>实现任务异步&lt;/strong>、&lt;strong>有效地进行流量削峰&lt;/strong>，是分布式和微服务系统中重要的组件之一。&lt;/p>
-&lt;h2 id="消息队列有什么用">
- 消息队列有什么用？
- &lt;a class="anchor" href="#%e6%b6%88%e6%81%af%e9%98%9f%e5%88%97%e6%9c%89%e4%bb%80%e4%b9%88%e7%94%a8">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="消息队列有什么用">消息队列有什么用？&lt;a class="anchor" href="#%e6%b6%88%e6%81%af%e9%98%9f%e5%88%97%e6%9c%89%e4%bb%80%e4%b9%88%e7%94%a8">#&lt;/a>&lt;/h2>
 &lt;p>通常来说，使用消息队列能为我们的系统带来下面三点好处：&lt;/p>
 &lt;ol>
 &lt;li>&lt;strong>通过异步处理提高系统性能（减少响应所需时间）。&lt;/strong>&lt;/li>
@@ -1060,24 +779,15 @@
 &lt;li>&lt;strong>降低系统耦合性。&lt;/strong>&lt;/li>
 &lt;/ol>
 &lt;p>如果在面试的时候你被面试官问到这个问题的话，一般情况是你在你的&lt;strong>简历上涉及到消息队列&lt;/strong>这方面的内容，这个时候推荐&lt;strong>你结合你自己的项目&lt;/strong>来回答。&lt;/p>
-&lt;h3 id="通过异步处理提高系统性能减少响应所需时间">
- 通过异步处理提高系统性能（减少响应所需时间）
- &lt;a class="anchor" href="#%e9%80%9a%e8%bf%87%e5%bc%82%e6%ad%a5%e5%a4%84%e7%90%86%e6%8f%90%e9%ab%98%e7%b3%bb%e7%bb%9f%e6%80%a7%e8%83%bd%e5%87%8f%e5%b0%91%e5%93%8d%e5%ba%94%e6%89%80%e9%9c%80%e6%97%b6%e9%97%b4">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="通过异步处理提高系统性能减少响应所需时间">通过异步处理提高系统性能（减少响应所需时间）&lt;a class="anchor" href="#%e9%80%9a%e8%bf%87%e5%bc%82%e6%ad%a5%e5%a4%84%e7%90%86%e6%8f%90%e9%ab%98%e7%b3%bb%e7%bb%9f%e6%80%a7%e8%83%bd%e5%87%8f%e5%b0%91%e5%93%8d%e5%ba%94%e6%89%80%e9%9c%80%e6%97%b6%e9%97%b4">#&lt;/a>&lt;/h3>
 &lt;p>&lt;img src="img/ly-20241212142040821.png" alt="ly-20241212142040821" />&lt;/p>
 &lt;p>将用户的请求数据&lt;strong>存储到消息队列之后就立即返回结果&lt;/strong>。随后，系统再对消息进行消费。&lt;/p>
 &lt;p>因为用户请求数据写入消息队列之后就立即返回给用户了，但是请求数据在后续的&lt;strong>业务校验&lt;/strong>、&lt;strong>写数据库&lt;/strong>等操作中&lt;strong>可能失败&lt;/strong>。因此，&lt;strong>使用消息队列进行异步处理之后，需要适当修改业务流程进行配合&lt;/strong>，比如用户在提交订单之后，订单数据写入消息队列，&lt;strong>不能立即返回用户订单提交成功&lt;/strong>，需要在消息队列的订单&lt;strong>消费者进程真正处理完该订单之后&lt;/strong>，甚至&lt;strong>出库&lt;/strong>后，再通过电子邮件或短信通知用户订单成功，&lt;strong>以免交易纠纷&lt;/strong>。这就类似我们平时手机订火车票和电影票。&lt;/p>
-&lt;h3 id="削峰限流">
- 削峰/限流
- &lt;a class="anchor" href="#%e5%89%8a%e5%b3%b0%e9%99%90%e6%b5%81">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="削峰限流">削峰/限流&lt;a class="anchor" href="#%e5%89%8a%e5%b3%b0%e9%99%90%e6%b5%81">#&lt;/a>&lt;/h3>
 &lt;p>&lt;strong>先将短时间高并发产生的事务消息存储在消息队列中，然后后端服务再慢慢根据自己的能力去消费这些消息，这样就避免直接把后端服务打垮掉。&lt;/strong>&lt;/p>
 &lt;p>举例：在电子商务一些&lt;strong>秒杀&lt;/strong>、&lt;strong>促销&lt;/strong>活动中，合理使用消息队列可以&lt;strong>有效抵御促销活动&lt;/strong>刚开始大量订单涌入对系统的冲击。如下图所示：&lt;/p>
 &lt;p>&lt;img src="img/ly-20241212142040941.jpg" alt="削峰" />&lt;/p>
-&lt;h3 id="降低系统耦合性">
- 降低系统耦合性
- &lt;a class="anchor" href="#%e9%99%8d%e4%bd%8e%e7%b3%bb%e7%bb%9f%e8%80%a6%e5%90%88%e6%80%a7">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="降低系统耦合性">降低系统耦合性&lt;a class="anchor" href="#%e9%99%8d%e4%bd%8e%e7%b3%bb%e7%bb%9f%e8%80%a6%e5%90%88%e6%80%a7">#&lt;/a>&lt;/h3>
 &lt;p>使用消息队列还可以降低系统耦合性。我们知道如果&lt;strong>模块之间不存在直接调用&lt;/strong>，那么新增模块或者修改模块就对其他模块影响较小，这样系统的&lt;strong>可扩展性&lt;/strong>无疑更好一些。还是直接上图吧：&lt;/p>
 &lt;p>&lt;img src="img/ly-20241212142041055.jpg" alt="解耦" />&lt;/p>
 &lt;p>&lt;strong>生产者（客户端）发送消息到消息队列中去，接受者（服务端）处理消息&lt;/strong>，需要消费的系统直接去消息队列取消息进行消费即可而不需要和其他系统有耦合，这显然也提高了系统的扩展性。&lt;/p>
@@ -1085,30 +795,16 @@
 &lt;p>消息接受者对消息进行过滤、处理、包装后，构造成一个新的消息类型，将消息&lt;strong>继续发送出去，等待其他消息接受者订阅该消息&lt;/strong>。因此&lt;strong>基于事件（消息对象）驱动的业务架构&lt;/strong>可以是一系列流程。&lt;/p>
 &lt;p>另外，为了&lt;strong>避免消息队列服务器宕机&lt;/strong>造成消息丢失，会将成功发送到消息队列的消息&lt;strong>存储在消息生产者服务器上&lt;/strong>，等消息真正被消费者服务器处理后才删除消息。在消息队列服务器宕机后，&lt;strong>生产者服务器会选择分布式消息队列服务器集群中的其他服务器发布消息&lt;/strong>。&lt;/p>
 &lt;p>&lt;strong>备注：&lt;/strong> 不要认为消息队列只能利用发布-订阅模式工作，只不过在解耦这个特定业务环境下是使用发布-订阅模式的。除了&lt;strong>发布-订阅&lt;/strong>模式，还有&lt;strong>点对点订阅&lt;/strong>模式（&lt;strong>一个消息只有一个消费者&lt;/strong>），我们比较常用的是发布-订阅模式。另外，这两种消息模型是 JMS 提供的，AMQP 协议还提供了 5 种消息模型。&lt;/p>
-&lt;h2 id="使用消息队列哪些问题">
- 使用消息队列哪些问题？
- &lt;a class="anchor" href="#%e4%bd%bf%e7%94%a8%e6%b6%88%e6%81%af%e9%98%9f%e5%88%97%e5%93%aa%e4%ba%9b%e9%97%ae%e9%a2%98">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="使用消息队列哪些问题">使用消息队列哪些问题？&lt;a class="anchor" href="#%e4%bd%bf%e7%94%a8%e6%b6%88%e6%81%af%e9%98%9f%e5%88%97%e5%93%aa%e4%ba%9b%e9%97%ae%e9%a2%98">#&lt;/a>&lt;/h2>
 &lt;ul>
 &lt;li>&lt;strong>系统可用性降低：&lt;/strong> 系统可用性在某种程度上降低，为什么这样说呢？在加入 MQ 之前，你&lt;strong>不用考虑消息丢失或者说 MQ 挂掉&lt;/strong>等等的情况，但是，引入 MQ 之后你就需要去考虑了！&lt;/li>
 &lt;li>&lt;strong>系统复杂性提高：&lt;/strong> 加入 MQ 之后，你需要保证消息没有被&lt;strong>重复消费&lt;/strong>、处理&lt;strong>消息丢失&lt;/strong>的情况、保证&lt;strong>消息传递&lt;/strong>的顺序性等等问题！&lt;/li>
 &lt;li>&lt;strong>一致性问题：&lt;/strong> 我上面讲了消息队列可以实现&lt;strong>异步&lt;/strong>，消息队列带来的异步确实可以提高系统响应速度。但是，&lt;strong>万一消息的真正消费者并没有正确消费消息&lt;/strong>怎么办？这样就会导致数据不一致的情况了!&lt;/li>
 &lt;/ul>
-&lt;h2 id="jms-和-amqp">
- JMS 和 AMQP
- &lt;a class="anchor" href="#jms-%e5%92%8c-amqp">#&lt;/a>
-&lt;/h2>
-&lt;h3 id="jms-是什么">
- JMS 是什么？
- &lt;a class="anchor" href="#jms-%e6%98%af%e4%bb%80%e4%b9%88">#&lt;/a>
-&lt;/h3>
-&lt;p>JMS（JAVA Message Service,java 消息服务）是 java 的消息服务，JMS 的客户端之间可以通过 JMS 服务进行异步的消息传输。&lt;strong>JMS（JAVA Message Service，Java 消息服务）API 是一个消息服务的标准或者说是规范&lt;/strong>，允许应用程序组件基于 JavaEE 平台创建、发送、接收和读取消息。它使分布式通信耦合度更低，消息服务更加可靠以及异步性。&lt;/p></description></item><item><title>cdn</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lyely_high-performance/ly02ly_cdn/</link><pubDate>Tue, 14 Feb 2023 16:57:38 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lyely_high-performance/ly02ly_cdn/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;h2 id="什么是-cdn-">
- 什么是 CDN ？
- &lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af-cdn-">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="jms-和-amqp">JMS 和 AMQP&lt;a class="anchor" href="#jms-%e5%92%8c-amqp">#&lt;/a>&lt;/h2>
+&lt;h3 id="jms-是什么">JMS 是什么？&lt;a class="anchor" href="#jms-%e6%98%af%e4%bb%80%e4%b9%88">#&lt;/a>&lt;/h3>
+&lt;p>JMS（JAVA Message Service,java 消息服务）是 java 的消息服务，JMS 的客户端之间可以通过 JMS 服务进行异步的消息传输。&lt;strong>JMS（JAVA Message Service，Java 消息服务）API 是一个消息服务的标准或者说是规范&lt;/strong>，允许应用程序组件基于 JavaEE 平台创建、发送、接收和读取消息。它使分布式通信耦合度更低，消息服务更加可靠以及异步性。&lt;/p></description></item><item><title>cdn</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lyely_high-performance/ly02ly_cdn/</link><pubDate>Tue, 14 Feb 2023 16:57:38 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lyely_high-performance/ly02ly_cdn/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;h2 id="什么是-cdn-">什么是 CDN ？&lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af-cdn-">#&lt;/a>&lt;/h2>
 &lt;p>&lt;strong>CDN&lt;/strong> 全称是 Content Delivery Network/&lt;strong>Content Distribution Network&lt;/strong>，翻译过的意思是 &lt;strong>内容分发网络&lt;/strong> 。&lt;/p>
 &lt;p>我们可以将内容分发网络拆开来看：&lt;/p>
 &lt;ul>
@@ -1129,39 +825,22 @@
 &lt;li>静态资源通常占用空间比较大且经常会被访问到，如果直接使用&lt;strong>服务器或者缓存&lt;/strong>来处理静态资源请求的话，对&lt;strong>系统资源消耗非常大&lt;/strong>，可能会影响到系统其他服务的正常运行。&lt;/li>
 &lt;/ul>
 &lt;p>同一个服务在在多个不同的地方部署多份（比如&lt;strong>同城灾备&lt;/strong>、&lt;strong>异地灾备&lt;/strong>、&lt;strong>同城多活&lt;/strong>、&lt;strong>异地多活&lt;/strong>）是为了实现系统的高可用而不是就近访问。&lt;/p>
-&lt;h2 id="cdn-工作原理是什么">
- CDN 工作原理是什么？
- &lt;a class="anchor" href="#cdn-%e5%b7%a5%e4%bd%9c%e5%8e%9f%e7%90%86%e6%98%af%e4%bb%80%e4%b9%88">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="cdn-工作原理是什么">CDN 工作原理是什么？&lt;a class="anchor" href="#cdn-%e5%b7%a5%e4%bd%9c%e5%8e%9f%e7%90%86%e6%98%af%e4%bb%80%e4%b9%88">#&lt;/a>&lt;/h2>
 &lt;p>搞懂下面 3 个问题也就搞懂了 CDN 的工作原理：&lt;/p>
 &lt;ol>
 &lt;li>静态资源是如何被缓存到 CDN 节点中的？&lt;/li>
 &lt;li>如何找到最合适的 CDN 节点？&lt;/li>
 &lt;li>如何防止静态资源被盗用？&lt;/li>
 &lt;/ol>
-&lt;h3 id="静态资源是如何被缓存到-cdn-节点中的">
- 静态资源是如何被缓存到 CDN 节点中的？
- &lt;a class="anchor" href="#%e9%9d%99%e6%80%81%e8%b5%84%e6%ba%90%e6%98%af%e5%a6%82%e4%bd%95%e8%a2%ab%e7%bc%93%e5%ad%98%e5%88%b0-cdn-%e8%8a%82%e7%82%b9%e4%b8%ad%e7%9a%84">#&lt;/a>
-&lt;/h3>
-&lt;p>你可以通过&lt;strong>预热&lt;/strong>的方式将源站的资源同步到 CDN 的节点中。这样的话，用户&lt;strong>首次请求资源&lt;/strong>可以直接从 CDN 节点中取，无需回源。这样可以降低源站压力，提升用户体验。&lt;/p></description></item><item><title>数据库读写分离&amp;分库分表详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lyely_high-performance/ly01ly_read-and-write-separation-and-library-subtable/</link><pubDate>Tue, 14 Feb 2023 16:38:42 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lyely_high-performance/ly01ly_read-and-write-separation-and-library-subtable/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;h2 id="读写分离">
- 读写分离
- &lt;a class="anchor" href="#%e8%af%bb%e5%86%99%e5%88%86%e7%a6%bb">#&lt;/a>
-&lt;/h2>
-&lt;h3 id="什么是读写分离">
- 什么是读写分离？
- &lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e8%af%bb%e5%86%99%e5%88%86%e7%a6%bb">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="静态资源是如何被缓存到-cdn-节点中的">静态资源是如何被缓存到 CDN 节点中的？&lt;a class="anchor" href="#%e9%9d%99%e6%80%81%e8%b5%84%e6%ba%90%e6%98%af%e5%a6%82%e4%bd%95%e8%a2%ab%e7%bc%93%e5%ad%98%e5%88%b0-cdn-%e8%8a%82%e7%82%b9%e4%b8%ad%e7%9a%84">#&lt;/a>&lt;/h3>
+&lt;p>你可以通过&lt;strong>预热&lt;/strong>的方式将源站的资源同步到 CDN 的节点中。这样的话，用户&lt;strong>首次请求资源&lt;/strong>可以直接从 CDN 节点中取，无需回源。这样可以降低源站压力，提升用户体验。&lt;/p></description></item><item><title>数据库读写分离&amp;分库分表详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lyely_high-performance/ly01ly_read-and-write-separation-and-library-subtable/</link><pubDate>Tue, 14 Feb 2023 16:38:42 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lyely_high-performance/ly01ly_read-and-write-separation-and-library-subtable/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;h2 id="读写分离">读写分离&lt;a class="anchor" href="#%e8%af%bb%e5%86%99%e5%88%86%e7%a6%bb">#&lt;/a>&lt;/h2>
+&lt;h3 id="什么是读写分离">什么是读写分离？&lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e8%af%bb%e5%86%99%e5%88%86%e7%a6%bb">#&lt;/a>&lt;/h3>
 &lt;p>见名思意，根据读写分离的名字，我们就可以知道：&lt;strong>读写分离主要是为了将对数据库的读写操作分散到不同的数据库节点上。&lt;/strong> 这样的话，就能够&lt;strong>小幅提升写&lt;/strong>性能，&lt;strong>大幅提升读&lt;/strong>性能。&lt;/p>
 &lt;p>我简单画了一张图来帮助不太清楚读写分离的小伙伴理解。&lt;/p>
 &lt;p>&lt;img src="img/ly-20241212142038662.png" alt="ly-20241212142038662" />&lt;/p>
 &lt;p>一般情况下，我们都会选择&lt;strong>一主多从&lt;/strong>，也就是一台&lt;strong>主数据库负责写&lt;/strong>，其他的&lt;strong>从数据库负责读&lt;/strong>。主库和从库之间会进行数据&lt;strong>同步&lt;/strong>，以保证&lt;strong>从库&lt;/strong>中数据的&lt;strong>准确性&lt;/strong>。这样的架构实现起来比较&lt;strong>简单&lt;/strong>，并且也&lt;strong>符合系统的写少读多&lt;/strong>的特点。&lt;/p>
-&lt;h3 id="读写分离会带来什么问题如何解决">
- 读写分离会带来什么问题？如何解决？
- &lt;a class="anchor" href="#%e8%af%bb%e5%86%99%e5%88%86%e7%a6%bb%e4%bc%9a%e5%b8%a6%e6%9d%a5%e4%bb%80%e4%b9%88%e9%97%ae%e9%a2%98%e5%a6%82%e4%bd%95%e8%a7%a3%e5%86%b3">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="读写分离会带来什么问题如何解决">读写分离会带来什么问题？如何解决？&lt;a class="anchor" href="#%e8%af%bb%e5%86%99%e5%88%86%e7%a6%bb%e4%bc%9a%e5%b8%a6%e6%9d%a5%e4%bb%80%e4%b9%88%e9%97%ae%e9%a2%98%e5%a6%82%e4%bd%95%e8%a7%a3%e5%86%b3">#&lt;/a>&lt;/h3>
 &lt;p>读写分离对于提升数据库的并发非常有效，但是，同时也会引来一个问题：主库和从库的数据存在延迟，比如你写完主库之后，主库的数据同步到从库是需要时间的，这个时间差就导致了主库和从库的数据不一致性问题。这也就是我们经常说的 &lt;strong>主从同步延迟&lt;/strong> 。&lt;/p>
 &lt;p>主从同步延迟问题的解决，没有特别好的一种方案（可能是我太菜了，欢迎评论区补充）。你可以根据自己的业务场景，参考一下下面几种解决办法。&lt;/p>
 &lt;p>&lt;strong>1.强制将读请求路由到主库处理。&lt;/strong>&lt;/p>
@@ -1169,18 +848,14 @@
 &lt;p>比如 &lt;strong>&lt;code>Sharding-JDBC&lt;/code>&lt;/strong> 就是采用的这种方案。通过使用 Sharding-JDBC 的 &lt;strong>&lt;code>HintManager&lt;/code> 分片键值管理器&lt;/strong>，我们可以&lt;strong>强制使用主库&lt;/strong>。&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>HintManager hintManager &lt;span style="color:#f92672">=&lt;/span> HintManager.&lt;span style="color:#a6e22e">getInstance&lt;/span>();
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>hintManager.&lt;span style="color:#a6e22e">setMasterRouteOnly&lt;/span>();
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// 继续JDBC操作&lt;/span>
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>对于这种方案，你可以将那些必须获取最新数据的读请求都交给主库处理。&lt;/p>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">//&lt;/span> 继续JDBC操作&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>对于这种方案，你可以将那些必须获取最新数据的读请求都交给主库处理。&lt;/p>
 &lt;p>&lt;strong>2.延迟读取。&lt;/strong>&lt;/p>
 &lt;p>还有一些朋友肯定会想既然主从同步存在延迟，那我就在&lt;strong>延迟之后读取&lt;/strong>啊，比如主从同步延迟 0.5s,那我就 1s 之后再读取数据。这样多方便啊！方便是方便，但是也很扯淡。&lt;/p>
 &lt;p>不过，如果你是这样设计业务流程就会好很多：对于一些&lt;strong>对数据比较敏感&lt;/strong>的场景，你可以在&lt;strong>完成写请求之后&lt;/strong>，&lt;strong>避免立即&lt;/strong>进行请求操作。比如你支付成功之后，跳转到一个支付成功的页面，当你点击返回之后才返回自己的账户。&lt;/p>
 &lt;p>另外，
 &lt;a target="_blank" href="https://time.geekbang.org/column/intro/100020801?code=ieY8HeRSlDsFbuRtggbBQGxdTh-1jMASqEIeqzHAKrI%3D">《MySQL 实战 45 讲》&lt;/a>这个专栏中的
 &lt;a target="_blank" href="https://time.geekbang.org/column/article/77636">《读写分离有哪些坑？》&lt;/a>这篇文章还介绍了很多其他比较实际的解决办法，感兴趣的小伙伴可以自行研究一下。&lt;/p>
-&lt;h3 id="如何实现读写分离">
- 如何实现读写分离？
- &lt;a class="anchor" href="#%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e8%af%bb%e5%86%99%e5%88%86%e7%a6%bb">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="如何实现读写分离">如何实现读写分离？&lt;a class="anchor" href="#%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e8%af%bb%e5%86%99%e5%88%86%e7%a6%bb">#&lt;/a>&lt;/h3>
 &lt;p>不论是使用哪一种读写分离具体的实现方案，想要&lt;strong>实现读写分离&lt;/strong>一般包含如下几步：&lt;/p>
 &lt;ol>
 &lt;li>部署多台数据库，选择&lt;strong>其中的一台作为主&lt;/strong>数据库，&lt;strong>其他&lt;/strong>的一台或者多台&lt;strong>作为从&lt;/strong>数据库。&lt;/li>
@@ -1194,55 +869,34 @@
 &lt;p>提供类似功能的中间件有 &lt;strong>MySQL Router&lt;/strong>（官方）、&lt;strong>Atlas&lt;/strong>（基于 MySQL Proxy）、&lt;strong>Maxscale&lt;/strong>、&lt;strong>MyCat&lt;/strong>。&lt;/p>
 &lt;p>&lt;strong>2.组件方式&lt;/strong>&lt;/p>
 &lt;p>在这种方式中，我们可以通过引入第三方组件来帮助我们读写请求。&lt;/p>
-&lt;p>这也是我&lt;strong>比较推荐&lt;/strong>的一种方式。这种方式目前在各种互联网公司中&lt;strong>用的最多&lt;/strong>的，相关的实际的案例也非常多。如果你要采用这种方式的话，推荐使用 &lt;strong>&lt;code>sharding-jdbc&lt;/code>&lt;/strong> ，&lt;strong>直接引入 jar&lt;/strong> 包即可使用，非常方便。同时，也&lt;strong>节省了很多运维的成本&lt;/strong>。&lt;/p></description></item><item><title>zookeeper实战</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lydly_distributed_system/ly08ly_zookeeper-in-action/</link><pubDate>Tue, 14 Feb 2023 10:45:39 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lydly_distributed_system/ly08ly_zookeeper-in-action/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;h2 id="1-前言">
- 1. 前言
- &lt;a class="anchor" href="#1-%e5%89%8d%e8%a8%80">#&lt;/a>
-&lt;/h2>
+&lt;p>这也是我&lt;strong>比较推荐&lt;/strong>的一种方式。这种方式目前在各种互联网公司中&lt;strong>用的最多&lt;/strong>的，相关的实际的案例也非常多。如果你要采用这种方式的话，推荐使用 &lt;strong>&lt;code>sharding-jdbc&lt;/code>&lt;/strong> ，&lt;strong>直接引入 jar&lt;/strong> 包即可使用，非常方便。同时，也&lt;strong>节省了很多运维的成本&lt;/strong>。&lt;/p>
+&lt;p>你可以在 shardingsphere 官方找到 
+&lt;a target="_blank" href="https://shardingsphere.apache.org/document/legacy/3.x/document/cn/manual/sharding-jdbc/usage/read-write-splitting/">sharding-jdbc 关于读写分离的操作&lt;/a>。&lt;/p>
+&lt;h3 id="主从复制原理是什么">主从复制原理是什么？&lt;a class="anchor" href="#%e4%b8%bb%e4%bb%8e%e5%a4%8d%e5%88%b6%e5%8e%9f%e7%90%86%e6%98%af%e4%bb%80%e4%b9%88">#&lt;/a>&lt;/h3>
+&lt;p>MySQL binlog(binary log 即二进制日志文件) 主要记录了 MySQL 数据库中数据的所有变化(数据库执行的所有 DDL 和 DML 语句)。因此，我们根据主库的 MySQL binlog 日志就能够将主库的数据同步到从库中。&lt;/p></description></item><item><title>zookeeper实战</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lydly_distributed_system/ly08ly_zookeeper-in-action/</link><pubDate>Tue, 14 Feb 2023 10:45:39 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lydly_distributed_system/ly08ly_zookeeper-in-action/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;h2 id="1-前言">1. 前言&lt;a class="anchor" href="#1-%e5%89%8d%e8%a8%80">#&lt;/a>&lt;/h2>
 &lt;p>这篇文章简单给演示一下 ZooKeeper 常见命令的使用以及 ZooKeeper Java客户端 Curator 的基本使用。介绍到的内容都是最基本的操作，能满足日常工作的基本需要。&lt;/p>
 &lt;p>如果文章有任何需要改善和完善的地方，欢迎在评论区指出，共同进步！&lt;/p>
-&lt;h2 id="2-zookeeper-安装和使用">
- 2. ZooKeeper 安装和使用
- &lt;a class="anchor" href="#2-zookeeper-%e5%ae%89%e8%a3%85%e5%92%8c%e4%bd%bf%e7%94%a8">#&lt;/a>
-&lt;/h2>
-&lt;h3 id="21-使用docker-安装-zookeeper">
- 2.1. 使用Docker 安装 zookeeper
- &lt;a class="anchor" href="#21-%e4%bd%bf%e7%94%a8docker-%e5%ae%89%e8%a3%85-zookeeper">#&lt;/a>
-&lt;/h3>
+&lt;h2 id="2-zookeeper-安装和使用">2. ZooKeeper 安装和使用&lt;a class="anchor" href="#2-zookeeper-%e5%ae%89%e8%a3%85%e5%92%8c%e4%bd%bf%e7%94%a8">#&lt;/a>&lt;/h2>
+&lt;h3 id="21-使用docker-安装-zookeeper">2.1. 使用Docker 安装 zookeeper&lt;a class="anchor" href="#21-%e4%bd%bf%e7%94%a8docker-%e5%ae%89%e8%a3%85-zookeeper">#&lt;/a>&lt;/h3>
 &lt;p>&lt;strong>a.使用 Docker 下载 ZooKeeper&lt;/strong>&lt;/p>
-&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>docker pull zookeeper:3.5.8
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;strong>b.运行 ZooKeeper&lt;/strong>&lt;/p>
-&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>docker run -d --name zookeeper -p 2181:2181 zookeeper:3.5.8
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="22-连接-zookeeper-服务">
- 2.2. 连接 ZooKeeper 服务
- &lt;a class="anchor" href="#22-%e8%bf%9e%e6%8e%a5-zookeeper-%e6%9c%8d%e5%8a%a1">#&lt;/a>
-&lt;/h3>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>docker pull zookeeper:3.5.8&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;strong>b.运行 ZooKeeper&lt;/strong>&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>docker run -d --name zookeeper -p 2181:2181 zookeeper:3.5.8&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="22-连接-zookeeper-服务">2.2. 连接 ZooKeeper 服务&lt;a class="anchor" href="#22-%e8%bf%9e%e6%8e%a5-zookeeper-%e6%9c%8d%e5%8a%a1">#&lt;/a>&lt;/h3>
 &lt;p>&lt;strong>a.进入ZooKeeper容器中&lt;/strong>&lt;/p>
 &lt;p>先使用 &lt;code>docker ps&lt;/code> 查看 ZooKeeper 的 ContainerID，然后使用 &lt;code>docker exec -it ContainerID /bin/bash&lt;/code> 命令进入容器中。&lt;/p>
 &lt;p>&lt;strong>b.先进入 bin 目录,然后通过 &lt;code>./zkCli.sh -server 127.0.0.1:2181&lt;/code>命令连接ZooKeeper 服务&lt;/strong>&lt;/p>
-&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>root@eaf70fc620cb:/apache-zookeeper-3.5.8-bin# cd bin
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>如果你看到控制台成功打印出如下信息的话，说明你已经成功连接 ZooKeeper 服务。&lt;/p></description></item><item><title>zookeeper进阶</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lydly_distributed_system/ly07ly_zookeeper-plus/</link><pubDate>Mon, 13 Feb 2023 17:30:07 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lydly_distributed_system/ly07ly_zookeeper-plus/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;blockquote>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>root@eaf70fc620cb:/apache-zookeeper-3.5.8-bin# cd bin&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>如果你看到控制台成功打印出如下信息的话，说明你已经成功连接 ZooKeeper 服务。&lt;/p>
+&lt;p>&lt;img src="img/ly-20241212142038401.png" alt="连接ZooKeeper服务.png" />&lt;/p>
+&lt;h3 id="23-常用命令演示">2.3. 常用命令演示&lt;a class="anchor" href="#23-%e5%b8%b8%e7%94%a8%e5%91%bd%e4%bb%a4%e6%bc%94%e7%a4%ba">#&lt;/a>&lt;/h3>
+&lt;h4 id="231-查看常用命令help-命令">2.3.1. 查看常用命令(help 命令)&lt;a class="anchor" href="#231-%e6%9f%a5%e7%9c%8b%e5%b8%b8%e7%94%a8%e5%91%bd%e4%bb%a4help-%e5%91%bd%e4%bb%a4">#&lt;/a>&lt;/h4>
+&lt;p>通过 &lt;code>help&lt;/code> 命令查看 ZooKeeper 常用命令&lt;/p></description></item><item><title>zookeeper进阶</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lydly_distributed_system/ly07ly_zookeeper-plus/</link><pubDate>Mon, 13 Feb 2023 17:30:07 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lydly_distributed_system/ly07ly_zookeeper-plus/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;blockquote class='book-hint '>
 &lt;p>
-&lt;a target="_blank" href="https://juejin.im/user/5c33853851882525ea106810">FrancisQ&lt;/a> 投稿。&lt;/p>
-&lt;/blockquote>
-&lt;h2 id="1-好久不见">
- 1. 好久不见
- &lt;a class="anchor" href="#1-%e5%a5%bd%e4%b9%85%e4%b8%8d%e8%a7%81">#&lt;/a>
-&lt;/h2>
+&lt;a target="_blank" href="https://juejin.im/user/5c33853851882525ea106810">FrancisQ&lt;/a> 投稿。&lt;/p>&lt;/blockquote>&lt;h2 id="1-好久不见">1. 好久不见&lt;a class="anchor" href="#1-%e5%a5%bd%e4%b9%85%e4%b8%8d%e8%a7%81">#&lt;/a>&lt;/h2>
 &lt;p>离上一篇文章的发布也快一个月了，想想已经快一个月没写东西了，其中可能有期末考试、课程设计和驾照考试，但这都不是借口！&lt;/p>
 &lt;p>一到冬天就懒的不行，望广大掘友督促我🙄🙄✍️✍️。&lt;/p>
-&lt;blockquote>
-&lt;p>文章很长，先赞后看，养成习惯。❤️ 🧡 💛 💚 💙 💜&lt;/p>
-&lt;/blockquote>
-&lt;h2 id="2-什么是zookeeper">
- 2. 什么是ZooKeeper
- &lt;a class="anchor" href="#2-%e4%bb%80%e4%b9%88%e6%98%afzookeeper">#&lt;/a>
-&lt;/h2>
+&lt;blockquote class='book-hint '>
+&lt;p>文章很长，先赞后看，养成习惯。❤️ 🧡 💛 💚 💙 💜&lt;/p>&lt;/blockquote>&lt;h2 id="2-什么是zookeeper">2. 什么是ZooKeeper&lt;a class="anchor" href="#2-%e4%bb%80%e4%b9%88%e6%98%afzookeeper">#&lt;/a>&lt;/h2>
 &lt;p>&lt;code>ZooKeeper&lt;/code> 由 &lt;code>Yahoo&lt;/code> 开发，后来捐赠给了 &lt;code>Apache&lt;/code> ，现已成为 &lt;code>Apache&lt;/code> 顶级项目。&lt;code>ZooKeeper&lt;/code> 是一个开源的&lt;strong>分布式应用程序协调服务器&lt;/strong>，其为&lt;strong>分布式系统提供一致性&lt;/strong>服务。其一致性是通过基于 &lt;code>Paxos&lt;/code> 算法的 &lt;code>ZAB&lt;/code> 协议完成的。其主要功能包括：&lt;strong>配置维护&lt;/strong>、&lt;strong>分布式同步&lt;/strong>、&lt;strong>集群管理&lt;/strong>、&lt;strong>分布式事务&lt;/strong>等。&lt;/p>
 &lt;p>&lt;img src="img/ly-20241212142035025.png" alt="ly-20241212142035025" />&lt;/p>
 &lt;p>简单来说， &lt;code>ZooKeeper&lt;/code> 是一个 &lt;strong>分布式协调服务框架&lt;/strong> 。分布式？协调服务？这啥玩意？🤔🤔&lt;/p>
@@ -1256,17 +910,10 @@
 &lt;p>而我为什么反驳同学所说的分布式就是加机器呢？因为我认为加机器更加适用于构建&lt;strong>集群&lt;/strong>，因为它真是只有加机器。而对于分布式来说，你首先需要将&lt;strong>业务进行拆分&lt;/strong>，然后&lt;strong>再加机器&lt;/strong>（不仅仅是加机器那么简单），同时你还要去解决&lt;strong>分布式带来的一系列问题&lt;/strong>。&lt;/p>
 &lt;p>&lt;img src="img/ly-20241212142035517.jpg" alt="img" />&lt;/p>
 &lt;p>比如各个分布式组件&lt;strong>如何协调&lt;/strong>起来，如何&lt;strong>减少&lt;/strong>各个系统之间的&lt;strong>耦合度&lt;/strong>，&lt;strong>分布式事务&lt;/strong>的处理，如何去&lt;strong>配置整个分布式系统&lt;/strong>等等。&lt;code>ZooKeeper&lt;/code> 主要就是解决这些问题的。&lt;/p>
-&lt;h2 id="3-一致性问题">
- 3. 一致性问题
- &lt;a class="anchor" href="#3-%e4%b8%80%e8%87%b4%e6%80%a7%e9%97%ae%e9%a2%98">#&lt;/a>
-&lt;/h2>
-&lt;p>&lt;img src="img/ly-20241212142035639.png" alt="image.png" />&lt;/p></description></item><item><title>zookeeper介绍</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lydly_distributed_system/ly06ly_zookeeper-intro/</link><pubDate>Mon, 13 Feb 2023 15:59:20 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lydly_distributed_system/ly06ly_zookeeper-intro/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;h2 id="1-前言">
- 1. 前言
- &lt;a class="anchor" href="#1-%e5%89%8d%e8%a8%80">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="3-一致性问题">3. 一致性问题&lt;a class="anchor" href="#3-%e4%b8%80%e8%87%b4%e6%80%a7%e9%97%ae%e9%a2%98">#&lt;/a>&lt;/h2>
+&lt;p>&lt;img src="img/ly-20241212142035639.png" alt="image.png" />&lt;/p>
+&lt;p>设计一个分布式系统必定会遇到一个问题—— &lt;strong>因为分区容忍性（partition tolerance）的存在，就必定要求我们需要在系统可用性（availability）和数据一致性（consistency）中做出权衡&lt;/strong> 。这就是著名的 &lt;code>CAP&lt;/code> 定理。&lt;/p></description></item><item><title>zookeeper介绍</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lydly_distributed_system/ly06ly_zookeeper-intro/</link><pubDate>Mon, 13 Feb 2023 15:59:20 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lydly_distributed_system/ly06ly_zookeeper-intro/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;h2 id="1-前言">1. 前言&lt;a class="anchor" href="#1-%e5%89%8d%e8%a8%80">#&lt;/a>&lt;/h2>
 &lt;p>相信大家对 ZooKeeper 应该不算陌生。但是你真的了解 ZooKeeper 到底有啥用不？如果别人/面试官让你给他讲讲对于 ZooKeeper 的认识，你能回答到什么地步呢？&lt;/p>
 &lt;p>拿我自己来说吧！我本人曾经使用 Dubbo 来做分布式项目的时候，使用了 ZooKeeper 作为&lt;strong>注册中心&lt;/strong>。为了保证分布式系统能够&lt;strong>同步访问某个资源&lt;/strong>，我还使用 ZooKeeper 做过&lt;strong>分布式锁&lt;/strong>。另外，我在学习 Kafka 的时候，知道 &lt;strong>Kafka&lt;/strong> 很多功能的实现&lt;strong>依赖了 ZooKeeper&lt;/strong>。&lt;/p>
 &lt;p>前几天，总结项目经验的时候，我突然问自己 ZooKeeper 到底是个什么东西？想了半天，脑海中只是简单的能浮现出几句话：&lt;/p>
@@ -1279,18 +926,10 @@
 &lt;p>所以，通过本文，希望带大家稍微详细的了解一下 ZooKeeper 。如果没有学过 ZooKeeper ，那么本文将会是你进入 ZooKeeper 大门的垫脚砖。如果你已经接触过 ZooKeeper ，那么本文将带你回顾一下 ZooKeeper 的一些基础概念。&lt;/p>
 &lt;p>另外，本文不光会涉及到 ZooKeeper 的一些概念，后面的文章会介绍到 ZooKeeper 常见命令的使用以及使用 Apache Curator 作为 ZooKeeper 的客户端。&lt;/p>
 &lt;p>&lt;em>如果文章有任何需要改善和完善的地方，欢迎在评论区指出，共同进步！&lt;/em>&lt;/p>
-&lt;h2 id="2-zookeeper-介绍">
- 2. ZooKeeper 介绍
- &lt;a class="anchor" href="#2-zookeeper-%e4%bb%8b%e7%bb%8d">#&lt;/a>
-&lt;/h2>
-&lt;h3 id="21-zookeeper-由来">
- 2.1. ZooKeeper 由来
- &lt;a class="anchor" href="#21-zookeeper-%e7%94%b1%e6%9d%a5">#&lt;/a>
-&lt;/h3>
-&lt;p>正式介绍 ZooKeeper 之前，我们先来看看 ZooKeeper 的由来，还挺有意思的。&lt;/p></description></item><item><title>rpc_http</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lydly_distributed_system/ly04ly_rpc-http/</link><pubDate>Sat, 11 Feb 2023 19:59:58 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lydly_distributed_system/ly04ly_rpc-http/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;p>&lt;img src="img/ly-20241212142032772.png" alt="" />&lt;/p>
+&lt;h2 id="2-zookeeper-介绍">2. ZooKeeper 介绍&lt;a class="anchor" href="#2-zookeeper-%e4%bb%8b%e7%bb%8d">#&lt;/a>&lt;/h2>
+&lt;h3 id="21-zookeeper-由来">2.1. ZooKeeper 由来&lt;a class="anchor" href="#21-zookeeper-%e7%94%b1%e6%9d%a5">#&lt;/a>&lt;/h3>
+&lt;p>正式介绍 ZooKeeper 之前，我们先来看看 ZooKeeper 的由来，还挺有意思的。&lt;/p></description></item><item><title>rpc_http</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lydly_distributed_system/ly04ly_rpc-http/</link><pubDate>Sat, 11 Feb 2023 19:59:58 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lydly_distributed_system/ly04ly_rpc-http/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;p>&lt;img src="img/ly-20241212142032772.png" alt="" />&lt;/p>
 &lt;p>我正在参与掘金技术社区创作者签约计划招募活动，
 &lt;a target="_blank" href="https://juejin.cn/post/7112770927082864653">点击链接报名投稿&lt;/a>。&lt;/p>
 &lt;p>我想起了我刚工作的时候，第一次接触RPC协议，当时就很懵，我HTTP协议用的好好的，为什么还要用RPC协议？&lt;/p>
@@ -1298,25 +937,18 @@
 &lt;p>不少解释显得非常官方，我相信大家在各种平台上也都看到过，解释了又好像没解释，都在&lt;strong>用一个我们不认识的概念去解释另外一个我们不认识的概念&lt;/strong>，懂的人不需要看，不懂的人看了还是不懂。&lt;/p>
 &lt;p>这种看了，又好像没看的感觉，云里雾里的很难受，&lt;strong>我懂&lt;/strong>。&lt;/p>
 &lt;p>为了避免大家有强烈的&lt;strong>审丑疲劳&lt;/strong>，今天我们来尝试重新换个方式讲一讲。&lt;/p>
-&lt;h3 id="从tcp聊起">
- 从TCP聊起
- &lt;a class="anchor" href="#%e4%bb%8etcp%e8%81%8a%e8%b5%b7">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="从tcp聊起">从TCP聊起&lt;a class="anchor" href="#%e4%bb%8etcp%e8%81%8a%e8%b5%b7">#&lt;/a>&lt;/h3>
 &lt;p>作为一个程序员，假设我们需要在A电脑的进程发一段数据到B电脑的进程，我们一般会在代码里使用socket进行编程。&lt;/p>
 &lt;p>这时候，我们可选项一般也就&lt;strong>TCP和UDP二选一。TCP可靠，UDP不可靠。&lt;/strong> 除非是马总这种神级程序员（早期QQ大量使用UDP），否则，只要稍微对可靠性有些要求，普通人一般无脑选TCP就对了。&lt;/p>
 &lt;p>类似下面这样。&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-ini" data-lang="ini">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">fd&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#e6db74">socket(AF_INET,SOCK_STREAM,0);&lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">复制代码&lt;/span>
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>其中&lt;code>SOCK_STREAM&lt;/code>，是指使用&lt;strong>字节流&lt;/strong>传输数据，说白了就是&lt;strong>TCP协议&lt;/strong>。&lt;/p>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">复制代码&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>其中&lt;code>SOCK_STREAM&lt;/code>，是指使用&lt;strong>字节流&lt;/strong>传输数据，说白了就是&lt;strong>TCP协议&lt;/strong>。&lt;/p>
 &lt;p>在定义了socket之后，我们就可以愉快的对这个socket进行操作，比如用&lt;code>bind()&lt;/code>绑定IP端口，用&lt;code>connect()&lt;/code>发起建连。&lt;/p>
 &lt;p>&lt;img src="img/51d1bda27fea39bd96ed660ee4af549d_MD5.gif" alt="握手建立连接流程" />&lt;/p>
 &lt;p>在连接建立之后，我们就可以使用&lt;code>send()&lt;/code>发送数据，&lt;code>recv()&lt;/code>接收数据。&lt;/p>
 &lt;p>光这样一个纯裸的TCP连接，就可以做到收发数据了，那是不是就够了？&lt;/p>
 &lt;p>不行，这么用会有问题。&lt;/p>
-&lt;h3 id="使用纯裸tcp会有什么问题">
- 使用纯裸TCP会有什么问题
- &lt;a class="anchor" href="#%e4%bd%bf%e7%94%a8%e7%ba%af%e8%a3%b8tcp%e4%bc%9a%e6%9c%89%e4%bb%80%e4%b9%88%e9%97%ae%e9%a2%98">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="使用纯裸tcp会有什么问题">使用纯裸TCP会有什么问题&lt;a class="anchor" href="#%e4%bd%bf%e7%94%a8%e7%ba%af%e8%a3%b8tcp%e4%bc%9a%e6%9c%89%e4%bb%80%e4%b9%88%e9%97%ae%e9%a2%98">#&lt;/a>&lt;/h3>
 &lt;p>八股文常背，TCP是有三个特点，&lt;strong>面向连接&lt;/strong>、&lt;strong>可靠&lt;/strong>、基于&lt;strong>字节流&lt;/strong>。&lt;/p>
 &lt;p>&lt;img src="img/9b2a2a9eb7998867213b85c601e20513_MD5.webp" alt="TCP是什么" />&lt;/p>
 &lt;p>这三个特点真的概括的&lt;strong>非常精辟&lt;/strong>，这个八股文我们没白背。&lt;/p>
@@ -1333,31 +965,24 @@
 &lt;p>而这里头提到的&lt;strong>消息头&lt;/strong>，还可以放各种东西，比如消息体是否被压缩过和消息体格式之类的，只要上下游都约定好了，互相都认就可以了，这就是所谓的&lt;strong>协议。&lt;/strong>&lt;/p>
 &lt;p>每个使用TCP的项目都可能会定义一套类似这样的协议解析标准，他们可能&lt;strong>有区别，但原理都类似&lt;/strong>。&lt;/p>
 &lt;p>&lt;strong>于是基于TCP，就衍生了非常多的协议，比如HTTP和RPC。&lt;/strong>&lt;/p>
-&lt;h3 id="http和rpc">
- HTTP和RPC
- &lt;a class="anchor" href="#http%e5%92%8crpc">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="http和rpc">HTTP和RPC&lt;a class="anchor" href="#http%e5%92%8crpc">#&lt;/a>&lt;/h3>
 &lt;p>我们回过头来看网络的分层图。&lt;/p>
 &lt;p>&lt;img src="img/dea756ded9c20f2a06905d73e33e08c9_MD5.webp" alt="四层网络协议" />&lt;/p>
 &lt;p>&lt;strong>TCP是传输层的协议&lt;/strong>，而基于TCP造出来的HTTP和&lt;strong>各类&lt;/strong>RPC协议，它们都只是定义了不同消息格式的&lt;strong>应用层协议&lt;/strong>而已。&lt;/p>
 &lt;p>&lt;strong>HTTP&lt;/strong>协议（&lt;strong>H&lt;/strong>yper &lt;strong>T&lt;/strong>ext &lt;strong>T&lt;/strong>ransfer &lt;strong>P&lt;/strong>rotocol），又叫做&lt;strong>超文本传输协议&lt;/strong>。我们用的比较多，平时上网在浏览器上敲个网址就能访问网页，这里用到的就是HTTP协议。&lt;/p>
-&lt;p>&lt;img src="img/ly-20241212142033146.png" alt="" />&lt;/p></description></item><item><title>rpc基础及面试题</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lydly_distributed_system/ly05ly_rpc-intro/</link><pubDate>Sat, 11 Feb 2023 19:41:34 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lydly_distributed_system/ly05ly_rpc-intro/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;p>简单介绍一下 RPC 相关的基础概念。&lt;/p>
-&lt;h2 id="何为-rpc">
- 何为 RPC?
- &lt;a class="anchor" href="#%e4%bd%95%e4%b8%ba-rpc">#&lt;/a>
-&lt;/h2>
+&lt;p>&lt;img src="img/ly-20241212142033146.png" alt="" />&lt;/p>
+&lt;p>而&lt;strong>RPC&lt;/strong>（&lt;strong>R&lt;/strong>emote &lt;strong>P&lt;/strong>rocedure &lt;strong>C&lt;/strong>all），又叫做&lt;strong>远程过程调用&lt;/strong>。它本身并不是一个具体的协议，而是一种&lt;strong>调用方式&lt;/strong>。&lt;/p>
+&lt;p>举个例子，我们平时调用一个&lt;strong>本地方法&lt;/strong>就像下面这样。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-ini" data-lang="ini">&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">res&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#e6db74">localFunc(req)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">复制代码&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>如果现在这不是个本地方法，而是个&lt;strong>远端服务器&lt;/strong>暴露出来的一个方法&lt;code>remoteFunc&lt;/code>，如果我们还能像调用本地方法那样去调用它，这样就可以&lt;strong>屏蔽掉一些网络细节&lt;/strong>，用起来更方便，岂不美哉？&lt;/p></description></item><item><title>rpc基础及面试题</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lydly_distributed_system/ly05ly_rpc-intro/</link><pubDate>Sat, 11 Feb 2023 19:41:34 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lydly_distributed_system/ly05ly_rpc-intro/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;p>简单介绍一下 RPC 相关的基础概念。&lt;/p>
+&lt;h2 id="何为-rpc">何为 RPC?&lt;a class="anchor" href="#%e4%bd%95%e4%b8%ba-rpc">#&lt;/a>&lt;/h2>
 &lt;p>&lt;strong>RPC（Remote Procedure Call）&lt;/strong> 即远程过程调用，通过名字我们就能看出 RPC 关注的是远程调用而非本地调用。&lt;/p>
 &lt;p>&lt;strong>为什么要 RPC ？&lt;/strong> 因为，两个不同的服务器上的服务提供的方法不在一个内存空间，所以，需要通过网络编程才能传递方法调用所需要的参数。并且，方法调用的结果也需要通过网络编程来接收。但是，如果我们自己手动网络编程来实现这个调用过程的话工作量是非常大的，因为，我们需要考虑底层传输方式（TCP还是UDP）、序列化方式等等方面。&lt;/p>
 &lt;p>&lt;strong>RPC 能帮助我们做什么呢？&lt;/strong> 简单来说，通过 RPC 可以帮助我们调用远程计算机上某个服务的方法，这个过程就像调用本地方法一样简单。并且！我们不需要了解底层网络编程的具体细节。&lt;/p>
 &lt;p>举个例子：两个不同的服务 A、B 部署在两台不同的机器上，服务 A 如果想要调用服务 B 中的某个方法的话就可以通过 RPC 来做。&lt;/p>
 &lt;p>一言蔽之：&lt;strong>RPC 的出现就是为了让你调用远程方法像调用本地方法一样简单。&lt;/strong>&lt;/p>
-&lt;h2 id="rpc-的原理是什么">
- RPC 的原理是什么?
- &lt;a class="anchor" href="#rpc-%e7%9a%84%e5%8e%9f%e7%90%86%e6%98%af%e4%bb%80%e4%b9%88">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="rpc-的原理是什么">RPC 的原理是什么?&lt;a class="anchor" href="#rpc-%e7%9a%84%e5%8e%9f%e7%90%86%e6%98%af%e4%bb%80%e4%b9%88">#&lt;/a>&lt;/h2>
 &lt;p>为了能够帮助小伙伴们理解 RPC 原理，我们可以将整个 RPC的 核心功能看作是下面👇 5 个部分实现的：&lt;/p>
 &lt;ol>
 &lt;li>&lt;strong>客户端（服务消费端）&lt;/strong> ：调用远程方法的一端。&lt;/li>
@@ -1378,14 +1003,9 @@
 &lt;li>服务端 Stub（桩）得到方法执行结果并将组装成能够进行网络传输的消息体：&lt;code>RpcResponse&lt;/code>（序列化）发送至消费方；&lt;/li>
 &lt;li>客户端 Stub（client stub）接收到消息并将消息反序列化为Java对象:&lt;code>RpcResponse&lt;/code> ，这样也就得到了最终结果。over!&lt;/li>
 &lt;/ol>
-&lt;p>相信小伙伴们看完上面的讲解之后，已经了解了 RPC 的原理。&lt;/p></description></item><item><title>分布式锁</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lydly_distributed_system/ly03ly_distributed-lock/</link><pubDate>Sat, 11 Feb 2023 13:24:32 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lydly_distributed_system/ly03ly_distributed-lock/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;p>网上有很多分布式锁相关的文章，写了一个相对简洁易懂的版本，针对面试和工作应该够用了。&lt;/p>
-&lt;h2 id="什么是分布式锁">
- 什么是分布式锁？
- &lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e5%88%86%e5%b8%83%e5%bc%8f%e9%94%81">#&lt;/a>
-&lt;/h2>
+&lt;p>相信小伙伴们看完上面的讲解之后，已经了解了 RPC 的原理。&lt;/p></description></item><item><title>分布式锁</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lydly_distributed_system/ly03ly_distributed-lock/</link><pubDate>Sat, 11 Feb 2023 13:24:32 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lydly_distributed_system/ly03ly_distributed-lock/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;p>网上有很多分布式锁相关的文章，写了一个相对简洁易懂的版本，针对面试和工作应该够用了。&lt;/p>
+&lt;h2 id="什么是分布式锁">什么是分布式锁？&lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e5%88%86%e5%b8%83%e5%bc%8f%e9%94%81">#&lt;/a>&lt;/h2>
 &lt;p>对于单机多线程来说，在 Java 中，我们通常使用 &lt;code>ReetrantLock&lt;/code> 类、&lt;code>synchronized&lt;/code> 关键字这类 JDK 自带的 &lt;strong>本地锁&lt;/strong> 来控制&lt;strong>一个 JVM 进程&lt;/strong>内的&lt;strong>多个线程&lt;/strong>对&lt;strong>本地共享资源&lt;/strong>的访问。&lt;/p>
 &lt;p>下面是我对本地锁画的一张示意图。&lt;/p>
 &lt;p>&lt;img src="img/ly-20241212142031650.png" alt="ly-20241212142031650" />&lt;/p>
@@ -1403,43 +1023,23 @@
 &lt;li>&lt;strong>可重入&lt;/strong>：&lt;strong>(同)一个节点&lt;/strong>获取了锁之后，还可以&lt;strong>再次&lt;/strong>获取锁。&lt;/li>
 &lt;/ul>
 &lt;p>通常情况下，我们一般会选择基于 &lt;strong>Redis&lt;/strong> 或者 &lt;strong>ZooKeeper&lt;/strong> 实现分布式锁，Redis 用的要更多一点，我这里也以 Redis 为例介绍分布式锁的实现。&lt;/p>
-&lt;h2 id="基于-redis-实现分布式锁">
- 基于 Redis 实现分布式锁
- &lt;a class="anchor" href="#%e5%9f%ba%e4%ba%8e-redis-%e5%ae%9e%e7%8e%b0%e5%88%86%e5%b8%83%e5%bc%8f%e9%94%81">#&lt;/a>
-&lt;/h2>
-&lt;h3 id="如何基于-redis-实现一个最简易的分布式锁">
- 如何基于 Redis 实现一个最简易的分布式锁？
- &lt;a class="anchor" href="#%e5%a6%82%e4%bd%95%e5%9f%ba%e4%ba%8e-redis-%e5%ae%9e%e7%8e%b0%e4%b8%80%e4%b8%aa%e6%9c%80%e7%ae%80%e6%98%93%e7%9a%84%e5%88%86%e5%b8%83%e5%bc%8f%e9%94%81">#&lt;/a>
-&lt;/h3>
+&lt;h2 id="基于-redis-实现分布式锁">基于 Redis 实现分布式锁&lt;a class="anchor" href="#%e5%9f%ba%e4%ba%8e-redis-%e5%ae%9e%e7%8e%b0%e5%88%86%e5%b8%83%e5%bc%8f%e9%94%81">#&lt;/a>&lt;/h2>
+&lt;h3 id="如何基于-redis-实现一个最简易的分布式锁">如何基于 Redis 实现一个最简易的分布式锁？&lt;a class="anchor" href="#%e5%a6%82%e4%bd%95%e5%9f%ba%e4%ba%8e-redis-%e5%ae%9e%e7%8e%b0%e4%b8%80%e4%b8%aa%e6%9c%80%e7%ae%80%e6%98%93%e7%9a%84%e5%88%86%e5%b8%83%e5%bc%8f%e9%94%81">#&lt;/a>&lt;/h3>
 &lt;p>不论是实现&lt;strong>锁(本地)&lt;strong>还是&lt;/strong>分布式锁&lt;/strong>，核心都在于**“互斥”**。&lt;/p>
-&lt;p>在 Redis 中， &lt;code>SETNX&lt;/code> 命令是可以帮助我们实现互斥。&lt;code>SETNX&lt;/code> 即 &lt;strong>SET&lt;/strong> if &lt;strong>N&lt;/strong>ot e&lt;strong>X&lt;/strong>ists (对应 Java 中的 &lt;code>setIfAbsent&lt;/code> 方法)，如果 key 不存在的话，才会设置 key 的值。如果 key 已经存在， &lt;code>SETNX&lt;/code> 啥也不做。&lt;/p></description></item><item><title>分布式id</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lydly_distributed_system/ly02ly_distributed-id/</link><pubDate>Sat, 11 Feb 2023 13:00:31 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lydly_distributed_system/ly02ly_distributed-id/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;h2 id="分布式-id-介绍">
- 分布式 ID 介绍
- &lt;a class="anchor" href="#%e5%88%86%e5%b8%83%e5%bc%8f-id-%e4%bb%8b%e7%bb%8d">#&lt;/a>
-&lt;/h2>
-&lt;h3 id="什么是-id">
- 什么是 ID？
- &lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af-id">#&lt;/a>
-&lt;/h3>
+&lt;p>在 Redis 中， &lt;code>SETNX&lt;/code> 命令是可以帮助我们实现互斥。&lt;code>SETNX&lt;/code> 即 &lt;strong>SET&lt;/strong> if &lt;strong>N&lt;/strong>ot e&lt;strong>X&lt;/strong>ists (对应 Java 中的 &lt;code>setIfAbsent&lt;/code> 方法)，如果 key 不存在的话，才会设置 key 的值。如果 key 已经存在， &lt;code>SETNX&lt;/code> 啥也不做。&lt;/p></description></item><item><title>分布式id</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lydly_distributed_system/ly02ly_distributed-id/</link><pubDate>Sat, 11 Feb 2023 13:00:31 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lydly_distributed_system/ly02ly_distributed-id/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;h2 id="分布式-id-介绍">分布式 ID 介绍&lt;a class="anchor" href="#%e5%88%86%e5%b8%83%e5%bc%8f-id-%e4%bb%8b%e7%bb%8d">#&lt;/a>&lt;/h2>
+&lt;h3 id="什么是-id">什么是 ID？&lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af-id">#&lt;/a>&lt;/h3>
 &lt;p>日常开发中，我们需要对系统中的各种数据使用 ID 唯一表示，比如用户 ID 对应且仅对应一个人，商品 ID 对应且仅对应一件商品，订单 ID 对应且仅对应一个订单。&lt;/p>
 &lt;p>我们现实生活中也有各种 ID，比如身份证 ID 对应且仅对应一个人、地址 ID 对应且仅对应&lt;/p>
 &lt;p>简单来说，&lt;strong>ID 就是数据的唯一标识&lt;/strong>。&lt;/p>
-&lt;h3 id="什么是分布式-id">
- 什么是分布式 ID？
- &lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e5%88%86%e5%b8%83%e5%bc%8f-id">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="什么是分布式-id">什么是分布式 ID？&lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e5%88%86%e5%b8%83%e5%bc%8f-id">#&lt;/a>&lt;/h3>
 &lt;p>分布式 ID 是&lt;strong>分布式系统下的 ID&lt;/strong>。分布式 ID &lt;strong>不存在与现实生活中(属于技术上的问题，跟业务无关)&lt;/strong>，属于计算机系统中的一个概念。&lt;/p>
 &lt;p>我简单举一个&lt;strong>分库分表&lt;/strong>的例子。&lt;/p>
 &lt;p>我司的一个项目，使用的是单机 MySQL 。但是，没想到的是，项目上线一个月之后，随着使用人数越来越多，整个系统的数据量将越来越大。单机 MySQL 已经没办法支撑了，需要进行分库分表（推荐 &lt;strong>Sharding-JDBC&lt;/strong>）。&lt;/p>
 &lt;p>在分库之后， &lt;strong>数据遍布在不同服务器上的数据库&lt;/strong>，数据库的自增主键已经没办法满足生成的主键唯一了。&lt;strong>我们如何为不同的数据节点生成全局唯一主键呢？&lt;/strong>&lt;/p>
 &lt;p>这个时候就需要生成&lt;strong>分布式 ID&lt;/strong>了。&lt;/p>
 &lt;p>&lt;img src="img/ly-20241212142029621.png" alt="ly-20241212142029621" />&lt;/p>
-&lt;h3 id="分布式-id-需要满足哪些要求">
- 分布式 ID 需要满足哪些要求?
- &lt;a class="anchor" href="#%e5%88%86%e5%b8%83%e5%bc%8f-id-%e9%9c%80%e8%a6%81%e6%bb%a1%e8%b6%b3%e5%93%aa%e4%ba%9b%e8%a6%81%e6%b1%82">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="分布式-id-需要满足哪些要求">分布式 ID 需要满足哪些要求?&lt;a class="anchor" href="#%e5%88%86%e5%b8%83%e5%bc%8f-id-%e9%9c%80%e8%a6%81%e6%bb%a1%e8%b6%b3%e5%93%aa%e4%ba%9b%e8%a6%81%e6%b1%82">#&lt;/a>&lt;/h3>
 &lt;p>&lt;img src="img/ly-20241212142029864.png" alt="ly-20241212142029864" />&lt;/p>
 &lt;p>分布式 ID 作为分布式系统中必不可少的一环，很多地方都要用到分布式 ID。&lt;/p>
 &lt;p>一个最基本的分布式 ID 需要满足下面这些要求：&lt;/p>
@@ -1449,25 +1049,14 @@
 &lt;li>&lt;strong>高可用&lt;/strong> ：生成分布式 ID 的服务要保证&lt;strong>可用性无限接近于 100%&lt;/strong>。&lt;/li>
 &lt;li>&lt;strong>方便易用&lt;/strong> ：拿来即用，&lt;strong>使用方便，快速接入&lt;/strong>！&lt;/li>
 &lt;/ul>
-&lt;p>除了这些之外，一个比较好的分布式 ID 还应保证：&lt;/p></description></item><item><title>api网关</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lydly_distributed_system/ly01ly_api-gateway/</link><pubDate>Fri, 10 Feb 2023 22:26:59 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lydly_distributed_system/ly01ly_api-gateway/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;h2 id="什么是网关有什么用">
- 什么是网关？有什么用？
- &lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e7%bd%91%e5%85%b3%e6%9c%89%e4%bb%80%e4%b9%88%e7%94%a8">#&lt;/a>
-&lt;/h2>
+&lt;p>除了这些之外，一个比较好的分布式 ID 还应保证：&lt;/p></description></item><item><title>api网关</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lydly_distributed_system/ly01ly_api-gateway/</link><pubDate>Fri, 10 Feb 2023 22:26:59 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lydly_distributed_system/ly01ly_api-gateway/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;h2 id="什么是网关有什么用">什么是网关？有什么用？&lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e7%bd%91%e5%85%b3%e6%9c%89%e4%bb%80%e4%b9%88%e7%94%a8">#&lt;/a>&lt;/h2>
 &lt;p>微服务背景下，一个系统被&lt;strong>拆分为多个服务&lt;/strong>，但是像&lt;strong>安全认证&lt;/strong>，&lt;strong>流量控制&lt;/strong>，&lt;strong>日志&lt;/strong>，&lt;strong>监控&lt;/strong>等功能是每个服务都需要的，没有网关的话，我们就需要在&lt;strong>每个服务&lt;/strong>中单独实现，这使得我们做了很多重复的事情并且没有一个&lt;strong>全局的视图来统一管理&lt;/strong>这些功能。&lt;/p>
 &lt;p>&lt;img src="img/ly-20241212142028983.png" alt="ly-20241212142028983.png" />&lt;/p>
 &lt;p>一般情况下，网关可以为我们提供&lt;strong>请求转发&lt;/strong>、&lt;strong>安全认证（身份/权限认证）&lt;/strong>、&lt;strong>流量控制&lt;/strong>、&lt;strong>负载均衡&lt;/strong>、&lt;strong>降级熔断&lt;/strong>、&lt;strong>日志&lt;/strong>、&lt;strong>监控&lt;/strong>等功能。&lt;/p>
 &lt;p>上面介绍了这么多功能，实际上，网关主要做了一件事情：&lt;strong>请求过滤&lt;/strong> 。&lt;/p>
-&lt;h2 id="有哪些常见的网关系统">
- 有哪些常见的网关系统？
- &lt;a class="anchor" href="#%e6%9c%89%e5%93%aa%e4%ba%9b%e5%b8%b8%e8%a7%81%e7%9a%84%e7%bd%91%e5%85%b3%e7%b3%bb%e7%bb%9f">#&lt;/a>
-&lt;/h2>
-&lt;h3 id="netflix-zuul">
- Netflix Zuul
- &lt;a class="anchor" href="#netflix-zuul">#&lt;/a>
-&lt;/h3>
+&lt;h2 id="有哪些常见的网关系统">有哪些常见的网关系统？&lt;a class="anchor" href="#%e6%9c%89%e5%93%aa%e4%ba%9b%e5%b8%b8%e8%a7%81%e7%9a%84%e7%bd%91%e5%85%b3%e7%b3%bb%e7%bb%9f">#&lt;/a>&lt;/h2>
+&lt;h3 id="netflix-zuul">Netflix Zuul&lt;a class="anchor" href="#netflix-zuul">#&lt;/a>&lt;/h3>
 &lt;p>Zuul 是 Netflix 开发的一款提供&lt;strong>动态路由&lt;/strong>、&lt;strong>监控&lt;/strong>、&lt;strong>弹性&lt;/strong>、&lt;strong>安全&lt;/strong>的网关服务。&lt;/p>
 &lt;p>Zuul 主要通过&lt;strong>过滤器（类似于 AOP）来过滤请求&lt;/strong>，从而实现网关必备的各种功能。&lt;/p>
 &lt;p>&lt;img src="img/ly-20241212142029228.jpg" alt="Zuul架构" />&lt;/p>
@@ -1481,47 +1070,30 @@
  &amp;lt;groupId&amp;gt;com.marcosbarbero.cloud&amp;lt;/groupId&amp;gt;
  &amp;lt;artifactId&amp;gt;spring-cloud-zuul-ratelimit&amp;lt;/artifactId&amp;gt;
  &amp;lt;version&amp;gt;2.2.0.RELEASE&amp;lt;/version&amp;gt;
-&amp;lt;/dependency&amp;gt;
-&lt;/code>&lt;/pre>&lt;p>Zuul 1.x &lt;strong>基于同步 IO，性能较差&lt;/strong>。Zuul 2.x &lt;strong>基于 Netty 实现了异步 IO&lt;/strong>，性能得到了大幅改进。&lt;/p>
+&amp;lt;/dependency&amp;gt;&lt;/code>&lt;/pre>&lt;p>Zuul 1.x &lt;strong>基于同步 IO，性能较差&lt;/strong>。Zuul 2.x &lt;strong>基于 Netty 实现了异步 IO&lt;/strong>，性能得到了大幅改进。&lt;/p>
 &lt;ul>
 &lt;li>Github 地址 ： 
 &lt;a target="_blank" href="https://github.com/Netflix/zuul">https://github.com/Netflix/zuul&lt;/a>&lt;/li>
 &lt;li>官方 Wiki ： 
 &lt;a target="_blank" href="https://github.com/Netflix/zuul/wiki">https://github.com/Netflix/zuul/wiki&lt;/a>&lt;/li>
 &lt;/ul>
-&lt;h3 id="spring-cloud-gateway">
- Spring Cloud Gateway
- &lt;a class="anchor" href="#spring-cloud-gateway">#&lt;/a>
-&lt;/h3>
-&lt;p>SpringCloud Gateway 属于 Spring Cloud 生态系统中的网关，其诞生的目标是为了替代老牌网关 **Zuul **。准确点来说，应该是 &lt;strong>Zuul 1.x&lt;/strong>。SpringCloud Gateway 起步要比 Zuul 2.x 更早。&lt;/p></description></item><item><title>raft算法</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lydly_distributed_system/base/raft-algorithm/</link><pubDate>Fri, 10 Feb 2023 17:10:36 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lydly_distributed_system/base/raft-algorithm/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;h2 id="1-背景">
- 1 背景
- &lt;a class="anchor" href="#1-%e8%83%8c%e6%99%af">#&lt;/a>
-&lt;/h2>
+&lt;h3 id="spring-cloud-gateway">Spring Cloud Gateway&lt;a class="anchor" href="#spring-cloud-gateway">#&lt;/a>&lt;/h3>
+&lt;p>SpringCloud Gateway 属于 Spring Cloud 生态系统中的网关，其诞生的目标是为了替代老牌网关 **Zuul **。准确点来说，应该是 &lt;strong>Zuul 1.x&lt;/strong>。SpringCloud Gateway 起步要比 Zuul 2.x 更早。&lt;/p>
+&lt;p>为了提升网关的性能，SpringCloud Gateway &lt;strong>基于 Spring WebFlux&lt;/strong> 。Spring WebFlux 使用 Reactor 库来实现&lt;strong>响应式编程模型&lt;/strong>，&lt;strong>底层基于 Netty 实现异步 IO&lt;/strong>。&lt;/p></description></item><item><title>raft算法</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lydly_distributed_system/base/raft-algorithm/</link><pubDate>Fri, 10 Feb 2023 17:10:36 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lydly_distributed_system/base/raft-algorithm/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;h2 id="1-背景">1 背景&lt;a class="anchor" href="#1-%e8%83%8c%e6%99%af">#&lt;/a>&lt;/h2>
 &lt;p>当今的数据中心和应用程序在高度动态的环境中运行，为了应对&lt;strong>高度动态&lt;/strong>的环境，它们&lt;strong>通过额外的服务器进行横向扩展&lt;/strong>，并且&lt;strong>根据需求进行扩展和收&lt;/strong>缩。同时，服务器和网络故障也很常见。&lt;/p>
 &lt;p>因此，系统必须在正常操作期间处理服务器的上下线。它们必须对变故&lt;strong>做出反应并在几秒钟内自动适应&lt;/strong>；对客户来说的话，明显的中断通常是不可接受的。&lt;/p>
 &lt;p>幸运的是，分布式共识可以帮助应对这些挑战。&lt;/p>
-&lt;h3 id="11-拜占庭将军">
- 1.1 拜占庭将军
- &lt;a class="anchor" href="#11-%e6%8b%9c%e5%8d%a0%e5%ba%ad%e5%b0%86%e5%86%9b">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="11-拜占庭将军">1.1 拜占庭将军&lt;a class="anchor" href="#11-%e6%8b%9c%e5%8d%a0%e5%ba%ad%e5%b0%86%e5%86%9b">#&lt;/a>&lt;/h3>
 &lt;p>在介绍共识算法之前，先介绍一个简化版拜占庭将军的例子来帮助理解共识算法。&lt;/p>
-&lt;blockquote>
-&lt;p>假设多位拜占庭将军中没有叛军，信使的信息可靠但有可能被暗杀的情况下，将军们如何达成是否要进攻的一致性决定？&lt;/p>
-&lt;/blockquote>
-&lt;p>解决方案大致可以理解成：先在所有的将军中选出一个大将军，用来做出所有的决定。&lt;/p>
+&lt;blockquote class='book-hint '>
+&lt;p>假设多位拜占庭将军中没有叛军，信使的信息可靠但有可能被暗杀的情况下，将军们如何达成是否要进攻的一致性决定？&lt;/p>&lt;/blockquote>&lt;p>解决方案大致可以理解成：先在所有的将军中选出一个大将军，用来做出所有的决定。&lt;/p>
 &lt;p>举例如下：假如现在一共有 3 个将军 A，B 和 C，每个将军都有一个随机时间的倒计时器，&lt;strong>倒计时一结束&lt;/strong>，这个将军就&lt;strong>把自己当成大将军候选人&lt;/strong>，然后派信使&lt;strong>传递选举投票的信息给将军 B 和 C&lt;/strong>，如果将军 B 和 C &lt;strong>还没有把自己当作候选人&lt;/strong>（自己的倒计时还没有结束），并且&lt;strong>没有把选举票投给其他人&lt;/strong>，它们就会把票投给将军 A，信使回到将军 A 时，将军 A 知道自己收到了足够的票数，成为大将军。在有了大将军之后，&lt;strong>是否需要进攻就由大将军 A&lt;/strong> 决定，然后再去派信使通知另外两个将军，自己已经成为了大将军。如果一段时间还没收到将军 B 和 C 的回复（信使可能会被暗杀），那就再重派一个信使，直到收到回复。&lt;/p>
-&lt;h3 id="12-共识算法">
- 1.2 共识算法
- &lt;a class="anchor" href="#12-%e5%85%b1%e8%af%86%e7%ae%97%e6%b3%95">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="12-共识算法">1.2 共识算法&lt;a class="anchor" href="#12-%e5%85%b1%e8%af%86%e7%ae%97%e6%b3%95">#&lt;/a>&lt;/h3>
 &lt;p>共识是可容错系统中的一个基本问题：&lt;strong>即使面对故障，服务器也可以在共享状态上达成一致&lt;/strong>。&lt;/p>
 &lt;p>共识算法允许一组节点像一个整体一样一起工作，即使其中的一些节点出现故障也能够继续工作下去，其正确性主要是源于复制状态机的性质：一组&lt;code>Server&lt;/code>的状态机计算相同状态的副本，即使有一部分的&lt;code>Server&lt;/code>宕机了它们仍然能够继续运行。&lt;/p>
 &lt;p>&lt;img src="img/ly-20241212142028468.jpg" alt="rsm-architecture.png" />&lt;/p>
-&lt;pre tabindex="0">&lt;code>图-1 复制状态机架构
-&lt;/code>&lt;/pre>&lt;p>一般通过&lt;strong>使用复制日志来实现复制状态机&lt;/strong>。&lt;strong>每个&lt;code>Server&lt;/code>存储着一份包括命令序列的日志文件&lt;/strong>，状态机会按顺序执行这些命令。因为每个日志包含相同的命令，并且顺序也相同，所以每个状态机处理相同的命令序列。由于状态机是确定性的，所以&lt;strong>处理相同的状态，得到相同的输出&lt;/strong>。&lt;/p>
+&lt;pre tabindex="0">&lt;code>图-1 复制状态机架构&lt;/code>&lt;/pre>&lt;p>一般通过&lt;strong>使用复制日志来实现复制状态机&lt;/strong>。&lt;strong>每个&lt;code>Server&lt;/code>存储着一份包括命令序列的日志文件&lt;/strong>，状态机会按顺序执行这些命令。因为每个日志包含相同的命令，并且顺序也相同，所以每个状态机处理相同的命令序列。由于状态机是确定性的，所以&lt;strong>处理相同的状态，得到相同的输出&lt;/strong>。&lt;/p>
 &lt;p>因此共识算法的工作就是&lt;strong>保持复制日志的一致性&lt;/strong>。服务器上的共识模块从客户端接收命令并将它们添加到日志中。它与其他服务器上的共识模块通信，以确保即使某些服务器发生故障。每个日志最终包含相同顺序的请求。一旦命令被正确地复制，它们就被称为已提交。每个服务器的状态机按照日志顺序处理已提交的命令，并将输出返回给客户端，因此，这些服务器形成了一个单一的、高度可靠的状态机。&lt;/p>
 &lt;p>适用于实际系统的共识算法通常具有以下特性：&lt;/p>
 &lt;ul>
@@ -1530,27 +1102,16 @@
 &lt;li>一致性不依赖时序。错误的时钟和极端的消息延迟，在&lt;strong>最坏的情况下也只会造成可用性问题，而不会产生一致性问题&lt;/strong>。&lt;/li>
 &lt;li>在集群中大多数服务器响应，&lt;strong>命令就可以完成&lt;/strong>，不会被少数运行缓慢的服务器来影响整体系统性能。&lt;/li>
 &lt;/ul>
-&lt;h2 id="2-基础">
- 2 基础
- &lt;a class="anchor" href="#2-%e5%9f%ba%e7%a1%80">#&lt;/a>
-&lt;/h2>
-&lt;h3 id="21-节点类型">
- 2.1 节点类型
- &lt;a class="anchor" href="#21-%e8%8a%82%e7%82%b9%e7%b1%bb%e5%9e%8b">#&lt;/a>
-&lt;/h3>
+&lt;h2 id="2-基础">2 基础&lt;a class="anchor" href="#2-%e5%9f%ba%e7%a1%80">#&lt;/a>&lt;/h2>
+&lt;h3 id="21-节点类型">2.1 节点类型&lt;a class="anchor" href="#21-%e8%8a%82%e7%82%b9%e7%b1%bb%e5%9e%8b">#&lt;/a>&lt;/h3>
 &lt;p>一个 Raft 集群包括若干服务器，以典型的 5 服务器集群举例。在任意的时间，每个服务器一定会处于以下三个状态中的一个：&lt;/p>
 &lt;ul>
 &lt;li>&lt;code>Leader&lt;/code>：负责发起心跳，响应客户端，创建日志，同步日志。&lt;/li>
 &lt;li>&lt;code>Candidate&lt;/code>：Leader 选举过程中的临时角色，由 Follower 转化而来，发起投票参与竞选。&lt;/li>
 &lt;li>&lt;code>Follower&lt;/code>：接受 Leader 的心跳和日志同步数据，投票给 Candidate。&lt;/li>
 &lt;/ul>
-&lt;p>在正常的情况下，只有一个服务器是 Leader，剩下的服务器是 Follower。Follower 是被动的，它们不会发送任何请求，只是响应来自 Leader 和 Candidate 的请求。&lt;/p></description></item><item><title>paxos算法</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lydly_distributed_system/base/paxos-algorithm/</link><pubDate>Fri, 10 Feb 2023 17:02:45 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lydly_distributed_system/base/paxos-algorithm/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;h2 id="背景">
- 背景
- &lt;a class="anchor" href="#%e8%83%8c%e6%99%af">#&lt;/a>
-&lt;/h2>
+&lt;p>在正常的情况下，只有一个服务器是 Leader，剩下的服务器是 Follower。Follower 是被动的，它们不会发送任何请求，只是响应来自 Leader 和 Candidate 的请求。&lt;/p></description></item><item><title>paxos算法</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lydly_distributed_system/base/paxos-algorithm/</link><pubDate>Fri, 10 Feb 2023 17:02:45 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lydly_distributed_system/base/paxos-algorithm/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;h2 id="背景">背景&lt;a class="anchor" href="#%e8%83%8c%e6%99%af">#&lt;/a>&lt;/h2>
 &lt;p>Paxos 算法是 Leslie Lamport（
 &lt;a target="_blank" href="https://zh.wikipedia.org/wiki/%E8%8E%B1%E6%96%AF%E5%88%A9%C2%B7%E5%85%B0%E4%BC%AF%E7%89%B9">莱斯利·兰伯特&lt;/a>）在 &lt;strong>1990&lt;/strong> 年提出了一种分布式系统 &lt;strong>共识&lt;/strong> 算法。这也是第一个被证明完备的共识算法（前提是不存在拜占庭将军问题，也就是&lt;strong>没有恶意节点&lt;/strong>）。&lt;/p>
 &lt;p>为了介绍 Paxos 算法，兰伯特专门写了一篇幽默风趣的论文。在这篇论文中，他虚拟了一个叫做 Paxos 的希腊城邦来更形象化地介绍 Paxos 算法。&lt;/p>
@@ -1562,33 +1123,21 @@
 &lt;a target="_blank" href="http://lamport.azurewebsites.net/pubs/paxos-simple.pdf">《Paxos Made Simple》&lt;/a> 的论文来简化对 Paxos 的介绍，主要讲述&lt;strong>两阶段共识协议&lt;/strong>部分，顺便还不忘嘲讽一下这群学者。&lt;/p>
 &lt;p>《Paxos Made Simple》这篇论文就 14 页，相比于 《The Part-Time Parliament》的 33 页精简了不少。最关键的是这篇论文的摘要就一句话：&lt;/p>
 &lt;p>&lt;img src="img/ly-20241212142028075.png" alt="ly-20241212142028075" />&lt;/p>
-&lt;blockquote>
-&lt;p>The Paxos algorithm, when presented in plain English, is very simple.&lt;/p>
-&lt;/blockquote>
-&lt;p>翻译过来的意思大概就是：&lt;strong>当我用无修饰的英文来描述时，Paxos 算法真心简单！&lt;/strong>&lt;/p>
-&lt;p>有没有感觉到来自兰伯特大佬满满地嘲讽的味道？&lt;/p></description></item><item><title>CAP&amp;BASE 理论</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lydly_distributed_system/base/cap_base-theorem/</link><pubDate>Fri, 10 Feb 2023 15:03:48 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lydly_distributed_system/base/cap_base-theorem/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;p>经历过技术面试的小伙伴想必对 CAP &amp;amp; BASE 这个两个理论已经再熟悉不过了！&lt;/p>
+&lt;blockquote class='book-hint '>
+&lt;p>The Paxos algorithm, when presented in plain English, is very simple.&lt;/p>&lt;/blockquote>&lt;p>翻译过来的意思大概就是：&lt;strong>当我用无修饰的英文来描述时，Paxos 算法真心简单！&lt;/strong>&lt;/p>
+&lt;p>有没有感觉到来自兰伯特大佬满满地嘲讽的味道？&lt;/p></description></item><item><title>CAP&amp;BASE 理论</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lydly_distributed_system/base/cap_base-theorem/</link><pubDate>Fri, 10 Feb 2023 15:03:48 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/lydly_distributed_system/base/cap_base-theorem/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide（添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;p>经历过技术面试的小伙伴想必对 CAP &amp;amp; BASE 这个两个理论已经再熟悉不过了！&lt;/p>
 &lt;p>我当年参加面试的时候，不夸张地说，只要问到分布式相关的内容，面试官几乎是必定会问这两个&lt;strong>分布式相关的理论&lt;/strong>。一是因为这两个分布式基础理论是学习分布式知识的&lt;strong>必备前置基础&lt;/strong>，二是因为很多面试官自己比较熟悉这两个理论（方便提问）。&lt;/p>
 &lt;p>我们非常有必要将这两个理论搞懂，并且能够用自己的理解给别人讲出来。&lt;/p>
-&lt;h2 id="cap-理论">
- CAP 理论
- &lt;a class="anchor" href="#cap-%e7%90%86%e8%ae%ba">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="cap-理论">CAP 理论&lt;a class="anchor" href="#cap-%e7%90%86%e8%ae%ba">#&lt;/a>&lt;/h2>
 &lt;p>
 &lt;a target="_blank" href="https://zh.wikipedia.org/wiki/CAP%E5%AE%9A%E7%90%86">CAP 理论/定理&lt;/a>起源于 2000 年，由加州大学伯克利分校的 Eric Brewer 教授在分布式计算原理研讨会（PODC）上提出，因此 CAP 定理又被称作 &lt;strong>布鲁尔定理（Brewer’s theorem）&lt;/strong>&lt;/p>
 &lt;p>2 年后，麻省理工学院的 Seth Gilbert 和 Nancy Lynch 发表了布鲁尔猜想的证明，CAP 理论正式成为&lt;strong>分布式领域的定理&lt;/strong>。&lt;/p>
-&lt;h3 id="简介">
- 简介
- &lt;a class="anchor" href="#%e7%ae%80%e4%bb%8b">#&lt;/a>
-&lt;/h3>
-&lt;blockquote>
+&lt;h3 id="简介">简介&lt;a class="anchor" href="#%e7%ae%80%e4%bb%8b">#&lt;/a>&lt;/h3>
+&lt;blockquote class='book-hint '>
 &lt;p>&lt;code>[kənˈsɪstənsi] consistency 一致性&lt;/code>&lt;br>
 &lt;code>[əˌveɪlə'bɪləti] availability 可用性 &lt;/code>,&lt;br>
-&lt;code>[pɑːˈtɪʃn] 分割 [ˈtɒlərəns] 容忍, &lt;/code>&lt;/p>
-&lt;/blockquote>
-&lt;p>&lt;strong>CAP&lt;/strong> 也就是 &lt;strong>Consistency（一致性）&lt;/strong>、&lt;strong>Availability（可用性）&lt;/strong>、&lt;strong>Partition Tolerance（分区容错性）&lt;/strong> 这三个单词首字母组合。&lt;/p>
+&lt;code>[pɑːˈtɪʃn] 分割 [ˈtɒlərəns] 容忍, &lt;/code>&lt;/p>&lt;/blockquote>&lt;p>&lt;strong>CAP&lt;/strong> 也就是 &lt;strong>Consistency（一致性）&lt;/strong>、&lt;strong>Availability（可用性）&lt;/strong>、&lt;strong>Partition Tolerance（分区容错性）&lt;/strong> 这三个单词首字母组合。&lt;/p>
 &lt;p>&lt;img src="img/ly-20241212142027432.png" alt="ly-20241212142027432" />&lt;/p>
 &lt;p>CAP 理论的提出者布鲁尔在提出 CAP 猜想的时候，并没有详细定义 &lt;strong>Consistency&lt;/strong>、&lt;strong>Availability&lt;/strong>、&lt;strong>Partition Tolerance&lt;/strong> 三个单词的明确定义。&lt;/p>
 &lt;p>因此，对于 CAP 的民间解读有很多，一般比较被大家推荐的是下面 👇 这种版本的解读。&lt;/p>

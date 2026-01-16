@@ -1,7 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>并发 on 随记</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/</link><description>Recent content in 并发 on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Fri, 03 Feb 2023 11:04:33 +0000</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/index.xml" rel="self" type="application/rss+xml"/><item><title>Atomic预备知识</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly030301lyatomicpre/</link><pubDate>Fri, 03 Feb 2023 11:04:33 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly030301lyatomicpre/</guid><description>&lt;h3 id="java实现cas的原理非javaguide">
- Java实现CAS的原理[非javaguide]
- &lt;a class="anchor" href="#java%e5%ae%9e%e7%8e%b0cas%e7%9a%84%e5%8e%9f%e7%90%86%e9%9d%9ejavaguide">#&lt;/a>
-&lt;/h3>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>并发 on 随记</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/</link><description>Recent content in 并发 on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Fri, 03 Feb 2023 11:04:33 +0000</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/index.xml" rel="self" type="application/rss+xml"/><item><title>Atomic预备知识</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly030301lyatomicpre/</link><pubDate>Fri, 03 Feb 2023 11:04:33 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly030301lyatomicpre/</guid><description>&lt;h3 id="java实现cas的原理非javaguide">Java实现CAS的原理[非javaguide]&lt;a class="anchor" href="#java%e5%ae%9e%e7%8e%b0cas%e7%9a%84%e5%8e%9f%e7%90%86%e9%9d%9ejavaguide">#&lt;/a>&lt;/h3>
 &lt;p>i&lt;ins>是非线程安全的，因为**i&lt;/ins>不是原子&lt;strong>操作；可以使用&lt;/strong>synchronized和CAS实现加锁**&lt;/p>
 &lt;p>&lt;strong>synchronized是悲观锁&lt;/strong>，一旦获得锁，其他线程进入后就会阻塞等待锁；而&lt;strong>CAS是乐观锁&lt;/strong>，执行时不会加锁，假设没有冲突，&lt;strong>如果因为冲突失败了就重试&lt;/strong>，直到成功&lt;/p>
 &lt;ul>
@@ -23,21 +20,17 @@
 V：要更新的变量(var)；E：期望值（expected）；N：新值（new）
 判断V是否等于E，如果等于，将V的值设置为N；如果不等，说明已经有其它线程更新了V，则当前线程放弃更新，什么都不做。
 一般来说，预期值E本质上指的是“旧值”（判断是否修改了）&lt;/p>
-&lt;blockquote>
+&lt;blockquote class='book-hint '>
 &lt;ol>
 &lt;li>如果有一个多个线程共享的变量&lt;code>i&lt;/code>原本等于5，我现在在线程A中，想把它设置为新的值6;&lt;/li>
 &lt;li>我们使用CAS来做这个事情；&lt;/li>
 &lt;li>（首先要把原来的值5在线程中保存起来）&lt;/li>
 &lt;li>接下来是原子操作：首先我们&lt;strong>用（现在的i）去与5对比，发现它等于5，说明没有被其它线程改过，那我就把它设置为新的值6&lt;/strong>，此次CAS成功，&lt;code>i&lt;/code>的值被设置成了6；&lt;/li>
 &lt;li>如果不等于5，说明&lt;code>i&lt;/code>被其它线程改过了（比如现在&lt;code>i&lt;/code>的值为2），那么我就什么也不做，此次CAS失败，&lt;code>i&lt;/code>的值仍然为2。&lt;/li>
-&lt;/ol>
-&lt;/blockquote>
-&lt;/li>
+&lt;/ol>&lt;/blockquote>&lt;/li>
 &lt;/ul>
-&lt;blockquote>
-&lt;p>其中i为V，5为E，6为N&lt;/p>
-&lt;/blockquote>
-&lt;p>CAS是一种原子操作，它是一种系统原语，是一条CPU原子指令，从CPU层面保证它的原子性（&lt;strong>不可能出现说，判断了对比了i为5之后，正准备更新它的值，此时该值被其他线程改了&lt;/strong>）&lt;/p>
+&lt;blockquote class='book-hint '>
+&lt;p>其中i为V，5为E，6为N&lt;/p>&lt;/blockquote>&lt;p>CAS是一种原子操作，它是一种系统原语，是一条CPU原子指令，从CPU层面保证它的原子性（&lt;strong>不可能出现说，判断了对比了i为5之后，正准备更新它的值，此时该值被其他线程改了&lt;/strong>）&lt;/p>
 &lt;p>当&lt;strong>多个线程同时使用CAS操作一个变量&lt;/strong>时，&lt;strong>只有一个会胜出，并成功更新&lt;/strong>，&lt;strong>其余均会失败&lt;/strong>，但&lt;strong>失败的线程并不会被挂起&lt;/strong>，仅是&lt;strong>被告知失败，并且允许再次尝试&lt;/strong>，当然也&lt;strong>允许失败的线程放弃&lt;/strong>操作。&lt;/p>
 &lt;ul>
 &lt;li>
@@ -48,7 +41,7 @@ V：要更新的变量(var)；E：期望值（expected）；N：新值（new）
 &lt;/li>
 &lt;li>
 &lt;p>Java中有一个Unsafe类，在sun.misc包中，里面有一些native方法，其中包括：&lt;/p>
-&lt;blockquote>
+&lt;blockquote class='book-hint '>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">boolean&lt;/span> &lt;span style="color:#a6e22e">compareAndSwapObject&lt;/span>(Object o, &lt;span style="color:#66d9ef">long&lt;/span> offset,Object expected, Object x);
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">boolean&lt;/span> &lt;span style="color:#a6e22e">compareAndSwapInt&lt;/span>(Object o, &lt;span style="color:#66d9ef">long&lt;/span> offset,&lt;span style="color:#66d9ef">int&lt;/span> expected,&lt;span style="color:#66d9ef">int&lt;/span> x);
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">boolean&lt;/span> &lt;span style="color:#a6e22e">compareAndSwapLong&lt;/span>(Object o, &lt;span style="color:#66d9ef">long&lt;/span> offset,&lt;span style="color:#66d9ef">long&lt;/span> expected,&lt;span style="color:#66d9ef">long&lt;/span> x);
@@ -72,25 +65,17 @@ V：要更新的变量(var)；E：期望值（expected）；N：新值（new）
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">private&lt;/span> &lt;span style="color:#66d9ef">volatile&lt;/span> &lt;span style="color:#66d9ef">int&lt;/span> value;
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">final&lt;/span> &lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">getAndIncrement&lt;/span>() {
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">return&lt;/span> unsafe.&lt;span style="color:#a6e22e">getAndAddInt&lt;/span>(&lt;span style="color:#66d9ef">this&lt;/span>, valueOffset, 1);
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/blockquote>
-&lt;/li>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">return&lt;/span> unsafe.&lt;span style="color:#a6e22e">getAndAddInt&lt;/span>(&lt;span style="color:#66d9ef">this&lt;/span>, valueOffset, 1);&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/blockquote>&lt;/li>
 &lt;/ul>
-&lt;blockquote>
+&lt;blockquote class='book-hint '>
 &lt;pre>&lt;code>}
 &lt;/code>&lt;/pre>
-&lt;p>}&lt;/p></description></item><item><title>completablefuture-intro</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly0311lycompletablefuture-intro/</link><pubDate>Tue, 06 Dec 2022 17:13:41 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly0311lycompletablefuture-intro/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide （添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;p>Java8被引入的一个非常有用的用于异步编程的类【&lt;strong>没看&lt;/strong>】&lt;/p>
-&lt;h1 id="简单介绍">
- 简单介绍
- &lt;a class="anchor" href="#%e7%ae%80%e5%8d%95%e4%bb%8b%e7%bb%8d">#&lt;/a>
-&lt;/h1>
+&lt;p>}&lt;/p></description></item><item><title>completablefuture-intro</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly0311lycompletablefuture-intro/</link><pubDate>Tue, 06 Dec 2022 17:13:41 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly0311lycompletablefuture-intro/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide （添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;p>Java8被引入的一个非常有用的用于异步编程的类【&lt;strong>没看&lt;/strong>】&lt;/p>
+&lt;h1 id="简单介绍">简单介绍&lt;a class="anchor" href="#%e7%ae%80%e5%8d%95%e4%bb%8b%e7%bb%8d">#&lt;/a>&lt;/h1>
 &lt;p>CompletableFuture同时实现了&lt;strong>Future&lt;/strong>和&lt;strong>CompletionStage&lt;/strong>接口&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">CompletableFuture&lt;/span>&lt;span style="color:#f92672">&amp;lt;&lt;/span>T&lt;span style="color:#f92672">&amp;gt;&lt;/span> &lt;span style="color:#66d9ef">implements&lt;/span> Future&lt;span style="color:#f92672">&amp;lt;&lt;/span>T&lt;span style="color:#f92672">&amp;gt;&lt;/span>, CompletionStage&lt;span style="color:#f92672">&amp;lt;&lt;/span>T&lt;span style="color:#f92672">&amp;gt;&lt;/span> {
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;code>CompletableFuture&lt;/code> 除了提供了更为好用和强大的 &lt;code>Future&lt;/code> 特性之外，还提供了函数式编程的能力。&lt;/p>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;code>CompletableFuture&lt;/code> 除了提供了更为好用和强大的 &lt;code>Future&lt;/code> 特性之外，还提供了函数式编程的能力。&lt;/p>
 &lt;p>&lt;img src="img/ly-20241212141948027.png" alt="img" />&lt;/p>
 &lt;p>Future接口有5个方法：&lt;/p>
 &lt;ul>
@@ -102,46 +87,28 @@ V：要更新的变量(var)；E：期望值（expected）；N：新值（new）
 &lt;/ul>
 &lt;p>&lt;img src="img/ly-20241212141948313.png" alt="img" />&lt;/p>
 &lt;p>&lt;code>CompletionStage&amp;lt;T&amp;gt; &lt;/code>接口中的方法比较多，CompoletableFuture的函数式能力就是这个接口赋予的，大量使用&lt;strong>Java8引入的函数式编程&lt;/strong>&lt;/p>
-&lt;h1 id="常见操作">
- 常见操作
- &lt;a class="anchor" href="#%e5%b8%b8%e8%a7%81%e6%93%8d%e4%bd%9c">#&lt;/a>
-&lt;/h1>
-&lt;h2 id="创建completablefuture">
- 创建CompletableFuture
- &lt;a class="anchor" href="#%e5%88%9b%e5%bb%bacompletablefuture">#&lt;/a>
-&lt;/h2>
+&lt;h1 id="常见操作">常见操作&lt;a class="anchor" href="#%e5%b8%b8%e8%a7%81%e6%93%8d%e4%bd%9c">#&lt;/a>&lt;/h1>
+&lt;h2 id="创建completablefuture">创建CompletableFuture&lt;a class="anchor" href="#%e5%88%9b%e5%bb%bacompletablefuture">#&lt;/a>&lt;/h2>
 &lt;p>两种方法：new关键字或 CompletableFuture自带的静态工厂方法 &lt;code>runAysnc()&lt;/code>或&lt;code>supplyAsync()&lt;/code>&lt;/p>
 &lt;ol>
 &lt;li>
 &lt;p>通过new关键字
 这个方式，可以看作是将&lt;strong>CompletableFuture当作Future&lt;/strong>来使用，如下：&lt;/p>
-&lt;blockquote>
+&lt;blockquote class='book-hint '>
 &lt;p>我们通过创建了一个结果值类型为 &lt;code>RpcResponse&amp;lt;Object&amp;gt;&lt;/code> 的 &lt;code>CompletableFuture&lt;/code>，你可以把 &lt;code>resultFuture&lt;/code> 看作是异步运算结果的载体&lt;/p>
-&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>CompletableFuture&lt;span style="color:#f92672">&amp;lt;&lt;/span>RpcResponse&lt;span style="color:#f92672">&amp;lt;&lt;/span>Object&lt;span style="color:#f92672">&amp;gt;&amp;gt;&lt;/span> resultFuture &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> CompletableFuture&lt;span style="color:#f92672">&amp;lt;&amp;gt;&lt;/span>();
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/blockquote>
-&lt;p>如果后面某个时刻，得到了最终结果，可以调用complete()方法传入结果，表示resultFuture已经被完成：&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>CompletableFuture&lt;span style="color:#f92672">&amp;lt;&lt;/span>RpcResponse&lt;span style="color:#f92672">&amp;lt;&lt;/span>Object&lt;span style="color:#f92672">&amp;gt;&amp;gt;&lt;/span> resultFuture &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> CompletableFuture&lt;span style="color:#f92672">&amp;lt;&amp;gt;&lt;/span>();&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/blockquote>&lt;p>如果后面某个时刻，得到了最终结果，可以调用complete()方法传入结果，表示resultFuture已经被完成：&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// complete() 方法只能调用一次，后续调用将被忽略。&lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>resultFuture.&lt;span style="color:#a6e22e">complete&lt;/span>(rpcResponse);
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>通过isDone()检查是否完成：&lt;/p>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>resultFuture.&lt;span style="color:#a6e22e">complete&lt;/span>(rpcResponse);&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>通过isDone()检查是否完成：&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">boolean&lt;/span> &lt;span style="color:#a6e22e">isDone&lt;/span>() {
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> result &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#66d9ef">null&lt;/span>;
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>获取异步结果，使用get() ，调用get()方法的线程会阻塞 直到CompletableFuture完成运算：
-&lt;code>rpcResponse = completableFuture.get();&lt;/code>&lt;/p></description></item><item><title>ThreadLocal详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly0310lythreadlocal/</link><pubDate>Mon, 05 Dec 2022 17:31:52 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly0310lythreadlocal/</guid><description>&lt;blockquote>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>获取异步结果，使用get() ，调用get()方法的线程会阻塞 直到CompletableFuture完成运算：
+&lt;code>rpcResponse = completableFuture.get();&lt;/code>&lt;/p></description></item><item><title>ThreadLocal详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly0310lythreadlocal/</link><pubDate>Mon, 05 Dec 2022 17:31:52 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly0310lythreadlocal/</guid><description>&lt;blockquote class='book-hint '>
 &lt;p>转载自https://github.com/Snailclimb/JavaGuide （添加小部分笔记）感谢作者!&lt;/p>
 &lt;p>本文来自一枝花算不算浪漫投稿， 原文地址：
-&lt;a target="_blank" href="https://juejin.cn/post/6844904151567040519">https://juejin.cn/post/6844904151567040519open in new window&lt;/a>。 感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;p>思维导图&lt;br>
+&lt;a target="_blank" href="https://juejin.cn/post/6844904151567040519">https://juejin.cn/post/6844904151567040519open in new window&lt;/a>。 感谢作者!&lt;/p>&lt;/blockquote>&lt;p>思维导图&lt;br>
 &lt;img src="img/ly-20241212141945045.png" alt="img" />&lt;/p>
-&lt;h1 id="目录">
- 目录
- &lt;a class="anchor" href="#%e7%9b%ae%e5%bd%95">#&lt;/a>
-&lt;/h1>
-&lt;h1 id="threadlocal代码演示">
- ThreadLocal代码演示
- &lt;a class="anchor" href="#threadlocal%e4%bb%a3%e7%a0%81%e6%bc%94%e7%a4%ba">#&lt;/a>
-&lt;/h1>
+&lt;h1 id="目录">目录&lt;a class="anchor" href="#%e7%9b%ae%e5%bd%95">#&lt;/a>&lt;/h1>
+&lt;h1 id="threadlocal代码演示">ThreadLocal代码演示&lt;a class="anchor" href="#threadlocal%e4%bb%a3%e7%a0%81%e6%bc%94%e7%a4%ba">#&lt;/a>&lt;/h1>
 &lt;p>&lt;strong>简单使用&lt;/strong>&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">ThreadLocalTest&lt;/span> {
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">private&lt;/span> List&lt;span style="color:#f92672">&amp;lt;&lt;/span>String&lt;span style="color:#f92672">&amp;gt;&lt;/span> messages &lt;span style="color:#f92672">=&lt;/span> Lists.&lt;span style="color:#a6e22e">newArrayList&lt;/span>();
@@ -169,11 +136,8 @@ V：要更新的变量(var)；E：期望值（expected）；N：新值（new）
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/* 结果 
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">[一枝花算不算浪漫]
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">size: 0
-&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">*/&lt;/span>
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;strong>简单使用2&lt;/strong>&lt;/p></description></item><item><title>Atomic原子类介绍</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly0309lyatomic-classes/</link><pubDate>Mon, 05 Dec 2022 09:24:36 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly0309lyatomic-classes/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide （添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;p>文章开头先用例子介绍几种类型的api使用&lt;/p>
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">*/&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;strong>简单使用2&lt;/strong>&lt;/p></description></item><item><title>Atomic原子类介绍</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly0309lyatomic-classes/</link><pubDate>Mon, 05 Dec 2022 09:24:36 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly0309lyatomic-classes/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide （添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;p>文章开头先用例子介绍几种类型的api使用&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">package&lt;/span> com.aqs;
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">import&lt;/span> lombok.*;
@@ -285,11 +249,7 @@ V：要更新的变量(var)；E：期望值（expected）；N：新值（new）
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Process finished with exit code 0
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">
-&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">*/&lt;/span>
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h1 id="原子类介绍">
- 原子类介绍
- &lt;a class="anchor" href="#%e5%8e%9f%e5%ad%90%e7%b1%bb%e4%bb%8b%e7%bb%8d">#&lt;/a>
-&lt;/h1>
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">*/&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h1 id="原子类介绍">原子类介绍&lt;a class="anchor" href="#%e5%8e%9f%e5%ad%90%e7%b1%bb%e4%bb%8b%e7%bb%8d">#&lt;/a>&lt;/h1>
 &lt;ul>
 &lt;li>在化学上，原子是构成一般物质的最小单位，化学反应中是不可分割的，Atomic指&lt;strong>一个操作是不可中断的&lt;/strong>，即使在多个线程一起执行时，一个操作一旦开始就&lt;strong>不会被其他线程干扰&lt;/strong>&lt;/li>
 &lt;li>原子类&amp;ndash;&amp;gt;具有原子/原子操作特征的类&lt;/li>
@@ -299,54 +259,37 @@ V：要更新的变量(var)；E：期望值（expected）；N：新值（new）
 &lt;ul>
 &lt;li>
 &lt;p>基本类型
-使用原子方式更新基本类型，包括&lt;strong>AtomicInteger 整型原子类&lt;/strong>，&lt;strong>AtomicLong 长整型原子类&lt;/strong>，AtomicBoolean 布尔型原子类&lt;/p></description></item><item><title>aqs详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly0308lyaqs-details/</link><pubDate>Wed, 30 Nov 2022 14:48:01 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly0308lyaqs-details/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide （添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;p>&lt;code>Semaphore [ˈseməfɔː(r)]&lt;/code>&lt;/p>
-&lt;blockquote>
+使用原子方式更新基本类型，包括&lt;strong>AtomicInteger 整型原子类&lt;/strong>，&lt;strong>AtomicLong 长整型原子类&lt;/strong>，AtomicBoolean 布尔型原子类&lt;/p></description></item><item><title>aqs详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly0308lyaqs-details/</link><pubDate>Wed, 30 Nov 2022 14:48:01 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly0308lyaqs-details/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide （添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;p>&lt;code>Semaphore [ˈseməfɔː(r)]&lt;/code>&lt;/p>
+&lt;blockquote class='book-hint '>
 &lt;ul>
 &lt;li>何为 AQS？AQS 原理了解吗？&lt;/li>
 &lt;li>&lt;code>CountDownLatch&lt;/code> 和 &lt;code>CyclicBarrier&lt;/code> 了解吗？两者的区别是什么？&lt;/li>
 &lt;li>用过 &lt;code>Semaphore&lt;/code> 吗？应用场景了解吗？&lt;/li>
 &lt;li>&amp;hellip;&amp;hellip;&lt;/li>
-&lt;/ul>
-&lt;/blockquote>
-&lt;h1 id="aqs简单介绍">
- AQS简单介绍
- &lt;a class="anchor" href="#aqs%e7%ae%80%e5%8d%95%e4%bb%8b%e7%bb%8d">#&lt;/a>
-&lt;/h1>
+&lt;/ul>&lt;/blockquote>&lt;h1 id="aqs简单介绍">AQS简单介绍&lt;a class="anchor" href="#aqs%e7%ae%80%e5%8d%95%e4%bb%8b%e7%bb%8d">#&lt;/a>&lt;/h1>
 &lt;p>AQS,AbstractQueueSyschronizer，即抽象队列同步器，这个类在java.util.concurrent.locks包下面&lt;/p>
 &lt;p>&lt;img src="img/ly-20241212141944167.png" alt="ly-20241212141944167" />&lt;/p>
 &lt;p>AQS是一个抽象类，主要用来构建&lt;strong>锁&lt;/strong>和&lt;strong>同步器&lt;/strong>&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">abstract&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">AbstractQueuedSynchronizer&lt;/span> &lt;span style="color:#66d9ef">extends&lt;/span> AbstractOwnableSynchronizer &lt;span style="color:#66d9ef">implements&lt;/span> java.&lt;span style="color:#a6e22e">io&lt;/span>.&lt;span style="color:#a6e22e">Serializable&lt;/span> {
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>} 
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>AQS &lt;strong>为构建锁和同步器提供了一些通用功能&lt;/strong>的实现，因此，使用 AQS 能简单且高效地&lt;strong>构造出应用广泛的大量的同步器&lt;/strong>，比如我们提到的 &lt;strong>&lt;code>ReentrantLock&lt;/code>&lt;/strong>，&lt;strong>&lt;code>Semaphore&lt;/code>&lt;/strong>，其他的诸如 &lt;code>ReentrantReadWriteLock&lt;/code>，&lt;code>SynchronousQueue&lt;/code>，&lt;code>FutureTask&lt;/code>(jdk1.7) 等等皆是基于 AQS 的。&lt;/p>
-&lt;h1 id="aqs原理">
- AQS原理
- &lt;a class="anchor" href="#aqs%e5%8e%9f%e7%90%86">#&lt;/a>
-&lt;/h1>
-&lt;h2 id="aqs核心思想">
- AQS核心思想
- &lt;a class="anchor" href="#aqs%e6%a0%b8%e5%bf%83%e6%80%9d%e6%83%b3">#&lt;/a>
-&lt;/h2>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>} &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>AQS &lt;strong>为构建锁和同步器提供了一些通用功能&lt;/strong>的实现，因此，使用 AQS 能简单且高效地&lt;strong>构造出应用广泛的大量的同步器&lt;/strong>，比如我们提到的 &lt;strong>&lt;code>ReentrantLock&lt;/code>&lt;/strong>，&lt;strong>&lt;code>Semaphore&lt;/code>&lt;/strong>，其他的诸如 &lt;code>ReentrantReadWriteLock&lt;/code>，&lt;code>SynchronousQueue&lt;/code>，&lt;code>FutureTask&lt;/code>(jdk1.7) 等等皆是基于 AQS 的。&lt;/p>
+&lt;h1 id="aqs原理">AQS原理&lt;a class="anchor" href="#aqs%e5%8e%9f%e7%90%86">#&lt;/a>&lt;/h1>
+&lt;h2 id="aqs核心思想">AQS核心思想&lt;a class="anchor" href="#aqs%e6%a0%b8%e5%bf%83%e6%80%9d%e6%83%b3">#&lt;/a>&lt;/h2>
 &lt;p>&lt;strong>面试不是背题，大家一定要加入自己的思想，即使加入不了自己的思想也要保证自己能够通俗的讲出来而不是背出来&lt;/strong>&lt;/p>
 &lt;p>AQS 核心思想是，如果被请求的&lt;strong>共享资源（AQS内部）&lt;strong>空闲，则将&lt;/strong>当前请求资源的线程&lt;/strong>设置为&lt;strong>有效&lt;/strong>的工作线程，并且将&lt;strong>共享资源&lt;/strong>设置为&lt;strong>锁定&lt;/strong>状态。如果被请求的共享资源&lt;strong>被占用&lt;/strong>，那么就需要一套&lt;strong>线程阻塞等待&lt;/strong>以及&lt;strong>被唤醒时锁分配&lt;/strong>的机制，这个机制 AQS 是用 &lt;strong>CLH 队列锁&lt;/strong>实现的，即&lt;strong>将暂时获取不到锁的线程加入到队列&lt;/strong>中。&lt;/p>
-&lt;blockquote>
+&lt;blockquote class='book-hint '>
 &lt;p>CLH(Craig,Landin and Hagersten)队列是一个&lt;strong>虚拟的双向队列&lt;/strong>（虚拟的双向队列即&lt;strong>不存在队列实例&lt;/strong>，仅存在结点之间的关联关系）。AQS 是&lt;strong>将每条请求共享资源的线程封装成一个 CLH 锁队列的一个结点&lt;/strong>（Node）来实现锁的分配。&lt;br>
 [ 搜索了一下，CLH好像是人名 ]
 在 CLH 同步队列中，一个节点表示一个线程，它保存着&lt;strong>线程的引用&lt;/strong>（thread）、 当前节点在&lt;strong>队列中的状态&lt;/strong>（waitStatus）、&lt;strong>前驱节点&lt;/strong>（prev）、&lt;strong>后继节点&lt;/strong>（next）。&lt;br>
 CLH队列结构&lt;br>
-&lt;img src="img/ly-20241212141944445.png" alt="ly-20241212141944445" />&lt;/p>
-&lt;/blockquote>
-&lt;ul>
+&lt;img src="img/ly-20241212141944445.png" alt="ly-20241212141944445" />&lt;/p>&lt;/blockquote>&lt;ul>
 &lt;li>
 &lt;p>AQS（AbstractQueuedSynchronized）原理图&lt;br>
 &lt;img src="img/ly-20241212141944597.png" alt="ly-20241212141944597" />&lt;/p>
 &lt;p>AQS使用一个&lt;strong>int成员变量来表示同步状态&lt;/strong>，通过内置的&lt;strong>线程等待队列&lt;/strong>来获取资源线程的排队工作。&lt;br>
-&lt;code>state&lt;/code> 变量由 &lt;code>volatile&lt;/code> 修饰，用于展示&lt;strong>当前临界资源的获锁&lt;/strong>情况。&lt;/p></description></item><item><title>java常见并发容器</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly0307lyconcurrent-collections/</link><pubDate>Tue, 29 Nov 2022 16:58:59 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly0307lyconcurrent-collections/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide （添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;p>JDK提供的容器，大部分在java.util.concurrent包中&lt;/p>
+&lt;code>state&lt;/code> 变量由 &lt;code>volatile&lt;/code> 修饰，用于展示&lt;strong>当前临界资源的获锁&lt;/strong>情况。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">private&lt;/span> &lt;span style="color:#66d9ef">volatile&lt;/span> &lt;span style="color:#66d9ef">int&lt;/span> state;&lt;span style="color:#f92672">//&lt;/span>共享变量&lt;span style="color:#960050;background-color:#1e0010">，&lt;/span>使用volatile修饰保证线程可见性&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>状态信息的操作&lt;/p></description></item><item><title>java常见并发容器</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly0307lyconcurrent-collections/</link><pubDate>Tue, 29 Nov 2022 16:58:59 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly0307lyconcurrent-collections/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide （添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;p>JDK提供的容器，大部分在java.util.concurrent包中&lt;/p>
 &lt;ul>
 &lt;li>ConcurrentHashMap：线程安全的&lt;strong>HashMap&lt;/strong>&lt;/li>
 &lt;li>CopyOnWriteArrayList：线程安全的&lt;strong>List&lt;/strong>，在读多写少的场合性能非常好，远好于Vector&lt;/li>
@@ -354,42 +297,29 @@ CLH队列结构&lt;br>
 &lt;li>&lt;strong>BlockingQueue&lt;/strong>：这是一个接口，JDK内部通过链表、数组等方式实现了该接口。表示&lt;strong>阻塞队列&lt;/strong>，非常适合用于作为数据共享的通道&lt;/li>
 &lt;li>ConcorrentSkipListMap：&lt;strong>跳表&lt;/strong>的实现，是一个Map，使用&lt;strong>跳表的数据结构进行快速查找&lt;/strong>&lt;/li>
 &lt;/ul>
-&lt;h1 id="concurrenthashmap">
- ConcurrentHashMap
- &lt;a class="anchor" href="#concurrenthashmap">#&lt;/a>
-&lt;/h1>
+&lt;h1 id="concurrenthashmap">ConcurrentHashMap&lt;a class="anchor" href="#concurrenthashmap">#&lt;/a>&lt;/h1>
 &lt;ul>
 &lt;li>HashMap是线程不安全的，并发场景下要保证线程安全，可以使用Collections.synchronizedMap()方法来包装HashMap，但这是通过&lt;strong>使用一个全局的锁&lt;/strong>来&lt;strong>同步不同线程间的并发访问&lt;/strong>，因此会带来性能问题&lt;/li>
 &lt;li>建议使用ConcurrentHashMap，&lt;strong>不论是读操作还是写操作&lt;/strong>都能保证高性能：读操作（几乎）不需要加锁，而写操作时通过&lt;strong>锁分段(这里说的是JDK1.7？)&lt;strong>技术，只对&lt;/strong>所操作的段加锁&lt;/strong>而不影响客户端对其他段的访问&lt;/li>
 &lt;/ul>
-&lt;h1 id="copyonwritearraylist">
- CopyOnWriteArrayList
- &lt;a class="anchor" href="#copyonwritearraylist">#&lt;/a>
-&lt;/h1>
+&lt;h1 id="copyonwritearraylist">CopyOnWriteArrayList&lt;a class="anchor" href="#copyonwritearraylist">#&lt;/a>&lt;/h1>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//源码&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">CopyOnWriteArrayList&lt;/span>&lt;span style="color:#f92672">&amp;lt;&lt;/span>E&lt;span style="color:#f92672">&amp;gt;&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">extends&lt;/span> Object
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">implements&lt;/span> List&lt;span style="color:#f92672">&amp;lt;&lt;/span>E&lt;span style="color:#f92672">&amp;gt;&lt;/span>, RandomAccess, Cloneable, Serializable
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;ul>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;ul>
 &lt;li>在很多应用场景中，&lt;strong>读操作可能会远远大于写操作&lt;/strong>&lt;/li>
 &lt;li>我们应该允许&lt;strong>多个线程同时访问List内部数据&lt;/strong>（针对读）&lt;/li>
 &lt;li>与ReentrantReadWriteLock读写锁思想非常类似，即&lt;strong>读读共享&lt;/strong>、&lt;strong>写写互斥&lt;/strong>、&lt;strong>读写互斥&lt;/strong>、&lt;strong>写读互斥&lt;/strong>&lt;/li>
 &lt;li>不一样的是，CopyOnWriteArrayList&lt;strong>读取时完全不需要加锁&lt;/strong>，且&lt;strong>写入也不会阻塞读取操作&lt;/strong>，只有&lt;strong>写入和写入之间需要同步等待&lt;/strong>。&lt;/li>
 &lt;/ul>
-&lt;h2 id="copyonwritearraylist是如何做到的">
- CopyOnWriteArrayList是如何做到的
- &lt;a class="anchor" href="#copyonwritearraylist%e6%98%af%e5%a6%82%e4%bd%95%e5%81%9a%e5%88%b0%e7%9a%84">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="copyonwritearraylist是如何做到的">CopyOnWriteArrayList是如何做到的&lt;a class="anchor" href="#copyonwritearraylist%e6%98%af%e5%a6%82%e4%bd%95%e5%81%9a%e5%88%b0%e7%9a%84">#&lt;/a>&lt;/h2>
 &lt;ul>
 &lt;li>&lt;code>CopyOnWriteArrayList&lt;/code> 类的&lt;strong>所有可变操作（add，set 等等）都是通过创建底层数组的新副本&lt;/strong>来实现的。当 List 需要被修改的时候，并不修改原有内容，而是&lt;strong>对原有数据进行一次复制，将修改的内容写入副本。写完之后，再将修改完的副本替换原来的数据&lt;/strong>，这样就可以保证写操作不会影响读操作了。&lt;/li>
 &lt;li>从 &lt;code>CopyOnWriteArrayList&lt;/code> 的名字就能看出 &lt;code>CopyOnWriteArrayList&lt;/code> 是满足 &lt;strong>&lt;code>CopyOnWrite&lt;/code>&lt;/strong> 的&lt;/li>
 &lt;li>在计算机，如果你想要对一块内存进行修改时，我们不在原有内存块中进行写操作，而是将内存拷贝一份，在新的内存中进行写操作，写完之后呢，就&lt;strong>将指向原来内存指针指向新的内存(注意，是指向，而不是重新拷贝★重要★)&lt;/strong>，原来的内存就可以被回收掉了&lt;/li>
 &lt;/ul>
-&lt;h2 id="copyonwritearraylist-读取和写入源码简单分析">
- CopyOnWriteArrayList 读取和写入源码简单分析
- &lt;a class="anchor" href="#copyonwritearraylist-%e8%af%bb%e5%8f%96%e5%92%8c%e5%86%99%e5%85%a5%e6%ba%90%e7%a0%81%e7%ae%80%e5%8d%95%e5%88%86%e6%9e%90">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="copyonwritearraylist-读取和写入源码简单分析">CopyOnWriteArrayList 读取和写入源码简单分析&lt;a class="anchor" href="#copyonwritearraylist-%e8%af%bb%e5%8f%96%e5%92%8c%e5%86%99%e5%85%a5%e6%ba%90%e7%a0%81%e7%ae%80%e5%8d%95%e5%88%86%e6%9e%90">#&lt;/a>&lt;/h2>
 &lt;ul>
 &lt;li>
 &lt;p>CopyOnWriteArrayList读取操作的实现
@@ -405,21 +335,12 @@ CLH队列结构&lt;br>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">final&lt;/span> Object&lt;span style="color:#f92672">[]&lt;/span> &lt;span style="color:#a6e22e">getArray&lt;/span>() {
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> array;
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
 &lt;li>
 &lt;p>CopyOnWriteArrayList写入操作的实现
-在添加集合的时候加了锁，保证同步，&lt;strong>避免多线程写的时候会copy出多个副本&lt;/strong>&lt;/p></description></item><item><title>线程池最佳实践</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly0306lythread-pool-best/</link><pubDate>Tue, 29 Nov 2022 11:31:20 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly0306lythread-pool-best/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide （添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;h2 id="线程池知识回顾">
- 线程池知识回顾
- &lt;a class="anchor" href="#%e7%ba%bf%e7%a8%8b%e6%b1%a0%e7%9f%a5%e8%af%86%e5%9b%9e%e9%a1%be">#&lt;/a>
-&lt;/h2>
-&lt;h3 id="1-为什么要使用线程池">
- 1. 为什么要使用线程池
- &lt;a class="anchor" href="#1-%e4%b8%ba%e4%bb%80%e4%b9%88%e8%a6%81%e4%bd%bf%e7%94%a8%e7%ba%bf%e7%a8%8b%e6%b1%a0">#&lt;/a>
-&lt;/h3>
+在添加集合的时候加了锁，保证同步，&lt;strong>避免多线程写的时候会copy出多个副本&lt;/strong>&lt;/p></description></item><item><title>线程池最佳实践</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly0306lythread-pool-best/</link><pubDate>Tue, 29 Nov 2022 11:31:20 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly0306lythread-pool-best/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide （添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;h2 id="线程池知识回顾">线程池知识回顾&lt;a class="anchor" href="#%e7%ba%bf%e7%a8%8b%e6%b1%a0%e7%9f%a5%e8%af%86%e5%9b%9e%e9%a1%be">#&lt;/a>&lt;/h2>
+&lt;h3 id="1-为什么要使用线程池">1. 为什么要使用线程池&lt;a class="anchor" href="#1-%e4%b8%ba%e4%bb%80%e4%b9%88%e8%a6%81%e4%bd%bf%e7%94%a8%e7%ba%bf%e7%a8%8b%e6%b1%a0">#&lt;/a>&lt;/h3>
 &lt;ul>
 &lt;li>池化技术的思想，主要是为了&lt;strong>减少每次获取资源（线程资源）的消耗&lt;/strong>，提高对资源的利用率&lt;/li>
 &lt;li>线程池提供了一种&lt;strong>限制&lt;/strong>和&lt;strong>管理资源&lt;/strong>（包括执行一个任务）的方法，每个线程池还维护一些&lt;strong>基本统计&lt;/strong>信息，例如已完成任务的数量&lt;/li>
@@ -430,16 +351,10 @@ CLH队列结构&lt;br>
 &lt;li>提高响应速度&lt;/li>
 &lt;li>提高线程的可管理性&lt;/li>
 &lt;/ol>
-&lt;h3 id="2-线程池在实际项目的使用场景">
- 2. 线程池在实际项目的使用场景
- &lt;a class="anchor" href="#2-%e7%ba%bf%e7%a8%8b%e6%b1%a0%e5%9c%a8%e5%ae%9e%e9%99%85%e9%a1%b9%e7%9b%ae%e7%9a%84%e4%bd%bf%e7%94%a8%e5%9c%ba%e6%99%af">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="2-线程池在实际项目的使用场景">2. 线程池在实际项目的使用场景&lt;a class="anchor" href="#2-%e7%ba%bf%e7%a8%8b%e6%b1%a0%e5%9c%a8%e5%ae%9e%e9%99%85%e9%a1%b9%e7%9b%ae%e7%9a%84%e4%bd%bf%e7%94%a8%e5%9c%ba%e6%99%af">#&lt;/a>&lt;/h3>
 &lt;p>线程池一般用于执行&lt;strong>多个不相关联的耗时任务&lt;/strong>，没有多线程的情况下，任务顺序执行，使用了线程池的话可让多个不相关联的任务&lt;strong>同时执行&lt;/strong>。&lt;/p>
 &lt;p>&lt;img src="img/ly-20241212141942375.png" alt="ly-20241212141942375" />&lt;/p>
-&lt;h3 id="3-如何使用线程池">
- 3. 如何使用线程池
- &lt;a class="anchor" href="#3-%e5%a6%82%e4%bd%95%e4%bd%bf%e7%94%a8%e7%ba%bf%e7%a8%8b%e6%b1%a0">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="3-如何使用线程池">3. 如何使用线程池&lt;a class="anchor" href="#3-%e5%a6%82%e4%bd%95%e4%bd%bf%e7%94%a8%e7%ba%bf%e7%a8%8b%e6%b1%a0">#&lt;/a>&lt;/h3>
 &lt;p>一般是通过 &lt;code>ThreadPoolExecutor&lt;/code> 的构造函数来创建线程池，然后提交任务给线程池执行就可以了。构造函数如下：&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">/**
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"> * 用给定的初始参数创建一个新的ThreadPoolExecutor。
@@ -465,14 +380,8 @@ CLH队列结构&lt;br>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">this&lt;/span>.&lt;span style="color:#a6e22e">keepAliveTime&lt;/span> &lt;span style="color:#f92672">=&lt;/span> unit.&lt;span style="color:#a6e22e">toNanos&lt;/span>(keepAliveTime);
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">this&lt;/span>.&lt;span style="color:#a6e22e">threadFactory&lt;/span> &lt;span style="color:#f92672">=&lt;/span> threadFactory;
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">this&lt;/span>.&lt;span style="color:#a6e22e">handler&lt;/span> &lt;span style="color:#f92672">=&lt;/span> handler;
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>使用代码：&lt;/p></description></item><item><title>java线程池详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly0305lyjava-thread-pool/</link><pubDate>Wed, 23 Nov 2022 14:40:41 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly0305lyjava-thread-pool/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide （添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;h2 id="一-使用线程池的好处">
- 一 使用线程池的好处
- &lt;a class="anchor" href="#%e4%b8%80-%e4%bd%bf%e7%94%a8%e7%ba%bf%e7%a8%8b%e6%b1%a0%e7%9a%84%e5%a5%bd%e5%a4%84">#&lt;/a>
-&lt;/h2>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>使用代码：&lt;/p></description></item><item><title>java线程池详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly0305lyjava-thread-pool/</link><pubDate>Wed, 23 Nov 2022 14:40:41 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly0305lyjava-thread-pool/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide （添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;h2 id="一-使用线程池的好处">一 使用线程池的好处&lt;a class="anchor" href="#%e4%b8%80-%e4%bd%bf%e7%94%a8%e7%ba%bf%e7%a8%8b%e6%b1%a0%e7%9a%84%e5%a5%bd%e5%a4%84">#&lt;/a>&lt;/h2>
 &lt;ul>
 &lt;li>池化技术：减少每次获取资源的消耗，提高对资源的利用率&lt;/li>
 &lt;li>线程池提供一种&lt;strong>限制&lt;/strong>和&lt;strong>管理资源（包括执行一个任务）&lt;strong>的方式，每个线程池还维护一些基本统计信息，例如&lt;/strong>已完成任务&lt;/strong>的数量&lt;/li>
@@ -484,12 +393,9 @@ CLH队列结构&lt;br>
 &lt;/ul>
 &lt;/li>
 &lt;/ul>
-&lt;h2 id="二-executor框架">
- 二 Executor框架
- &lt;a class="anchor" href="#%e4%ba%8c-executor%e6%a1%86%e6%9e%b6">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="二-executor框架">二 Executor框架&lt;a class="anchor" href="#%e4%ba%8c-executor%e6%a1%86%e6%9e%b6">#&lt;/a>&lt;/h2>
 &lt;p>Java5之后，通过Executor启动线程，比使用Thread的start方法更好，更&lt;strong>易于管理&lt;/strong>，&lt;strong>效率高&lt;/strong>，还能有助于避免this逃逸的问题&lt;/p>
-&lt;blockquote>
+&lt;blockquote class='book-hint '>
 &lt;p>this逃逸，指的是&lt;strong>构造函数返回之前&lt;/strong>，&lt;strong>其他线程就持有该对象的引用&lt;/strong>，会导致调用尚未构造完全的对象&lt;br>
 例子：&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">ThisEscape&lt;/span> { 
@@ -504,8 +410,7 @@ CLH队列结构&lt;br>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// 通过ThisEscape.this就可以引用外围类对象, 但是此时外围类对象可能还没有构造完成, 即发生了外围类的this引用的逃逸 &lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> } 
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> } 
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>处理办法 &lt;strong>//不要在构造函数中运行线程&lt;/strong>&lt;/p>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>处理办法 &lt;strong>//不要在构造函数中运行线程&lt;/strong>&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">ThisEscape&lt;/span> { 
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">private&lt;/span> Thread t; 
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#a6e22e">ThisEscape&lt;/span>() { 
@@ -524,22 +429,13 @@ CLH队列结构&lt;br>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// 通过ThisEscape.this就可以引用外围类对象, 此时可以保证外围类对象已经构造完成 &lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> } 
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> } 
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/blockquote>
-&lt;p>Executor框架不仅包括&lt;strong>线程池的管理&lt;/strong>，提供&lt;strong>线程工厂&lt;/strong>、&lt;strong>队列&lt;/strong>以及&lt;strong>拒绝策略&lt;/strong>。&lt;/p></description></item><item><title>java内存模型</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly0304lyjmm/</link><pubDate>Mon, 21 Nov 2022 10:57:24 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly0304lyjmm/</guid><description>&lt;blockquote>
-&lt;p>引用自https://github.com/Snailclimb/JavaGuide&lt;/p>
-&lt;/blockquote>
-&lt;h2 id="从cpu缓存模型说起">
- 从CPU缓存模型说起
- &lt;a class="anchor" href="#%e4%bb%8ecpu%e7%bc%93%e5%ad%98%e6%a8%a1%e5%9e%8b%e8%af%b4%e8%b5%b7">#&lt;/a>
-&lt;/h2>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/blockquote>&lt;p>Executor框架不仅包括&lt;strong>线程池的管理&lt;/strong>，提供&lt;strong>线程工厂&lt;/strong>、&lt;strong>队列&lt;/strong>以及&lt;strong>拒绝策略&lt;/strong>。&lt;/p></description></item><item><title>java内存模型</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly0304lyjmm/</link><pubDate>Mon, 21 Nov 2022 10:57:24 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly0304lyjmm/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>引用自https://github.com/Snailclimb/JavaGuide&lt;/p>&lt;/blockquote>&lt;h2 id="从cpu缓存模型说起">从CPU缓存模型说起&lt;a class="anchor" href="#%e4%bb%8ecpu%e7%bc%93%e5%ad%98%e6%a8%a1%e5%9e%8b%e8%af%b4%e8%b5%b7">#&lt;/a>&lt;/h2>
 &lt;ul>
 &lt;li>
 &lt;p>redis是为了解决&lt;strong>程序处理速度和访问常规关系型数据库速度不对等&lt;/strong>的问题，&lt;strong>CPU缓存则是为了解决CPU处理速度和内存处理速度不对等的问题&lt;/strong>&lt;/p>
-&lt;blockquote>
-&lt;p>我们把内存看作外存的高速缓存，程序运行时把外存的数据复制到内存，由于&lt;strong>内存的处理速度远高于外存&lt;/strong>，这样提高了处理速度&lt;/p>
-&lt;/blockquote>
-&lt;/li>
+&lt;blockquote class='book-hint '>
+&lt;p>我们把内存看作外存的高速缓存，程序运行时把外存的数据复制到内存，由于&lt;strong>内存的处理速度远高于外存&lt;/strong>，这样提高了处理速度&lt;/p>&lt;/blockquote>&lt;/li>
 &lt;li>
 &lt;p>总结，&lt;strong>CPU Cache缓存的是内存数据&lt;/strong>，用于解决&lt;strong>CPU处理速度和内存不匹配&lt;/strong>的问题，&lt;strong>内存缓存的是硬盘数据&lt;/strong>用于解决硬盘访问速度过慢的问题
 CPU Cache示意图：&lt;/p>
@@ -553,15 +449,9 @@ CPU Cache通常分为三层，分别叫L1，L2，L3 Cache
 操作系统，通过&lt;strong>内存模型MemoryModel&lt;/strong>定义一系列规范来解决这个问题&lt;/p>
 &lt;/li>
 &lt;/ul>
-&lt;h2 id="java内存模型">
- Java内存模型
- &lt;a class="anchor" href="#java%e5%86%85%e5%ad%98%e6%a8%a1%e5%9e%8b">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="java内存模型">Java内存模型&lt;a class="anchor" href="#java%e5%86%85%e5%ad%98%e6%a8%a1%e5%9e%8b">#&lt;/a>&lt;/h2>
 &lt;p>&lt;img src="img/ly-20241212141939466.png" alt="ly-20241212141939466" />&lt;/p>
-&lt;h2 id="指令重排序">
- 指令重排序
- &lt;a class="anchor" href="#%e6%8c%87%e4%bb%a4%e9%87%8d%e6%8e%92%e5%ba%8f">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="指令重排序">指令重排序&lt;a class="anchor" href="#%e6%8c%87%e4%bb%a4%e9%87%8d%e6%8e%92%e5%ba%8f">#&lt;/a>&lt;/h2>
 &lt;ul>
 &lt;li>
 &lt;p>&lt;strong>什么是指令重排序？&lt;/strong> 简单来说就是系统在&lt;strong>执行代码的时候并不一定是按照你写的代码的顺序&lt;/strong>依次执行&lt;/p>
@@ -574,46 +464,28 @@ CPU Cache通常分为三层，分别叫L1，L2，L3 Cache
 &lt;/ul>
 &lt;/li>
 &lt;/ul>
-&lt;blockquote>
-&lt;p>另外，&lt;strong>内存系统&lt;/strong>也会有“重排序”，但又不是真正意义上的重排序。在 JMM 里表现为&lt;strong>主存和本地内存的内容可能不一致&lt;/strong>，进而&lt;strong>导致程序在多线程下执行可能出现问题&lt;/strong>。&lt;/p>
-&lt;/blockquote>
-&lt;p>即Java源代码会经历 &lt;strong>编译器优化重排&lt;/strong>&amp;mdash;&amp;gt;&lt;strong>指令并行重排&lt;/strong>&amp;mdash;&amp;gt;&lt;strong>内存系统重排&lt;/strong>，最终&lt;strong>编程&lt;/strong>操作系统可执行的&lt;strong>指令序列&lt;/strong>&lt;/p>
+&lt;blockquote class='book-hint '>
+&lt;p>另外，&lt;strong>内存系统&lt;/strong>也会有“重排序”，但又不是真正意义上的重排序。在 JMM 里表现为&lt;strong>主存和本地内存的内容可能不一致&lt;/strong>，进而&lt;strong>导致程序在多线程下执行可能出现问题&lt;/strong>。&lt;/p>&lt;/blockquote>&lt;p>即Java源代码会经历 &lt;strong>编译器优化重排&lt;/strong>&amp;mdash;&amp;gt;&lt;strong>指令并行重排&lt;/strong>&amp;mdash;&amp;gt;&lt;strong>内存系统重排&lt;/strong>，最终&lt;strong>编程&lt;/strong>操作系统可执行的&lt;strong>指令序列&lt;/strong>&lt;/p>
 &lt;p>极其重要★：指令重排序可以&lt;strong>保证串行语义一致&lt;/strong>，但是&lt;strong>没有义务保证多线程间的语义也一致&lt;/strong>，所以在多线程下&lt;strong>指令重排&lt;/strong>可能导致一些问题&lt;/p>
-&lt;blockquote>
+&lt;blockquote class='book-hint '>
 &lt;p>编译器和处理器的指令重排序的处理方式不一样。对于&lt;strong>编译器&lt;/strong>，通过&lt;strong>禁止特定类型的编译器重排序&lt;/strong>的方式来禁止重排序。对于&lt;strong>处理器&lt;/strong>，通过&lt;strong>插入内存屏障（Memory Barrier，或有时叫做内存栅栏，Memory Fence）&lt;strong>的方式来禁止特定类型的处理器重排序。&lt;strong>指令并行重&lt;/strong>排和&lt;/strong>内存系统重排&lt;/strong>都属于是&lt;strong>处理器级别的指令重排序&lt;/strong>。&lt;/p>
-&lt;p>内存屏障（Memory Barrier，或有时叫做内存栅栏，Memory Fence）是一种 &lt;strong>CPU 指令&lt;/strong>，用来&lt;strong>禁止处理器指令发生重排序&lt;/strong>（像屏障一样），从而保障指令执行的有序性。另外，为了达到屏障的效果，它也会使&lt;strong>处理器写入、读取值之前&lt;/strong>，将&lt;strong>主内存的值写入高速缓存&lt;/strong>，&lt;strong>清空无效队列&lt;/strong>，从而保障变量的可见性。&lt;/p>
-&lt;/blockquote>
-&lt;h2 id="jmmjavamemorymode">
- JMM（JavaMemoryMode）
- &lt;a class="anchor" href="#jmmjavamemorymode">#&lt;/a>
-&lt;/h2>
-&lt;h3 id="什么是-jmm为什么需要-jmm">
- 什么是 JMM？为什么需要 JMM？
- &lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af-jmm%e4%b8%ba%e4%bb%80%e4%b9%88%e9%9c%80%e8%a6%81-jmm">#&lt;/a>
-&lt;/h3>
-&lt;blockquote>
-&lt;p>一般来说，编程语言也可以直接复用操作系统层面的内存模型。不过，不同的操作系统内存模型不同。&lt;strong>如果直接复用操作系统层面的内存模型，就可能会导致同样一套代码换了一个操作系统就无法执行了&lt;/strong>。&lt;strong>Java 语言是跨平台的，它需要自己提供一套内存模型以屏蔽系统差异。&lt;/strong>&lt;/p>
-&lt;/blockquote>
-&lt;p>实际上，对于Java来说，可以&lt;strong>把JMM看作是Java定义的并发编程相关的一组规范&lt;/strong>，除了抽象了线程和主内存之间的关系之外，还规定了&lt;strong>从Java源代码到CPU可执行指令的转化过程&lt;/strong>要遵守哪些和并发相关的原则和规范，主要目的是为了&lt;strong>简化多线程编程&lt;/strong>，&lt;strong>增强程序可移植性&lt;/strong>。&lt;/p>
+&lt;p>内存屏障（Memory Barrier，或有时叫做内存栅栏，Memory Fence）是一种 &lt;strong>CPU 指令&lt;/strong>，用来&lt;strong>禁止处理器指令发生重排序&lt;/strong>（像屏障一样），从而保障指令执行的有序性。另外，为了达到屏障的效果，它也会使&lt;strong>处理器写入、读取值之前&lt;/strong>，将&lt;strong>主内存的值写入高速缓存&lt;/strong>，&lt;strong>清空无效队列&lt;/strong>，从而保障变量的可见性。&lt;/p>&lt;/blockquote>&lt;h2 id="jmmjavamemorymode">JMM（JavaMemoryMode）&lt;a class="anchor" href="#jmmjavamemorymode">#&lt;/a>&lt;/h2>
+&lt;h3 id="什么是-jmm为什么需要-jmm">什么是 JMM？为什么需要 JMM？&lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af-jmm%e4%b8%ba%e4%bb%80%e4%b9%88%e9%9c%80%e8%a6%81-jmm">#&lt;/a>&lt;/h3>
+&lt;blockquote class='book-hint '>
+&lt;p>一般来说，编程语言也可以直接复用操作系统层面的内存模型。不过，不同的操作系统内存模型不同。&lt;strong>如果直接复用操作系统层面的内存模型，就可能会导致同样一套代码换了一个操作系统就无法执行了&lt;/strong>。&lt;strong>Java 语言是跨平台的，它需要自己提供一套内存模型以屏蔽系统差异。&lt;/strong>&lt;/p>&lt;/blockquote>&lt;p>实际上，对于Java来说，可以&lt;strong>把JMM看作是Java定义的并发编程相关的一组规范&lt;/strong>，除了抽象了线程和主内存之间的关系之外，还规定了&lt;strong>从Java源代码到CPU可执行指令的转化过程&lt;/strong>要遵守哪些和并发相关的原则和规范，主要目的是为了&lt;strong>简化多线程编程&lt;/strong>，&lt;strong>增强程序可移植性&lt;/strong>。&lt;/p>
 &lt;p>为什么要遵守这些并发相关的原则和规范呢？因为在&lt;strong>并发编程&lt;/strong>下，CPU多级缓存和指令重排这类设计会导致程序运行出问题，比如&lt;strong>指令重排&lt;/strong>，为此JMM抽象了&lt;strong>happens-before&lt;/strong>原则&lt;/p>
-&lt;blockquote>
-&lt;p>JMM 说白了就是定义了一些规范来解决这些问题，开发者可以利用这些规范更方便地开发多线程程序。对于 Java 开发者说，你&lt;strong>不需要了解底层原理&lt;/strong>，&lt;strong>直接使用并发相关的一些关键字&lt;/strong>和&lt;strong>类&lt;/strong>（比如 &lt;code>volatile&lt;/code>、&lt;code>synchronized&lt;/code>、各种 &lt;code>Lock&lt;/code>）即可开发出并发安全的程序。&lt;/p></description></item><item><title>并发03</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly0303lyconcurrent-03/</link><pubDate>Mon, 07 Nov 2022 16:04:33 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly0303lyconcurrent-03/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide （添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;h2 id="线程池">
- 线程池
- &lt;a class="anchor" href="#%e7%ba%bf%e7%a8%8b%e6%b1%a0">#&lt;/a>
-&lt;/h2>
+&lt;blockquote class='book-hint '>
+&lt;p>JMM 说白了就是定义了一些规范来解决这些问题，开发者可以利用这些规范更方便地开发多线程程序。对于 Java 开发者说，你&lt;strong>不需要了解底层原理&lt;/strong>，&lt;strong>直接使用并发相关的一些关键字&lt;/strong>和&lt;strong>类&lt;/strong>（比如 &lt;code>volatile&lt;/code>、&lt;code>synchronized&lt;/code>、各种 &lt;code>Lock&lt;/code>）即可开发出并发安全的程序。&lt;/p>&lt;/blockquote>&lt;h3 id="jmm-是如何抽象线程和主内存之间的关系">JMM 是如何抽象线程和主内存之间的关系？&lt;a class="anchor" href="#jmm-%e6%98%af%e5%a6%82%e4%bd%95%e6%8a%bd%e8%b1%a1%e7%ba%bf%e7%a8%8b%e5%92%8c%e4%b8%bb%e5%86%85%e5%ad%98%e4%b9%8b%e9%97%b4%e7%9a%84%e5%85%b3%e7%b3%bb">#&lt;/a>&lt;/h3>
+&lt;p>&lt;strong>Java内存模型(JMM)&lt;/strong>，抽象了&lt;strong>线程和主内存之间的关系&lt;/strong>，比如线程之间的&lt;strong>共享变量必须存储在主内存&lt;/strong>中&lt;/p></description></item><item><title>并发03</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly0303lyconcurrent-03/</link><pubDate>Mon, 07 Nov 2022 16:04:33 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly0303lyconcurrent-03/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide （添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;h2 id="线程池">线程池&lt;a class="anchor" href="#%e7%ba%bf%e7%a8%8b%e6%b1%a0">#&lt;/a>&lt;/h2>
 &lt;ul>
 &lt;li>
 &lt;p>为什么要使用线程池&lt;/p>
-&lt;blockquote>
+&lt;blockquote class='book-hint '>
 &lt;ul>
 &lt;li>池化技术：&lt;strong>线程池&lt;/strong>、&lt;strong>数据库连接池&lt;/strong>、&lt;strong>Http连接池&lt;/strong>&lt;/li>
 &lt;li>池化技术思想意义：为了减少每次&lt;strong>获取资源&lt;/strong>的&lt;strong>消耗&lt;/strong>，提高对&lt;strong>资源的利用率&lt;/strong>&lt;/li>
-&lt;/ul>
-&lt;/blockquote>
-&lt;ul>
+&lt;/ul>&lt;/blockquote>&lt;ul>
 &lt;li>线程池提供了&lt;strong>限制&lt;/strong>和&lt;strong>管理&lt;/strong> &lt;strong>资源&lt;/strong>(包括执行一个任务)的方式&lt;/li>
 &lt;li>每个线程池还维护&lt;strong>基本统计信息&lt;/strong>，例如&lt;strong>已完成&lt;/strong>任务的数量&lt;/li>
 &lt;li>好处：
@@ -658,24 +530,15 @@ CPU Cache通常分为三层，分别叫L1，L2，L3 Cache
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">等3s再把结果给你
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">3s后获取到了结果hello world
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">abc
-&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">*/&lt;/span>
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;ul>
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">*/&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;ul>
 &lt;li>
-&lt;p>Runnable接口不会返回结果或抛出检查异常，Callable接口可以&lt;/p></description></item><item><title>锁升级</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly03122lylock_escalation/</link><pubDate>Sun, 06 Nov 2022 12:31:02 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly03122lylock_escalation/</guid><description>&lt;blockquote>
+&lt;p>Runnable接口不会返回结果或抛出检查异常，Callable接口可以&lt;/p></description></item><item><title>锁升级</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly03122lylock_escalation/</link><pubDate>Sun, 06 Nov 2022 12:31:02 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly03122lylock_escalation/</guid><description>&lt;blockquote class='book-hint '>
 &lt;p>以下内容均转自 
 &lt;a target="_blank" href="https://www.cnblogs.com/wuqinglong/p/9945618.html">https://www.cnblogs.com/wuqinglong/p/9945618.html&lt;/a>，部分疑惑参考自另一作者 
 &lt;a target="_blank" href="https://github.com/farmerjohngit/myblog/issues/12">https://github.com/farmerjohngit/myblog/issues/12&lt;/a> ，感谢原作者。&lt;/p>
-&lt;p>【&lt;strong>目前还是存有部分疑虑（轻量级锁那块）&lt;/strong>，可能需要详细看源码才能释疑】&lt;/p>
-&lt;/blockquote>
-&lt;h2 id="概述">
- 概述
- &lt;a class="anchor" href="#%e6%a6%82%e8%bf%b0">#&lt;/a>
-&lt;/h2>
+&lt;p>【&lt;strong>目前还是存有部分疑虑（轻量级锁那块）&lt;/strong>，可能需要详细看源码才能释疑】&lt;/p>&lt;/blockquote>&lt;h2 id="概述">概述&lt;a class="anchor" href="#%e6%a6%82%e8%bf%b0">#&lt;/a>&lt;/h2>
 &lt;p>传统的synchronized为重量级锁（&lt;strong>使用操作系统互斥量（&lt;code>mutex&lt;/code>）来实现的传统锁&lt;/strong>），但是随着JavaSE1.6对synchronized优化后，部分情况下他就没有那么重了。本文介绍了JavaSE1.6为了减少获得锁和释放锁带来的性能消耗而引入的&lt;strong>偏向锁&lt;/strong>和&lt;strong>轻量级锁&lt;/strong>，以及&lt;strong>锁结构&lt;/strong>、及&lt;strong>锁升级&lt;/strong>过程&lt;/p>
-&lt;h2 id="实现同步的基础">
- 实现同步的基础
- &lt;a class="anchor" href="#%e5%ae%9e%e7%8e%b0%e5%90%8c%e6%ad%a5%e7%9a%84%e5%9f%ba%e7%a1%80">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="实现同步的基础">实现同步的基础&lt;a class="anchor" href="#%e5%ae%9e%e7%8e%b0%e5%90%8c%e6%ad%a5%e7%9a%84%e5%9f%ba%e7%a1%80">#&lt;/a>&lt;/h2>
 &lt;p>Java中&lt;strong>每个对象&lt;/strong>都可以&lt;strong>作为锁&lt;/strong>，具体变现形式&lt;/p>
 &lt;ol>
 &lt;li>对于&lt;strong>普通同步&lt;/strong>方法，锁是&lt;strong>当前实例对象&lt;/strong>&lt;/li>
@@ -683,10 +546,7 @@ CPU Cache通常分为三层，分别叫L1，L2，L3 Cache
 &lt;li>对于&lt;strong>同步方法块&lt;/strong>，锁是&lt;strong>synchronized括号里配置的对象&lt;/strong>&lt;/li>
 &lt;/ol>
 &lt;p>一个线程试图访问同步代码块时，必须&lt;strong>获取锁&lt;/strong>；在&lt;strong>退出&lt;/strong>或者&lt;strong>抛出异常&lt;/strong>时，必须&lt;strong>释放锁&lt;/strong>&lt;/p>
-&lt;h2 id="实现方式">
- 实现方式
- &lt;a class="anchor" href="#%e5%ae%9e%e7%8e%b0%e6%96%b9%e5%bc%8f">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="实现方式">实现方式&lt;a class="anchor" href="#%e5%ae%9e%e7%8e%b0%e6%96%b9%e5%bc%8f">#&lt;/a>&lt;/h2>
 &lt;p>JVM 基于&lt;strong>进入和退出 Monitor 对象&lt;/strong>来实现&lt;strong>方法同步&lt;/strong>和&lt;strong>代码块同步&lt;/strong>，但是两者的&lt;strong>实现细节不一样&lt;/strong>&lt;/p>
 &lt;ol>
 &lt;li>&lt;strong>代码块同步&lt;/strong>：通过使用 &lt;strong>monitorenter&lt;/strong> 和 &lt;strong>monitorexit&lt;/strong> 指令实现的&lt;/li>
@@ -707,8 +567,7 @@ CPU Cache通常分为三层，分别叫L1，L2，L3 Cache
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> System.&lt;span style="color:#a6e22e">out&lt;/span>.&lt;span style="color:#a6e22e">println&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;Hello World.&amp;#34;&lt;/span>);
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>编译之后的字节码（使用 javap )&lt;/p>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>编译之后的字节码（使用 javap )&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">f1&lt;/span>();
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> descriptor: ()V
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> flags: ACC_PUBLIC
@@ -758,15 +617,11 @@ CPU Cache通常分为三层，分别叫L1，L2，L3 Cache
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 8: &lt;span style="color:#66d9ef">return&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> LineNumberTable:
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> line 12: 0
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> line 13: 8
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>先说 &lt;strong>f1() 方法&lt;/strong>，发现其中&lt;strong>一个 monitorenter 对应了两个 monitorexit&lt;/strong>，这是不对的。&lt;strong>但是&lt;/strong>仔细看 #15: goto 语句，直接跳转到了 #23: return 处，再看 #22: athrow 语句发现，原来&lt;strong>第二个 monitorexit&lt;/strong> 是&lt;strong>保证同步代码块抛出异常&lt;/strong>时锁能&lt;strong>得到正确的释放&lt;/strong>而存在的，这就理解了。&lt;/p></description></item><item><title>(该文弃用)锁升级</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/lock_escalation_deprecated2/</link><pubDate>Thu, 03 Nov 2022 11:08:59 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/lock_escalation_deprecated2/</guid><description>&lt;p>本文主要讲解synchronized原理和偏向锁、轻量级锁、重量级锁的升级过程，基本都转自&lt;/p>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> line 13: 8&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>先说 &lt;strong>f1() 方法&lt;/strong>，发现其中&lt;strong>一个 monitorenter 对应了两个 monitorexit&lt;/strong>，这是不对的。&lt;strong>但是&lt;/strong>仔细看 #15: goto 语句，直接跳转到了 #23: return 处，再看 #22: athrow 语句发现，原来&lt;strong>第二个 monitorexit&lt;/strong> 是&lt;strong>保证同步代码块抛出异常&lt;/strong>时锁能&lt;strong>得到正确的释放&lt;/strong>而存在的，这就理解了。&lt;/p></description></item><item><title>(该文弃用)锁升级</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/lock_escalation_deprecated2/</link><pubDate>Thu, 03 Nov 2022 11:08:59 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/lock_escalation_deprecated2/</guid><description>&lt;p>本文主要讲解synchronized原理和偏向锁、轻量级锁、重量级锁的升级过程，基本都转自&lt;/p>
 &lt;p>
 &lt;a target="_blank" href="https://blog.csdn.net/MariaOzawa/article/details/107665689">https://blog.csdn.net/MariaOzawa/article/details/107665689&lt;/a> 原作者:
 &lt;a target="_blank" href="https://blog.csdn.net/MariaOzawa">MariaOzawa&lt;/a>&lt;/p>
-&lt;h2 id="简介">
- 简介
- &lt;a class="anchor" href="#%e7%ae%80%e4%bb%8b">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="简介">简介&lt;a class="anchor" href="#%e7%ae%80%e4%bb%8b">#&lt;/a>&lt;/h2>
 &lt;ul>
 &lt;li>为什么需要锁&lt;br>
 并发编程中，多个线程访问同一共享资源时，必须考虑如何维护数据的&lt;strong>原子性&lt;/strong>&lt;/li>
@@ -784,10 +639,7 @@ CPU Cache通常分为三层，分别叫L1，L2，L3 Cache
 &lt;/ul>
 &lt;/li>
 &lt;/ul>
-&lt;h2 id="synchronized同步锁实现原理">
- Synchronized同步锁实现原理
- &lt;a class="anchor" href="#synchronized%e5%90%8c%e6%ad%a5%e9%94%81%e5%ae%9e%e7%8e%b0%e5%8e%9f%e7%90%86">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="synchronized同步锁实现原理">Synchronized同步锁实现原理&lt;a class="anchor" href="#synchronized%e5%90%8c%e6%ad%a5%e9%94%81%e5%ae%9e%e7%8e%b0%e5%8e%9f%e7%90%86">#&lt;/a>&lt;/h2>
 &lt;ul>
 &lt;li>
 &lt;p>Synchronized实现同步锁的两种方式：修饰方法；修饰方法块&lt;/p>
@@ -802,12 +654,10 @@ CPU Cache通常分为三层，分别叫L1，L2，L3 Cache
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">synchronized&lt;/span> (o) {
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// code&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>这里使用编译&amp;ndash;及javap 打印字节文件&lt;/p>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>这里使用编译&amp;ndash;及javap 打印字节文件&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>javac -encoding UTF-8 SyncTest.java //先运行编译class文件命令
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>javap -v SyncTest.class //再通过javap打印出字节文件
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>结果如下，Synchronized修饰代码块时，由monitorenter和monitorexist指令实现同步。进入monitorenter指令后线程持有Monitor对象；退出monitorenter指令后，线程释放该Monitor对象&lt;/p>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>javap -v SyncTest.class //再通过javap打印出字节文件&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>结果如下，Synchronized修饰代码块时，由monitorenter和monitorexist指令实现同步。进入monitorenter指令后线程持有Monitor对象；退出monitorenter指令后，线程释放该Monitor对象&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">method2&lt;/span>();
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> descriptor: ()V
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> flags: ACC_PUBLIC
@@ -845,12 +695,8 @@ CPU Cache通常分为三层，分别叫L1，L2，L3 Cache
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> locals &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#f92672">[&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">com&lt;/span>&lt;span style="color:#f92672">/&lt;/span>demo&lt;span style="color:#f92672">/&lt;/span>io&lt;span style="color:#f92672">/&lt;/span>SyncTest, &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">java&lt;/span>&lt;span style="color:#f92672">/&lt;/span>lang&lt;span style="color:#f92672">/&lt;/span>Object, &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">java&lt;/span>&lt;span style="color:#f92672">/&lt;/span>lang&lt;span style="color:#f92672">/&lt;/span>Object &lt;span style="color:#f92672">]&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> stack &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#f92672">[&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">java&lt;/span>&lt;span style="color:#f92672">/&lt;/span>lang&lt;span style="color:#f92672">/&lt;/span>Throwable &lt;span style="color:#f92672">]&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> frame_type &lt;span style="color:#f92672">=&lt;/span> 250 &lt;span style="color:#75715e">/* chop */&lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> offset_delta &lt;span style="color:#f92672">=&lt;/span> 4
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>如果Synchronized修饰同步方法，代替monitorenter和monitorexit的是 &lt;code>ACC_SYNCHRONIZED&lt;/code>标志，即：JVM使用该访问标志区分方法是否为同步方法。方法调用时，调用指令检查是否设置ACC_SYNCHRONIZED标志，如有，则执行线程&lt;strong>先持有&lt;/strong>该Monitor对象，再执行该方法；&lt;strong>运行期间&lt;/strong>，&lt;strong>其他线程无法获取到该Monitor&lt;/strong>对象；方法&lt;strong>执行完成&lt;/strong>后，&lt;strong>释放该Monitor&lt;/strong>对象
-javap -v xx.class 字节文件查看&lt;/p></description></item><item><title>(该文弃用)锁升级</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/lock_escalation_deprecated/</link><pubDate>Mon, 31 Oct 2022 11:08:59 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/lock_escalation_deprecated/</guid><description>&lt;h2 id="简介">
- 简介
- &lt;a class="anchor" href="#%e7%ae%80%e4%bb%8b">#&lt;/a>
-&lt;/h2>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> offset_delta &lt;span style="color:#f92672">=&lt;/span> 4&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>如果Synchronized修饰同步方法，代替monitorenter和monitorexit的是 &lt;code>ACC_SYNCHRONIZED&lt;/code>标志，即：JVM使用该访问标志区分方法是否为同步方法。方法调用时，调用指令检查是否设置ACC_SYNCHRONIZED标志，如有，则执行线程&lt;strong>先持有&lt;/strong>该Monitor对象，再执行该方法；&lt;strong>运行期间&lt;/strong>，&lt;strong>其他线程无法获取到该Monitor&lt;/strong>对象；方法&lt;strong>执行完成&lt;/strong>后，&lt;strong>释放该Monitor&lt;/strong>对象
+javap -v xx.class 字节文件查看&lt;/p></description></item><item><title>(该文弃用)锁升级</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/lock_escalation_deprecated/</link><pubDate>Mon, 31 Oct 2022 11:08:59 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/lock_escalation_deprecated/</guid><description>&lt;h2 id="简介">简介&lt;a class="anchor" href="#%e7%ae%80%e4%bb%8b">#&lt;/a>&lt;/h2>
 &lt;p>无锁 =&amp;gt; 偏向锁 =&amp;gt; 轻量锁 =&amp;gt; 重量锁&lt;/p>
 &lt;p>复习Class类锁和实例对象锁，说明Class类锁和实例对象锁不是同一把锁，互相不影响&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>(String&lt;span style="color:#f92672">[]&lt;/span> args) &lt;span style="color:#66d9ef">throws&lt;/span> InterruptedException { 
@@ -886,11 +732,7 @@ javap -v xx.class 字节文件查看&lt;/p></description></item><item><title>(�
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">线程2获得object实例对象锁
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">线程2结束并释放锁
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">线程1结束并释放锁
-&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">*/&lt;/span>
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>总结图 , 00 , 01 , 10 ，没有11&lt;/p></description></item><item><title>对象内存布局和对象头</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly03121lyobject-concurrent/</link><pubDate>Sun, 30 Oct 2022 16:56:16 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly03121lyobject-concurrent/</guid><description>&lt;h2 id="对象布局">
- 对象布局
- &lt;a class="anchor" href="#%e5%af%b9%e8%b1%a1%e5%b8%83%e5%b1%80">#&lt;/a>
-&lt;/h2>
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">*/&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>总结图 , 00 , 01 , 10 ，没有11&lt;/p></description></item><item><title>对象内存布局和对象头</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly03121lyobject-concurrent/</link><pubDate>Sun, 30 Oct 2022 16:56:16 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly03121lyobject-concurrent/</guid><description>&lt;h2 id="对象布局">对象布局&lt;a class="anchor" href="#%e5%af%b9%e8%b1%a1%e5%b8%83%e5%b1%80">#&lt;/a>&lt;/h2>
 &lt;ul>
 &lt;li>
 &lt;p>&lt;strong>heap&lt;/strong> （&lt;strong>where&lt;/strong>）: &lt;strong>new (eden ,s0 ,s1) ,old, metaspace&lt;/strong>&lt;/p>
@@ -912,22 +754,17 @@ HotSpot虚拟机里，对象在&lt;strong>堆内存中的存储布局&lt;/strong
 &lt;/ul>
 &lt;/li>
 &lt;/ul>
-&lt;h3 id="对象头">
- 对象头
- &lt;a class="anchor" href="#%e5%af%b9%e8%b1%a1%e5%a4%b4">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="对象头">对象头&lt;a class="anchor" href="#%e5%af%b9%e8%b1%a1%e5%a4%b4">#&lt;/a>&lt;/h3>
 &lt;ul>
 &lt;li>
 &lt;p>对象标记&lt;/p>
-&lt;blockquote>
+&lt;blockquote class='book-hint '>
 &lt;ol>
 &lt;li>Object o= new Object(); //new一个对象，占内存多少&lt;/li>
 &lt;li>o.hashCode() //hashCode存在对象哪个地方&lt;/li>
 &lt;li>synchronized(o){ } //对象被锁了多少次（可重入锁）&lt;/li>
 &lt;li>System.gc(); //躲过了几次gc（次数）&lt;/li>
-&lt;/ol>
-&lt;/blockquote>
-&lt;p>上面这些，&lt;strong>哈希码&lt;/strong>、&lt;strong>gc标记&lt;/strong>、&lt;strong>gc次数&lt;/strong>、&lt;strong>同步锁标记&lt;/strong>、&lt;strong>偏向锁持有者&lt;/strong>，都保存在&lt;strong>对象标记&lt;/strong>里面
+&lt;/ol>&lt;/blockquote>&lt;p>上面这些，&lt;strong>哈希码&lt;/strong>、&lt;strong>gc标记&lt;/strong>、&lt;strong>gc次数&lt;/strong>、&lt;strong>同步锁标记&lt;/strong>、&lt;strong>偏向锁持有者&lt;/strong>，都保存在&lt;strong>对象标记&lt;/strong>里面
 &lt;img src="img/ly-20241212141948895.png" alt="ly-20241212141948895" />&lt;/p>
 &lt;ol>
 &lt;li>如果在64位系统中，对象头中，**mark word（对象标记）**占用8个字节（64位）；**class pointer（类元信息）**占用8个字节，总共16字节（忽略压缩指针）&lt;/li>
@@ -941,10 +778,7 @@ HotSpot虚拟机里，对象在&lt;strong>堆内存中的存储布局&lt;/strong
 &lt;img src="img/ly-20241212141949249.png" alt="ly-20241212141949249" />&lt;/p>
 &lt;/li>
 &lt;/ul>
-&lt;h3 id="实例数据和对齐填充">
- 实例数据和对齐填充
- &lt;a class="anchor" href="#%e5%ae%9e%e4%be%8b%e6%95%b0%e6%8d%ae%e5%92%8c%e5%af%b9%e9%bd%90%e5%a1%ab%e5%85%85">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="实例数据和对齐填充">实例数据和对齐填充&lt;a class="anchor" href="#%e5%ae%9e%e4%be%8b%e6%95%b0%e6%8d%ae%e5%92%8c%e5%af%b9%e9%bd%90%e5%a1%ab%e5%85%85">#&lt;/a>&lt;/h3>
 &lt;ul>
 &lt;li>
 &lt;p>实例数据&lt;/p>
@@ -965,27 +799,17 @@ HotSpot虚拟机里，对象在&lt;strong>堆内存中的存储布局&lt;/strong
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">boolean&lt;/span> flag&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#66d9ef">false&lt;/span>; &lt;span style="color:#75715e">//1字节&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//Customer customer=new Customer();&lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//该对象大小：对象头（对象标记8+类型指针8）+实例数据（4+1）=21字节 ===&amp;gt; 为了对齐填充，则为24字节&lt;/span>
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">//&lt;/span>该对象大小&lt;span style="color:#960050;background-color:#1e0010">：&lt;/span>对象头&lt;span style="color:#960050;background-color:#1e0010">（&lt;/span>对象标记8&lt;span style="color:#f92672">+&lt;/span>类型指针8&lt;span style="color:#960050;background-color:#1e0010">）&lt;/span>&lt;span style="color:#f92672">+&lt;/span>实例数据&lt;span style="color:#960050;background-color:#1e0010">（&lt;/span>4&lt;span style="color:#f92672">+&lt;/span>1&lt;span style="color:#960050;background-color:#1e0010">）&lt;/span>&lt;span style="color:#f92672">=&lt;/span>21字节 &lt;span style="color:#f92672">===&amp;gt;&lt;/span> 为了对齐填充&lt;span style="color:#960050;background-color:#1e0010">，&lt;/span>则为24字节&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
 &lt;/ul>
-&lt;h3 id="源码查看">
- 源码查看
- &lt;a class="anchor" href="#%e6%ba%90%e7%a0%81%e6%9f%a5%e7%9c%8b">#&lt;/a>
-&lt;/h3>
-&lt;p>&lt;img src="img/ly-20241212141949397.png" alt="ly-20241212141949397" />&lt;/p></description></item><item><title>并发02</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly0302lyconcurrent-02/</link><pubDate>Fri, 28 Oct 2022 14:15:06 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly0302lyconcurrent-02/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide （添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;h2 id="jmmjavamemorymodel">
- JMM（JavaMemoryModel)
- &lt;a class="anchor" href="#jmmjavamemorymodel">#&lt;/a>
-&lt;/h2>
+&lt;h3 id="源码查看">源码查看&lt;a class="anchor" href="#%e6%ba%90%e7%a0%81%e6%9f%a5%e7%9c%8b">#&lt;/a>&lt;/h3>
+&lt;p>&lt;img src="img/ly-20241212141949397.png" alt="ly-20241212141949397" />&lt;/p>
+&lt;h2 id="具体的64位虚拟机为主">具体的（64位虚拟机为主）&lt;a class="anchor" href="#%e5%85%b7%e4%bd%93%e7%9a%8464%e4%bd%8d%e8%99%9a%e6%8b%9f%e6%9c%ba%e4%b8%ba%e4%b8%bb">#&lt;/a>&lt;/h2>
+&lt;p>&lt;img src="img/ly-20241212141949552.png" alt="ly-20241212141949552" />&lt;/p></description></item><item><title>并发02</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly0302lyconcurrent-02/</link><pubDate>Fri, 28 Oct 2022 14:15:06 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly0302lyconcurrent-02/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide （添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;h2 id="jmmjavamemorymodel">JMM（JavaMemoryModel)&lt;a class="anchor" href="#jmmjavamemorymodel">#&lt;/a>&lt;/h2>
 &lt;p>
 &lt;a target="_blank" href="https://lwmfjc.github.io/2022/11/21/review/java_guide/java/concurrent/jmm">详见-知识点&lt;/a>
 &lt;img src="img/ly-20241212141935173.png" alt="Java内存模型" />&lt;/p>
-&lt;h2 id="volatile关键字">
- volatile关键字
- &lt;a class="anchor" href="#volatile%e5%85%b3%e9%94%ae%e5%ad%97">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="volatile关键字">volatile关键字&lt;a class="anchor" href="#volatile%e5%85%b3%e9%94%ae%e5%ad%97">#&lt;/a>&lt;/h2>
 &lt;ul>
 &lt;li>
 &lt;p>保证变量可见性&lt;/p>
@@ -993,10 +817,8 @@ HotSpot虚拟机里，对象在&lt;strong>堆内存中的存储布局&lt;/strong
 &lt;li>
 &lt;p>使用volatile关键字保证变量可见性，如果将变量声明为volatile则&lt;strong>指示JVM该变量是共享且不稳定&lt;/strong>的，每次使用它都到&lt;strong>主存&lt;/strong>中读取&lt;br>
 &lt;img src="img/ly-20241212141935463.png" alt="ly-20241212141935463" />&lt;/p>
-&lt;blockquote>
-&lt;p>volatile关键字并非Java语言特有，在C语言里也有，它最原始的意义就是&lt;strong>禁用CPU缓存&lt;/strong>。&lt;/p>
-&lt;/blockquote>
-&lt;/li>
+&lt;blockquote class='book-hint '>
+&lt;p>volatile关键字并非Java语言特有，在C语言里也有，它最原始的意义就是&lt;strong>禁用CPU缓存&lt;/strong>。&lt;/p>&lt;/blockquote>&lt;/li>
 &lt;li>
 &lt;p>volatile关键字只能&lt;strong>保证数据可见性&lt;/strong>，&lt;strong>不能保证数据原子性&lt;/strong>。&lt;strong>synchronized&lt;/strong>关键字两者都能保证&lt;/p>
 &lt;/li>
@@ -1034,16 +856,13 @@ HotSpot虚拟机里，对象在&lt;strong>堆内存中的存储布局&lt;/strong
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
 &lt;/ul>
 &lt;/li>
 &lt;li>
 &lt;p>如何禁止指令重排
-使用&lt;strong>volatile&lt;/strong>关键字，除了可以保证&lt;strong>变量的可见性&lt;/strong>，还能&lt;strong>防止JVM指令重排&lt;/strong>。当我们对这个变量进行读写操作的时候，-会通过插入特定的&lt;strong>内存屏障&lt;/strong>来禁止指令重排&lt;/p></description></item><item><title>并发01</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly0301lyconcurrent-01/</link><pubDate>Wed, 26 Oct 2022 16:46:32 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly0301lyconcurrent-01/</guid><description>&lt;blockquote>
-&lt;p>转载自https://github.com/Snailclimb/JavaGuide （添加小部分笔记）感谢作者!&lt;/p>
-&lt;/blockquote>
-&lt;ul>
+使用&lt;strong>volatile&lt;/strong>关键字，除了可以保证&lt;strong>变量的可见性&lt;/strong>，还能&lt;strong>防止JVM指令重排&lt;/strong>。当我们对这个变量进行读写操作的时候，-会通过插入特定的&lt;strong>内存屏障&lt;/strong>来禁止指令重排&lt;/p></description></item><item><title>并发01</title><link>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly0301lyconcurrent-01/</link><pubDate>Wed, 26 Oct 2022 16:46:32 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Review/java_guide/java/Concurrent/ly0301lyconcurrent-01/</guid><description>&lt;blockquote class='book-hint '>
+&lt;p>转载自https://github.com/Snailclimb/JavaGuide （添加小部分笔记）感谢作者!&lt;/p>&lt;/blockquote>&lt;ul>
 &lt;li>
 &lt;p>什么是进程和线程&lt;/p>
 &lt;ul>
@@ -1064,12 +883,10 @@ HotSpot虚拟机里，对象在&lt;strong>堆内存中的存储布局&lt;/strong
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">32&lt;/span> org.jetbrains.jps.cmdline.Launcher
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">10084&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">16244&lt;/span> com.Test
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">17400&lt;/span> sun.tools.jps.Jps
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">17400&lt;/span> sun.tools.jps.Jps&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
 &lt;li>
 &lt;p>杀死进程&lt;/p>
-&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span> taskkill /f /pid &lt;span style="color:#ae81ff">16244&lt;/span>
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span> taskkill /f /pid &lt;span style="color:#ae81ff">16244&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
 &lt;/ul>
 &lt;/li>
 &lt;/ul>
@@ -1102,5 +919,4 @@ HotSpot虚拟机里，对象在&lt;strong>堆内存中的存储布局&lt;/strong
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">[&lt;/span>4&lt;span style="color:#f92672">]&lt;/span> Signal Dispatcher &lt;span style="color:#75715e">// 分发处理给 JVM 信号的线程&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">[&lt;/span>3&lt;span style="color:#f92672">]&lt;/span> Finalizer &lt;span style="color:#75715e">//调用对象 finalize 方法的线程&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">[&lt;/span>2&lt;span style="color:#f92672">]&lt;/span> Reference Handler &lt;span style="color:#75715e">//清除 reference 线程&lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">[&lt;/span>1&lt;span style="color:#f92672">]&lt;/span> main &lt;span style="color:#75715e">//main 线程,程序入口&lt;/span>
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>也就是说，一个Java程序的运行，是main线程和多个其他线程同时运行&lt;/p></description></item></channel></rss>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">[&lt;/span>1&lt;span style="color:#f92672">]&lt;/span> main &lt;span style="color:#f92672">//&lt;/span>main 线程,程序入口&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>也就是说，一个Java程序的运行，是main线程和多个其他线程同时运行&lt;/p></description></item></channel></rss>

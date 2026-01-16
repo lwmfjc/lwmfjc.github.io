@@ -10,51 +10,31 @@ rsync -avz &amp;ndash;progress &amp;ndash;delete source-rsync -e &amp;lsquo;ssh 
 &lt;a target="_blank" href="mailto:ly@192.168.1.206">ly@192.168.1.206&lt;/a>:/mnt/hgfs/gitRepo/blog.source/source/attachments/rsync-pc&lt;/p>
 &lt;p>#从手机上拉取
 rsync -avz &amp;ndash;progress &amp;ndash;delete -e &amp;lsquo;ssh -p 8022&amp;rsquo; 
-&lt;a target="_blank" href="mailto:ly@192.168.1.101">ly@192.168.1.101&lt;/a>:/storage/emulated/0/000Ly/git/blog.source/source/attachments/rsync-k40 source-rsync&lt;/p></description></item><item><title>redis集群搭建</title><link>https://lwmfjc.github.io/zh/docs/technology/Redis/redis-cluster/</link><pubDate>Thu, 13 Apr 2023 23:27:30 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Redis/redis-cluster/</guid><description>&lt;blockquote>
+&lt;a target="_blank" href="mailto:ly@192.168.1.101">ly@192.168.1.101&lt;/a>:/storage/emulated/0/000Ly/git/blog.source/source/attachments/rsync-k40 source-rsync&lt;/p></description></item><item><title>redis集群搭建</title><link>https://lwmfjc.github.io/zh/docs/technology/Redis/redis-cluster/</link><pubDate>Thu, 13 Apr 2023 23:27:30 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Redis/redis-cluster/</guid><description>&lt;blockquote class='book-hint '>
 &lt;p>转载自https://www.cnblogs.com/Yunya-Cnblogs/p/14608937.html（添加小部分笔记）感谢作者!&lt;/p>
 &lt;p>部分参考自 
-&lt;a target="_blank" href="https://www.cnblogs.com/ysocean/p/12328088.html">https://www.cnblogs.com/ysocean/p/12328088.html&lt;/a>&lt;/p>
-&lt;/blockquote>
-&lt;h1 id="基本准备">
- 基本准备
- &lt;a class="anchor" href="#%e5%9f%ba%e6%9c%ac%e5%87%86%e5%a4%87">#&lt;/a>
-&lt;/h1>
+&lt;a target="_blank" href="https://www.cnblogs.com/ysocean/p/12328088.html">https://www.cnblogs.com/ysocean/p/12328088.html&lt;/a>&lt;/p>&lt;/blockquote>&lt;h1 id="基本准备">基本准备&lt;a class="anchor" href="#%e5%9f%ba%e6%9c%ac%e5%87%86%e5%a4%87">#&lt;/a>&lt;/h1>
 &lt;p>&lt;img src="img/ly-20241212142159186.png" alt="ly-20241212142159186.png" />&lt;/p>
-&lt;h2 id="架构">
- 架构
- &lt;a class="anchor" href="#%e6%9e%b6%e6%9e%84">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="架构">架构&lt;a class="anchor" href="#%e6%9e%b6%e6%9e%84">#&lt;/a>&lt;/h2>
 &lt;p>采用Centos7，Redis版本为6.2，架构如下：&lt;/p>
 &lt;p>&lt;img src="img/ly-20241212142159238.png" alt="ly-20241212142159238" />&lt;/p>
-&lt;h2 id="hosts修改">
- hosts修改
- &lt;a class="anchor" href="#hosts%e4%bf%ae%e6%94%b9">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="hosts修改">hosts修改&lt;a class="anchor" href="#hosts%e4%bf%ae%e6%94%b9">#&lt;/a>&lt;/h2>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>vim /etc/hosts
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#添加&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>192.168.1.101 node1
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>192.168.1.102 node2
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>192.168.1.103 node3
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="集群准备">
- 集群准备
- &lt;a class="anchor" href="#%e9%9b%86%e7%be%a4%e5%87%86%e5%a4%87">#&lt;/a>
-&lt;/h2>
-&lt;h3 id="对每个节点">
- 对每个节点
- &lt;a class="anchor" href="#%e5%af%b9%e6%af%8f%e4%b8%aa%e8%8a%82%e7%82%b9">#&lt;/a>
-&lt;/h3>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>192.168.1.103 node3&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="集群准备">集群准备&lt;a class="anchor" href="#%e9%9b%86%e7%be%a4%e5%87%86%e5%a4%87">#&lt;/a>&lt;/h2>
+&lt;h3 id="对每个节点">对每个节点&lt;a class="anchor" href="#%e5%af%b9%e6%af%8f%e4%b8%aa%e8%8a%82%e7%82%b9">#&lt;/a>&lt;/h3>
 &lt;ol>
 &lt;li>
 &lt;p>下载redis并解压到 /usr/local/redis-cluster中&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>cd /usr/local
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>mkdir redis-cluster
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>tar -zxvf redis* -C /usr/local/redis*
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>tar -zxvf redis* -C /usr/local/redis*&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
 &lt;li>
 &lt;p>进入redis根目录&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>make
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>make install
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>make install&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
 &lt;li>
 &lt;p>安装完毕&lt;/p>
 &lt;/li>
@@ -64,14 +44,51 @@ rsync -avz &amp;ndash;progress &amp;ndash;delete -e &amp;lsquo;ssh -p 8022&amp;r
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#添加&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>192.168.1.101 node1
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>192.168.1.102 node2
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>192.168.1.103 node3
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>192.168.1.103 node3&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
 &lt;/ol>
-&lt;h2 id="配置文件修改6个节点中的每一个">
- 配置文件修改(6个节点中的每一个)
- &lt;a class="anchor" href="#%e9%85%8d%e7%bd%ae%e6%96%87%e4%bb%b6%e4%bf%ae%e6%94%b96%e4%b8%aa%e8%8a%82%e7%82%b9%e4%b8%ad%e7%9a%84%e6%af%8f%e4%b8%80%e4%b8%aa">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="配置文件修改6个节点中的每一个">配置文件修改(6个节点中的每一个)&lt;a class="anchor" href="#%e9%85%8d%e7%bd%ae%e6%96%87%e4%bb%b6%e4%bf%ae%e6%94%b96%e4%b8%aa%e8%8a%82%e7%82%b9%e4%b8%ad%e7%9a%84%e6%af%8f%e4%b8%80%e4%b8%aa">#&lt;/a>&lt;/h2>
 &lt;p>创建多级目录&lt;/p>
-&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>mkdir -p /usr/local/redis_cluster/redis_63&lt;span style="color:#f92672">{&lt;/span>79,80&lt;span style="color:#f92672">}&lt;/span>/&lt;span style="color:#f92672">{&lt;/span>conf,pid,logs&lt;span style="color:#f92672">}&lt;/span>
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;img src="img/ly-20241212142159275.png" alt="ly-20241212142159275" />&lt;/p>
-&lt;p>编写配置文件&lt;/p></description></item></channel></rss>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>mkdir -p /usr/local/redis_cluster/redis_63&lt;span style="color:#f92672">{&lt;/span>79,80&lt;span style="color:#f92672">}&lt;/span>/&lt;span style="color:#f92672">{&lt;/span>conf,pid,logs&lt;span style="color:#f92672">}&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;img src="img/ly-20241212142159275.png" alt="ly-20241212142159275" />&lt;/p>
+&lt;p>编写配置文件&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>vim /usr/local/redis_cluster/redis_6379/conf/redis.conf
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># 命令行状态下输入 :%d 回车，清空文件&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># 再输入 :set paste 处理多出的行带#的问题&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># 再输入i&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">####内容#####&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># 快速修改：:%s/6379/6380/g&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># 守护进行模式启动&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>daemonize yes
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># 设置数据库数量，默认数据库为0&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>databases &lt;span style="color:#ae81ff">16&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># 绑定地址，需要修改&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># bind 192.168.1.101&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>bind node1
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># 绑定端口，需要修改&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>port &lt;span style="color:#ae81ff">6379&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># pid文件存储位置，文件名需要修改&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>pidfile /usr/local/redis_cluster/redis_6379/pid/redis_6379.pid
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># log文件存储位置，文件名需要修改&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>logfile /usr/local/redis_cluster/redis_6379/logs/redis_6379.log
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># RDB快照备份文件名，文件名需要修改&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>dbfilename redis_6379.rdb
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># 本地数据库存储目录，需要修改&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>dir /usr/local/redis_cluster/redis_6379
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># 集群相关配置&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># 是否以集群模式启动&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>cluster-enabled yes
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># 集群节点回应最长时间，超过该时间被认为下线&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>cluster-node-timeout &lt;span style="color:#ae81ff">15000&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># 生成的集群节点配置文件名，文件名需要修改&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>cluster-config-file nodes_6379.conf&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>复制粘贴配置文件&lt;/p></description></item></channel></rss>

@@ -1,20 +1,11 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>施磊 on 随记</title><link>https://lwmfjc.github.io/zh/tags/%E6%96%BD%E7%A3%8A/</link><description>Recent content in 施磊 on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Mon, 24 Mar 2025 19:14:08 +0800</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/tags/%E6%96%BD%E7%A3%8A/index.xml" rel="self" type="application/rss+xml"/><item><title>05日志</title><link>https://lwmfjc.github.io/zh/docs/technology/MySQL/advanced_shilei/05/</link><pubDate>Mon, 24 Mar 2025 19:14:08 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/MySQL/advanced_shilei/05/</guid><description>&lt;h1 id="undolog">
- undolog
- &lt;a class="anchor" href="#undolog">#&lt;/a>
-&lt;/h1>
-&lt;h2 id="作用">
- 作用
- &lt;a class="anchor" href="#%e4%bd%9c%e7%94%a8">#&lt;/a>
-&lt;/h2>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>施磊 on 随记</title><link>https://lwmfjc.github.io/zh/tags/%E6%96%BD%E7%A3%8A/</link><description>Recent content in 施磊 on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Mon, 24 Mar 2025 19:14:08 +0800</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/tags/%E6%96%BD%E7%A3%8A/index.xml" rel="self" type="application/rss+xml"/><item><title>05日志</title><link>https://lwmfjc.github.io/zh/docs/technology/MySQL/advanced_shilei/05/</link><pubDate>Mon, 24 Mar 2025 19:14:08 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/MySQL/advanced_shilei/05/</guid><description>&lt;h1 id="undolog">undolog&lt;a class="anchor" href="#undolog">#&lt;/a>&lt;/h1>
+&lt;h2 id="作用">作用&lt;a class="anchor" href="#%e4%bd%9c%e7%94%a8">#&lt;/a>&lt;/h2>
 &lt;ol>
 &lt;li>恢复某条记录原始状态&lt;/li>
 &lt;li>记录修改过程，MVCC的原理，结合事务id知道哪些数据可见
 &lt;code>undo log的修改本身会被记录到redo log中。即使undo log未刷盘，崩溃恢复时也可以通过redo log重建undo log。&lt;/code>&lt;/li>
 &lt;/ol>
-&lt;h1 id="redolog">
- redolog
- &lt;a class="anchor" href="#redolog">#&lt;/a>
-&lt;/h1>
+&lt;h1 id="redolog">redolog&lt;a class="anchor" href="#redolog">#&lt;/a>&lt;/h1>
 &lt;ol>
 &lt;li>&lt;code>数据持久性&lt;/code>&amp;ndash;事务提交后，buffer pool一些脏页没有写入数据库磁盘文件。重启时，利用redolog恢复&lt;code>(表空间、页号、偏移量、数值)&lt;/code>的数据（磁盘数据）&lt;/li>
 &lt;li>由于redolog有几种策略时机刷入磁盘。另有额外线程每隔1s不断刷入redolog buffer pool数据到redolog磁盘日志文件中，如果事务未提交但是刷入了redolog日志文件也无妨。可以根据一些标识，找到哪个事务是未提交的，然后再用undolog恢复原始状态。&lt;/li>
@@ -26,15 +17,8 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>client-cert.pem ibtmp1		 sys
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>client-key.pem	 mysql		 test
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>db211-slow.log	 performance_schema xx
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>ib_buffer_pool 	 private_key.pem
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h1 id="update语句执行流程">
- update语句执行流程
- &lt;a class="anchor" href="#update%e8%af%ad%e5%8f%a5%e6%89%a7%e8%a1%8c%e6%b5%81%e7%a8%8b">#&lt;/a>
-&lt;/h1>
-&lt;h2 id="流程">
- 流程
- &lt;a class="anchor" href="#%e6%b5%81%e7%a8%8b">#&lt;/a>
-&lt;/h2>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>ib_buffer_pool 	 private_key.pem&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h1 id="update语句执行流程">update语句执行流程&lt;a class="anchor" href="#update%e8%af%ad%e5%8f%a5%e6%89%a7%e8%a1%8c%e6%b5%81%e7%a8%8b">#&lt;/a>&lt;/h1>
+&lt;h2 id="流程">流程&lt;a class="anchor" href="#%e6%b5%81%e7%a8%8b">#&lt;/a>&lt;/h2>
 &lt;ol>
 &lt;li>事务开始
 &lt;ol>
@@ -52,10 +36,7 @@
 &lt;/ol>
 &lt;/li>
 &lt;/ol>
-&lt;h3 id="redolog的刷盘策略">
- redolog的刷盘策略
- &lt;a class="anchor" href="#redolog%e7%9a%84%e5%88%b7%e7%9b%98%e7%ad%96%e7%95%a5">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="redolog的刷盘策略">redolog的刷盘策略&lt;a class="anchor" href="#redolog%e7%9a%84%e5%88%b7%e7%9b%98%e7%ad%96%e7%95%a5">#&lt;/a>&lt;/h3>
 &lt;ol>
 &lt;li>Redo Log Buffer 空间不足：当 Redo Log Buffer 的写入速度超过刷盘速度时，InnoDB 会强制刷盘以释放空间。&lt;/li>
 &lt;li>后台线程定期刷盘：InnoDB 的后台线程（如 log_writer 和 log_flusher）会周期性刷盘（默认每秒一次，由 innodb_flush_log_at_timeout 控制）。&lt;/li>
@@ -67,14 +48,9 @@
 &lt;/ol>
 &lt;/li>
 &lt;/ol>
-&lt;p>&lt;del>这里其实有个疑问，就是redolog并不是事务提交后才刷盘的，而是很有可能事务提交前就刷盘了。如果提交前刷盘了，之后系统宕机了，那么redolog磁盘文件就多出了一些未提交事务的日志。解决办法：可以通过一些属性，在undolog中找到未提交事务的id，然后通过undolog回滚未提交事务。&lt;/del>&lt;/p></description></item><item><title>04事务</title><link>https://lwmfjc.github.io/zh/docs/technology/MySQL/advanced_shilei/04/</link><pubDate>Fri, 21 Mar 2025 16:28:40 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/MySQL/advanced_shilei/04/</guid><description>&lt;h1 id="关闭自动提交">
- 关闭自动提交
- &lt;a class="anchor" href="#%e5%85%b3%e9%97%ad%e8%87%aa%e5%8a%a8%e6%8f%90%e4%ba%a4">#&lt;/a>
-&lt;/h1>
-&lt;blockquote>
-&lt;p>在MySQL命令行的默认设置下，事务都是自动提交的，即执行SQL语句后就会马上执行COMMIT操作。因此开始一个事务，必须使用BEGIN、START TRANSACTION，(显示开启事务）或者执行SET AUTOCOMMIT=0，以禁用当前会话的自动提交。&lt;/p>
-&lt;/blockquote>
-&lt;ol>
+&lt;p>&lt;del>这里其实有个疑问，就是redolog并不是事务提交后才刷盘的，而是很有可能事务提交前就刷盘了。如果提交前刷盘了，之后系统宕机了，那么redolog磁盘文件就多出了一些未提交事务的日志。解决办法：可以通过一些属性，在undolog中找到未提交事务的id，然后通过undolog回滚未提交事务。&lt;/del>&lt;/p></description></item><item><title>04事务</title><link>https://lwmfjc.github.io/zh/docs/technology/MySQL/advanced_shilei/04/</link><pubDate>Fri, 21 Mar 2025 16:28:40 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/MySQL/advanced_shilei/04/</guid><description>&lt;h1 id="关闭自动提交">关闭自动提交&lt;a class="anchor" href="#%e5%85%b3%e9%97%ad%e8%87%aa%e5%8a%a8%e6%8f%90%e4%ba%a4">#&lt;/a>&lt;/h1>
+&lt;blockquote class='book-hint '>
+&lt;p>在MySQL命令行的默认设置下，事务都是自动提交的，即执行SQL语句后就会马上执行COMMIT操作。因此开始一个事务，必须使用BEGIN、START TRANSACTION，(显示开启事务）或者执行SET AUTOCOMMIT=0，以禁用当前会话的自动提交。&lt;/p>&lt;/blockquote>&lt;ol>
 &lt;li>select语句一般用来输出用户变量，比如select @变量名，用于输出数据源不是表格的数据。&lt;/li>
 &lt;li>系统变量在变量名前面有&lt;mark>两个@&lt;/mark>&lt;/li>
 &lt;/ol>
@@ -94,41 +70,69 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">+--------------+&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">1&lt;/span> row &lt;span style="color:#66d9ef">in&lt;/span> &lt;span style="color:#66d9ef">set&lt;/span> (&lt;span style="color:#ae81ff">0&lt;/span>.&lt;span style="color:#ae81ff">00&lt;/span> sec)
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># 修改变量
-&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">set&lt;/span> autocommit&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">0&lt;/span>;
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>本文中autocommit=0，开始事务需要使用&lt;code>begin&lt;/code>显式开启&lt;/p>
-&lt;h1 id="事务并发存在的问题">
- 事务并发存在的问题
- &lt;a class="anchor" href="#%e4%ba%8b%e5%8a%a1%e5%b9%b6%e5%8f%91%e5%ad%98%e5%9c%a8%e7%9a%84%e9%97%ae%e9%a2%98">#&lt;/a>
-&lt;/h1>
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">set&lt;/span> autocommit&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">0&lt;/span>;&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>本文中autocommit=0，开始事务需要使用&lt;code>begin&lt;/code>显式开启&lt;/p>
+&lt;h1 id="事务并发存在的问题">事务并发存在的问题&lt;a class="anchor" href="#%e4%ba%8b%e5%8a%a1%e5%b9%b6%e5%8f%91%e5%ad%98%e5%9c%a8%e7%9a%84%e9%97%ae%e9%a2%98">#&lt;/a>&lt;/h1>
 &lt;p>&lt;del>没有脏读问题，如果两个事务同时修改一条数据，那么另一个事务的修改操作会被阻塞&lt;/del>&lt;br>
 【隔离性】脏读（读到了还没有提交的数据）&lt;/p>
 &lt;p>【隔离性】不可重复读（同一事务中，第1次读的数据和第2次读的数据不一样。读到了事务操作过程中其他事务提交的数据，也不应该，这个没法保证一致性。比如我第一次根据某个事务做了一个操作，第二次想同样的逻辑做一个判断操作，但是数据变了，导致同一个事务中对同一个(其实不是了）数据做的操作居然不一致&lt;/p>
 &lt;p>【隔离性】虚读、幻读（同一事务中：我第一次读到某一条数据，但是第二次没读到；或者第一次没读到，第二次居然读到了。条数问题）&lt;/p>
-&lt;h1 id="事务的隔离级别">
- 事务的隔离级别
- &lt;a class="anchor" href="#%e4%ba%8b%e5%8a%a1%e7%9a%84%e9%9a%94%e7%a6%bb%e7%ba%a7%e5%88%ab">#&lt;/a>
-&lt;/h1>
+&lt;h1 id="事务的隔离级别">事务的隔离级别&lt;a class="anchor" href="#%e4%ba%8b%e5%8a%a1%e7%9a%84%e9%9a%94%e7%a6%bb%e7%ba%a7%e5%88%ab">#&lt;/a>&lt;/h1>
 &lt;p>READ_UNCOMMITTED 读未提交&lt;br>
 READ_COMMITTED 读已提交&lt;br>
 REPEATABLE_READ 重复读
 SERIALIZABLE 串行化(行锁)
 修改事务隔离级别：&lt;/p>
-&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-mysql" data-lang="mysql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">set&lt;/span> tx_isolation&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#e6db74">&amp;#39;SERIALIZABLE&amp;#39;&lt;/span>; (&lt;span style="color:#960050;background-color:#1e0010">可以加&lt;/span>global&lt;span style="color:#960050;background-color:#1e0010">，让新开的&lt;/span>session也使用该事务隔离级别)
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>经测试，如果有三个session（mysql客户端），其中一个(a)是SERIALIZABLE,而其他两个(b,c)是READ_UNCOMMITTED，那么客户端b,c之间不会因为锁挂起，而ab或ac会导致(行)锁挂起&lt;/p>
-&lt;h2 id="repeatable_read重复读">
- REPEATABLE_READ重复读
- &lt;a class="anchor" href="#repeatable_read%e9%87%8d%e5%a4%8d%e8%af%bb">#&lt;/a>
-&lt;/h2>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-mysql" data-lang="mysql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">set&lt;/span> tx_isolation&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#e6db74">&amp;#39;SERIALIZABLE&amp;#39;&lt;/span>; (&lt;span style="color:#960050;background-color:#1e0010">可以加&lt;/span>global&lt;span style="color:#960050;background-color:#1e0010">，让新开的&lt;/span>session也使用该事务隔离级别)&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>经测试，如果有三个session（mysql客户端），其中一个(a)是SERIALIZABLE,而其他两个(b,c)是READ_UNCOMMITTED，那么客户端b,c之间不会因为锁挂起，而ab或ac会导致(行)锁挂起&lt;/p>
+&lt;h2 id="repeatable_read重复读">REPEATABLE_READ重复读&lt;a class="anchor" href="#repeatable_read%e9%87%8d%e5%a4%8d%e8%af%bb">#&lt;/a>&lt;/h2>
 &lt;p>REPEATABLE_READ重复读的隔离级别只能在一定程度上防止幻读 &lt;del>如果事务a(插入一条新数据，或者删除一条数据)后提交。那么变动的数据不会在事务b被查出来。但是如果插入的这条数据(在事务b，注意 不是事务a)被修改了，那么之后它会在事务b被查出来&lt;/del>&lt;/p>
-&lt;h3 id="新增后修改">
- 新增后修改
- &lt;a class="anchor" href="#%e6%96%b0%e5%a2%9e%e5%90%8e%e4%bf%ae%e6%94%b9">#&lt;/a>
-&lt;/h3>
-&lt;p>事务a新增数据后提交，在事务b执行中修改了该数据，则该数据会显示出来（影响了）&lt;/p></description></item><item><title>03存储引擎</title><link>https://lwmfjc.github.io/zh/docs/technology/MySQL/advanced_shilei/03/</link><pubDate>Wed, 19 Mar 2025 09:52:44 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/MySQL/advanced_shilei/03/</guid><description>&lt;p>表结构、数据、索引&lt;/p>
-&lt;h1 id="文件目录">
- 文件目录
- &lt;a class="anchor" href="#%e6%96%87%e4%bb%b6%e7%9b%ae%e5%bd%95">#&lt;/a>
-&lt;/h1>
+&lt;h3 id="新增后修改">新增后修改&lt;a class="anchor" href="#%e6%96%b0%e5%a2%9e%e5%90%8e%e4%bf%ae%e6%94%b9">#&lt;/a>&lt;/h3>
+&lt;p>事务a新增数据后提交，在事务b执行中修改了该数据，则该数据会显示出来（影响了）&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-mysql" data-lang="mysql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#=======事务b=======
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>mysql&lt;span style="color:#f92672">&amp;gt;&lt;/span> begin;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>mysql&lt;span style="color:#f92672">&amp;gt;&lt;/span> &lt;span style="color:#66d9ef">select&lt;/span> &lt;span style="color:#f92672">*&lt;/span> &lt;span style="color:#66d9ef">from&lt;/span> &lt;span style="color:#66d9ef">user&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">+----+-----+&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">|&lt;/span> id &lt;span style="color:#f92672">|&lt;/span> age &lt;span style="color:#f92672">|&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">+----+-----+&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#ae81ff">1&lt;/span> &lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#ae81ff">10&lt;/span> &lt;span style="color:#f92672">|&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#ae81ff">2&lt;/span> &lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#ae81ff">20&lt;/span> &lt;span style="color:#f92672">|&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#ae81ff">3&lt;/span> &lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#ae81ff">33&lt;/span> &lt;span style="color:#f92672">|&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">+----+-----+&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#=======事务a=======
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>mysql&lt;span style="color:#f92672">&amp;gt;&lt;/span> &lt;span style="color:#66d9ef">insert&lt;/span> &lt;span style="color:#66d9ef">into&lt;/span> &lt;span style="color:#66d9ef">user&lt;/span>(age) &lt;span style="color:#66d9ef">values&lt;/span>(&lt;span style="color:#ae81ff">44&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#=======事务b=======
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>mysql&lt;span style="color:#f92672">&amp;gt;&lt;/span> &lt;span style="color:#66d9ef">select&lt;/span> &lt;span style="color:#f92672">*&lt;/span> &lt;span style="color:#66d9ef">from&lt;/span> &lt;span style="color:#66d9ef">user&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">+----+-----+&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">|&lt;/span> id &lt;span style="color:#f92672">|&lt;/span> age &lt;span style="color:#f92672">|&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">+----+-----+&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#ae81ff">1&lt;/span> &lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#ae81ff">10&lt;/span> &lt;span style="color:#f92672">|&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#ae81ff">2&lt;/span> &lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#ae81ff">20&lt;/span> &lt;span style="color:#f92672">|&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#ae81ff">3&lt;/span> &lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#ae81ff">33&lt;/span> &lt;span style="color:#f92672">|&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">+----+-----+&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#=======事务a=======
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>mysql&lt;span style="color:#f92672">&amp;gt;&lt;/span> &lt;span style="color:#66d9ef">update&lt;/span> &lt;span style="color:#66d9ef">user&lt;/span> &lt;span style="color:#66d9ef">set&lt;/span> age&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">55&lt;/span> &lt;span style="color:#66d9ef">where&lt;/span> id &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">4&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#=======事务b=======
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>mysql&lt;span style="color:#f92672">&amp;gt;&lt;/span> &lt;span style="color:#66d9ef">select&lt;/span> &lt;span style="color:#f92672">*&lt;/span> &lt;span style="color:#66d9ef">from&lt;/span> &lt;span style="color:#66d9ef">user&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">+----+-----+&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">|&lt;/span> id &lt;span style="color:#f92672">|&lt;/span> age &lt;span style="color:#f92672">|&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">+----+-----+&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#ae81ff">1&lt;/span> &lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#ae81ff">10&lt;/span> &lt;span style="color:#f92672">|&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#ae81ff">2&lt;/span> &lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#ae81ff">20&lt;/span> &lt;span style="color:#f92672">|&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#ae81ff">3&lt;/span> &lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#ae81ff">33&lt;/span> &lt;span style="color:#f92672">|&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">+----+-----+&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#=======事务b=======
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>mysql&lt;span style="color:#f92672">&amp;gt;&lt;/span> &lt;span style="color:#66d9ef">update&lt;/span> &lt;span style="color:#66d9ef">user&lt;/span> &lt;span style="color:#66d9ef">set&lt;/span> age&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">55&lt;/span> &lt;span style="color:#66d9ef">where&lt;/span> id &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">4&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>mysql&lt;span style="color:#f92672">&amp;gt;&lt;/span> &lt;span style="color:#66d9ef">select&lt;/span> &lt;span style="color:#f92672">*&lt;/span> &lt;span style="color:#66d9ef">from&lt;/span> &lt;span style="color:#66d9ef">user&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">+----+-----+&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">|&lt;/span> id &lt;span style="color:#f92672">|&lt;/span> age &lt;span style="color:#f92672">|&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">+----+-----+&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#ae81ff">1&lt;/span> &lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#ae81ff">10&lt;/span> &lt;span style="color:#f92672">|&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#ae81ff">2&lt;/span> &lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#ae81ff">20&lt;/span> &lt;span style="color:#f92672">|&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#ae81ff">3&lt;/span> &lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#ae81ff">33&lt;/span> &lt;span style="color:#f92672">|&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#ae81ff">4&lt;/span> &lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#ae81ff">55&lt;/span> &lt;span style="color:#f92672">|&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">+----+-----+&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">##此时如果事务a进行 delete from user where id = 4; 那么事务a会阻塞，直到事务b commit&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="删除后修改">删除后修改&lt;a class="anchor" href="#%e5%88%a0%e9%99%a4%e5%90%8e%e4%bf%ae%e6%94%b9">#&lt;/a>&lt;/h3>
+&lt;p>事务a删除数据后提交，在事务b执行中修改了该数据，该数据也照样存在（不影响）&lt;/p></description></item><item><title>03存储引擎</title><link>https://lwmfjc.github.io/zh/docs/technology/MySQL/advanced_shilei/03/</link><pubDate>Wed, 19 Mar 2025 09:52:44 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/MySQL/advanced_shilei/03/</guid><description>&lt;p>表结构、数据、索引&lt;/p>
+&lt;h1 id="文件目录">文件目录&lt;a class="anchor" href="#%e6%96%87%e4%bb%b6%e7%9b%ae%e5%bd%95">#&lt;/a>&lt;/h1>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-mysql" data-lang="mysql">&lt;span style="display:flex;">&lt;span> root&lt;span style="color:#f92672">@&lt;/span>db211:&lt;span style="color:#f92672">/&lt;/span>var&lt;span style="color:#f92672">/&lt;/span>lib&lt;span style="color:#f92672">/&lt;/span>mysql&lt;span style="color:#f92672">/&lt;/span>mysql&lt;span style="color:#75715e"># ls | tail -16
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>tables_priv.frm
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>tables_priv.MYD
@@ -145,63 +149,47 @@ SERIALIZABLE 串行化(行锁)
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>time_zone_transition_type.ibd &lt;span style="color:#75715e">#INNODB存储引擎-表数据+表索引（包括所有索引）
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">user&lt;/span>.frm &lt;span style="color:#75715e">#MyISAM存储引擎-表结构
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">user&lt;/span>.MYD &lt;span style="color:#75715e">#MyISAM存储引擎-表数据
-&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">user&lt;/span>.MYI &lt;span style="color:#75715e">#MyISAM存储引擎-表索引
-&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>INNODE存储引擎的表主键聚簇索引和数据在同一个文件（所以即使没有设置主键，innodb也会为每一行自动生成一个默认的隐藏主键列，用来形成B+树）&lt;/p>
-&lt;h1 id="索引">
- 索引
- &lt;a class="anchor" href="#%e7%b4%a2%e5%bc%95">#&lt;/a>
-&lt;/h1>
-&lt;h2 id="索引创建">
- 索引创建
- &lt;a class="anchor" href="#%e7%b4%a2%e5%bc%95%e5%88%9b%e5%bb%ba">#&lt;/a>
-&lt;/h2>
-&lt;h3 id="建表时创建">
- 建表时创建
- &lt;a class="anchor" href="#%e5%bb%ba%e8%a1%a8%e6%97%b6%e5%88%9b%e5%bb%ba">#&lt;/a>
-&lt;/h3>
-&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-mysql" data-lang="mysql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">create&lt;/span> &lt;span style="color:#66d9ef">table&lt;/span> &lt;span style="color:#a6e22e">index1&lt;/span>( id &lt;span style="color:#66d9ef">int&lt;/span>, name &lt;span style="color:#66d9ef">varchar&lt;/span>(&lt;span style="color:#ae81ff">20&lt;/span>), &lt;span style="color:#66d9ef">index&lt;/span> &lt;span style="color:#a6e22e">idx_id_name&lt;/span> (id,name));
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="后续添加">
- 后续添加
- &lt;a class="anchor" href="#%e5%90%8e%e7%bb%ad%e6%b7%bb%e5%8a%a0">#&lt;/a>
-&lt;/h3>
-&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-mysql" data-lang="mysql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">create&lt;/span> &lt;span style="color:#66d9ef">index&lt;/span> idx_name &lt;span style="color:#66d9ef">on&lt;/span> &lt;span style="color:#a6e22e">bank_bill&lt;/span> (name);
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="b树">
- B树
- &lt;a class="anchor" href="#b%e6%a0%91">#&lt;/a>
-&lt;/h2>
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">user&lt;/span>.MYI &lt;span style="color:#75715e">#MyISAM存储引擎-表索引&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>INNODE存储引擎的表主键聚簇索引和数据在同一个文件（所以即使没有设置主键，innodb也会为每一行自动生成一个默认的隐藏主键列，用来形成B+树）&lt;/p>
+&lt;h1 id="索引">索引&lt;a class="anchor" href="#%e7%b4%a2%e5%bc%95">#&lt;/a>&lt;/h1>
+&lt;h2 id="索引创建">索引创建&lt;a class="anchor" href="#%e7%b4%a2%e5%bc%95%e5%88%9b%e5%bb%ba">#&lt;/a>&lt;/h2>
+&lt;h3 id="建表时创建">建表时创建&lt;a class="anchor" href="#%e5%bb%ba%e8%a1%a8%e6%97%b6%e5%88%9b%e5%bb%ba">#&lt;/a>&lt;/h3>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-mysql" data-lang="mysql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">create&lt;/span> &lt;span style="color:#66d9ef">table&lt;/span> &lt;span style="color:#a6e22e">index1&lt;/span>( id &lt;span style="color:#66d9ef">int&lt;/span>, name &lt;span style="color:#66d9ef">varchar&lt;/span>(&lt;span style="color:#ae81ff">20&lt;/span>), &lt;span style="color:#66d9ef">index&lt;/span> &lt;span style="color:#a6e22e">idx_id_name&lt;/span> (id,name));&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="后续添加">后续添加&lt;a class="anchor" href="#%e5%90%8e%e7%bb%ad%e6%b7%bb%e5%8a%a0">#&lt;/a>&lt;/h3>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-mysql" data-lang="mysql">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">create&lt;/span> &lt;span style="color:#66d9ef">index&lt;/span> idx_name &lt;span style="color:#66d9ef">on&lt;/span> &lt;span style="color:#a6e22e">bank_bill&lt;/span> (name);&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="b树">B树&lt;a class="anchor" href="#b%e6%a0%91">#&lt;/a>&lt;/h2>
 &lt;p>m阶B树 ,m个分支（或者说m个区间）&lt;br>
 x个元素就会有x+1个区间
 &lt;img src="img/ly-20250320162325136.png" alt="" />&lt;/p>
-&lt;h2 id="b树和b树区别">
- B+树和B树区别
- &lt;a class="anchor" href="#b%e6%a0%91%e5%92%8cb%e6%a0%91%e5%8c%ba%e5%88%ab">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="b树和b树区别">B+树和B树区别&lt;a class="anchor" href="#b%e6%a0%91%e5%92%8cb%e6%a0%91%e5%8c%ba%e5%88%ab">#&lt;/a>&lt;/h2>
 &lt;p>&lt;img src="img/ly-20250320164826221.png" alt="" />&lt;/p>
-&lt;h3 id="从b树考虑">
- 从B树考虑
- &lt;a class="anchor" href="#%e4%bb%8eb%e6%a0%91%e8%80%83%e8%99%91">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="从b树考虑">从B树考虑&lt;a class="anchor" href="#%e4%bb%8eb%e6%a0%91%e8%80%83%e8%99%91">#&lt;/a>&lt;/h3>
 &lt;p>log2 2000万≈24.3
 log500 2000万≈3 (m阶平衡树)
 如果是500阶B树，那么2000万个节点最多只需要3层&lt;/p>
-&lt;h3 id="从b树考虑-1">
- 从B+树考虑
- &lt;a class="anchor" href="#%e4%bb%8eb%e6%a0%91%e8%80%83%e8%99%91-1">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="从b树考虑-1">从B+树考虑&lt;a class="anchor" href="#%e4%bb%8eb%e6%a0%91%e8%80%83%e8%99%91-1">#&lt;/a>&lt;/h3>
 &lt;p>MySQL中，一个节点1页，也就是16KB（可以改），而一个节点可以放（主键bigint(8字节)+页号地址 6字节)单元1170个，假设是1000，那两层可以放100 0000万个节点。由于1个节点16KB，如果一条数据用1KB的话，那么最底层每个叶子节点就是放16条数据。那就是3层可以放1600万条数据。这是估算，细算的话应该是2000万左右
-&lt;img src="img/ly-20250320180127946.png" alt="" />&lt;/p></description></item><item><title>02增删改查</title><link>https://lwmfjc.github.io/zh/docs/technology/MySQL/advanced_shilei/02/</link><pubDate>Sun, 16 Mar 2025 17:04:04 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/MySQL/advanced_shilei/02/</guid><description>&lt;h1 id="分类">
- 分类
- &lt;a class="anchor" href="#%e5%88%86%e7%b1%bb">#&lt;/a>
-&lt;/h1>
+&lt;img src="img/ly-20250320180127946.png" alt="" />&lt;/p>
+&lt;h3 id="其他">其他&lt;a class="anchor" href="#%e5%85%b6%e4%bb%96">#&lt;/a>&lt;/h3>
+&lt;p>操作系统&lt;mark>内存管理&lt;/mark>按页面4K为单位。MySQL默认使用InnoDB存储引擎，其数据块大小（block size）一般默认为16KB&lt;/p>
+&lt;h2 id="using-index">using index&lt;a class="anchor" href="#using-index">#&lt;/a>&lt;/h2>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-mysql" data-lang="mysql">&lt;span style="display:flex;">&lt;span>mysql&lt;span style="color:#f92672">&amp;gt;&lt;/span> &lt;span style="color:#66d9ef">explain&lt;/span> &lt;span style="color:#66d9ef">select&lt;/span> name &lt;span style="color:#66d9ef">from&lt;/span> student &lt;span style="color:#66d9ef">where&lt;/span> name &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#e6db74">&amp;#39;liuxiang&amp;#39;&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">\&lt;/span>G
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">***************************&lt;/span> &lt;span style="color:#ae81ff">1&lt;/span>. row &lt;span style="color:#f92672">***************************&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> id: &lt;span style="color:#ae81ff">1&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> select_type: SIMPLE
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">table&lt;/span>: student
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> partitions: &lt;span style="color:#66d9ef">NULL&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> type: ref
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>possible_keys: idx_name
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">key&lt;/span>: idx_name
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> key_len: &lt;span style="color:#ae81ff">152&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ref: const
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> rows: &lt;span style="color:#ae81ff">1&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> filtered: &lt;span style="color:#ae81ff">100&lt;/span>.&lt;span style="color:#ae81ff">00&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> Extra: &lt;span style="color:#66d9ef">Using&lt;/span> &lt;span style="color:#66d9ef">index&lt;/span> (&lt;span style="color:#960050;background-color:#1e0010">直接在二级索引搜索就结束了&lt;/span>)&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>下面这个还需要回表&lt;/p></description></item><item><title>02增删改查</title><link>https://lwmfjc.github.io/zh/docs/technology/MySQL/advanced_shilei/02/</link><pubDate>Sun, 16 Mar 2025 17:04:04 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/MySQL/advanced_shilei/02/</guid><description>&lt;h1 id="分类">分类&lt;a class="anchor" href="#%e5%88%86%e7%b1%bb">#&lt;/a>&lt;/h1>
 &lt;ul>
 &lt;li>DDL 数据定义语言(create,drop,alter)&lt;/li>
 &lt;li>DML 数据操纵语言(insert,delete,update,select)&lt;/li>
 &lt;li>DCL 数据控制语言(grant,revoke)&lt;/li>
 &lt;/ul>
-&lt;h1 id="删除">
- 删除
- &lt;a class="anchor" href="#%e5%88%a0%e9%99%a4">#&lt;/a>
-&lt;/h1>
+&lt;h1 id="删除">删除&lt;a class="anchor" href="#%e5%88%a0%e9%99%a4">#&lt;/a>&lt;/h1>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-mysql" data-lang="mysql">&lt;span style="display:flex;">&lt;span>mysql&lt;span style="color:#f92672">&amp;gt;&lt;/span> &lt;span style="color:#66d9ef">select&lt;/span> &lt;span style="color:#f92672">*&lt;/span> &lt;span style="color:#66d9ef">from&lt;/span> &lt;span style="color:#66d9ef">user&lt;/span>;
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">+----+----------+-----+-----+&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">|&lt;/span> id &lt;span style="color:#f92672">|&lt;/span> name &lt;span style="color:#f92672">|&lt;/span> age &lt;span style="color:#f92672">|&lt;/span> sex &lt;span style="color:#f92672">|&lt;/span>
@@ -214,17 +202,10 @@ log500 2000万≈3 (m阶平衡树)
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">4&lt;/span> rows &lt;span style="color:#66d9ef">in&lt;/span> &lt;span style="color:#66d9ef">set&lt;/span> (&lt;span style="color:#ae81ff">0&lt;/span>.&lt;span style="color:#ae81ff">00&lt;/span> sec)
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>mysql&lt;span style="color:#f92672">&amp;gt;&lt;/span> &lt;span style="color:#66d9ef">delete&lt;/span> &lt;span style="color:#66d9ef">from&lt;/span> &lt;span style="color:#66d9ef">user&lt;/span> &lt;span style="color:#66d9ef">where&lt;/span> id &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">6&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#如果之后重启了mysql（且id最大为5，则再插入的数据id为6），（如果id最大为10，则插入的数据id为11）；如果没有重启，则再插入的数据id为7
-&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>mysql&lt;span style="color:#f92672">&amp;gt;&lt;/span> nsert &lt;span style="color:#66d9ef">into&lt;/span> &lt;span style="color:#66d9ef">user&lt;/span>(name,age,sex) &lt;span style="color:#66d9ef">values&lt;/span>(&lt;span style="color:#e6db74">&amp;#39;hah&amp;#39;&lt;/span>,&lt;span style="color:#ae81ff">35&lt;/span>,&lt;span style="color:#e6db74">&amp;#39;W&amp;#39;&lt;/span>);
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h1 id="新增">
- 新增
- &lt;a class="anchor" href="#%e6%96%b0%e5%a2%9e">#&lt;/a>
-&lt;/h1>
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>mysql&lt;span style="color:#f92672">&amp;gt;&lt;/span> nsert &lt;span style="color:#66d9ef">into&lt;/span> &lt;span style="color:#66d9ef">user&lt;/span>(name,age,sex) &lt;span style="color:#66d9ef">values&lt;/span>(&lt;span style="color:#e6db74">&amp;#39;hah&amp;#39;&lt;/span>,&lt;span style="color:#ae81ff">35&lt;/span>,&lt;span style="color:#e6db74">&amp;#39;W&amp;#39;&lt;/span>);&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h1 id="新增">新增&lt;a class="anchor" href="#%e6%96%b0%e5%a2%9e">#&lt;/a>&lt;/h1>
 &lt;p>一次新增多条数据和多次新增单条数据区别&lt;br>
 &lt;img src="img/ly-20250316181803420.png" alt="" />&lt;/p>
-&lt;h1 id="搜索">
- 搜索
- &lt;a class="anchor" href="#%e6%90%9c%e7%b4%a2">#&lt;/a>
-&lt;/h1>
+&lt;h1 id="搜索">搜索&lt;a class="anchor" href="#%e6%90%9c%e7%b4%a2">#&lt;/a>&lt;/h1>
 &lt;p>limit可以优化sql语句，不过要看数据的位置&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-mysql" data-lang="mysql">&lt;span style="display:flex;">&lt;span>mysql&lt;span style="color:#f92672">&amp;gt;&lt;/span> &lt;span style="color:#66d9ef">select&lt;/span> &lt;span style="color:#f92672">*&lt;/span> &lt;span style="color:#66d9ef">from&lt;/span> t_user &lt;span style="color:#66d9ef">limit&lt;/span> &lt;span style="color:#ae81ff">1999999&lt;/span> ,&lt;span style="color:#ae81ff">1&lt;/span>;
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">+---------+------------------+------------+&lt;/span>
@@ -240,30 +221,14 @@ log500 2000万≈3 (m阶平衡树)
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">+---------+------------------+------------+&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#ae81ff">2000000&lt;/span> &lt;span style="color:#f92672">|&lt;/span> cwng78&lt;span style="color:#f92672">@&lt;/span>yahoo.com &lt;span style="color:#f92672">|&lt;/span> h4HcxZKBNQ &lt;span style="color:#f92672">|&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">+---------+------------------+------------+&lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">1&lt;/span> row &lt;span style="color:#66d9ef">in&lt;/span> &lt;span style="color:#66d9ef">set&lt;/span> (&lt;span style="color:#ae81ff">0&lt;/span>.&lt;span style="color:#ae81ff">47&lt;/span> sec)
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>在第一条或者前面，则优化效果显著&lt;/p></description></item><item><title>01基础知识</title><link>https://lwmfjc.github.io/zh/docs/technology/MySQL/advanced_shilei/01/</link><pubDate>Sat, 15 Mar 2025 19:46:15 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/MySQL/advanced_shilei/01/</guid><description>&lt;h1 id="本课程大纲">
- 本课程大纲
- &lt;a class="anchor" href="#%e6%9c%ac%e8%af%be%e7%a8%8b%e5%a4%a7%e7%ba%b2">#&lt;/a>
-&lt;/h1>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">1&lt;/span> row &lt;span style="color:#66d9ef">in&lt;/span> &lt;span style="color:#66d9ef">set&lt;/span> (&lt;span style="color:#ae81ff">0&lt;/span>.&lt;span style="color:#ae81ff">47&lt;/span> sec)&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>在第一条或者前面，则优化效果显著&lt;/p></description></item><item><title>01基础知识</title><link>https://lwmfjc.github.io/zh/docs/technology/MySQL/advanced_shilei/01/</link><pubDate>Sat, 15 Mar 2025 19:46:15 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/MySQL/advanced_shilei/01/</guid><description>&lt;h1 id="本课程大纲">本课程大纲&lt;a class="anchor" href="#%e6%9c%ac%e8%af%be%e7%a8%8b%e5%a4%a7%e7%ba%b2">#&lt;/a>&lt;/h1>
 &lt;p>&lt;img src="img/ly-20250315194748427.png" alt="" />&lt;/p>
-&lt;h1 id="部分扩展知识">
- 部分扩展知识
- &lt;a class="anchor" href="#%e9%83%a8%e5%88%86%e6%89%a9%e5%b1%95%e7%9f%a5%e8%af%86">#&lt;/a>
-&lt;/h1>
+&lt;h1 id="部分扩展知识">部分扩展知识&lt;a class="anchor" href="#%e9%83%a8%e5%88%86%e6%89%a9%e5%b1%95%e7%9f%a5%e8%af%86">#&lt;/a>&lt;/h1>
 &lt;p>MySQL分为服务端和客户端（两进程），SQLite是进程程序，客户端和服务端都在同一个进程操作数据&lt;/p>
-&lt;h1 id="安装windows">
- 安装(windows)
- &lt;a class="anchor" href="#%e5%ae%89%e8%a3%85windows">#&lt;/a>
-&lt;/h1>
+&lt;h1 id="安装windows">安装(windows)&lt;a class="anchor" href="#%e5%ae%89%e8%a3%85windows">#&lt;/a>&lt;/h1>
 &lt;p>安装目录下包括数据目录(Data/)和配置文件(my.ini)&lt;/p>
-&lt;h1 id="安装debian">
- 安装(debian)
- &lt;a class="anchor" href="#%e5%ae%89%e8%a3%85debian">#&lt;/a>
-&lt;/h1>
-&lt;h2 id="数据目录">
- 数据目录
- &lt;a class="anchor" href="#%e6%95%b0%e6%8d%ae%e7%9b%ae%e5%bd%95">#&lt;/a>
-&lt;/h2>
+&lt;h1 id="安装debian">安装(debian)&lt;a class="anchor" href="#%e5%ae%89%e8%a3%85debian">#&lt;/a>&lt;/h1>
+&lt;h2 id="数据目录">数据目录&lt;a class="anchor" href="#%e6%95%b0%e6%8d%ae%e7%9b%ae%e5%bd%95">#&lt;/a>&lt;/h2>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>root@db211:/etc/mysql# ls -l /var/lib/mysql | awk &lt;span style="color:#e6db74">&amp;#39;{print $1,$3,$4,$9}&amp;#39;&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>total 
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>-rw-r----- mysql mysql auto.cnf
@@ -283,16 +248,11 @@ log500 2000万≈3 (m阶平衡树)
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>-rw-r--r-- mysql mysql server-cert.pem
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>-rw------- mysql mysql server-key.pem
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>drwxr-x--- mysql mysql sys
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>drwxr-x--- mysql mysql xx
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="配置目录">
- 配置目录
- &lt;a class="anchor" href="#%e9%85%8d%e7%bd%ae%e7%9b%ae%e5%bd%95">#&lt;/a>
-&lt;/h2>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>drwxr-x--- mysql mysql xx&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="配置目录">配置目录&lt;a class="anchor" href="#%e9%85%8d%e7%bd%ae%e7%9b%ae%e5%bd%95">#&lt;/a>&lt;/h2>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>root@db211:/etc/mysql# ls -l | awk &lt;span style="color:#e6db74">&amp;#39;{print $1,$9,$10,$11}&amp;#39;&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>total 
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>drwxr-xr-x conf.d 
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>lrwxrwxrwx my.cnf -&amp;gt; /etc/alternatives/my.cnf
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>-rw-r--r-- my.cnf.fallback 
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>-rw-r--r-- mysql.cnf 
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>drwxr-xr-x mysql.conf.d
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>再进一步查看&lt;/p></description></item></channel></rss>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>drwxr-xr-x mysql.conf.d&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>再进一步查看&lt;/p></description></item></channel></rss>

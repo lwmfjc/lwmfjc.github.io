@@ -1,32 +1,18 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>随记</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/</link><description>Recent content on 随记</description><generator>Hugo</generator><language>zh</language><atom:link href="https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/index.xml" rel="self" type="application/rss+xml"/><item><title>AQS 详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/aqs/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/aqs/</guid><description>&lt;h2 id="aqs-介绍">
- AQS 介绍
- &lt;a class="anchor" href="#aqs-%e4%bb%8b%e7%bb%8d">#&lt;/a>
-&lt;/h2>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>随记</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/</link><description>Recent content on 随记</description><generator>Hugo</generator><language>zh</language><atom:link href="https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/index.xml" rel="self" type="application/rss+xml"/><item><title>AQS 详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/aqs/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/aqs/</guid><description>&lt;h2 id="aqs-介绍">AQS 介绍&lt;a class="anchor" href="#aqs-%e4%bb%8b%e7%bb%8d">#&lt;/a>&lt;/h2>
 &lt;p>AQS 的全称为 &lt;code>AbstractQueuedSynchronizer&lt;/code> ，翻译过来的意思就是抽象队列同步器。这个类在 &lt;code>java.util.concurrent.locks&lt;/code> 包下面。&lt;/p>
 &lt;p>&lt;img src="img/1de28206f29fa6f492f8610260d510e0_MD5.jpg" alt="" />&lt;/p>
 &lt;p>AQS 就是一个抽象类，主要用来构建锁和同步器。&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">abstract&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">AbstractQueuedSynchronizer&lt;/span> &lt;span style="color:#66d9ef">extends&lt;/span> AbstractOwnableSynchronizer &lt;span style="color:#66d9ef">implements&lt;/span> java.&lt;span style="color:#a6e22e">io&lt;/span>.&lt;span style="color:#a6e22e">Serializable&lt;/span> {
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>AQS 为构建锁和同步器提供了一些通用功能的实现。因此，使用 AQS 能简单且高效地构造出应用广泛的大量的同步器，比如我们提到的 &lt;code>ReentrantLock&lt;/code>，&lt;code>Semaphore&lt;/code>，其他的诸如 &lt;code>ReentrantReadWriteLock&lt;/code>，&lt;code>SynchronousQueue&lt;/code>等等皆是基于 AQS 的。&lt;/p>
-&lt;h2 id="aqs-原理">
- AQS 原理
- &lt;a class="anchor" href="#aqs-%e5%8e%9f%e7%90%86">#&lt;/a>
-&lt;/h2>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>AQS 为构建锁和同步器提供了一些通用功能的实现。因此，使用 AQS 能简单且高效地构造出应用广泛的大量的同步器，比如我们提到的 &lt;code>ReentrantLock&lt;/code>，&lt;code>Semaphore&lt;/code>，其他的诸如 &lt;code>ReentrantReadWriteLock&lt;/code>，&lt;code>SynchronousQueue&lt;/code>等等皆是基于 AQS 的。&lt;/p>
+&lt;h2 id="aqs-原理">AQS 原理&lt;a class="anchor" href="#aqs-%e5%8e%9f%e7%90%86">#&lt;/a>&lt;/h2>
 &lt;p>在面试中被问到并发知识的时候，大多都会被问到“请你说一下自己对于 AQS 原理的理解”。下面给大家一个示例供大家参考，面试不是背题，大家一定要加入自己的思想，即使加入不了自己的思想也要保证自己能够通俗的讲出来而不是背出来。&lt;/p>
-&lt;h3 id="aqs-快速了解">
- AQS 快速了解
- &lt;a class="anchor" href="#aqs-%e5%bf%ab%e9%80%9f%e4%ba%86%e8%a7%a3">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="aqs-快速了解">AQS 快速了解&lt;a class="anchor" href="#aqs-%e5%bf%ab%e9%80%9f%e4%ba%86%e8%a7%a3">#&lt;/a>&lt;/h3>
 &lt;p>在真正讲解 AQS 源码之前，需要对 AQS 有一个整体层面的认识。这里会先通过几个问题，从整体层面上认识 AQS，了解 AQS 在整个 Java 并发中所位于的层面，之后在学习 AQS 源码的过程中，才能更加了解同步器和 AQS 之间的关系。&lt;/p>
-&lt;h4 id="aqs-的作用是什么">
- AQS 的作用是什么？
- &lt;a class="anchor" href="#aqs-%e7%9a%84%e4%bd%9c%e7%94%a8%e6%98%af%e4%bb%80%e4%b9%88">#&lt;/a>
-&lt;/h4>
+&lt;h4 id="aqs-的作用是什么">AQS 的作用是什么？&lt;a class="anchor" href="#aqs-%e7%9a%84%e4%bd%9c%e7%94%a8%e6%98%af%e4%bb%80%e4%b9%88">#&lt;/a>&lt;/h4>
 &lt;p>AQS 解决了开发者在实现同步器时的复杂性问题。它提供了一个通用框架，用于实现各种同步器，例如 &lt;mark>可重入锁&lt;/mark>（&lt;code>ReentrantLock&lt;/code>）、&lt;mark>信号量&lt;/mark>（&lt;code>Semaphore&lt;/code>）和 &lt;mark>倒计时器&lt;/mark>（&lt;code>CountDownLatch&lt;/code>）。通过封装底层的线程同步机制，AQS 将复杂的线程管理逻辑隐藏起来，使开发者只需专注于具体的同步逻辑。&lt;/p>
-&lt;p>简单来说，AQS 是一个抽象类，为同步器提供了通用的 &lt;mark>执行框架&lt;/mark>。它定义了 &lt;mark>资源获取和释放的通用流程&lt;/mark>，而具体的资源获取逻辑则由具体同步器通过重写模板方法来实现。 因此，可以将 AQS 看作是同步器的 &lt;mark>基础“底座”&lt;/mark>，而同步器则是基于 AQS 实现的 &lt;mark>具体“应用”&lt;/mark>。&lt;/p></description></item><item><title>Atomic 原子类总结</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/atomic-classes/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/atomic-classes/</guid><description>&lt;h2 id="atomic-原子类介绍">
- Atomic 原子类介绍
- &lt;a class="anchor" href="#atomic-%e5%8e%9f%e5%ad%90%e7%b1%bb%e4%bb%8b%e7%bb%8d">#&lt;/a>
-&lt;/h2>
+&lt;p>简单来说，AQS 是一个抽象类，为同步器提供了通用的 &lt;mark>执行框架&lt;/mark>。它定义了 &lt;mark>资源获取和释放的通用流程&lt;/mark>，而具体的资源获取逻辑则由具体同步器通过重写模板方法来实现。 因此，可以将 AQS 看作是同步器的 &lt;mark>基础“底座”&lt;/mark>，而同步器则是基于 AQS 实现的 &lt;mark>具体“应用”&lt;/mark>。&lt;/p>
+&lt;h4 id="aqs-为什么使用-clh-锁队列的变体">AQS 为什么使用 CLH 锁队列的变体？&lt;a class="anchor" href="#aqs-%e4%b8%ba%e4%bb%80%e4%b9%88%e4%bd%bf%e7%94%a8-clh-%e9%94%81%e9%98%9f%e5%88%97%e7%9a%84%e5%8f%98%e4%bd%93">#&lt;/a>&lt;/h4>
+&lt;p>CLH 锁是一种基于 &lt;mark>自旋锁&lt;/mark> 的优化实现。&lt;/p></description></item><item><title>Atomic 原子类总结</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/atomic-classes/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/atomic-classes/</guid><description>&lt;h2 id="atomic-原子类介绍">Atomic 原子类介绍&lt;a class="anchor" href="#atomic-%e5%8e%9f%e5%ad%90%e7%b1%bb%e4%bb%8b%e7%bb%8d">#&lt;/a>&lt;/h2>
 &lt;p>&lt;code>Atomic&lt;/code> 翻译成中文是“原子”的意思。在化学上，原子是构成物质的最小单位，在化学反应中不可分割。在编程中，&lt;code>Atomic&lt;/code> 指的是一个操作具有原子性，即该操作不可分割、不可中断。即使在多个线程同时执行时，该操作要么全部执行完成，要么不执行，不会被其他线程看到部分完成的状态。&lt;/p>
 &lt;p>原子类简单来说就是具有原子性操作特征的类。&lt;/p>
 &lt;p>&lt;code>java.util.concurrent.atomic&lt;/code> 包中的 &lt;code>Atomic&lt;/code> 原子类提供了一种线程安全的方式来操作单个变量。&lt;/p>
@@ -63,10 +49,7 @@
 &lt;li>&lt;code>AtomicLongFieldUpdater&lt;/code>：原子更新长整型字段的更新器&lt;/li>
 &lt;li>&lt;code>AtomicReferenceFieldUpdater&lt;/code>：原子更新引用类型里的字段&lt;/li>
 &lt;/ul>
-&lt;h2 id="基本类型原子类">
- 基本类型原子类
- &lt;a class="anchor" href="#%e5%9f%ba%e6%9c%ac%e7%b1%bb%e5%9e%8b%e5%8e%9f%e5%ad%90%e7%b1%bb">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="基本类型原子类">基本类型原子类&lt;a class="anchor" href="#%e5%9f%ba%e6%9c%ac%e7%b1%bb%e5%9e%8b%e5%8e%9f%e5%ad%90%e7%b1%bb">#&lt;/a>&lt;/h2>
 &lt;p>使用原子的方式更新基本类型&lt;/p>
 &lt;ul>
 &lt;li>&lt;code>AtomicInteger&lt;/code>：整型原子类&lt;/li>
@@ -76,10 +59,7 @@
 &lt;p>上面三个类提供的方法几乎相同，所以我们这里以 &lt;code>AtomicInteger&lt;/code> 为例子来介绍。&lt;/p></description></item><item><title>CAS 详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/cas/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/cas/</guid><description>&lt;p>乐观锁和悲观锁的介绍以及乐观锁常见实现方式可以阅读笔者写的这篇文章：
 &lt;a target="_blank" href="https://javaguide.cn/java/concurrent/optimistic-lock-and-pessimistic-lock.html">乐观锁和悲观锁详解&lt;/a>。&lt;/p>
 &lt;p>这篇文章主要介绍 ：Java 中 CAS 的实现以及 CAS 存在的一些问题。&lt;/p>
-&lt;h2 id="java-中-cas-是如何实现的">
- Java 中 CAS 是如何实现的？
- &lt;a class="anchor" href="#java-%e4%b8%ad-cas-%e6%98%af%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e7%9a%84">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="java-中-cas-是如何实现的">Java 中 CAS 是如何实现的？&lt;a class="anchor" href="#java-%e4%b8%ad-cas-%e6%98%af%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e7%9a%84">#&lt;/a>&lt;/h2>
 &lt;p>在 Java 中，实现 CAS（Compare-And-Swap, 比较并交换）操作的一个关键类是&lt;code>Unsafe&lt;/code>。&lt;/p>
 &lt;p>&lt;code>Unsafe&lt;/code>类位于&lt;code>sun.misc&lt;/code>包下，是一个提供低级别、不安全操作的类。由于其强大的功能和潜在的危险性，它通常用于 JVM 内部或一些需要极高性能和底层访问的库中，而不推荐普通开发者在应用程序中使用。关于 &lt;code>Unsafe&lt;/code>类的详细介绍，可以阅读这篇文章：📌
 &lt;a target="_blank" href="https://javaguide.cn/java/basis/unsafe.html">Java 魔法类 Unsafe 详解&lt;/a>。&lt;/p>
@@ -103,8 +83,7 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/**
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"> * 以原子方式更新 long 类型的对象字段的值。
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"> */&lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">boolean&lt;/span> &lt;span style="color:#a6e22e">compareAndSwapLong&lt;/span>(Object o, &lt;span style="color:#66d9ef">long&lt;/span> offset, &lt;span style="color:#66d9ef">long&lt;/span> expected, &lt;span style="color:#66d9ef">long&lt;/span> x);
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;code>Unsafe&lt;/code>类中的 CAS 方法是&lt;code>native&lt;/code>方法。&lt;code>native&lt;/code>关键字表明这些方法是用本地代码（通常是 C 或 C++）实现的，而不是用 Java 实现的。这些方法直接调用底层的硬件指令来实现原子操作。也就是说，Java 语言并没有直接用 Java 实现 CAS。&lt;/p></description></item><item><title>CompletableFuture 详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/completablefuture-intro/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/completablefuture-intro/</guid><description>&lt;p>实际项目中，一个接口可能需要同时获取多种不同的数据，然后再汇总返回，这种场景还是挺常见的。举个例子：用户请求获取订单信息，可能需要同时获取用户信息、商品详情、物流信息、商品推荐等数据。&lt;/p>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">boolean&lt;/span> &lt;span style="color:#a6e22e">compareAndSwapLong&lt;/span>(Object o, &lt;span style="color:#66d9ef">long&lt;/span> offset, &lt;span style="color:#66d9ef">long&lt;/span> expected, &lt;span style="color:#66d9ef">long&lt;/span> x);&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;code>Unsafe&lt;/code>类中的 CAS 方法是&lt;code>native&lt;/code>方法。&lt;code>native&lt;/code>关键字表明这些方法是用本地代码（通常是 C 或 C++）实现的，而不是用 Java 实现的。这些方法直接调用底层的硬件指令来实现原子操作。也就是说，Java 语言并没有直接用 Java 实现 CAS。&lt;/p></description></item><item><title>CompletableFuture 详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/completablefuture-intro/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/completablefuture-intro/</guid><description>&lt;p>实际项目中，一个接口可能需要同时获取多种不同的数据，然后再汇总返回，这种场景还是挺常见的。举个例子：用户请求获取订单信息，可能需要同时获取用户信息、商品详情、物流信息、商品推荐等数据。&lt;/p>
 &lt;p>如果是串行（按顺序依次执行每个任务）执行的话，接口的响应速度会非常慢。考虑到这些任务之间有大部分都是 &lt;mark>无前后顺序关联&lt;/mark> 的，可以 &lt;mark>并行执行&lt;/mark> ，就比如说调用获取商品详情的时候，可以同时调用获取物流信息。通过并行执行多个任务的方式，接口的响应速度会得到大幅优化。&lt;/p>
 &lt;p>&lt;img src="img/69a7bfc227cb782767e26774b276cfdd_MD5.jpg" alt="" />&lt;/p>
 &lt;p>对于存在前后调用顺序关系的任务，可以进行任务编排。&lt;/p>
@@ -121,10 +100,7 @@
 &lt;/ol>
 &lt;p>对于 Java 程序来说，Java 8 才被引入的 &lt;code>CompletableFuture&lt;/code> 可以帮助我们来做多个任务的编排，功能非常强大。&lt;/p>
 &lt;p>这篇文章是 &lt;code>CompletableFuture&lt;/code> 的简单入门，带大家看看 &lt;code>CompletableFuture&lt;/code> 常用的 API。&lt;/p>
-&lt;h2 id="future-介绍">
- Future 介绍
- &lt;a class="anchor" href="#future-%e4%bb%8b%e7%bb%8d">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="future-介绍">Future 介绍&lt;a class="anchor" href="#future-%e4%bb%8b%e7%bb%8d">#&lt;/a>&lt;/h2>
 &lt;p>&lt;code>Future&lt;/code> 类是异步思想的典型运用，主要用在一些需要执行耗时任务的场景，避免程序一直原地等待耗时任务执行完成，执行效率太低。具体来说是这样的：当我们执行某一耗时的任务时，可以将这个耗时任务交给一个子线程去异步执行，同时我们可以干点其他事情，不用傻傻等待耗时任务执行完成。等我们的事情干完后，我们再通过 &lt;code>Future&lt;/code> 类获取到耗时任务的执行结果。这样一来，程序的执行效率就明显提高了。&lt;/p>
 &lt;p>这其实就是多线程中经典的 &lt;mark>Future 模式&lt;/mark>，你可以将其看作是一种设计模式，核心思想是异步调用，主要用在多线程领域，并非 Java 语言独有。&lt;/p>
 &lt;p>在 Java 中，&lt;code>Future&lt;/code> 类只是一个泛型接口，位于 &lt;code>java.util.concurrent&lt;/code> 包下，其中定义了 5 个方法，主要包括下面这 4 个功能：&lt;/p>
@@ -150,8 +126,7 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">throws&lt;/span> InterruptedException, ExecutionException, TimeoutExceptio
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>简单理解就是：我有一个任务，提交给了 &lt;code>Future&lt;/code> 来处理。任务执行期间我自己可以去做任何想做的事情。并且，在这期间我还可以取消任务以及获取任务的执行状态。一段时间之后，我就可以 &lt;code>Future&lt;/code> 那里直接取出任务执行结果。&lt;/p></description></item><item><title>Java 常见并发容器总结</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/java-concurrent-collections/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/java-concurrent-collections/</guid><description>&lt;p>JDK 提供的这些容器大部分在 &lt;code>java.util.concurrent&lt;/code> 包中。&lt;/p>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>简单理解就是：我有一个任务，提交给了 &lt;code>Future&lt;/code> 来处理。任务执行期间我自己可以去做任何想做的事情。并且，在这期间我还可以取消任务以及获取任务的执行状态。一段时间之后，我就可以 &lt;code>Future&lt;/code> 那里直接取出任务执行结果。&lt;/p></description></item><item><title>Java 常见并发容器总结</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/java-concurrent-collections/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/java-concurrent-collections/</guid><description>&lt;p>JDK 提供的这些容器大部分在 &lt;code>java.util.concurrent&lt;/code> 包中。&lt;/p>
 &lt;ul>
 &lt;li>&lt;mark>&lt;code>ConcurrentHashMap&lt;/code>&lt;/mark> : 线程安全的 &lt;code>HashMap&lt;/code>&lt;/li>
 &lt;li>&lt;mark>&lt;code>CopyOnWriteArrayList&lt;/code>&lt;/mark> : 线程安全的 &lt;code>List&lt;/code>，在读多写少的场合性能非常好，远远好于 &lt;code>Vector&lt;/code>。&lt;/li>
@@ -159,10 +134,7 @@
 &lt;li>&lt;mark>&lt;code>BlockingQueue&lt;/code>&lt;/mark> : 这是一个接口，JDK 内部通过链表、数组等方式实现了这个接口。表示阻塞队列，非常适合用于作为数据共享的通道。&lt;/li>
 &lt;li>&lt;mark>&lt;code>ConcurrentSkipListMap&lt;/code>&lt;/mark> : 跳表的实现。这是一个 Map，使用跳表的数据结构进行快速查找。&lt;/li>
 &lt;/ul>
-&lt;h2 id="concurrenthashmap">
- ConcurrentHashMap
- &lt;a class="anchor" href="#concurrenthashmap">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="concurrenthashmap">ConcurrentHashMap&lt;a class="anchor" href="#concurrenthashmap">#&lt;/a>&lt;/h2>
 &lt;p>我们知道，&lt;code>HashMap&lt;/code> 是线程不安全的，如果在并发场景下使用，一种常见的解决方式是通过 &lt;code>Collections.synchronizedMap()&lt;/code> 方法对 &lt;code>HashMap&lt;/code> 进行包装，使其变为线程安全。不过，这种方式是通过一个全局锁来同步不同线程间的并发访问，会导致严重的性能瓶颈，尤其是在高并发场景下。&lt;/p>
 &lt;p>为了解决这一问题，&lt;code>ConcurrentHashMap&lt;/code> 应运而生，作为 &lt;code>HashMap&lt;/code> 的线程安全版本，它提供了更高效的并发处理能力。&lt;/p>
 &lt;p>在 JDK1.7 的时候，&lt;code>ConcurrentHashMap&lt;/code> 对整个桶数组进行了分割分段(&lt;code>Segment&lt;/code>，分段锁)，每一把锁只锁容器其中一部分数据（下面有示意图），多线程访问容器里不同数据段的数据，就不会存在锁竞争，提高并发访问率。&lt;/p>
@@ -170,10 +142,7 @@
 &lt;p>到了 JDK1.8 的时候，&lt;code>ConcurrentHashMap&lt;/code> 取消了 &lt;code>Segment&lt;/code> 分段锁，采用 &lt;code>Node + CAS + synchronized&lt;/code> 来保证并发安全。数据结构跟 &lt;code>HashMap&lt;/code> 1.8 的结构类似，数组+链表/红黑二叉树。Java 8 在链表长度超过一定阈值（8）时将链表（寻址时间复杂度为 O(N)）转换为红黑树（寻址时间复杂度为 O(log(N))）。&lt;/p>
 &lt;p>Java 8 中，锁粒度更细，&lt;code>synchronized&lt;/code> 只锁定当前链表或红黑二叉树的首节点，这样只要 hash 不冲突，就不会产生并发，就不会影响其他 Node 的读写，效率大幅提升。&lt;/p></description></item><item><title>Java 线程池详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/java-thread-pool-summary/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/java-thread-pool-summary/</guid><description>&lt;p>池化技术想必大家已经屡见不鲜了，线程池、数据库连接池、HTTP 连接池等等都是对这个思想的应用。池化技术的思想主要是为了减少每次获取资源的消耗，提高对资源的利用率。&lt;/p>
 &lt;p>这篇文章我会详细介绍一下线程池的基本概念以及核心原理。&lt;/p>
-&lt;h2 id="线程池介绍">
- 线程池介绍
- &lt;a class="anchor" href="#%e7%ba%bf%e7%a8%8b%e6%b1%a0%e4%bb%8b%e7%bb%8d">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="线程池介绍">线程池介绍&lt;a class="anchor" href="#%e7%ba%bf%e7%a8%8b%e6%b1%a0%e4%bb%8b%e7%bb%8d">#&lt;/a>&lt;/h2>
 &lt;p>顾名思义，线程池就是管理一系列线程的资源池，其提供了一种限制和管理线程资源的方式。每个线程池还维护一些基本统计信息，例如已完成任务的数量。&lt;/p>
 &lt;p>这里借用《Java 并发编程的艺术》书中的部分内容来总结一下使用线程池的好处：&lt;/p>
 &lt;ul>
@@ -182,26 +151,19 @@
 &lt;li>&lt;mark>提高线程的可管理性&lt;/mark>。线程是稀缺资源，如果无限制的创建，不仅会消耗系统资源，还会降低系统的稳定性，使用线程池可以进行统一的分配，调优和监控。&lt;/li>
 &lt;/ul>
 &lt;p>&lt;mark>线程池一般用于执行多个不相关联的耗时任务，没有多线程的情况下，任务顺序执行，使用了线程池的话可让多个不相关联的任务同时执行。&lt;/mark>&lt;/p>
-&lt;h2 id="executor-框架介绍">
- Executor 框架介绍
- &lt;a class="anchor" href="#executor-%e6%a1%86%e6%9e%b6%e4%bb%8b%e7%bb%8d">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="executor-框架介绍">Executor 框架介绍&lt;a class="anchor" href="#executor-%e6%a1%86%e6%9e%b6%e4%bb%8b%e7%bb%8d">#&lt;/a>&lt;/h2>
 &lt;p>&lt;code>Executor&lt;/code> 框架是 Java5 之后引进的，在 Java 5 之后，通过 &lt;code>Executor&lt;/code> 来启动线程比使用 &lt;code>Thread&lt;/code> 的 &lt;code>start&lt;/code> 方法更好，除了更易管理，效率更好（用线程池实现，节约开销）外，还有关键的一点：有助于避免 this 逃逸问题。&lt;/p>
-&lt;blockquote>
-&lt;p>this 逃逸是指在构造函数返回之前其他线程就持有该对象的引用，调用尚未构造完全的对象的方法可能引发令人疑惑的错误。&lt;/p>
-&lt;/blockquote>
-&lt;p>&lt;code>Executor&lt;/code> 框架不仅包括了线程池的管理，还提供了线程工厂、队列以及拒绝策略等，&lt;code>Executor&lt;/code> 框架让并发编程变得更加简单。&lt;/p>
+&lt;blockquote class='book-hint '>
+&lt;p>this 逃逸是指在构造函数返回之前其他线程就持有该对象的引用，调用尚未构造完全的对象的方法可能引发令人疑惑的错误。&lt;/p>&lt;/blockquote>&lt;p>&lt;code>Executor&lt;/code> 框架不仅包括了线程池的管理，还提供了线程工厂、队列以及拒绝策略等，&lt;code>Executor&lt;/code> 框架让并发编程变得更加简单。&lt;/p>
 &lt;p>&lt;code>Executor&lt;/code> 框架结构主要由三大部分组成：&lt;/p>
 &lt;p>&lt;mark>1、任务(&lt;code>Runnable&lt;/code> /&lt;code>Callable&lt;/code>)&lt;/mark>&lt;/p>
 &lt;p>执行任务需要实现的 &lt;mark>&lt;code>Runnable&lt;/code> 接口&lt;/mark> 或 &lt;mark>&lt;code>Callable&lt;/code>接口&lt;/mark>。&lt;mark>&lt;code>Runnable&lt;/code> 接口&lt;/mark>或 &lt;mark>&lt;code>Callable&lt;/code> 接口&lt;/mark> 实现类都可以被 &lt;mark>&lt;code>ThreadPoolExecutor&lt;/code>&lt;/mark> 或 &lt;mark>&lt;code>ScheduledThreadPoolExecutor&lt;/code>&lt;/mark> 执行。&lt;/p>
 &lt;p>&lt;mark>2、任务的执行(&lt;code>Executor&lt;/code>)&lt;/mark>&lt;/p>
 &lt;p>如下图所示，包括任务执行机制的核心接口 &lt;mark>&lt;code>Executor&lt;/code>&lt;/mark> ，以及继承自 &lt;code>Executor&lt;/code> 接口的 &lt;mark>&lt;code>ExecutorService&lt;/code> 接口。&lt;code>ThreadPoolExecutor&lt;/code>&lt;/mark> 和 &lt;mark>&lt;code>ScheduledThreadPoolExecutor&lt;/code>&lt;/mark> 这两个关键类实现了 &lt;mark>&lt;code>ExecutorService&lt;/code>&lt;/mark> 接口。&lt;/p>
 &lt;p>&lt;img src="img/160ba0206fbb01ac6c2fa3a99cafc290_MD5.jpg" alt="" />&lt;/p>
-&lt;p>这里提了很多底层的类关系，但是，实际上我们需要更多关注的是 &lt;code>ThreadPoolExecutor&lt;/code> 这个类，这个类在我们实际使用线程池的过程中，使用频率还是非常高的。&lt;/p></description></item><item><title>Java 线程池最佳实践</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/java-thread-pool-best-practices/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/java-thread-pool-best-practices/</guid><description>&lt;p>简单总结一下我了解的使用线程池的时候应该注意的东西，网上似乎还没有专门写这方面的文章。&lt;/p>
-&lt;h2 id="1正确声明线程池">
- 1、正确声明线程池
- &lt;a class="anchor" href="#1%e6%ad%a3%e7%a1%ae%e5%a3%b0%e6%98%8e%e7%ba%bf%e7%a8%8b%e6%b1%a0">#&lt;/a>
-&lt;/h2>
+&lt;p>这里提了很多底层的类关系，但是，实际上我们需要更多关注的是 &lt;code>ThreadPoolExecutor&lt;/code> 这个类，这个类在我们实际使用线程池的过程中，使用频率还是非常高的。&lt;/p>
+&lt;p>&lt;mark>注意：&lt;/mark> 通过查看 &lt;code>ScheduledThreadPoolExecutor&lt;/code> 源代码我们发现 &lt;code>ScheduledThreadPoolExecutor&lt;/code> 实际上是继承了 &lt;code>ThreadPoolExecutor&lt;/code> 并实现了 &lt;code>ScheduledExecutorService&lt;/code> ，而 &lt;code>ScheduledExecutorService&lt;/code> 又实现了 &lt;code>ExecutorService&lt;/code>，正如我们上面给出的类关系图显示的一样。&lt;/p></description></item><item><title>Java 线程池最佳实践</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/java-thread-pool-best-practices/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/java-thread-pool-best-practices/</guid><description>&lt;p>简单总结一下我了解的使用线程池的时候应该注意的东西，网上似乎还没有专门写这方面的文章。&lt;/p>
+&lt;h2 id="1正确声明线程池">1、正确声明线程池&lt;a class="anchor" href="#1%e6%ad%a3%e7%a1%ae%e5%a3%b0%e6%98%8e%e7%ba%bf%e7%a8%8b%e6%b1%a0">#&lt;/a>&lt;/h2>
 &lt;p>&lt;mark>线程池必须手动通过 &lt;code>ThreadPoolExecutor&lt;/code> 的构造函数来声明，避免使用&lt;code>Executors&lt;/code> 类创建线程池，会有 OOM 风险。&lt;/mark>&lt;/p>
 &lt;p>&lt;code>Executors&lt;/code> 返回线程池对象的弊端如下(后文会详细介绍到)：&lt;/p>
 &lt;ul>
@@ -215,10 +177,7 @@
 &lt;li>实际使用中需要根据自己机器的性能、业务场景来手动配置线程池的参数比如核心线程数、使用的任务队列、饱和策略等等。&lt;/li>
 &lt;li>我们应该显示地给我们的线程池命名，这样有助于我们定位问题。&lt;/li>
 &lt;/ul>
-&lt;h2 id="2监测线程池运行状态">
- 2、监测线程池运行状态
- &lt;a class="anchor" href="#2%e7%9b%91%e6%b5%8b%e7%ba%bf%e7%a8%8b%e6%b1%a0%e8%bf%90%e8%a1%8c%e7%8a%b6%e6%80%81">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="2监测线程池运行状态">2、监测线程池运行状态&lt;a class="anchor" href="#2%e7%9b%91%e6%b5%8b%e7%ba%bf%e7%a8%8b%e6%b1%a0%e8%bf%90%e8%a1%8c%e7%8a%b6%e6%80%81">#&lt;/a>&lt;/h2>
 &lt;p>你可以通过一些手段来检测线程池的运行状态比如 SpringBoot 中的 Actuator 组件。&lt;/p>
 &lt;p>除此之外，我们还可以利用 &lt;code>ThreadPoolExecutor&lt;/code> 的相关 API 做一个简陋的监控。从下图可以看出， &lt;code>ThreadPoolExecutor&lt;/code>提供了获取线程池当前的线程数和活跃线程数、已经执行完成的任务数、正在排队中的任务数等等。&lt;/p>
 &lt;p>&lt;img src="img/1371ee94fc48c42ad35e7809351eda97_MD5.jpg" alt="" />&lt;/p>
@@ -238,31 +197,15 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> log.&lt;span style="color:#a6e22e">info&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;Number of Tasks in Queue: {}&amp;#34;&lt;/span>, threadPool.&lt;span style="color:#a6e22e">getQueue&lt;/span>().&lt;span style="color:#a6e22e">size&lt;/span>());
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> log.&lt;span style="color:#a6e22e">info&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;=========================&amp;#34;&lt;/span>);
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }, 0, 1, TimeUnit.&lt;span style="color:#a6e22e">SECONDS&lt;/span>);
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="3建议不同类别的业务用不同的线程池">
- 3、建议不同类别的业务用不同的线程池
- &lt;a class="anchor" href="#3%e5%bb%ba%e8%ae%ae%e4%b8%8d%e5%90%8c%e7%b1%bb%e5%88%ab%e7%9a%84%e4%b8%9a%e5%8a%a1%e7%94%a8%e4%b8%8d%e5%90%8c%e7%9a%84%e7%ba%bf%e7%a8%8b%e6%b1%a0">#&lt;/a>
-&lt;/h2>
-&lt;p>很多人在实际项目中都会有类似这样的问题：&lt;mark>我的项目中多个业务需要用到线程池，是为每个线程池都定义一个还是说定义一个公共的线程池呢？&lt;/mark>&lt;/p></description></item><item><title>Java并发常见面试题总结（上）</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/java-concurrent-questions-01/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/java-concurrent-questions-01/</guid><description>&lt;h2 id="线程">
- 线程
- &lt;a class="anchor" href="#%e7%ba%bf%e7%a8%8b">#&lt;/a>
-&lt;/h2>
-&lt;h3 id="什么是线程和进程">
- ⭐️什么是线程和进程?
- &lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e7%ba%bf%e7%a8%8b%e5%92%8c%e8%bf%9b%e7%a8%8b">#&lt;/a>
-&lt;/h3>
-&lt;h4 id="何为进程">
- 何为进程?
- &lt;a class="anchor" href="#%e4%bd%95%e4%b8%ba%e8%bf%9b%e7%a8%8b">#&lt;/a>
-&lt;/h4>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="3建议不同类别的业务用不同的线程池">3、建议不同类别的业务用不同的线程池&lt;a class="anchor" href="#3%e5%bb%ba%e8%ae%ae%e4%b8%8d%e5%90%8c%e7%b1%bb%e5%88%ab%e7%9a%84%e4%b8%9a%e5%8a%a1%e7%94%a8%e4%b8%8d%e5%90%8c%e7%9a%84%e7%ba%bf%e7%a8%8b%e6%b1%a0">#&lt;/a>&lt;/h2>
+&lt;p>很多人在实际项目中都会有类似这样的问题：&lt;mark>我的项目中多个业务需要用到线程池，是为每个线程池都定义一个还是说定义一个公共的线程池呢？&lt;/mark>&lt;/p></description></item><item><title>Java并发常见面试题总结（上）</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/java-concurrent-questions-01/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/java-concurrent-questions-01/</guid><description>&lt;h2 id="线程">线程&lt;a class="anchor" href="#%e7%ba%bf%e7%a8%8b">#&lt;/a>&lt;/h2>
+&lt;h3 id="什么是线程和进程">⭐️什么是线程和进程?&lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e7%ba%bf%e7%a8%8b%e5%92%8c%e8%bf%9b%e7%a8%8b">#&lt;/a>&lt;/h3>
+&lt;h4 id="何为进程">何为进程?&lt;a class="anchor" href="#%e4%bd%95%e4%b8%ba%e8%bf%9b%e7%a8%8b">#&lt;/a>&lt;/h4>
 &lt;p>进程是程序的一次执行过程，是系统运行程序的基本单位，因此进程是动态的。系统运行一个程序即是一个进程从创建，运行到消亡的过程。&lt;/p>
 &lt;p>在 Java 中，当我们启动 main 函数时其实就是启动了一个 JVM 的进程，而 main 函数所在的线程就是这个进程中的一个线程，也称主线程。&lt;/p>
 &lt;p>如下图所示，在 Windows 中通过查看任务管理器的方式，我们就可以清楚看到 Windows 当前运行的进程（&lt;code>.exe&lt;/code> 文件的运行）。&lt;/p>
 &lt;p>&lt;img src="img/46845554e7b944990299924ba33b5178_MD5.jpg" alt="进程示例图片-Windows" />&lt;/p>
-&lt;h4 id="何为线程">
- 何为线程?
- &lt;a class="anchor" href="#%e4%bd%95%e4%b8%ba%e7%ba%bf%e7%a8%8b">#&lt;/a>
-&lt;/h4>
+&lt;h4 id="何为线程">何为线程?&lt;a class="anchor" href="#%e4%bd%95%e4%b8%ba%e7%ba%bf%e7%a8%8b">#&lt;/a>&lt;/h4>
 &lt;p>线程与进程相似，但线程是一个比进程更小的执行单位。一个进程在其执行的过程中可以产生多个线程。与进程不同的是同类的多个线程共享进程的&lt;mark>堆&lt;/mark>和&lt;mark>方法区&lt;/mark>资源，但每个线程有自己的&lt;mark>程序计数器&lt;/mark>、&lt;mark>虚拟机栈&lt;/mark>和&lt;mark>本地方法栈&lt;/mark>，所以系统在产生一个线程，或是在各个线程之间做切换工作时，负担要比进程小得多，也正因为如此，线程也被称为轻量级进程。&lt;/p>
 &lt;p>Java 程序天生就是多线程程序，我们可以通过 JMX 来看看一个普通的 Java 程序有哪些线程，代码如下。&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">MultiThread&lt;/span> {
@@ -276,15 +219,8 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			System.&lt;span style="color:#a6e22e">out&lt;/span>.&lt;span style="color:#a6e22e">println&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;[&amp;#34;&lt;/span> &lt;span style="color:#f92672">+&lt;/span> threadInfo.&lt;span style="color:#a6e22e">getThreadId&lt;/span>() &lt;span style="color:#f92672">+&lt;/span> &lt;span style="color:#e6db74">&amp;#34;] &amp;#34;&lt;/span> &lt;span style="color:#f92672">+&lt;/span> threadInfo.&lt;span style="color:#a6e22e">getThreadName&lt;/span>());
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		}
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>上述程序输出如下（输出内容可能不同，不用太纠结下面每个线程的作用，只用知道 main 线程执行 main 方法即可）：&lt;/p></description></item><item><title>Java并发常见面试题总结（下）</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/java-concurrent-questions-03/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/java-concurrent-questions-03/</guid><description>&lt;h2 id="threadlocal">
- ThreadLocal
- &lt;a class="anchor" href="#threadlocal">#&lt;/a>
-&lt;/h2>
-&lt;h3 id="threadlocal-有什么用">
- ThreadLocal 有什么用？
- &lt;a class="anchor" href="#threadlocal-%e6%9c%89%e4%bb%80%e4%b9%88%e7%94%a8">#&lt;/a>
-&lt;/h3>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>上述程序输出如下（输出内容可能不同，不用太纠结下面每个线程的作用，只用知道 main 线程执行 main 方法即可）：&lt;/p></description></item><item><title>Java并发常见面试题总结（下）</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/java-concurrent-questions-03/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/java-concurrent-questions-03/</guid><description>&lt;h2 id="threadlocal">ThreadLocal&lt;a class="anchor" href="#threadlocal">#&lt;/a>&lt;/h2>
+&lt;h3 id="threadlocal-有什么用">ThreadLocal 有什么用？&lt;a class="anchor" href="#threadlocal-%e6%9c%89%e4%bb%80%e4%b9%88%e7%94%a8">#&lt;/a>&lt;/h3>
 &lt;p>通常情况下，我们创建的变量可以被任何一个线程访问和修改。这在多线程环境中可能导致数据竞争和线程安全问题。那么，&lt;mark>如果想让每个线程都有自己的专属本地变量，该如何实现呢？&lt;/mark>&lt;/p>
 &lt;p>JDK 中提供的 &lt;code>ThreadLocal&lt;/code> 类正是为了解决这个问题。&lt;mark>&lt;code>ThreadLocal&lt;/code> 类允许每个线程绑定自己的值&lt;/mark>，可以将其形象地比喻为一个“存放数据的盒子”。每个线程都有自己独立的盒子，用于存储私有数据，确保不同线程之间的数据互不干扰。&lt;/p>
 &lt;p>当你创建一个 &lt;code>ThreadLocal&lt;/code> 变量时，每个访问该变量的线程都会拥有一个独立的副本。这也是 &lt;code>ThreadLocal&lt;/code> 名称的由来。线程可以通过 &lt;code>get()&lt;/code> 方法获取自己线程的本地副本，或通过 &lt;code>set()&lt;/code> 方法修改该副本的值，从而避免了线程安全问题。&lt;/p>
@@ -306,66 +242,59 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> thread1.&lt;span style="color:#a6e22e">start&lt;/span>(); &lt;span style="color:#75715e">// 输出: Thread-1 Value: 1&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> thread2.&lt;span style="color:#a6e22e">start&lt;/span>(); &lt;span style="color:#75715e">// 输出: Thread-2 Value: 1&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="threadlocal-原理了解吗">
- ⭐️ThreadLocal 原理了解吗？
- &lt;a class="anchor" href="#threadlocal-%e5%8e%9f%e7%90%86%e4%ba%86%e8%a7%a3%e5%90%97">#&lt;/a>
-&lt;/h3>
-&lt;p>从 &lt;code>Thread&lt;/code>类源代码入手。&lt;/p></description></item><item><title>Java并发常见面试题总结（中）</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/java-concurrent-questions-02/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/java-concurrent-questions-02/</guid><description>&lt;h2 id="jmmjava-内存模型">
- ⭐️JMM(Java 内存模型)
- &lt;a class="anchor" href="#jmmjava-%e5%86%85%e5%ad%98%e6%a8%a1%e5%9e%8b">#&lt;/a>
-&lt;/h2>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="threadlocal-原理了解吗">⭐️ThreadLocal 原理了解吗？&lt;a class="anchor" href="#threadlocal-%e5%8e%9f%e7%90%86%e4%ba%86%e8%a7%a3%e5%90%97">#&lt;/a>&lt;/h3>
+&lt;p>从 &lt;code>Thread&lt;/code>类源代码入手。&lt;/p></description></item><item><title>Java并发常见面试题总结（中）</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/java-concurrent-questions-02/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/java-concurrent-questions-02/</guid><description>&lt;h2 id="jmmjava-内存模型">⭐️JMM(Java 内存模型)&lt;a class="anchor" href="#jmmjava-%e5%86%85%e5%ad%98%e6%a8%a1%e5%9e%8b">#&lt;/a>&lt;/h2>
 &lt;p>JMM（Java 内存模型）相关的问题比较多，也比较重要，于是我单独抽了一篇文章来总结 JMM 相关的知识点和问题：
 &lt;a target="_blank" href="./jmm.md">JMM（Java 内存模型）详解&lt;/a> 。&lt;/p>
-&lt;h2 id="volatile-关键字">
- ⭐️volatile 关键字
- &lt;a class="anchor" href="#volatile-%e5%85%b3%e9%94%ae%e5%ad%97">#&lt;/a>
-&lt;/h2>
-&lt;h3 id="如何保证变量的可见性">
- 如何保证变量的可见性？
- &lt;a class="anchor" href="#%e5%a6%82%e4%bd%95%e4%bf%9d%e8%af%81%e5%8f%98%e9%87%8f%e7%9a%84%e5%8f%af%e8%a7%81%e6%80%a7">#&lt;/a>
-&lt;/h3>
+&lt;h2 id="volatile-关键字">⭐️volatile 关键字&lt;a class="anchor" href="#volatile-%e5%85%b3%e9%94%ae%e5%ad%97">#&lt;/a>&lt;/h2>
+&lt;h3 id="如何保证变量的可见性">如何保证变量的可见性？&lt;a class="anchor" href="#%e5%a6%82%e4%bd%95%e4%bf%9d%e8%af%81%e5%8f%98%e9%87%8f%e7%9a%84%e5%8f%af%e8%a7%81%e6%80%a7">#&lt;/a>&lt;/h3>
 &lt;p>在 Java 中，&lt;code>volatile&lt;/code> 关键字可以保证变量的可见性，如果我们将变量声明为 &lt;mark>&lt;code>volatile&lt;/code>&lt;/mark> ，这就指示 JVM，这个变量是共享且不稳定的，每次使用它都到主存中进行读取。&lt;/p>
 &lt;p>&lt;img src="img/e3f3c4d0ec455f4d0368ee2654c7c59e_MD5.jpg" alt="JMM(Java 内存模型" />&lt;/p>
 &lt;p>&lt;img src="img/375293e35dd2bc548effbf2e3e6c026a_MD5.jpg" alt="JMM(Java 内存模型)强制在主存中进行读取" />&lt;/p>
 &lt;p>&lt;code>volatile&lt;/code> 关键字其实并非是 Java 语言特有的，在 C 语言里也有，它最原始的意义就是禁用 CPU 缓存。如果我们将一个变量使用 &lt;code>volatile&lt;/code> 修饰，这就指示 编译器，这个变量是共享且不稳定的，每次使用它都到主存中进行读取。&lt;/p>
 &lt;p>&lt;code>volatile&lt;/code> 关键字能保证数据的可见性，但不能保证数据的原子性。&lt;code>synchronized&lt;/code> 关键字两者都能保证。&lt;/p>
-&lt;h3 id="如何禁止指令重排序">
- 如何禁止指令重排序？
- &lt;a class="anchor" href="#%e5%a6%82%e4%bd%95%e7%a6%81%e6%ad%a2%e6%8c%87%e4%bb%a4%e9%87%8d%e6%8e%92%e5%ba%8f">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="如何禁止指令重排序">如何禁止指令重排序？&lt;a class="anchor" href="#%e5%a6%82%e4%bd%95%e7%a6%81%e6%ad%a2%e6%8c%87%e4%bb%a4%e9%87%8d%e6%8e%92%e5%ba%8f">#&lt;/a>&lt;/h3>
 &lt;p>&lt;mark>在 Java 中，&lt;code>volatile&lt;/code> 关键字除了可以保证变量的可见性，还有一个重要的作用就是防止 JVM 的指令重排序。&lt;/mark> 如果我们将变量声明为 &lt;mark>&lt;code>volatile&lt;/code>&lt;/mark> ，在对这个变量进行读写操作的时候，会通过插入特定的 &lt;mark>内存屏障&lt;/mark> 的方式来禁止指令重排序。&lt;/p>
 &lt;p>在 Java 中，&lt;code>Unsafe&lt;/code> 类提供了三个开箱即用的内存屏障相关的方法，屏蔽了操作系统底层的差异：&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">native&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">loadFence&lt;/span>();
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">native&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">storeFence&lt;/span>();
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">native&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">fullFence&lt;/span>();
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>理论上来说，你通过这个三个方法也可以实现和&lt;code>volatile&lt;/code>禁止重排序一样的效果，只是会麻烦一些。&lt;/p>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">native&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">fullFence&lt;/span>();&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>理论上来说，你通过这个三个方法也可以实现和&lt;code>volatile&lt;/code>禁止重排序一样的效果，只是会麻烦一些。&lt;/p>
 &lt;p>下面我以一个常见的面试题为例讲解一下 &lt;code>volatile&lt;/code> 关键字禁止指令重排序的效果。&lt;/p>
 &lt;p>面试中面试官经常会说：“单例模式了解吗？来给我手写一下！给我解释一下双重检验锁方式实现单例模式的原理呗！”&lt;/p>
-&lt;p>&lt;mark>双重校验锁实现对象单例（线程安全）&lt;/mark>：&lt;/p></description></item><item><title>JMM（Java 内存模型）详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/jmm/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/jmm/</guid><description>&lt;p>JMM(Java 内存模型)主要定义了对于一个共享变量，当另一个线程对这个共享变量执行写操作后，这个线程对这个共享变量的可见性。&lt;/p>
+&lt;p>&lt;mark>双重校验锁实现对象单例（线程安全）&lt;/mark>：&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">Singleton&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">private&lt;/span> &lt;span style="color:#66d9ef">volatile&lt;/span> &lt;span style="color:#66d9ef">static&lt;/span> Singleton uniqueInstance;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">private&lt;/span> &lt;span style="color:#a6e22e">Singleton&lt;/span>() {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">static&lt;/span> Singleton &lt;span style="color:#a6e22e">getUniqueInstance&lt;/span>() {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">//先判断对象是否已经实例过，没有实例化过才进入加锁代码&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span> (uniqueInstance &lt;span style="color:#f92672">==&lt;/span> &lt;span style="color:#66d9ef">null&lt;/span>) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">//类对象加锁&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">synchronized&lt;/span> (Singleton.&lt;span style="color:#a6e22e">class&lt;/span>) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span> (uniqueInstance &lt;span style="color:#f92672">==&lt;/span> &lt;span style="color:#66d9ef">null&lt;/span>) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> uniqueInstance &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> Singleton();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> uniqueInstance;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;code>uniqueInstance&lt;/code> 采用 &lt;code>volatile&lt;/code> 关键字修饰也是很有必要的， &lt;code>uniqueInstance = new Singleton();&lt;/code> 这段代码其实是分为三步执行：&lt;/p></description></item><item><title>JMM（Java 内存模型）详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/jmm/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/jmm/</guid><description>&lt;p>JMM(Java 内存模型)主要定义了对于一个共享变量，当另一个线程对这个共享变量执行写操作后，这个线程对这个共享变量的可见性。&lt;/p>
 &lt;p>要想理解透彻 JMM（Java 内存模型），我们先要从 &lt;mark>CPU 缓存模型和指令重排序&lt;/mark> 说起！&lt;/p>
-&lt;h2 id="从-cpu-缓存模型说起">
- 从 CPU 缓存模型说起
- &lt;a class="anchor" href="#%e4%bb%8e-cpu-%e7%bc%93%e5%ad%98%e6%a8%a1%e5%9e%8b%e8%af%b4%e8%b5%b7">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="从-cpu-缓存模型说起">从 CPU 缓存模型说起&lt;a class="anchor" href="#%e4%bb%8e-cpu-%e7%bc%93%e5%ad%98%e6%a8%a1%e5%9e%8b%e8%af%b4%e8%b5%b7">#&lt;/a>&lt;/h2>
 &lt;p>&lt;mark>为什么要弄一个 CPU 高速缓存呢？&lt;/mark> 类比我们开发网站后台系统使用的缓存（比如 Redis）是为了解决程序处理速度和访问常规关系型数据库速度不对等的问题。 &lt;mark>CPU 缓存则是为了解决 CPU 处理速度和内存处理速度不对等的问题。&lt;/mark>&lt;/p>
 &lt;p>我们甚至可以把 &lt;mark>内存看作外存的高速缓存&lt;/mark>，程序运行的时候我们把外存的数据复制到内存，由于内存的处理速度远远高于外存，这样提高了处理速度。&lt;/p>
 &lt;p>总结：&lt;mark>CPU Cache 缓存的是内存数据用于解决 CPU 处理速度和内存不匹配的问题，内存缓存的是硬盘数据用于解决硬盘访问速度过慢的问题。&lt;/mark>&lt;/p>
 &lt;p>为了更好地理解，我画了一个简单的 CPU Cache 示意图如下所示。&lt;/p>
-&lt;blockquote>
+&lt;blockquote class='book-hint '>
 &lt;p>&lt;mark>🐛 修正（参见：
-&lt;a target="_blank" href="https://github.com/Snailclimb/JavaGuide/issues/1848">issue#1848&lt;/a>）&lt;/mark>：对 CPU 缓存模型绘图不严谨的地方进行完善。&lt;/p>
-&lt;/blockquote>
-&lt;p>&lt;img src="img/adb0e6b10759b7bd380fe5e908a559d1_MD5.jpg" alt="CPU 缓存模型示意图" />&lt;/p>
+&lt;a target="_blank" href="https://github.com/Snailclimb/JavaGuide/issues/1848">issue#1848&lt;/a>）&lt;/mark>：对 CPU 缓存模型绘图不严谨的地方进行完善。&lt;/p>&lt;/blockquote>&lt;p>&lt;img src="img/adb0e6b10759b7bd380fe5e908a559d1_MD5.jpg" alt="CPU 缓存模型示意图" />&lt;/p>
 &lt;p>现代的 CPU Cache 通常分为三层，分别叫 L1,L2,L3 Cache。有些 CPU 可能还有 L4 Cache，这里不做讨论，并不常见&lt;/p>
-&lt;p>&lt;mark>CPU Cache 的工作方式：&lt;/mark> 先复制一份数据到 CPU Cache 中，当 CPU 需要用到的时候就可以直接从 CPU Cache 中读取数据，当运算完成后，再将运算得到的数据写回 Main Memory 中。但是，这样存在 &lt;mark>内存缓存不一致性的问题&lt;/mark> ！比如我执行一个 i++ 操作的话，如果两个线程同时执行的话，假设两个线程从 CPU Cache 中读取的 i=1，两个线程做了 i++ 运算完之后再写回 Main Memory 之后 i=2，而正确结果应该是 i=3。&lt;/p></description></item><item><title>ThreadLocal 详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/threadlocal/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/threadlocal/</guid><description>&lt;blockquote>
+&lt;p>&lt;mark>CPU Cache 的工作方式：&lt;/mark> 先复制一份数据到 CPU Cache 中，当 CPU 需要用到的时候就可以直接从 CPU Cache 中读取数据，当运算完成后，再将运算得到的数据写回 Main Memory 中。但是，这样存在 &lt;mark>内存缓存不一致性的问题&lt;/mark> ！比如我执行一个 i++ 操作的话，如果两个线程同时执行的话，假设两个线程从 CPU Cache 中读取的 i=1，两个线程做了 i++ 运算完之后再写回 Main Memory 之后 i=2，而正确结果应该是 i=3。&lt;/p></description></item><item><title>ThreadLocal 详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/threadlocal/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/threadlocal/</guid><description>&lt;blockquote class='book-hint '>
 &lt;p>本文来自一枝花算不算浪漫投稿， 原文地址：
-&lt;a target="_blank" href="https://juejin.cn/post/6844904151567040519">https://juejin.cn/post/6844904151567040519&lt;/a>。&lt;/p>
-&lt;/blockquote>
-&lt;h3 id="前言">
- 前言
- &lt;a class="anchor" href="#%e5%89%8d%e8%a8%80">#&lt;/a>
-&lt;/h3>
+&lt;a target="_blank" href="https://juejin.cn/post/6844904151567040519">https://juejin.cn/post/6844904151567040519&lt;/a>。&lt;/p>&lt;/blockquote>&lt;h3 id="前言">前言&lt;a class="anchor" href="#%e5%89%8d%e8%a8%80">#&lt;/a>&lt;/h3>
 &lt;p>&lt;img src="./images/thread-local/1.png" alt="" />&lt;/p>
 &lt;p>&lt;mark>全文共 10000+字，31 张图，这篇文章同样耗费了不少的时间和精力才创作完成，原创不易，请大家点点关注+在看，感谢。&lt;/mark>&lt;/p>
 &lt;p>对于&lt;code>ThreadLocal&lt;/code>，大家的第一反应可能是很简单呀，线程的变量副本，每个线程隔离。那这里有几个问题大家可以思考一下：&lt;/p>
@@ -382,15 +311,9 @@
 &lt;li>……&lt;/li>
 &lt;/ul>
 &lt;p>上述的一些问题你是否都已经掌握的很清楚了呢？本文将围绕这些问题使用图文方式来剖析&lt;code>ThreadLocal&lt;/code>的&lt;mark>点点滴滴&lt;/mark>。&lt;/p>
-&lt;h3 id="目录">
- 目录
- &lt;a class="anchor" href="#%e7%9b%ae%e5%bd%95">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="目录">目录&lt;a class="anchor" href="#%e7%9b%ae%e5%bd%95">#&lt;/a>&lt;/h3>
 &lt;p>&lt;mark>注明：&lt;/mark> 本文源码基于&lt;code>JDK 1.8&lt;/code>&lt;/p>
-&lt;h3 id="threadlocal代码演示">
- &lt;code>ThreadLocal&lt;/code>代码演示
- &lt;a class="anchor" href="#threadlocal%e4%bb%a3%e7%a0%81%e6%bc%94%e7%a4%ba">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="threadlocal代码演示">&lt;code>ThreadLocal&lt;/code>代码演示&lt;a class="anchor" href="#threadlocal%e4%bb%a3%e7%a0%81%e6%bc%94%e7%a4%ba">#&lt;/a>&lt;/h3>
 &lt;p>我们先看下&lt;code>ThreadLocal&lt;/code>使用示例：&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">ThreadLocalTest&lt;/span> {
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">private&lt;/span> List&lt;span style="color:#f92672">&amp;lt;&lt;/span>String&lt;span style="color:#f92672">&amp;gt;&lt;/span> messages &lt;span style="color:#f92672">=&lt;/span> Lists.&lt;span style="color:#a6e22e">newArrayList&lt;/span>();
@@ -414,22 +337,13 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> System.&lt;span style="color:#a6e22e">out&lt;/span>.&lt;span style="color:#a6e22e">println&lt;/span>(holder.&lt;span style="color:#a6e22e">get&lt;/span>().&lt;span style="color:#a6e22e">messages&lt;/span>);
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ThreadLocalTest.&lt;span style="color:#a6e22e">clear&lt;/span>();
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>打印结果：&lt;/p></description></item><item><title>从ReentrantLock的实现看AQS的原理及应用</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/reentrantlock/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/reentrantlock/</guid><description>&lt;blockquote>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>打印结果：&lt;/p></description></item><item><title>从ReentrantLock的实现看AQS的原理及应用</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/reentrantlock/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/reentrantlock/</guid><description>&lt;blockquote class='book-hint '>
 &lt;p>本文转载自：
 &lt;a target="_blank" href="https://tech.meituan.com/2019/12/05/aqs-theory-and-apply.html">https://tech.meituan.com/2019/12/05/aqs-theory-and-apply.html&lt;/a>&lt;/p>
-&lt;p>作者：美团技术团队&lt;/p>
-&lt;/blockquote>
-&lt;p>Java 中的大部分同步类（Semaphore、ReentrantLock 等）都是基于 AbstractQueuedSynchronizer（简称为 AQS）实现的。AQS 是一种提供了原子式管理同步状态、阻塞和唤醒线程功能以及队列模型的简单框架。&lt;/p>
+&lt;p>作者：美团技术团队&lt;/p>&lt;/blockquote>&lt;p>Java 中的大部分同步类（Semaphore、ReentrantLock 等）都是基于 AbstractQueuedSynchronizer（简称为 AQS）实现的。AQS 是一种提供了原子式管理同步状态、阻塞和唤醒线程功能以及队列模型的简单框架。&lt;/p>
 &lt;p>本文会从应用层逐渐深入到原理层，并通过 ReentrantLock 的基本特性和 ReentrantLock 与 AQS 的关联，来深入解读 AQS 相关独占锁的知识点，同时采取问答的模式来帮助大家理解 AQS。由于篇幅原因，本篇文章主要阐述 AQS 中独占锁的逻辑和 Sync Queue，不讲述包含共享锁和 Condition Queue 的部分（本篇文章核心为 AQS 原理剖析，只是简单介绍了 ReentrantLock，感兴趣同学可以阅读一下 ReentrantLock 的源码）。&lt;/p>
-&lt;h2 id="1-reentrantlock">
- 1 ReentrantLock
- &lt;a class="anchor" href="#1-reentrantlock">#&lt;/a>
-&lt;/h2>
-&lt;h3 id="11-reentrantlock-特性概览">
- 1.1 ReentrantLock 特性概览
- &lt;a class="anchor" href="#11-reentrantlock-%e7%89%b9%e6%80%a7%e6%a6%82%e8%a7%88">#&lt;/a>
-&lt;/h3>
+&lt;h2 id="1-reentrantlock">1 ReentrantLock&lt;a class="anchor" href="#1-reentrantlock">#&lt;/a>&lt;/h2>
+&lt;h3 id="11-reentrantlock-特性概览">1.1 ReentrantLock 特性概览&lt;a class="anchor" href="#11-reentrantlock-%e7%89%b9%e6%80%a7%e6%a6%82%e8%a7%88">#&lt;/a>&lt;/h3>
 &lt;p>ReentrantLock 意思为可重入锁，指的是一个线程能够对一个临界资源重复加锁。为了帮助大家更好地理解 ReentrantLock 的特性，我们先将 ReentrantLock 跟常用的 Synchronized 进行比较，其特性如下（蓝色部分为本篇文章主要剖析的点）：&lt;/p>
 &lt;p>&lt;img src="img/5b1f54f985721d5a7fbff2f32bee7d53_MD5.jpg" alt="" />&lt;/p>
 &lt;p>下面通过伪代码，进行更加直观的比较：&lt;/p>
@@ -461,17 +375,10 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> } &lt;span style="color:#66d9ef">finally&lt;/span> {
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> lock.&lt;span style="color:#a6e22e">unlock&lt;/span>();
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="12-reentrantlock-与-aqs-的关联">
- 1.2 ReentrantLock 与 AQS 的关联
- &lt;a class="anchor" href="#12-reentrantlock-%e4%b8%8e-aqs-%e7%9a%84%e5%85%b3%e8%81%94">#&lt;/a>
-&lt;/h3>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="12-reentrantlock-与-aqs-的关联">1.2 ReentrantLock 与 AQS 的关联&lt;a class="anchor" href="#12-reentrantlock-%e4%b8%8e-aqs-%e7%9a%84%e5%85%b3%e8%81%94">#&lt;/a>&lt;/h3>
 &lt;p>通过上文我们已经了解，ReentrantLock 支持公平锁和非公平锁（关于公平锁和非公平锁的原理分析，可参考《
 &lt;a target="_blank" href="https://mp.weixin.qq.com/s?__biz=MjM5NjQ5MTI5OA==&amp;amp;mid=2651749434&amp;amp;idx=3&amp;amp;sn=5ffa63ad47fe166f2f1a9f604ed10091&amp;amp;chksm=bd12a5778a652c61509d9e718ab086ff27ad8768586ea9b38c3dcf9e017a8e49bcae3df9bcc8&amp;amp;scene=38#wechat_redirect">不可不说的 Java“锁”事&lt;/a>》），并且 ReentrantLock 的底层就是由 AQS 来实现的。那么 ReentrantLock 是如何通过公平锁和非公平锁与 AQS 关联起来呢？ 我们着重从这两者的加锁过程来理解一下它们与 AQS 之间的关系（加锁过程中与 AQS 的关联比较明显，解锁流程后续会介绍）。&lt;/p></description></item><item><title>乐观锁和悲观锁详解</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/optimistic-lock-and-pessimistic-lock/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/optimistic-lock-and-pessimistic-lock/</guid><description>&lt;p>如果将悲观锁（Pessimistic Lock）和乐观锁（Optimistic Lock）对应到现实生活中来。悲观锁有点像是一位比较悲观（也可以说是未雨绸缪）的人，总是会假设最坏的情况，避免出现问题。乐观锁有点像是一位比较乐观的人，总是会假设最好的情况，在要出现问题之前快速解决问题。&lt;/p>
-&lt;h2 id="什么是悲观锁">
- 什么是悲观锁？
- &lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e6%82%b2%e8%a7%82%e9%94%81">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="什么是悲观锁">什么是悲观锁？&lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e6%82%b2%e8%a7%82%e9%94%81">#&lt;/a>&lt;/h2>
 &lt;p>悲观锁总是假设最坏的情况，认为共享资源每次被访问的时候就会出现问题(比如共享数据被修改)，所以每次在获取资源操作的时候都会上锁，这样其他线程想拿到这个资源就会阻塞直到锁被上一个持有者释放。也就是说，&lt;mark>共享资源每次只给一个线程使用，其它线程阻塞，用完后再把资源转让给其它线程&lt;/mark>。&lt;/p>
 &lt;p>像 Java 中&lt;code>synchronized&lt;/code>和&lt;code>ReentrantLock&lt;/code>等独占锁就是悲观锁思想的实现。&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">performSynchronisedTask&lt;/span>() {
@@ -486,74 +393,55 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// 需要同步的操作&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>} &lt;span style="color:#66d9ef">finally&lt;/span> {
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> lock.&lt;span style="color:#a6e22e">unlock&lt;/span>();
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>高并发的场景下，激烈的锁竞争会造成线程阻塞，大量阻塞线程会导致系统的上下文切换，增加系统的性能开销。并且，悲观锁还可能会存在死锁问题（线程获得锁的顺序不当时），影响代码的正常运行。&lt;/p>
-&lt;h2 id="什么是乐观锁">
- 什么是乐观锁？
- &lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e4%b9%90%e8%a7%82%e9%94%81">#&lt;/a>
-&lt;/h2>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>高并发的场景下，激烈的锁竞争会造成线程阻塞，大量阻塞线程会导致系统的上下文切换，增加系统的性能开销。并且，悲观锁还可能会存在死锁问题（线程获得锁的顺序不当时），影响代码的正常运行。&lt;/p>
+&lt;h2 id="什么是乐观锁">什么是乐观锁？&lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e4%b9%90%e8%a7%82%e9%94%81">#&lt;/a>&lt;/h2>
 &lt;p>乐观锁总是假设最好的情况，认为共享资源每次被访问的时候不会出现问题，线程可以不停地执行，无需加锁也无需等待，只是在提交修改的时候去验证对应的资源（也就是数据）是否被其它线程修改了（具体方法可以使用版本号机制或 CAS 算法）。&lt;/p>
 &lt;p>在 Java 中&lt;code>java.util.concurrent.atomic&lt;/code>包下面的原子变量类（比如&lt;code>AtomicInteger&lt;/code>、&lt;code>LongAdder&lt;/code>）就是使用了乐观锁的一种实现方式 &lt;mark>CAS&lt;/mark> 实现的。
 &lt;img src="img/7ce72f767e05ed93372f3a2d6910230c_MD5.jpg" alt="JUC原子类概览" />&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// LongAdder 在高并发场景下会比 AtomicInteger 和 AtomicLong 的性能更好&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// 代价就是会消耗更多的内存空间（空间换时间）&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>LongAdder sum &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> LongAdder();
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>sum.&lt;span style="color:#a6e22e">increment&lt;/span>();
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>高并发的场景下，乐观锁相比悲观锁来说，不存在锁竞争造成线程阻塞，也不会有死锁问题，在性能上往往会更胜一筹。但是，如果冲突频繁发生（写占比非常多的情况），会频繁失败并重试，这样同样会非常影响性能，导致 CPU 飙升。&lt;/p>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>sum.&lt;span style="color:#a6e22e">increment&lt;/span>();&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>高并发的场景下，乐观锁相比悲观锁来说，不存在锁竞争造成线程阻塞，也不会有死锁问题，在性能上往往会更胜一筹。但是，如果冲突频繁发生（写占比非常多的情况），会频繁失败并重试，这样同样会非常影响性能，导致 CPU 飙升。&lt;/p>
 &lt;p>不过，大量失败重试的问题也是可以解决的，像我们前面提到的 &lt;code>LongAdder&lt;/code>以空间换时间的方式就解决了这个问题。&lt;/p>
 &lt;p>理论上来说：&lt;/p>
 &lt;ul>
 &lt;li>悲观锁通常多用于写比较多的情况（多写场景，竞争激烈），这样可以避免频繁失败和重试影响性能，悲观锁的开销是固定的。不过，如果乐观锁解决了频繁失败和重试这个问题的话（比如&lt;code>LongAdder&lt;/code>），也是可以考虑使用乐观锁的，要视实际情况而定。&lt;/li>
 &lt;li>乐观锁通常多用于写比较少的情况（多读场景，竞争较少），这样可以避免频繁加锁影响性能。不过，乐观锁主要针对的对象是单个共享变量（参考&lt;code>java.util.concurrent.atomic&lt;/code>包下面的原子变量类）。&lt;/li>
 &lt;/ul>
-&lt;h2 id="如何实现乐观锁">
- 如何实现乐观锁？
- &lt;a class="anchor" href="#%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e4%b9%90%e8%a7%82%e9%94%81">#&lt;/a>
-&lt;/h2>
-&lt;p>乐观锁一般会使用版本号机制或 CAS 算法实现，CAS 算法相对来说更多一些，这里需要格外注意。&lt;/p></description></item><item><title>虚拟线程常见问题总结</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/virtual-thread/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/virtual-thread/</guid><description>&lt;blockquote>
+&lt;h2 id="如何实现乐观锁">如何实现乐观锁？&lt;a class="anchor" href="#%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0%e4%b9%90%e8%a7%82%e9%94%81">#&lt;/a>&lt;/h2>
+&lt;p>乐观锁一般会使用版本号机制或 CAS 算法实现，CAS 算法相对来说更多一些，这里需要格外注意。&lt;/p>
+&lt;h3 id="版本号机制">版本号机制&lt;a class="anchor" href="#%e7%89%88%e6%9c%ac%e5%8f%b7%e6%9c%ba%e5%88%b6">#&lt;/a>&lt;/h3>
+&lt;p>一般是在数据表中加上一个数据版本号 &lt;code>version&lt;/code> 字段，表示数据被修改的次数。当数据被修改时，&lt;code>version&lt;/code> 值会加一。当线程 A 要更新数据值时，在读取数据的同时也会读取 &lt;code>version&lt;/code> 值，在提交更新时，若刚才读取到的 version 值为当前数据库中的 &lt;code>version&lt;/code> 值相等时才更新，否则重试更新操作，直到更新成功。&lt;/p></description></item><item><title>虚拟线程常见问题总结</title><link>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/virtual-thread/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Interview/java/concurrent/virtual-thread/</guid><description>&lt;blockquote class='book-hint '>
 &lt;p>本文部分内容来自 
 &lt;a target="_blank" href="https://github.com/Lorin-github">Lorin&lt;/a> 的
-&lt;a target="_blank" href="https://github.com/Snailclimb/JavaGuide/pull/2190">PR&lt;/a>。&lt;/p>
-&lt;/blockquote>
-&lt;p>虚拟线程在 Java 21 正式发布，这是一项重量级的更新。&lt;/p>
-&lt;h2 id="什么是虚拟线程">
- 什么是虚拟线程？
- &lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e8%99%9a%e6%8b%9f%e7%ba%bf%e7%a8%8b">#&lt;/a>
-&lt;/h2>
+&lt;a target="_blank" href="https://github.com/Snailclimb/JavaGuide/pull/2190">PR&lt;/a>。&lt;/p>&lt;/blockquote>&lt;p>虚拟线程在 Java 21 正式发布，这是一项重量级的更新。&lt;/p>
+&lt;h2 id="什么是虚拟线程">什么是虚拟线程？&lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e8%99%9a%e6%8b%9f%e7%ba%bf%e7%a8%8b">#&lt;/a>&lt;/h2>
 &lt;p>虚拟线程（Virtual Thread）是 JDK 而不是 OS 实现的轻量级线程(Lightweight Process，LWP），由 JVM 调度。许多虚拟线程共享同一个操作系统线程，虚拟线程的数量可以远大于操作系统线程的数量。&lt;/p>
-&lt;h2 id="虚拟线程和平台线程有什么关系">
- 虚拟线程和平台线程有什么关系？
- &lt;a class="anchor" href="#%e8%99%9a%e6%8b%9f%e7%ba%bf%e7%a8%8b%e5%92%8c%e5%b9%b3%e5%8f%b0%e7%ba%bf%e7%a8%8b%e6%9c%89%e4%bb%80%e4%b9%88%e5%85%b3%e7%b3%bb">#&lt;/a>
-&lt;/h2>
+&lt;h2 id="虚拟线程和平台线程有什么关系">虚拟线程和平台线程有什么关系？&lt;a class="anchor" href="#%e8%99%9a%e6%8b%9f%e7%ba%bf%e7%a8%8b%e5%92%8c%e5%b9%b3%e5%8f%b0%e7%ba%bf%e7%a8%8b%e6%9c%89%e4%bb%80%e4%b9%88%e5%85%b3%e7%b3%bb">#&lt;/a>&lt;/h2>
 &lt;p>在引入虚拟线程之前，&lt;code>java.lang.Thread&lt;/code> 包已经支持所谓的平台线程（Platform Thread），也就是没有虚拟线程之前，我们一直使用的线程。JVM 调度程序通过平台线程（载体线程）来管理虚拟线程，一个平台线程可以在不同的时间执行不同的虚拟线程（多个虚拟线程挂载在一个平台线程上），当虚拟线程被阻塞或等待时，平台线程可以切换到执行另一个虚拟线程。&lt;/p>
 &lt;p>虚拟线程、平台线程和系统内核线程的关系图如下所示（图源：
 &lt;a target="_blank" href="https://medium.com/javarevisited/how-to-use-java-19-virtual-threads-c16a32bad5f7">How to Use Java 19 Virtual Threads&lt;/a>）：&lt;/p>
 &lt;p>&lt;img src="img/b0cd042a86660ba00e430b15d400f9d8_MD5.jpg" alt="虚拟线程、平台线程和系统内核线程的关系" />&lt;/p>
 &lt;p>关于平台线程和系统内核线程的对应关系多提一点：在 Windows 和 Linux 等主流操作系统中，Java 线程采用的是一对一的线程模型，也就是一个平台线程对应一个系统内核线程。Solaris 系统是一个特例，HotSpot VM 在 Solaris 上支持多对多和一对一。具体可以参考 R 大的回答: 
 &lt;a target="_blank" href="https://www.zhihu.com/question/23096638/answer/29617153">JVM 中的线程模型是用户级的么？&lt;/a>。&lt;/p>
-&lt;h2 id="虚拟线程有什么优点和缺点">
- 虚拟线程有什么优点和缺点？
- &lt;a class="anchor" href="#%e8%99%9a%e6%8b%9f%e7%ba%bf%e7%a8%8b%e6%9c%89%e4%bb%80%e4%b9%88%e4%bc%98%e7%82%b9%e5%92%8c%e7%bc%ba%e7%82%b9">#&lt;/a>
-&lt;/h2>
-&lt;h3 id="优点">
- 优点
- &lt;a class="anchor" href="#%e4%bc%98%e7%82%b9">#&lt;/a>
-&lt;/h3>
+&lt;h2 id="虚拟线程有什么优点和缺点">虚拟线程有什么优点和缺点？&lt;a class="anchor" href="#%e8%99%9a%e6%8b%9f%e7%ba%bf%e7%a8%8b%e6%9c%89%e4%bb%80%e4%b9%88%e4%bc%98%e7%82%b9%e5%92%8c%e7%bc%ba%e7%82%b9">#&lt;/a>&lt;/h2>
+&lt;h3 id="优点">优点&lt;a class="anchor" href="#%e4%bc%98%e7%82%b9">#&lt;/a>&lt;/h3>
 &lt;ul>
 &lt;li>&lt;mark>非常轻量级&lt;/mark>：可以在单个线程中创建成百上千个虚拟线程而不会导致过多的线程创建和上下文切换。&lt;/li>
 &lt;li>&lt;mark>简化异步编程&lt;/mark>： 虚拟线程可以简化异步编程，使代码更易于理解和维护。它可以将异步代码编写得更像同步代码，避免了回调地狱（Callback Hell）。&lt;/li>
 &lt;li>&lt;mark>减少资源开销&lt;/mark>： 由于虚拟线程是由 JVM 实现的，它能够更高效地利用底层资源，例如 CPU 和内存。虚拟线程的上下文切换比平台线程更轻量，因此能够更好地支持高并发场景。&lt;/li>
 &lt;/ul>
-&lt;h3 id="缺点">
- 缺点
- &lt;a class="anchor" href="#%e7%bc%ba%e7%82%b9">#&lt;/a>
-&lt;/h3>
+&lt;h3 id="缺点">缺点&lt;a class="anchor" href="#%e7%bc%ba%e7%82%b9">#&lt;/a>&lt;/h3>
 &lt;ul>
 &lt;li>&lt;mark>不适用于计算密集型任务&lt;/mark>： 虚拟线程适用于 I/O 密集型任务，但不适用于计算密集型任务，因为密集型计算始终需要 CPU 资源作为支持。&lt;/li>
 &lt;li>&lt;mark>与某些第三方库不兼容&lt;/mark>： 虽然虚拟线程设计时考虑了与现有代码的兼容性，但某些依赖平台线程特性的第三方库可能不完全兼容虚拟线程。&lt;/li>
 &lt;/ul>
-&lt;h2 id="如何创建虚拟线程">
- 如何创建虚拟线程？
- &lt;a class="anchor" href="#%e5%a6%82%e4%bd%95%e5%88%9b%e5%bb%ba%e8%99%9a%e6%8b%9f%e7%ba%bf%e7%a8%8b">#&lt;/a>
-&lt;/h2>
-&lt;p>官方提供了以下四种方式创建虚拟线程：&lt;/p></description></item></channel></rss>
+&lt;h2 id="如何创建虚拟线程">如何创建虚拟线程？&lt;a class="anchor" href="#%e5%a6%82%e4%bd%95%e5%88%9b%e5%bb%ba%e8%99%9a%e6%8b%9f%e7%ba%bf%e7%a8%8b">#&lt;/a>&lt;/h2>
+&lt;p>官方提供了以下四种方式创建虚拟线程：&lt;/p>
+&lt;ol>
+&lt;li>使用 &lt;code>Thread.startVirtualThread()&lt;/code> 创建&lt;/li>
+&lt;li>使用 &lt;code>Thread.ofVirtual()&lt;/code> 创建&lt;/li>
+&lt;li>使用 &lt;code>ThreadFactory&lt;/code> 创建&lt;/li>
+&lt;li>使用 &lt;code>Executors.newVirtualThreadPerTaskExecutor()&lt;/code>创建&lt;/li>
+&lt;/ol>
+&lt;p>&lt;mark>1、使用 &lt;code>Thread.startVirtualThread()&lt;/code> 创建&lt;/mark>&lt;/p></description></item></channel></rss>
