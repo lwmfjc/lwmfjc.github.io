@@ -1,4 +1,156 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>随记</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/</link><description>Recent content on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Fri, 06 Feb 2026 14:21:51 +0800</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/index.xml" rel="self" type="application/rss+xml"/><item><title/><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/46%E5%8A%A8%E6%80%81%E6%95%B0%E7%BB%84/</link><pubDate>Fri, 06 Feb 2026 14:21:51 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/46%E5%8A%A8%E6%80%81%E6%95%B0%E7%BB%84/</guid><description>&lt;ul>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>随记</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/</link><description>Recent content on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Sat, 07 Feb 2026 19:38:21 +0800</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/index.xml" rel="self" type="application/rss+xml"/><item><title>48局部静态变量</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/48%E5%B1%80%E9%83%A8%E9%9D%99%E6%80%81%E5%8F%98%E9%87%8F/</link><pubDate>Sat, 07 Feb 2026 19:38:21 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/48%E5%B1%80%E9%83%A8%E9%9D%99%E6%80%81%E5%8F%98%E9%87%8F/</guid><description>&lt;h1 id="static的三种用法">static的三种用法&lt;a class="anchor" href="#static%e7%9a%84%e4%b8%89%e7%a7%8d%e7%94%a8%e6%b3%95">#&lt;/a>&lt;/h1>
+&lt;h2 id="类外部的-static作用域限制">类外部的 static（作用域限制）&lt;a class="anchor" href="#%e7%b1%bb%e5%a4%96%e9%83%a8%e7%9a%84-static%e4%bd%9c%e7%94%a8%e5%9f%9f%e9%99%90%e5%88%b6">#&lt;/a>&lt;/h2>
+&lt;p>当你把 static 放在全局变量或函数前面时，它的作用是 “私有化” 这个文件。&lt;/p>
+&lt;ul>
+&lt;li>效果：该变量或函数仅在定义它的 .cpp 文件（编译单元） 内可见。&lt;/li>
+&lt;li>为什么要用它？
+&lt;ul>
+&lt;li>防止 命名冲突：如果你在 A.cpp 定义了一个 static int x，在 B.cpp 也定义了一个 int x，链接器（Linker）不会报错，因为 A 的 x 是文件私有的。&lt;/li>
+&lt;li>Cherno 的建议：除非你需要变量在多个文件间共享，否则尽量加上 static，让它保持局部化。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h2 id="类内部的-static成员共享">类内部的 static（成员共享）&lt;a class="anchor" href="#%e7%b1%bb%e5%86%85%e9%83%a8%e7%9a%84-static%e6%88%90%e5%91%98%e5%85%b1%e4%ba%ab">#&lt;/a>&lt;/h2>
+&lt;p>当你把 static 放在类成员变量或函数前面时，它的含义变成了 “属于类，而不属于对象”。&lt;/p>
+&lt;h3 id="静态变量">静态变量&lt;a class="anchor" href="#%e9%9d%99%e6%80%81%e5%8f%98%e9%87%8f">#&lt;/a>&lt;/h3>
+&lt;ul>
+&lt;li>效果：无论你创建了多少个该类的对象（实例），这个变量在内存中 只有一份。&lt;/li>
+&lt;li>用法：所有对象共享同一个变量。修改其中一个对象的静态变量，其他对象看到的也是修改后的值。&lt;/li>
+&lt;li>初始化：必须在类外单独进行初始化。&lt;/li>
+&lt;/ul>
+&lt;h3 id="静态函数">静态函数：&lt;a class="anchor" href="#%e9%9d%99%e6%80%81%e5%87%bd%e6%95%b0">#&lt;/a>&lt;/h3>
+&lt;ul>
+&lt;li>效果：该函数不需要通过对象（obj.Func()）调用 &lt;del>可以但不推荐，编译器实际上会忽略这个对象，查看obj类型并转化为Class::Func()），可以直接通过类名调用（Class::Func()&lt;/del> 。&lt;/li>
+&lt;li>限制：静态函数 没有 this 指针，因此它只能访问类里的其他静态成员，不能访问普通的非静态成员。&lt;/li>
+&lt;/ul>
+&lt;h2 id="局部静态变量">局部静态变量&lt;a class="anchor" href="#%e5%b1%80%e9%83%a8%e9%9d%99%e6%80%81%e5%8f%98%e9%87%8f">#&lt;/a>&lt;/h2>
+&lt;p>局部静态变量是指在&lt;mark>函数内部&lt;/mark>声明并带有 static 关键字的变量。&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>生命周期：它的生命周期贯穿整个程序。从它第一次被声明开始，直到程序结束它才会消失。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>作用域：虽然它一直存在，但它只能在声明它的函数内部被访问。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h1 id="局部静态变量-1">局部静态变量&lt;a class="anchor" href="#%e5%b1%80%e9%83%a8%e9%9d%99%e6%80%81%e5%8f%98%e9%87%8f-1">#&lt;/a>&lt;/h1>
+&lt;p>声明变量时要考虑两个因素：变量的生命周期 &lt;del>能存在多久&lt;/del> ，变量的作用域 &lt;del>能在哪些地方访问这些变量&lt;/del>&lt;/p>
+&lt;p>作用域：如果在函数内声明一个变量则无法在其他函数中访问他&lt;/p></description></item><item><title>47优化cpp中stdvector的使用</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/47%E4%BC%98%E5%8C%96cpp%E4%B8%ADstdvector%E7%9A%84%E4%BD%BF%E7%94%A8/</link><pubDate>Sat, 07 Feb 2026 07:47:28 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/47%E4%BC%98%E5%8C%96cpp%E4%B8%ADstdvector%E7%9A%84%E4%BD%BF%E7%94%A8/</guid><description>&lt;p>&lt;em>预习&lt;/em>&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;iostream&amp;gt;&lt;/span>&lt;span style="color:#75715e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;string&amp;gt;&lt;/span>&lt;span style="color:#75715e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;vector&amp;gt;&lt;/span>&lt;span style="color:#75715e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">struct&lt;/span> &lt;span style="color:#a6e22e">Test&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>};
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">struct&lt;/span> &lt;span style="color:#a6e22e">Vertex&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">float&lt;/span> x, y, z;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//有了其他的构造函数，如果需要用到无参构造函数，
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//就必须手动写一个
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	Vertex()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//因为有构造函数了，所以Vertex 结构体不是一个聚合类型(
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">// 有构造函数)，所以要使用显示构造函数
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">// 使 Vertex v = { 1,2,3 }; 编译通过
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	Vertex(&lt;span style="color:#66d9ef">float&lt;/span> x, &lt;span style="color:#66d9ef">float&lt;/span> y, &lt;span style="color:#66d9ef">float&lt;/span> z)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">this&lt;/span>&lt;span style="color:#f92672">-&amp;gt;&lt;/span>x &lt;span style="color:#f92672">=&lt;/span> x;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">this&lt;/span>&lt;span style="color:#f92672">-&amp;gt;&lt;/span>y &lt;span style="color:#f92672">=&lt;/span> y;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">this&lt;/span>&lt;span style="color:#f92672">-&amp;gt;&lt;/span>z &lt;span style="color:#f92672">=&lt;/span> z;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//参数必须是&amp;amp;，原因如下:
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//1. 当你尝试通过 Vertex a = b; 调用复制构造函数时，你需要将 b 传递给参数 other。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//2. 在 C++ 中，按值传递（Pass by Value）参数本身就会触发一次复制。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//3. 为了复制 b 到 other，编译器又需要调用复制构造函数。[死循环了]
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//因为main中使用 vector.push({1,2,3}) 需要将临时对象拷贝到vector中，所以这里的参数
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//必须是const
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	Vertex(&lt;span style="color:#66d9ef">const&lt;/span> Vertex&lt;span style="color:#f92672">&amp;amp;&lt;/span> vertex)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;copied constructor handled&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">this&lt;/span>&lt;span style="color:#f92672">-&amp;gt;&lt;/span>x &lt;span style="color:#f92672">=&lt;/span> vertex.x;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">this&lt;/span>&lt;span style="color:#f92672">-&amp;gt;&lt;/span>y &lt;span style="color:#f92672">=&lt;/span> vertex.y;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">this&lt;/span>&lt;span style="color:#f92672">-&amp;gt;&lt;/span>z &lt;span style="color:#f92672">=&lt;/span> vertex.z;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">/*virtual*/&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">test&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#f92672">~&lt;/span>Vertex()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;destructor handled&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>};
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>std&lt;span style="color:#f92672">::&lt;/span>ostream&lt;span style="color:#f92672">&amp;amp;&lt;/span> &lt;span style="color:#66d9ef">operator&lt;/span>&lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span>(std&lt;span style="color:#f92672">::&lt;/span>ostream&lt;span style="color:#f92672">&amp;amp;&lt;/span> stream, &lt;span style="color:#66d9ef">const&lt;/span> Vertex&lt;span style="color:#f92672">&amp;amp;&lt;/span> vertex)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	stream &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> vertex.x &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;,&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> vertex.y &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;,&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> vertex.z;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">return&lt;/span> stream;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//使用引用避免复制整个数组
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">Function&lt;/span>(&lt;span style="color:#66d9ef">const&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>vector&lt;span style="color:#f92672">&amp;lt;&lt;/span>Vertex&lt;span style="color:#f92672">&amp;gt;&amp;amp;&lt;/span> vertices)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>vector&lt;span style="color:#f92672">&amp;lt;&lt;/span>Vertex&lt;span style="color:#f92672">&amp;gt;&lt;/span> vertices;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//vertices.push_back({ 1,2,3 });
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//std::cout &amp;lt;&amp;lt; &amp;#34;==0===&amp;#34; &amp;lt;&amp;lt; std::endl;
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//vertices.push_back({ 4,5,6 });
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//对上面两行代码优化
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">// 1. 预先分配内存，防止搬家
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	vertices.reserve(&lt;span style="color:#ae81ff">1&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">// 2. 原地构造，防止临时拷贝
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	vertices.emplace_back(&lt;span style="color:#ae81ff">1&lt;/span>, &lt;span style="color:#ae81ff">2&lt;/span>, &lt;span style="color:#ae81ff">3&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;==0===&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//超出容量，会拷贝原来的{1,2,3}到新数组，并且销毁
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">// 原数组中的{1,2,3}
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	vertices.emplace_back(&lt;span style="color:#ae81ff">4&lt;/span>, &lt;span style="color:#ae81ff">5&lt;/span>, &lt;span style="color:#ae81ff">6&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;==1===&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	Function(vertices);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;==2===&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	vertices.erase(vertices.begin() &lt;span style="color:#f92672">+&lt;/span> &lt;span style="color:#ae81ff">1&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;==3===&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">for&lt;/span> (Vertex&lt;span style="color:#f92672">&amp;amp;&lt;/span> v : vertices)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> v &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cin.get();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/*
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">copied constructor handled //第一个临时对象复制到vector中之后，马上又销毁了
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">destructor handled
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">==0===
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">copied constructor handled //空间不够了，需要把第一个元素复制到新数组中。第二个元素创建临时对象，并复制到新数组中
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">copied constructor handled
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">destructor handled //旧的数组中的第一个元素被销毁了
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">destructor handled //第二个元素的临时对象被销毁了
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">==1===
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">==2===
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">destructor handled
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">==3===
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">1,2,3
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">*/&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/*优化后不需要把临时对象复制到vector中，也不需要销毁临时对象了
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">==1===
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">==2===
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">destructor handled
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">==3===
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">1,2,3
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">*/&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;hr>
+&lt;p>了解环境是优化过程中最重要的事情之一&lt;/p></description></item><item><title>46动态数组</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/46%E5%8A%A8%E6%80%81%E6%95%B0%E7%BB%84/</link><pubDate>Fri, 06 Feb 2026 14:21:51 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/46%E5%8A%A8%E6%80%81%E6%95%B0%E7%BB%84/</guid><description>&lt;ul>
 &lt;li>动态数组，特别是讨论标准向量类&lt;/li>
 &lt;li>要习惯CPP的标准库（标准模版库）&lt;/li>
 &lt;li>标准模版库包含了各种容器、迭代器、算法、仿函数&lt;/li>
@@ -11,7 +163,7 @@
 &lt;/ul>
 &lt;p>&lt;code>std::vector&lt;/code> 的实际工作方式：&lt;/p>
 &lt;p>当超出实际的分配大小时。当创建一个向量，可能会先分配10个元素大小的空间，当超出这个大小时，会在内存中创建一个比原来更大的数组，并把所有内容复制过去，然后删除旧数组。这样就有了一个更大存储空间的新数组&lt;/p>
-&lt;h1 id="cpp中的聚合初始化">cpp中的聚合初始化&lt;a class="anchor" href="#cpp%e4%b8%ad%e7%9a%84%e8%81%9a%e5%90%88%e5%88%9d%e5%a7%8b%e5%8c%96">#&lt;/a>&lt;/h1>
+&lt;h1 id="46动态数组">46动态数组&lt;a class="anchor" href="#46%e5%8a%a8%e6%80%81%e6%95%b0%e7%bb%84">#&lt;/a>&lt;/h1>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">struct&lt;/span> &lt;span style="color:#a6e22e">Test&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
