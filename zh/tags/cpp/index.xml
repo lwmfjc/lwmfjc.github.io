@@ -1,4 +1,144 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Cpp on 随记</title><link>https://lwmfjc.github.io/zh/tags/cpp/</link><description>Recent content in Cpp on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Sat, 07 Feb 2026 07:47:28 +0800</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/tags/cpp/index.xml" rel="self" type="application/rss+xml"/><item><title>47优化cpp中stdvector的使用</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/01_48/47%E4%BC%98%E5%8C%96cpp%E4%B8%ADstdvector%E7%9A%84%E4%BD%BF%E7%94%A8/</link><pubDate>Sat, 07 Feb 2026 07:47:28 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/01_48/47%E4%BC%98%E5%8C%96cpp%E4%B8%ADstdvector%E7%9A%84%E4%BD%BF%E7%94%A8/</guid><description>&lt;p>&lt;em>预习&lt;/em>&lt;/p>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Cpp on 随记</title><link>https://lwmfjc.github.io/zh/tags/cpp/</link><description>Recent content in Cpp on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Sun, 08 Feb 2026 23:14:14 +0800</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/tags/cpp/index.xml" rel="self" type="application/rss+xml"/><item><title>52处理多返回值</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49_/52%E5%A4%84%E7%90%86%E5%A4%9A%E8%BF%94%E5%9B%9E%E5%80%BC/</link><pubDate>Sun, 08 Feb 2026 23:14:14 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49_/52%E5%A4%84%E7%90%86%E5%A4%9A%E8%BF%94%E5%9B%9E%E5%80%BC/</guid><description/></item><item><title>51创建并使用库</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49_/51%E5%88%9B%E5%BB%BA%E5%B9%B6%E4%BD%BF%E7%94%A8%E5%BA%93/</link><pubDate>Sun, 08 Feb 2026 19:02:14 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49_/51%E5%88%9B%E5%BB%BA%E5%B9%B6%E4%BD%BF%E7%94%A8%E5%BA%93/</guid><description>&lt;p>如何在vs中设置多个项目，以及如何创建一个能在所有项目中使用的库&lt;/p>
+&lt;h1 id="51创建并使用库">51创建并使用库&lt;a class="anchor" href="#51%e5%88%9b%e5%bb%ba%e5%b9%b6%e4%bd%bf%e7%94%a8%e5%ba%93">#&lt;/a>&lt;/h1>
+&lt;p>先以Game51命名创建一个项目&lt;br>
+&lt;img src="img/ly-20260208192031864.png" alt="" />&lt;/p>
+&lt;p>文件夹查看&lt;br>
+&lt;img src="img/ly-20260208192053400.png" alt="" />&lt;/p>
+&lt;p>再新建一个项目，项目名为Engine&lt;/p>
+&lt;p>&lt;img src="img/ly-20260208195515662.png" alt="" />&lt;/p>
+&lt;p>此时&lt;/p>
+&lt;p>&lt;img src="img/ly-20260208195641775.png" alt="" />&lt;/p>
+&lt;hr>
+&lt;p>现在确保设置Game51为应用程序&lt;/p>
+&lt;p>&lt;img src="img/ly-20260208200254073.png" alt="" />&lt;/p>
+&lt;p>Engine项目配置为静态库&lt;/p>
+&lt;p>&lt;img src="img/ly-20260208200507567.png" alt="" />&lt;/p>
+&lt;h1 id="创建文件夹及文件">创建文件夹及文件&lt;a class="anchor" href="#%e5%88%9b%e5%bb%ba%e6%96%87%e4%bb%b6%e5%a4%b9%e5%8f%8a%e6%96%87%e4%bb%b6">#&lt;/a>&lt;/h1>
+&lt;p>show All Files&lt;/p>
+&lt;p>&lt;img src="img/ly-20260208215039688.png" alt="" />&lt;/p>
+&lt;p>目录结构&lt;/p>
+&lt;p>&lt;img src="img/ly-20260208221818789.png" alt="" />&lt;/p>
+&lt;h1 id="静态链接库engine项目">（静态链接库）Engine项目&lt;a class="anchor" href="#%e9%9d%99%e6%80%81%e9%93%be%e6%8e%a5%e5%ba%93engine%e9%a1%b9%e7%9b%ae">#&lt;/a>&lt;/h1>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//src/Engine.h
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#75715e">#pragma once
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">namespace&lt;/span> engine {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">PrintMessage&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//不能这么写,说明:: 被称为作用域解析运算符。它的逻辑
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// 是：你只能引用一个已经存在的名字空间。而这里正在定义
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//所以不存在
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//void engine::PrintMessage();
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">///src/Engine.cpp
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;#34;Engine.h&amp;#34;&lt;/span>&lt;span style="color:#75715e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;iostream&amp;gt;&lt;/span>&lt;span style="color:#75715e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">namespace&lt;/span> engine {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">PrintMessage&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Hello World!&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//或者这么写
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//void engine::PrintMessage()
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//{
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//	std::cout &amp;lt;&amp;lt; &amp;#34;Hello World!&amp;#34; &amp;lt;&amp;lt; std::endl;
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//}
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h1 id="使用静态链接库game51项目中">（使用静态链接库）Game51项目中&lt;a class="anchor" href="#%e4%bd%bf%e7%94%a8%e9%9d%99%e6%80%81%e9%93%be%e6%8e%a5%e5%ba%93game51%e9%a1%b9%e7%9b%ae%e4%b8%ad">#&lt;/a>&lt;/h1>
+&lt;h2 id="处理头文件的两个方法">处理头文件的两个方法&lt;a class="anchor" href="#%e5%a4%84%e7%90%86%e5%a4%b4%e6%96%87%e4%bb%b6%e7%9a%84%e4%b8%a4%e4%b8%aa%e6%96%b9%e6%b3%95">#&lt;/a>&lt;/h2>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//Application.cpp
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//添加头文件-方法1
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//#include &amp;#34;../../Engine/src/Engine.h&amp;#34;
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//直接声明-方法0
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//namespace engine {
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//	void PrintMessage();
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//}
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	engine&lt;span style="color:#f92672">::&lt;/span>PrintMessage();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="处理头文件的第3个方法">处理头文件的第3个方法&lt;a class="anchor" href="#%e5%a4%84%e7%90%86%e5%a4%b4%e6%96%87%e4%bb%b6%e7%9a%84%e7%ac%ac3%e4%b8%aa%e6%96%b9%e6%b3%95">#&lt;/a>&lt;/h2>
+&lt;p>右键项目Game51属性修改&lt;br>
+&lt;img src="img/ly-20260208222335125.png" alt="" />&lt;/p></description></item><item><title>50使用动态库</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49_/50%E4%BD%BF%E7%94%A8%E5%8A%A8%E6%80%81%E5%BA%93/</link><pubDate>Sun, 08 Feb 2026 16:02:50 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49_/50%E4%BD%BF%E7%94%A8%E5%8A%A8%E6%80%81%E5%BA%93/</guid><description>&lt;p>动态链接是什么，以及如何使用&lt;/p>
+&lt;ul>
+&lt;li>动态链接是在运行时发生的链接，当你实际启动可执行文件时，动态链接库加载时 它并非可执行文件的一部分，此时动态链接库被载入内存。意味着&lt;mark>运行时会动态链接另一个库&lt;/mark>，然后运行应用程序 载入一个额外文件到内存。
+&lt;ul>
+&lt;li>这种情况下，可执行文件实际上需要某些库存在（外部文件）。比如windows系统经常出现“缺少某些dll文件无法启动”&lt;/li>
+&lt;li>可执行文件了解动态链接库，&lt;mark>可执行文件是一个独立文件&lt;/mark>，在运行时加载的&lt;mark>独立&lt;/mark>模块。但也可以&lt;mark>加载动态链接库&lt;/mark>，他会在运行时查找并加载动态库，然后可以获取函数指针/动态库中任何内容&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>静态链接是在编译时发生的链接，当你编译一个静态库时，将它链接到可执行文件、应用程序或动态库中。即：&lt;mark>直接获取静态库的内容，然后把它和其他二进制数据放到一起&lt;/mark>，静态库实际存在于可执行文件或动态库中，所以编译器、链接器完全清楚这些代码，并会对此进行优化&lt;/li>
+&lt;/ul>
+&lt;blockquote class='book-hint '>
+&lt;p>当我们说“链接到一个动态库”时，实际上是指在创建（生成）那个 DLL 的时候，把静态库的代码塞进去。&lt;/p>&lt;/blockquote>&lt;p>补充：动态链接包括“隐式链接” &lt;del>需要 header (.h) 和 import library (.lib)&lt;/del> 和“显示链接” &lt;del>编译阶段完全不认识这个 DLL，也不需要 .lib 导入库。用法： 运行时使用 Windows API 函数（如 LoadLibrary 和 GetProcAddress）去手动加载。&lt;/del>&lt;/p>
+&lt;h1 id="50使用动态库">50使用动态库&lt;a class="anchor" href="#50%e4%bd%bf%e7%94%a8%e5%8a%a8%e6%80%81%e5%ba%93">#&lt;/a>&lt;/h1>
+&lt;p>复制Dependencies文件夹到根目录&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">λ&lt;/span> tree Dependencies &lt;span style="color:#f92672">/&lt;/span>f
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>CHERNOCPP&lt;span style="color:#960050;background-color:#1e0010">\&lt;/span>HELLOWORLD49&lt;span style="color:#960050;background-color:#1e0010">\&lt;/span>DEPENDENCIES
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">└─&lt;/span>GLFW
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#960050;background-color:#1e0010">├─&lt;/span>include
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#960050;background-color:#1e0010">│&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">└─&lt;/span>GLFW
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#960050;background-color:#1e0010">│&lt;/span> glfw3.h
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#960050;background-color:#1e0010">│&lt;/span> glfw3native.h
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#960050;background-color:#1e0010">│&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#960050;background-color:#1e0010">└─&lt;/span>lib&lt;span style="color:#f92672">-&lt;/span>vc2022
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> glfw3.dll
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> glfw3.lib
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> glfw3dll.lib
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> glfw3_mt.lib&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>静态链接和动态链接都是用同一部分的头文件&lt;/p>
+&lt;p>&lt;img src="img/ly-20260208172423520.png" alt="" />&lt;/p>
+&lt;p>&lt;img src="img/ly-20260208172448298.png" alt="" />&lt;/p>
+&lt;p>目前按ctrl+f7已经能正常编译&lt;/p>
+&lt;blockquote class='book-hint '>
+&lt;p>glw3dll.lib &lt;del>glfw3dll.lib不存代码，只有地址&lt;/del> ，这是指向glw3.dll的一系列指针，所以我们在运行时无需实际检测所有内容的位置，&lt;mark>这两者同时编译很重要&lt;/mark>，因为在运行时如果尝试使用不同静态库与DLL链接，你可能会遇到函数不匹配，并且函数指针会出现内存地址错误。但是这里是由glfw分发的，所以glw3.dll和glw3dll.lib是同时编译的，而且他们直接相互关联，这两者不能分开。&lt;/p>&lt;/blockquote>&lt;p>接下来设置库文件&lt;/p>
+&lt;p>&lt;img src="img/ly-20260208173428008.png" alt="" />&lt;/p>
+&lt;p>&lt;img src="img/ly-20260208173520524.png" alt="" />&lt;/p>
+&lt;p>右键项目并build成功。但是目前如果会提示找不到dll文件&lt;/p></description></item><item><title>49使用静态库</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49_/49%E4%BD%BF%E7%94%A8%E9%9D%99%E6%80%81%E5%BA%93/</link><pubDate>Sat, 07 Feb 2026 23:31:35 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49_/49%E4%BD%BF%E7%94%A8%E9%9D%99%E6%80%81%E5%BA%93/</guid><description>&lt;h1 id="49使用静态库">49使用静态库&lt;a class="anchor" href="#49%e4%bd%bf%e7%94%a8%e9%9d%99%e6%80%81%e5%ba%93">#&lt;/a>&lt;/h1>
+&lt;ul>
+&lt;li>从github库或其他敌法check out代码块，在那个代码库里能直接得到编译所需的一切，并运行应用程序或项目等，无需使用包管理器&lt;/li>
+&lt;li>倾向于实际保留依赖项的版本，实际解决方案中二进制的版本。实际项目文件夹中有物理二进制文件的副本，或者是源码&lt;/li>
+&lt;/ul>
+&lt;p>要&lt;mark>自己编译&lt;/mark>？或者直接链接预构建的二进制文件&lt;/p>
+&lt;ul>
+&lt;li>建议直接添加另一个项目（依赖项的源代码），然后编译成静态库或动态库&lt;/li>
+&lt;li>非大型项目，可以直接链接二进制文件（无需源代码）&lt;/li>
+&lt;/ul>
+&lt;p>本篇要处理的是GLFW的库&lt;/p>
+&lt;p>选择二进制版本 (32位 vs 64位)，这取决于你的&lt;mark>目标应用程序架构&lt;/mark>，而不是你的操作系统。&lt;/p>
+&lt;p>比如现在我要制作一个32位应用程序&lt;br>
+&lt;img src="img/ly-20260208082108851.png" alt="" />&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//结构
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//里面通常是 HTML 格式的 API 手册。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">├─&lt;/span>docs
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">│&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">└─&lt;/span>html
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">│&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">└─&lt;/span>search
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">├─&lt;/span>include
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">│&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">└─&lt;/span>GLFW
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//含义： 针对 MinGW 编译器的版本（通常配合 GCC 使用）。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//用途： 如果你不在 Windows 上用 Visual Studio，而是用 CLion、Code::Blocks 或者直接在命令行用 g++ 编译，你需要链接这个文件夹里的库（通常是 .a 文件而非 .lib）。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">├─&lt;/span>lib&lt;span style="color:#f92672">-&lt;/span>mingw&lt;span style="color:#f92672">-&lt;/span>w64 
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">│&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">└─&lt;/span>libglfw3.a &lt;span style="color:#75715e">//(静态库)： 如果你用 MinGW 编译器并想进行静态链接
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">│&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">└─&lt;/span>glfw3.dll &lt;span style="color:#75715e">//(动态链接库)： 这是库的实体。 如果你选择动态链接，这个文件必须在运行时放在你的 .exe 旁边
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">│&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">└─&lt;/span>libglfw3dll.a &lt;span style="color:#75715e">//给编译器看的“目录”。 当你选择动态链接时，你不是直接链接 .dll，而是链接这个 .a 文件。 它告诉编译器：“真正的代码在 glfw3.dll 里，你先编译通过，运行时再去调它。”
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//如果你的项目配置为使用通用的 Windows 10/11 SDK 运行时，有时需要专门链接这个版本的库。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">├─&lt;/span>lib&lt;span style="color:#f92672">-&lt;/span>&lt;span style="color:#66d9ef">static&lt;/span>&lt;span style="color:#f92672">-&lt;/span>ucrt
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//以下是库文件 (.lib)，是给 链接器 用的。之所以有这么多，是因为 C++ 的二进制兼容性比较复杂，库的版本必须尽量与你使用的 Visual Studio 版本匹配
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">├─&lt;/span>lib&lt;span style="color:#f92672">-&lt;/span>vc2013
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">├─&lt;/span>lib&lt;span style="color:#f92672">-&lt;/span>vc2015
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">├─&lt;/span>lib&lt;span style="color:#f92672">-&lt;/span>vc2017
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">├─&lt;/span>lib&lt;span style="color:#f92672">-&lt;/span>vc2019
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">└─&lt;/span>lib&lt;span style="color:#f92672">-&lt;/span>vc2022&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>库由&lt;em>包含目录includes&lt;/em>和&lt;em>库目录libraries&lt;/em>组成&lt;/p></description></item><item><title>47优化cpp中stdvector的使用</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/01_48/47%E4%BC%98%E5%8C%96cpp%E4%B8%ADstdvector%E7%9A%84%E4%BD%BF%E7%94%A8/</link><pubDate>Sat, 07 Feb 2026 07:47:28 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/01_48/47%E4%BC%98%E5%8C%96cpp%E4%B8%ADstdvector%E7%9A%84%E4%BD%BF%E7%94%A8/</guid><description>&lt;p>&lt;em>预习&lt;/em>&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;iostream&amp;gt;&lt;/span>&lt;span style="color:#75715e">
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;string&amp;gt;&lt;/span>&lt;span style="color:#75715e">
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;vector&amp;gt;&lt;/span>&lt;span style="color:#75715e">
