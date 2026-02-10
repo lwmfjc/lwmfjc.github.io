@@ -1,4 +1,315 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Cpp on 随记</title><link>https://lwmfjc.github.io/zh/tags/cpp/</link><description>Recent content in Cpp on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Sun, 08 Feb 2026 23:14:14 +0800</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/tags/cpp/index.xml" rel="self" type="application/rss+xml"/><item><title>52处理多返回值</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49_/52%E5%A4%84%E7%90%86%E5%A4%9A%E8%BF%94%E5%9B%9E%E5%80%BC/</link><pubDate>Sun, 08 Feb 2026 23:14:14 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49_/52%E5%A4%84%E7%90%86%E5%A4%9A%E8%BF%94%E5%9B%9E%E5%80%BC/</guid><description>&lt;p>这篇讨论的是如何在函数返回两个值&lt;/p>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Cpp on 随记</title><link>https://lwmfjc.github.io/zh/tags/cpp/</link><description>Recent content in Cpp on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Tue, 10 Feb 2026 16:59:51 +0800</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/tags/cpp/index.xml" rel="self" type="application/rss+xml"/><item><title>56auto</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49_/56auto/</link><pubDate>Tue, 10 Feb 2026 16:59:51 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49_/56auto/</guid><description>&lt;p>让cpp自动推导新声明变量的类型&lt;/p></description></item><item><title>55宏Macro</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49_/55%E5%AE%8FMacro/</link><pubDate>Tue, 10 Feb 2026 10:57:44 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49_/55%E5%AE%8FMacro/</guid><description>&lt;p>该集只是简单介绍一下&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>用预处理器对某些操作进行==类似宏处理&lt;del>实现自动化&lt;/del> ==&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>编译C++程序时，首先要进行预处理器处理&lt;/p>
+&lt;ul>
+&lt;li>以#开头的都叫做预处理器指令&lt;/li>
+&lt;li>会被求值，然后处理好。再传递给编译器进行实际编译等操作&amp;mdash;文本编辑阶段（可以控制实际输入到编译器的代码）&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>工作阶段：宏是在 预处理（Preprocessing） 阶段处理的。这意味着在编译器真正看到你的代码并进行语法分析之前，宏就已经被处理完毕了。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>核心功能：宏本质上是 查找与替换（Find and Replace）。预处理器会扫描你的源代码，找到宏的名称，并将其替换为你定义的代码块或值。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>预处理器（Preprocessor）先处理，模板（Templates）后处理。&lt;/p>
+&lt;ul>
+&lt;li>预处理器处理完后，编译器再进行模板实例化&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>建议：没有必要频繁的使用高级特性&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>宏是“翻译单元”私有的&lt;/p>
+&lt;ul>
+&lt;li>在 C++ 编译过程中，每个 .cpp 文件都是独立编译的，这被称为一个翻译单元（Translation Unit）。&lt;/li>
+&lt;li>如果你想在多个 .cpp 文件中使用同一个宏，你应该把它放在一个头文件（.h）中，然后在需要的 .cpp 文件里&lt;code>#include&lt;/code>它。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;iostream&amp;gt;&lt;/span>&lt;span style="color:#75715e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;string&amp;gt;&lt;/span>&lt;span style="color:#75715e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//#define在改行代码之后，所以这行编译不过去
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//WAIT;
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">#define WAIT std::cin.get()
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//等待从控制台读取一行 
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	WAIT;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>代码被预处理器处理后编译器看不出和普通代码有任何区别，我们用宏仅仅是改变了源代码的生成方式&lt;/p>
+&lt;h1 id="例子1">例子1&lt;a class="anchor" href="#%e4%be%8b%e5%ad%901">#&lt;/a>&lt;/h1>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;iostream&amp;gt;&lt;/span>&lt;span style="color:#75715e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;string&amp;gt;&lt;/span>&lt;span style="color:#75715e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//等待从控制台读取一行 
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//如果改行末尾带了;分号，也会被替换
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#75715e">#define WAIT std::cin.get()
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#define OPEN_CURLY { 
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#define SAY_HELLO std::cout &amp;lt;&amp;lt; &amp;#34;Hello1&amp;#34; &amp;lt;&amp;lt; std::endl
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>OPEN_CURLY
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	SAY_HELLO;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	WAIT;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h1 id="例子2">例子2&lt;a class="anchor" href="#%e4%be%8b%e5%ad%902">#&lt;/a>&lt;/h1>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;iostream&amp;gt;&lt;/span>&lt;span style="color:#75715e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;string&amp;gt;&lt;/span>&lt;span style="color:#75715e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#define LOG(x) std::cout &amp;lt;&amp;lt; x &amp;lt;&amp;lt; std::endl
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	LOG(&lt;span style="color:#e6db74">&amp;#34;Hello&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cin.get();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h1 id="分别处理调试和正式发布">分别处理调试和正式发布&lt;a class="anchor" href="#%e5%88%86%e5%88%ab%e5%a4%84%e7%90%86%e8%b0%83%e8%af%95%e5%92%8c%e6%ad%a3%e5%bc%8f%e5%8f%91%e5%b8%83">#&lt;/a>&lt;/h1>
+&lt;p>Debug模式下预处理定义了 LY_DEBUG;&lt;/p></description></item><item><title>54栈内存和堆内存</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49_/54%E6%A0%88%E5%86%85%E5%AD%98%E5%92%8C%E5%A0%86%E5%86%85%E5%AD%98/</link><pubDate>Mon, 09 Feb 2026 22:16:40 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49_/54%E6%A0%88%E5%86%85%E5%AD%98%E5%92%8C%E5%A0%86%E5%86%85%E5%AD%98/</guid><description>&lt;p>栈和堆何时被使用，为何被使用，以及如何运作&lt;/p>
+&lt;ul>
+&lt;li>程序运行时，操作系统会把整个程序加载到内存中，同时分配大量物理内存&lt;/li>
+&lt;li>栈和堆是&lt;mark>内存中&lt;/mark>实际存在的两个区域
+&lt;ul>
+&lt;li>栈具有预定义的大小，通常约2兆字节&lt;/li>
+&lt;li>堆也有预定义默认值，随着应用程序运行，它会增长变化&lt;/li>
+&lt;li>我们需要一个地方存储运行程序所需的数据，如局部变量、或者从文件读取数据&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>请求内存，也称内存分配&lt;/li>
+&lt;/ul>
+&lt;p>接下来看看在栈上分配一个整数，和在栈上分配其他数据的差异。与实际c++代码的堆相比&lt;/p>
+&lt;h1 id="代码">代码&lt;a class="anchor" href="#%e4%bb%a3%e7%a0%81">#&lt;/a>&lt;/h1>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;iostream&amp;gt;&lt;/span>&lt;span style="color:#75715e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;string&amp;gt;&lt;/span>&lt;span style="color:#75715e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">struct&lt;/span> &lt;span style="color:#a6e22e">Vector3&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">float&lt;/span> x, y, z;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	Vector3()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#f92672">:&lt;/span>x(&lt;span style="color:#ae81ff">10&lt;/span>), y(&lt;span style="color:#ae81ff">11&lt;/span>), z(&lt;span style="color:#ae81ff">12&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>};
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//在栈上分配内存
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#66d9ef">int&lt;/span> value &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">5&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">int&lt;/span> array[&lt;span style="color:#ae81ff">5&lt;/span>];
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		array[&lt;span style="color:#ae81ff">0&lt;/span>] &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">1&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		array[&lt;span style="color:#ae81ff">1&lt;/span>] &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">2&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		array[&lt;span style="color:#ae81ff">2&lt;/span>] &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">3&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		array[&lt;span style="color:#ae81ff">3&lt;/span>] &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">4&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		array[&lt;span style="color:#ae81ff">4&lt;/span>] &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">5&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		Vector3 vector;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#f92672">&amp;amp;&lt;/span>value &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> array &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#f92672">&amp;amp;&lt;/span>vector &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}&lt;span style="color:#75715e">//作用域结束后，该作用域内栈上分配所有内容都被弹出（内存被释放）
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//在栈上分配内存和释放内存都只是移动栈指针，几乎没有性能损耗
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//new关键字分配堆内存
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#66d9ef">int&lt;/span>&lt;span style="color:#f92672">*&lt;/span> hvalue &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> &lt;span style="color:#66d9ef">int&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#f92672">*&lt;/span>hvalue &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">5&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">int&lt;/span>&lt;span style="color:#f92672">*&lt;/span> harray &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> &lt;span style="color:#66d9ef">int&lt;/span>[&lt;span style="color:#ae81ff">5&lt;/span>];
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	harray[&lt;span style="color:#ae81ff">0&lt;/span>] &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">1&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	harray[&lt;span style="color:#ae81ff">1&lt;/span>] &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">2&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	harray[&lt;span style="color:#ae81ff">2&lt;/span>] &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">3&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	harray[&lt;span style="color:#ae81ff">3&lt;/span>] &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">4&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	harray[&lt;span style="color:#ae81ff">4&lt;/span>] &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">5&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//()可以省略
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	Vector3&lt;span style="color:#f92672">*&lt;/span> hvector &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> Vector3();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//必须手动释放内存
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#66d9ef">delete&lt;/span> hvalue;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">delete&lt;/span>[] harray;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">delete&lt;/span> hvector;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cin.get();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h1 id="栈">栈&lt;a class="anchor" href="#%e6%a0%88">#&lt;/a>&lt;/h1>
+&lt;p>&lt;img src="img/ly-20260209224952058.png" alt="" />&lt;br>
+&lt;img src="img/ly-20260209225100733.png" alt="" />&lt;/p></description></item><item><title>53(补充)字符串_数组_作为参数</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49_/53%E8%A1%A5%E5%85%85%E5%AD%97%E7%AC%A6%E4%B8%B2_%E6%95%B0%E7%BB%84_%E4%BD%9C%E4%B8%BA%E5%8F%82%E6%95%B0/</link><pubDate>Mon, 09 Feb 2026 17:31:49 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49_/53%E8%A1%A5%E5%85%85%E5%AD%97%E7%AC%A6%E4%B8%B2_%E6%95%B0%E7%BB%84_%E4%BD%9C%E4%B8%BA%E5%8F%82%E6%95%B0/</guid><description>&lt;h1 id="普通数组退化-vs-字符串字面量退化">普通数组退化 vs. 字符串字面量退化&lt;a class="anchor" href="#%e6%99%ae%e9%80%9a%e6%95%b0%e7%bb%84%e9%80%80%e5%8c%96-vs-%e5%ad%97%e7%ac%a6%e4%b8%b2%e5%ad%97%e9%9d%a2%e9%87%8f%e9%80%80%e5%8c%96">#&lt;/a>&lt;/h1>
+&lt;h2 id="1-本质上的统一都是数组退化-array-decay">1. 本质上的统一：都是“数组退化” (Array Decay)&lt;a class="anchor" href="#1-%e6%9c%ac%e8%b4%a8%e4%b8%8a%e7%9a%84%e7%bb%9f%e4%b8%80%e9%83%bd%e6%98%af%e6%95%b0%e7%bb%84%e9%80%80%e5%8c%96-array-decay">#&lt;/a>&lt;/h2>
+&lt;p>在 C++ 编译器眼中，无论是你定义的数组还是手写的字符串，它们的原始身份都是&lt;strong>固定长度的数组&lt;/strong>：&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>int arr[5]&lt;/code> 的原始类型是：&lt;code>int[5]&lt;/code>&lt;/li>
+&lt;li>&lt;code>&amp;quot;abc&amp;quot;&lt;/code> 的原始类型是：&lt;code>const char[4]&lt;/code>（包含隐藏的 &lt;code>\0&lt;/code>）&lt;/li>
+&lt;/ul>
+&lt;blockquote class='book-hint '>
+&lt;p>&lt;strong>退化规则&lt;/strong>：当它们作为参数传递给接收指针的函数时，会执行相同的操作——&lt;strong>丢失长度信息，仅留下首元素的内存地址。&lt;/strong>&lt;/p>&lt;/blockquote>&lt;h2 id="2-它们的三大核心区别">2. 它们的三大核心区别&lt;a class="anchor" href="#2-%e5%ae%83%e4%bb%ac%e7%9a%84%e4%b8%89%e5%a4%a7%e6%a0%b8%e5%bf%83%e5%8c%ba%e5%88%ab">#&lt;/a>&lt;/h2>
+&lt;p>虽然底层逻辑相同，但在内存布局和使用习惯上，它们有显著差异：&lt;/p>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th style="text-align: left">维度&lt;/th>
+ &lt;th style="text-align: left">普通数组 (如 &lt;code>int[]&lt;/code>)&lt;/th>
+ &lt;th style="text-align: left">字符串字面量 (如 &lt;code>&amp;quot;abc&amp;quot;&lt;/code>)&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td style="text-align: left">&lt;strong>结束标志&lt;/strong>&lt;/td>
+ &lt;td style="text-align: left">&lt;strong>无&lt;/strong>。必须额外传递 &lt;code>size&lt;/code> 参数。&lt;/td>
+ &lt;td style="text-align: left">&lt;strong>有&lt;/strong>。自带“哨兵” &lt;code>\0&lt;/code> (Null Terminator)。&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td style="text-align: left">&lt;strong>内存区域&lt;/strong>&lt;/td>
+ &lt;td style="text-align: left">通常在 &lt;strong>栈 (Stack)&lt;/strong>，可读可写。&lt;/td>
+ &lt;td style="text-align: left">在 &lt;strong>只读数据区 (Static Data)&lt;/strong>，不可修改。&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td style="text-align: left">&lt;strong>退化后的类型&lt;/strong>&lt;/td>
+ &lt;td style="text-align: left">&lt;code>int[5]&lt;/code> $\rightarrow$ &lt;code>int*&lt;/code>&lt;/td>
+ &lt;td style="text-align: left">&lt;code>const char[4]&lt;/code> $\rightarrow$ &lt;code>const char*&lt;/code>&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h2 id="3-详细拆解">3. 详细拆解&lt;a class="anchor" href="#3-%e8%af%a6%e7%bb%86%e6%8b%86%e8%a7%a3">#&lt;/a>&lt;/h2>
+&lt;h3 id="区别-a哨兵机制-the-terminator">&lt;strong>区别 A：哨兵机制 (The Terminator)&lt;/strong>&lt;a class="anchor" href="#%e5%8c%ba%e5%88%ab-a%e5%93%a8%e5%85%b5%e6%9c%ba%e5%88%b6-the-terminator">#&lt;/a>&lt;/h3>
+&lt;ul>
+&lt;li>&lt;strong>普通数组&lt;/strong>：函数拿到 &lt;code>int*&lt;/code> 后，完全不知道哪里是数组的终点。如果你不传 &lt;code>size&lt;/code>，函数极易越界。&lt;/li>
+&lt;li>&lt;strong>字符串&lt;/strong>：虽然也退化成了 &lt;code>const char*&lt;/code>，但函数可以通过不断向后寻找 &lt;code>\0&lt;/code> 来确定长度（这就是 &lt;code>strlen&lt;/code> 的工作原理）。&lt;/li>
+&lt;/ul>
+&lt;h3 id="区别-b内存安全性">&lt;strong>区别 B：内存安全性&lt;/strong>&lt;a class="anchor" href="#%e5%8c%ba%e5%88%ab-b%e5%86%85%e5%ad%98%e5%ae%89%e5%85%a8%e6%80%a7">#&lt;/a>&lt;/h3>
+&lt;ul>
+&lt;li>&lt;strong>普通数组&lt;/strong>：&lt;/li>
+&lt;/ul>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">int&lt;/span> arr[] &lt;span style="color:#f92672">=&lt;/span> {&lt;span style="color:#ae81ff">1&lt;/span>, &lt;span style="color:#ae81ff">2&lt;/span>, &lt;span style="color:#ae81ff">3&lt;/span>};
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> arr[&lt;span style="color:#ae81ff">0&lt;/span>] &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">9&lt;/span>; &lt;span style="color:#75715e">// 完全合法，你拥有这块内存的写权限
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;ul>
+&lt;li>字符串字面量：通常在&lt;strong>只读数据区（Static/Data Segment）&lt;/strong>。它虽然退化成了 &lt;code>const char*&lt;/code>，但你绝对不能尝试通过指针去修改它，否则程序会直接崩溃。&lt;/li>
+&lt;/ul>
+&lt;h3 id="区别-c退化后的类型">区别 C：退化后的类型&lt;a class="anchor" href="#%e5%8c%ba%e5%88%ab-c%e9%80%80%e5%8c%96%e5%90%8e%e7%9a%84%e7%b1%bb%e5%9e%8b">#&lt;/a>&lt;/h3>
+&lt;ul>
+&lt;li>&lt;code>int a[5]&lt;/code> $\rightarrow$ 退化为 &lt;code>int*&lt;/code>&lt;/li>
+&lt;li>&lt;code>&amp;quot;abc&amp;quot;&lt;/code> (即 &lt;code>const char[4]&lt;/code>) $\rightarrow$ 退化为 &lt;code>const char*&lt;/code>（注意多了一个 const，因为字面量不可修改）。&lt;/li>
+&lt;/ul>
+&lt;h1 id="string及string引用传参对比">string及string引用传参对比&lt;a class="anchor" href="#string%e5%8f%8astring%e5%bc%95%e7%94%a8%e4%bc%a0%e5%8f%82%e5%af%b9%e6%af%94">#&lt;/a>&lt;/h1>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">test1&lt;/span>(&lt;span style="color:#66d9ef">const&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>string&lt;span style="color:#f92672">&amp;amp;&lt;/span> s ) {}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">test2&lt;/span>(&lt;span style="color:#66d9ef">const&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>string s ) {}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> test1(&lt;span style="color:#e6db74">&amp;#34;abc&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> test2(&lt;span style="color:#e6db74">&amp;#34;abc&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>特性&lt;/th>
+ &lt;th>const std::string&amp;amp; s&lt;/th>
+ &lt;th>const std::string s&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>内存身份&lt;/td>
+ &lt;td>函数内部的 s 只是外部对象的别名&lt;/td>
+ &lt;td>函数内部的 s 是一个全新的副本&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>拷贝次数&lt;/td>
+ &lt;td>仅隐式转换产生的 1 次临时构造&lt;/td>
+ &lt;td>转换构造 + 传参拷贝（共 1-2 次）&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>推荐程度&lt;/td>
+ &lt;td>极高（行业标准）&lt;/td>
+ &lt;td>不推荐（除非你打算在函数里修改它）&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>安全性&lt;/td>
+ &lt;td>保证不会在函数内产生冗余副本&lt;/td>
+ &lt;td>容易引发不必要的性能损耗&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table></description></item><item><title>53模板</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49_/53%E6%A8%A1%E6%9D%BF/</link><pubDate>Mon, 09 Feb 2026 14:28:16 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49_/53%E6%A8%A1%E6%9D%BF/</guid><description>&lt;p>template，能让你定义一个待编译的模版 &lt;del>让编译器用一组规则为你编译代码&lt;/del>&lt;/p>
+&lt;blockquote class='book-hint '>
+&lt;p>当我写一个函数时，我在函数中使用一个模板，我实际做的事类似蓝图的东西，当我决定调用那个函数时，&lt;mark>指定一些参数，他们决定了实际放入模板的代码&lt;/mark>。&lt;/p>&lt;/blockquote>&lt;h1 id="简单例子">简单例子&lt;a class="anchor" href="#%e7%ae%80%e5%8d%95%e4%be%8b%e5%ad%90">#&lt;/a>&lt;/h1>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;iostream&amp;gt;&lt;/span>&lt;span style="color:#75715e"> 
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//template表明这是个编译时求值的模板，这不是实际的函数，只有在调用时才会创建并编译成源代码
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//可以从实际参数中隐式获取T
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">template&lt;/span>&lt;span style="color:#f92672">&amp;lt;&lt;/span>&lt;span style="color:#66d9ef">typename&lt;/span> T&lt;span style="color:#f92672">&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">void&lt;/span> Print(T value)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> value &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>} 
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	Print(&lt;span style="color:#ae81ff">5&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//&amp;#34;5.5&amp;#34;被隐式转为const char[4]
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	Print(&lt;span style="color:#e6db74">&amp;#34;5.5&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	Print(&lt;span style="color:#ae81ff">3.7&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cin.get();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="额外补充">额外补充&lt;a class="anchor" href="#%e9%a2%9d%e5%a4%96%e8%a1%a5%e5%85%85">#&lt;/a>&lt;/h2>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>模板定义&lt;/th>
+ &lt;th>调用 Print(&amp;ldquo;5.5&amp;rdquo;) 时 T 的类型&lt;/th>
+ &lt;th>说明&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>void Print(T value)&lt;/td>
+ &lt;td>const char*&lt;/td>
+ &lt;td>发生退化。传递的是地址。&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>void Print(T&amp;amp; value)&lt;/td>
+ &lt;td>const char[4]&lt;/td>
+ &lt;td>不发生退化。传递的是数组的引用。&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>void Print(const T&amp;amp; value)&lt;/td>
+ &lt;td>char[4]&lt;/td>
+ &lt;td>不发生退化。T 本身是 char[4]。&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// 它代表：我只接受一个含有 4个char的数组的“引用”
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">Print&lt;/span>(&lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#66d9ef">char&lt;/span> (&lt;span style="color:#f92672">&amp;amp;&lt;/span>value)[&lt;span style="color:#ae81ff">4&lt;/span>]) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// sizeof(value) == 4
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#75715e">// 编译器知道这个数组刚好就是 4 个字节
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>}&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//数组的首地址
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">Print&lt;/span>(&lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#66d9ef">char&lt;/span>&lt;span style="color:#f92672">*&lt;/span> value) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// sizeof(value) == 8 (在64位系统上)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#75715e">// 编译器不知道这里有 4 个字符
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>}&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h1 id="例子2">例子2&lt;a class="anchor" href="#%e4%be%8b%e5%ad%902">#&lt;/a>&lt;/h1>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;iostream&amp;gt;&lt;/span>&lt;span style="color:#75715e"> 
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//template表明这是个编译时求值的模板，这不是实际的函数，只有在调用时才会创建并编译成源代码(才会实际创建函数)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//可以从实际参数中隐式获取T
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">template&lt;/span>&lt;span style="color:#f92672">&amp;lt;&lt;/span>&lt;span style="color:#66d9ef">typename&lt;/span> T&lt;span style="color:#f92672">&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//和上面一个意思
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//template&amp;lt;class T&amp;gt;
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">void&lt;/span> Print(T value)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> value &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//显示指定T
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	Print&lt;span style="color:#f92672">&amp;lt;&lt;/span>&lt;span style="color:#66d9ef">int&lt;/span>&lt;span style="color:#f92672">&amp;gt;&lt;/span>(&lt;span style="color:#ae81ff">5&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//让编译器自己推断T的类型
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	Print(&lt;span style="color:#ae81ff">5&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cin.get();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h1 id="例子3">例子3&lt;a class="anchor" href="#%e4%be%8b%e5%ad%903">#&lt;/a>&lt;/h1>
+&lt;p>&lt;img src="img/ly-20260209190725017.png" alt="" />&lt;/p></description></item><item><title>52处理多返回值</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49_/52%E5%A4%84%E7%90%86%E5%A4%9A%E8%BF%94%E5%9B%9E%E5%80%BC/</link><pubDate>Sun, 08 Feb 2026 23:14:14 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49_/52%E5%A4%84%E7%90%86%E5%A4%9A%E8%BF%94%E5%9B%9E%E5%80%BC/</guid><description>&lt;p>这篇讨论的是如何在函数返回两个值&lt;/p>
 &lt;p>cherno推荐的方法是创建一个结构体并返回它&lt;/p>
 &lt;h1 id="代码预备">代码预备&lt;a class="anchor" href="#%e4%bb%a3%e7%a0%81%e9%a2%84%e5%a4%87">#&lt;/a>&lt;/h1>
 &lt;p>为了演示，本篇使用了string，为了顺便探讨性能（视频中没提到），我写了一个string.h 和string.cpp打印相关信息&lt;/p>
