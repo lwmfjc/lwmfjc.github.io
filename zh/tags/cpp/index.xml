@@ -1,4 +1,66 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Cpp on 随记</title><link>https://lwmfjc.github.io/zh/tags/cpp/</link><description>Recent content in Cpp on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Tue, 17 Feb 2026 08:59:40 +0800</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/tags/cpp/index.xml" rel="self" type="application/rss+xml"/><item><title>66类型双关</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/66%E7%B1%BB%E5%9E%8B%E5%8F%8C%E5%85%B3/</link><pubDate>Tue, 17 Feb 2026 08:59:40 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/66%E7%B1%BB%E5%9E%8B%E5%8F%8C%E5%85%B3/</guid><description>&lt;ul>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Cpp on 随记</title><link>https://lwmfjc.github.io/zh/tags/cpp/</link><description>Recent content in Cpp on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Mon, 23 Feb 2026 08:51:18 +0800</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/tags/cpp/index.xml" rel="self" type="application/rss+xml"/><item><title>68虚析构函数</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/68%E8%99%9A%E6%9E%90%E6%9E%84%E5%87%BD%E6%95%B0/</link><pubDate>Mon, 23 Feb 2026 08:51:18 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/68%E8%99%9A%E6%9E%90%E6%9E%84%E5%87%BD%E6%95%B0/</guid><description>&lt;ul>
+&lt;li>虚析构函数对处理多态性而言非常重要&lt;/li>
+&lt;li>如果类B从类A派生而来，&lt;code>A a=new B()&lt;/code>，现在如果决定detele a ，此时希望运行的不仅是A的析构函数，还有B的析构函数。这本质上就是虚析构函数的作用&lt;/li>
+&lt;/ul>
+&lt;h1 id="虚函数的核心作用与机制">虚函数的核心作用与机制&lt;a class="anchor" href="#%e8%99%9a%e5%87%bd%e6%95%b0%e7%9a%84%e6%a0%b8%e5%bf%83%e4%bd%9c%e7%94%a8%e4%b8%8e%e6%9c%ba%e5%88%b6">#&lt;/a>&lt;/h1>
+&lt;p>在 C++ 中，&lt;mark>虚函数（Virtual Function）&lt;/mark> 是实现&lt;mark>多态性（Polymorphism）的核心机制&lt;/mark>。它允许程序在运行期间（Runtime）根据对象的实际类型来调用相应的函数，而不是在编译期间（Compile time）就固定死。&lt;/p>
+&lt;h2 id="1-实现动态绑定-dynamic-binding">1. 实现动态绑定 (Dynamic Binding)&lt;a class="anchor" href="#1-%e5%ae%9e%e7%8e%b0%e5%8a%a8%e6%80%81%e7%bb%91%e5%ae%9a-dynamic-binding">#&lt;/a>&lt;/h2>
+&lt;p>这是虚函数最直接的作用。在基类指针或引用指向派生类对象时，调用虚函数会执行“子类版本”而非“基类版本”。&lt;/p>
+&lt;ul>
+&lt;li>&lt;mark>非虚函数：&lt;/mark> 编译器根据指针的&lt;mark>类型&lt;/mark>决定调用哪个函数（静态绑定）。&lt;/li>
+&lt;li>&lt;mark>虚函数：&lt;/mark> 编译器根据指针指向的&lt;mark>实际对象&lt;/mark>决定调用哪个函数（动态绑定）。&lt;/li>
+&lt;/ul>
+&lt;h2 id="2-支持接口复用与扩展-extensibility">2. 支持接口复用与扩展 (Extensibility)&lt;a class="anchor" href="#2-%e6%94%af%e6%8c%81%e6%8e%a5%e5%8f%a3%e5%a4%8d%e7%94%a8%e4%b8%8e%e6%89%a9%e5%b1%95-extensibility">#&lt;/a>&lt;/h2>
+&lt;p>通过虚函数，你可以编写通用的代码来处理不同类型的对象，而无需知道它们的具体类别。&lt;/p>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>特性&lt;/th>
+ &lt;th>说明&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;mark>一致性&lt;/mark>&lt;/td>
+ &lt;td>基类定义接口规范，所有子类必须遵循。&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;mark>可扩展性&lt;/mark>&lt;/td>
+ &lt;td>增加新的子类时，不需要修改原有的基类或调用方的逻辑。&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;mark>重写 (Override)&lt;/mark>&lt;/td>
+ &lt;td>子类可以根据自身需求，重新定义基类的行为。&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h2 id="3-虚析构函数的重要性-virtual-destructor">3. 虚析构函数的重要性 (Virtual Destructor)&lt;a class="anchor" href="#3-%e8%99%9a%e6%9e%90%e6%9e%84%e5%87%bd%e6%95%b0%e7%9a%84%e9%87%8d%e8%a6%81%e6%80%a7-virtual-destructor">#&lt;/a>&lt;/h2>
+&lt;p>在多态场景下，&lt;mark>基类的析构函数必须声明为 &lt;code>virtual&lt;/code>&lt;/mark>。&lt;/p>
+&lt;ul>
+&lt;li>&lt;mark>原因：&lt;/mark> 如果基类析构函数不是虚函数，当删除一个指向派生类对象的基类指针时，只会调用基类的析构函数，导致派生类特有的成员变量无法被正确释放，从而产生&lt;mark>内存泄漏 (Memory Leak)&lt;/mark>。&lt;/li>
+&lt;/ul>
+&lt;h2 id="4-底层实现虚函数表-vtable">4. 底层实现：虚函数表 (Vtable)&lt;a class="anchor" href="#4-%e5%ba%95%e5%b1%82%e5%ae%9e%e7%8e%b0%e8%99%9a%e5%87%bd%e6%95%b0%e8%a1%a8-vtable">#&lt;/a>&lt;/h2>
+&lt;p>虚函数是通过 &lt;mark>虚函数表 (Virtual Table, vtbl)&lt;/mark> 和 &lt;mark>虚函数表指针 (vptr)&lt;/mark> 实现的：&lt;/p>
+&lt;ol>
+&lt;li>&lt;mark>vptr：&lt;/mark> 每个含有虚函数的对象内部都有一个隐藏指针。&lt;/li>
+&lt;li>&lt;mark>vtbl：&lt;/mark> 存储了该类所有虚函数的地址。&lt;/li>
+&lt;li>&lt;mark>调用过程：&lt;/mark> 程序运行阶段，通过对象的 &lt;code>vptr&lt;/code> 找到 &lt;code>vtbl&lt;/code>，再从中找到对应的函数地址。这虽然比普通函数调用稍微多了一点点开销，但换取了极大的灵活性。&lt;/li>
+&lt;/ol>
+&lt;h2 id="简短代码示例">简短代码示例&lt;a class="anchor" href="#%e7%ae%80%e7%9f%ad%e4%bb%a3%e7%a0%81%e7%a4%ba%e4%be%8b">#&lt;/a>&lt;/h2>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">Animal&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span>&lt;span style="color:#f92672">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">virtual&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> speak() { cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Animal speaks&amp;#34;&lt;/span>; } &lt;span style="color:#75715e">// 虚函数
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#66d9ef">virtual&lt;/span> &lt;span style="color:#f92672">~&lt;/span>Animal() {} &lt;span style="color:#75715e">// 虚析构函数
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>};
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">Dog&lt;/span> &lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#66d9ef">public&lt;/span> Animal {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span>&lt;span style="color:#f92672">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">void&lt;/span> speak() &lt;span style="color:#66d9ef">override&lt;/span> { cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Woof!&amp;#34;&lt;/span>; } &lt;span style="color:#75715e">// 重写
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>};
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">makeItSpeak&lt;/span>(Animal&lt;span style="color:#f92672">*&lt;/span> a) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> a&lt;span style="color:#f92672">-&amp;gt;&lt;/span>speak(); &lt;span style="color:#75715e">// 运行阶段根据 a 指向的具体对象决定调用哪个 speak()
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>}&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h1 id="例子">例子&lt;a class="anchor" href="#%e4%be%8b%e5%ad%90">#&lt;/a>&lt;/h1></description></item><item><title>66类型双关</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/66%E7%B1%BB%E5%9E%8B%E5%8F%8C%E5%85%B3/</link><pubDate>Tue, 17 Feb 2026 08:59:40 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/66%E7%B1%BB%E5%9E%8B%E5%8F%8C%E5%85%B3/</guid><description>&lt;ul>
 &lt;li>类型双关指的是，C&lt;ins>绕过类型系统的一种方式，C&lt;/ins>是强类型语言，不会把所有东西都设置为auto（可以，但不推荐）&lt;/li>
 &lt;li>C++中类型在一定程度上&lt;mark>由编译器强制限定&lt;/mark>，但你可以&lt;mark>直接访问内存&lt;/mark>&lt;/li>
 &lt;li>本章节实例会访问某个int数值的内存，并把它当做双精度数来处理（轻易绕过类型系统）
