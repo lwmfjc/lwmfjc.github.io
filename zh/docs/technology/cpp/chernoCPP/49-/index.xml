@@ -1,4 +1,58 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>49 on 随记</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/</link><description>Recent content in 49 on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Tue, 03 Mar 2026 13:47:24 +0800</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/index.xml" rel="self" type="application/rss+xml"/><item><title>74性能基准测试指南</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/74%E6%80%A7%E8%83%BD%E5%9F%BA%E5%87%86%E6%B5%8B%E8%AF%95%E6%8C%87%E5%8D%97/</link><pubDate>Tue, 03 Mar 2026 13:47:24 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/74%E6%80%A7%E8%83%BD%E5%9F%BA%E5%87%86%E6%B5%8B%E8%AF%95%E6%8C%87%E5%8D%97/</guid><description>&lt;p>利用 C++ 对象的生命周期（析构函数）来自动化测量任务。&lt;/p></description></item><item><title>73动态类型转换(dynamic_cast)</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/73%E5%8A%A8%E6%80%81%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2dynamic_cast/</link><pubDate>Tue, 03 Mar 2026 11:09:49 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/73%E5%8A%A8%E6%80%81%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2dynamic_cast/</guid><description>&lt;h1 id="引入什么是-casting">引入：什么是 Casting？&lt;a class="anchor" href="#%e5%bc%95%e5%85%a5%e4%bb%80%e4%b9%88%e6%98%af-casting">#&lt;/a>&lt;/h1>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>49 on 随记</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/</link><description>Recent content in 49 on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Tue, 03 Mar 2026 13:47:24 +0800</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/index.xml" rel="self" type="application/rss+xml"/><item><title>74性能基准测试指南</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/74%E6%80%A7%E8%83%BD%E5%9F%BA%E5%87%86%E6%B5%8B%E8%AF%95%E6%8C%87%E5%8D%97/</link><pubDate>Tue, 03 Mar 2026 13:47:24 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/74%E6%80%A7%E8%83%BD%E5%9F%BA%E5%87%86%E6%B5%8B%E8%AF%95%E6%8C%87%E5%8D%97/</guid><description>&lt;ul>
+&lt;li>利用 C++ 对象的生命周期（析构函数）来自动化测量任务。&lt;/li>
+&lt;li>处理一个对性能要求很高的部分时，或者测试刚学到的新技术，此时想比较性能&lt;/li>
+&lt;li>本章节讲解如何实际测量C++代码的性能&lt;/li>
+&lt;/ul>
+&lt;h1 id="测试循环所需时间">测试循环所需时间&lt;a class="anchor" href="#%e6%b5%8b%e8%af%95%e5%be%aa%e7%8e%af%e6%89%80%e9%9c%80%e6%97%b6%e9%97%b4">#&lt;/a>&lt;/h1>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#ifdef LY_EP74
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;iostream&amp;gt;&lt;/span>&lt;span style="color:#75715e"> 
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;chrono&amp;gt;&lt;/span>&lt;span style="color:#75715e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">Timer&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span>&lt;span style="color:#f92672">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	Timer()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>chrono&lt;span style="color:#f92672">::&lt;/span>high_resolution_clock&lt;span style="color:#f92672">::&lt;/span>now();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#f92672">~&lt;/span>Timer()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">auto&lt;/span> endTimepoint &lt;span style="color:#f92672">=&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>chrono&lt;span style="color:#f92672">::&lt;/span>high_resolution_clock&lt;span style="color:#f92672">::&lt;/span>now();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//算出起始时间的微秒数 
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#66d9ef">auto&lt;/span> start &lt;span style="color:#f92672">=&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>chrono&lt;span style="color:#f92672">::&lt;/span>time_point_cast&lt;span style="color:#f92672">&amp;lt;&lt;/span>std&lt;span style="color:#f92672">::&lt;/span>chrono&lt;span style="color:#f92672">::&lt;/span>microseconds&lt;span style="color:#f92672">&amp;gt;&lt;/span>(m_StartTimepoint).time_since_epoch().count();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//算出结束时间的微秒数
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#66d9ef">auto&lt;/span> end &lt;span style="color:#f92672">=&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>chrono&lt;span style="color:#f92672">::&lt;/span>time_point_cast&lt;span style="color:#f92672">&amp;lt;&lt;/span>std&lt;span style="color:#f92672">::&lt;/span>chrono&lt;span style="color:#f92672">::&lt;/span>microseconds&lt;span style="color:#f92672">&amp;gt;&lt;/span>(endTimepoint).time_since_epoch().count();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//算出持续时间
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#66d9ef">auto&lt;/span> duration &lt;span style="color:#f92672">=&lt;/span> end &lt;span style="color:#f92672">-&lt;/span> start;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//将持续时间转换为毫秒并输出
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#66d9ef">double&lt;/span> ms &lt;span style="color:#f92672">=&lt;/span> duration &lt;span style="color:#f92672">*&lt;/span> &lt;span style="color:#ae81ff">0.001&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> duration &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;us (&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> ms &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;ms)&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">private&lt;/span>&lt;span style="color:#f92672">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>chrono&lt;span style="color:#f92672">::&lt;/span>time_point&lt;span style="color:#f92672">&amp;lt;&lt;/span>std&lt;span style="color:#f92672">::&lt;/span>chrono&lt;span style="color:#f92672">::&lt;/span>high_resolution_clock&lt;span style="color:#f92672">&amp;gt;&lt;/span> m_StartTimepoint;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>};
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">int&lt;/span> value &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		Timer timer; &lt;span style="color:#75715e">// 创建一个 Timer 对象，开始计时
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">for&lt;/span> (&lt;span style="color:#66d9ef">int&lt;/span> i &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>; i &lt;span style="color:#f92672">&amp;lt;&lt;/span> &lt;span style="color:#ae81ff">1000000&lt;/span>; i&lt;span style="color:#f92672">++&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			value &lt;span style="color:#f92672">+=&lt;/span> &lt;span style="color:#ae81ff">2&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> value &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//__debugbreak() 是 MSVC (Windows) 特有的编译器内置函数，会在这里中断程序，进入调试器，方便我们查看变量的值
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//正式运行程序时也会中断甚至发生异常
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	__debugbreak();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#endif&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>先设置断点，然后进入反汇编查看&lt;/p></description></item><item><title>73动态类型转换(dynamic_cast)</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/73%E5%8A%A8%E6%80%81%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2dynamic_cast/</link><pubDate>Tue, 03 Mar 2026 11:09:49 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/73%E5%8A%A8%E6%80%81%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2dynamic_cast/</guid><description>&lt;h1 id="引入什么是-casting">引入：什么是 Casting？&lt;a class="anchor" href="#%e5%bc%95%e5%85%a5%e4%bb%80%e4%b9%88%e6%98%af-casting">#&lt;/a>&lt;/h1>
 &lt;ul>
 &lt;li>背景：在 C++ 中，我们经常需要在父类和子类指针之间转换。&lt;/li>
 &lt;li>痛点：传统的 C 风格转换 &lt;code>(Player*)entity&lt;/code> 或 &lt;code>static_cast&lt;/code> 是“强行”转换。编译器完全信任你，即使你把一个“敌人”对象强行转成“玩家”对象，它也不会报错，但这会导致程序在运行时崩溃。&lt;/li>
