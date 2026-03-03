@@ -1,4 +1,211 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>49 on 随记</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/</link><description>Recent content in 49 on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Wed, 25 Feb 2026 18:43:34 +0800</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/index.xml" rel="self" type="application/rss+xml"/><item><title>70条件断点与操作断点设置</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/70%E6%9D%A1%E4%BB%B6%E6%96%AD%E7%82%B9%E4%B8%8E%E6%93%8D%E4%BD%9C%E6%96%AD%E7%82%B9%E8%AE%BE%E7%BD%AE/</link><pubDate>Wed, 25 Feb 2026 18:43:34 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/70%E6%9D%A1%E4%BB%B6%E6%96%AD%E7%82%B9%E4%B8%8E%E6%93%8D%E4%BD%9C%E6%96%AD%E7%82%B9%E8%AE%BE%E7%BD%AE/</guid><description>&lt;ul>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>49 on 随记</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/</link><description>Recent content in 49 on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Tue, 03 Mar 2026 13:47:24 +0800</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/index.xml" rel="self" type="application/rss+xml"/><item><title>74性能基准测试指南</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/74%E6%80%A7%E8%83%BD%E5%9F%BA%E5%87%86%E6%B5%8B%E8%AF%95%E6%8C%87%E5%8D%97/</link><pubDate>Tue, 03 Mar 2026 13:47:24 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/74%E6%80%A7%E8%83%BD%E5%9F%BA%E5%87%86%E6%B5%8B%E8%AF%95%E6%8C%87%E5%8D%97/</guid><description/></item><item><title>73动态类型转换(dynamic_cast)</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/73%E5%8A%A8%E6%80%81%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2dynamic_cast/</link><pubDate>Tue, 03 Mar 2026 11:09:49 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/73%E5%8A%A8%E6%80%81%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2dynamic_cast/</guid><description>&lt;h1 id="引入什么是-casting">引入：什么是 Casting？&lt;a class="anchor" href="#%e5%bc%95%e5%85%a5%e4%bb%80%e4%b9%88%e6%98%af-casting">#&lt;/a>&lt;/h1>
+&lt;ul>
+&lt;li>背景：在 C++ 中，我们经常需要在父类和子类指针之间转换。&lt;/li>
+&lt;li>痛点：传统的 C 风格转换 &lt;code>(Player*)entity&lt;/code> 或 &lt;code>static_cast&lt;/code> 是“强行”转换。编译器完全信任你，即使你把一个“敌人”对象强行转成“玩家”对象，它也不会报错，但这会导致程序在运行时崩溃。&lt;/li>
+&lt;/ul>
+&lt;h1 id="dynamic-cast-的特殊性">Dynamic Cast 的特殊性&lt;a class="anchor" href="#dynamic-cast-%e7%9a%84%e7%89%b9%e6%ae%8a%e6%80%a7">#&lt;/a>&lt;/h1>
+&lt;ul>
+&lt;li>一针见血的定义：&lt;code>dynamic_cast&lt;/code> 是专门用于&lt;mark>继承体系&lt;/mark>中的&lt;mark>安全转换&lt;/mark>。&lt;/li>
+&lt;li>运行时检查 (RTTI &lt;del>运行时类型信息&lt;/del> )：它不像其他转换在编译时完成，而是在&lt;mark>程序运行时&lt;/mark>去检查这个对象“到底是不是”你要转的那个类型。&lt;/li>
+&lt;li>返回值逻辑
+&lt;ul>
+&lt;li>如果转换成功：返回有效的指针。&lt;/li>
+&lt;li>如果转换失败（类型不匹配）：返回 &lt;code>NULL&lt;/code> (或 &lt;code>nullptr&lt;/code>)。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h1 id="核心前置条件虚函数表">核心前置条件：虚函数表&lt;a class="anchor" href="#%e6%a0%b8%e5%bf%83%e5%89%8d%e7%bd%ae%e6%9d%a1%e4%bb%b6%e8%99%9a%e5%87%bd%e6%95%b0%e8%a1%a8">#&lt;/a>&lt;/h1>
+&lt;ul>
+&lt;li>关键约束：要使用 &lt;code>dynamic_cast&lt;/code>，你的类必须是多态的 (Polymorphic)。&lt;/li>
+&lt;li>原理：这意味着基类必须至少有一个 虚函数 (Virtual Function)。&lt;/li>
+&lt;li>底层逻辑：&lt;code>dynamic_cast&lt;/code> 依赖于 RTTI (Run-Time Type Information)，而 RTTI 信息存储在虚函数表 (vtable) 中。如果类没有虚函数，就没有 RTTI，编译器会直接报错。&lt;/li>
+&lt;/ul>
+&lt;h1 id="代码实战演练">代码实战演练&lt;a class="anchor" href="#%e4%bb%a3%e7%a0%81%e5%ae%9e%e6%88%98%e6%bc%94%e7%bb%83">#&lt;/a>&lt;/h1>
+&lt;p>Cherno 演示了一个经典的场景：&lt;/p>
+&lt;ul>
+&lt;li>基类：&lt;code>Entity&lt;/code>&lt;/li>
+&lt;li>子类：&lt;code>Player&lt;/code> 和 &lt;code>Enemy&lt;/code>&lt;/li>
+&lt;li>场景：你有一个 &lt;code>Entity*&lt;/code> 指针，你想知道它指向的到底是&lt;code>Player&lt;/code> 还是 &lt;code>Enemy&lt;/code>。&lt;/li>
+&lt;li>写法：&lt;/li>
+&lt;/ul>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#ifdef LY_EP73
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;iostream&amp;gt;&lt;/span>&lt;span style="color:#75715e"> 
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">Entity&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span>&lt;span style="color:#f92672">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">virtual&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> PrintName() {}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>};
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">Player&lt;/span> &lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#66d9ef">public&lt;/span> Entity
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>};
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">Enemy&lt;/span> &lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#66d9ef">public&lt;/span> Entity
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>};
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{ 
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	Player&lt;span style="color:#f92672">*&lt;/span> player &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> Player();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	Entity&lt;span style="color:#f92672">*&lt;/span> e &lt;span style="color:#f92672">=&lt;/span> player;&lt;span style="color:#75715e">//隐式转换，Player* 转换为 Entity*
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	Entity&lt;span style="color:#f92672">*&lt;/span> actuallyEnemy &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> Enemy();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	Entity&lt;span style="color:#f92672">*&lt;/span> actuallyPlayer &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> Player();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//Player* p = e;//错误，Entity* 转换为 Player*，需要显示转换
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	Player&lt;span style="color:#f92672">*&lt;/span> p &lt;span style="color:#f92672">=&lt;/span> (Player&lt;span style="color:#f92672">*&lt;/span>)actuallyEnemy;&lt;span style="color:#75715e">//不安全的转换，Enemy* 转换为 Player*，编译器允许，但运行时会出问题；如果访问Player和Entity共有的成员，可能不会出问题，但如果访问Player特有的成员，就会出问题，因为actuallyEnemy实际上是一个Enemy对象，而不是Player对象。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	Player&lt;span style="color:#f92672">*&lt;/span> p1 &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">static_cast&lt;/span>&lt;span style="color:#f92672">&amp;lt;&lt;/span>Player&lt;span style="color:#f92672">*&amp;gt;&lt;/span>(actuallyEnemy);&lt;span style="color:#75715e">//和上面的显示转换一样，属于不安全的转换 
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//actuallyEnemy指向的类必须是多态的，在 C++ 的设计哲学里，非多态类确实没有存储运行时的类型信息。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	Player&lt;span style="color:#f92672">*&lt;/span> p2 &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">dynamic_cast&lt;/span>&lt;span style="color:#f92672">&amp;lt;&lt;/span>Player&lt;span style="color:#f92672">*&amp;gt;&lt;/span>(actuallyEnemy);&lt;span style="color:#75715e">//安全的转换，运行时会检查actuallyEnemy是否实际上是一个Player对象，如果是，则返回指向Player对象的指针；如果不是，则返回nullptr。由于actuallyEnemy实际上是一个Enemy对象，所以p2将被赋值为nullptr。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	Player&lt;span style="color:#f92672">*&lt;/span> p3 &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">dynamic_cast&lt;/span>&lt;span style="color:#f92672">&amp;lt;&lt;/span>Player&lt;span style="color:#f92672">*&amp;gt;&lt;/span>(actuallyPlayer);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">if&lt;/span> (p2)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;actuallyEnemy is a Player.&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">else&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;actuallyEnemy is NOT a Player.&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">if&lt;/span>(p3)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;actuallyPlayer is a Player.&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">else&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;actuallyPlayer is NOT a Player.&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cin.get();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/*
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">actuallyEnemy is NOT a Player.
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">actuallyPlayer is a Player.
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">*/&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#endif&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h1 id="性能代价-the-cost">性能代价 (The Cost)&lt;a class="anchor" href="#%e6%80%a7%e8%83%bd%e4%bb%a3%e4%bb%b7-the-cost">#&lt;/a>&lt;/h1>
+&lt;p>Cherno 给出了一针见血的职业警告：&lt;/p></description></item><item><title>72预编译头文件详解</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/72%E9%A2%84%E7%BC%96%E8%AF%91%E5%A4%B4%E6%96%87%E4%BB%B6%E8%AF%A6%E8%A7%A3/</link><pubDate>Sun, 01 Mar 2026 12:16:57 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/72%E9%A2%84%E7%BC%96%E8%AF%91%E5%A4%B4%E6%96%87%E4%BB%B6%E8%AF%A6%E8%A7%A3/</guid><description>&lt;p>预编译头文件的作用是将大量稳定的头文件&lt;mark>提前编译成二进制缓存&lt;/mark>。这样编译器在处理每个源文件时，直接读取该缓存，而无需重新解析成千上万行重复的代码，从而极大地缩短编译时间。&lt;/p>
+&lt;blockquote class='book-hint '>
+&lt;p>比如常用的标准模版库：比如向量、字符串、标准输出之类，假设我们每次（在&lt;mark>每个&lt;code>.cpp&lt;/code>文件&lt;/mark>）都要包含vector，需要读取vector.h头文件并编译，而且vector本身也包含其他一系列头文件，所有其他头文件被复制到&lt;code>vector.h&lt;/code>中，再把&lt;code>vector.h&lt;/code>复制到&lt;code>.cpp&lt;/code>中（大约十万行代码），还要进行解析和标记化，并以某种形式进行编译&lt;/p>&lt;/blockquote>&lt;ul>
+&lt;li>如果项目中有多个cpp文件，很多地方都包括&lt;code>vector.h&lt;/code>，他们会被逐个包含在每个文件中 &lt;del>每个翻译单元（.cpp）都会被单独编译，然后链接器将它们链接起来&lt;/del>&lt;/li>
+&lt;li>且每次对那个cpp文件 &lt;del>包含了vector.h的&lt;/del> 重新更改时，整个 &lt;del>这里是说要把vector.h复制进来然后再编译&lt;/del> 都得重新编译&lt;/li>
+&lt;/ul>
+&lt;p>&lt;em>建议&lt;/em>&lt;/p>
+&lt;ul>
+&lt;li>改用预编译头文件，它会获取一堆头文件（要包含的那些），然后它编译一次，并将起转换为二进制格式。这对编译器来说处理起来比纯文件快得多 &lt;del>因为它以处于解析状态，而且是&lt;mark>二进制&lt;/mark>文件，随时可以，不用再重新编译&lt;/del>
+&lt;ul>
+&lt;li>举个例子，可能本来要1分钟，使用预编译头文件后，编译可能只需8秒钟&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>预编译头文件其实就是一个头文件，且包含一系列其他头文件
+&lt;ul>
+&lt;li>不可以把所有头文件都放进去，因为&lt;mark>如果一个头文件经常变化，那么每次改动都需要重新编译整个预编译头文件&lt;/mark>&lt;/li>
+&lt;li>不需要在项目的每个cpp都包含日志文件，只需要包含含有日志的&lt;mark>预编译头文件&lt;/mark>&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>C&lt;ins>库、标准模板库、WindowsAPI调用库，建议把这些都放进预编译头文件 &lt;del>每次编译可能他的代码量比实际代码还多&lt;/del> 。这样就能从每个C&lt;/ins>文件中获取所有内容，如果要用只能指针，就不用实际直接包含memory头文件，因为他在预编译头文件中，它会包含在实际编写的每个C++文件中&lt;/li>
+&lt;li>因为把所有文件都放进了&lt;code>pch.h&lt;/code> &lt;del>也可以叫其他名字&lt;/del> ，所以不能一眼看出实际include了什么，且&lt;code>pch.h&lt;/code>中包含了所有的，所以也不清楚实际它&lt;mark>只依赖&lt;/mark>哪些头文件&lt;/li>
+&lt;li>如果编写游戏引擎，可能只有一个cpp文件需要包含GLFW &lt;del>编译一起就搞定&lt;/del> ，那么可以把GLFW放入&lt;code>pch.h&lt;/code>中，因为其他内容都被抽象放在自己的api中；而其他的标准库、vector、标准输入输出之类的，很多都会用的，也可以让它编译一次就搞定&lt;/li>
+&lt;/ul>
+&lt;h1 id="例子">例子&lt;a class="anchor" href="#%e4%be%8b%e5%ad%90">#&lt;/a>&lt;/h1>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//Main.cpp
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;#34;pch.h&amp;#34;&lt;/span>&lt;span style="color:#75715e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Hello World!&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//pch.h
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#75715e">#pragma once
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;iostream&amp;gt;&lt;/span>&lt;span style="color:#75715e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;algorithm&amp;gt;&lt;/span>&lt;span style="color:#75715e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;functional&amp;gt;&lt;/span>&lt;span style="color:#75715e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;memory&amp;gt;&lt;/span>&lt;span style="color:#75715e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;thread&amp;gt;&lt;/span>&lt;span style="color:#75715e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;utility&amp;gt;&lt;/span>&lt;span style="color:#75715e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// Data structures
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;string&amp;gt;&lt;/span>&lt;span style="color:#75715e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;stack&amp;gt;&lt;/span>&lt;span style="color:#75715e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;deque&amp;gt;&lt;/span>&lt;span style="color:#75715e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;array&amp;gt;&lt;/span>&lt;span style="color:#75715e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;vector&amp;gt;&lt;/span>&lt;span style="color:#75715e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;set&amp;gt;&lt;/span>&lt;span style="color:#75715e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;map&amp;gt;&lt;/span>&lt;span style="color:#75715e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;unordered_set&amp;gt;&lt;/span>&lt;span style="color:#75715e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;unordered_map&amp;gt;&lt;/span>&lt;span style="color:#75715e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//Windows API
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;windows.h&amp;gt;&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>做个测试&lt;/p>
+&lt;p>&lt;img src="img/ly-20260302184649828.png" alt="" />&lt;/p>
+&lt;p>然后ctrl+f7编译Main.cpp，查看生成的Main.i文件&lt;/p>
+&lt;p>&lt;img src="img/ly-20260302185845788.png" alt="" />&lt;/p></description></item><item><title>71现代CPP的安全性和教学理念</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/71%E7%8E%B0%E4%BB%A3CPP%E7%9A%84%E5%AE%89%E5%85%A8%E6%80%A7%E5%92%8C%E6%95%99%E5%AD%A6%E7%90%86%E5%BF%B5/</link><pubDate>Sun, 01 Mar 2026 11:37:08 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/71%E7%8E%B0%E4%BB%A3CPP%E7%9A%84%E5%AE%89%E5%85%A8%E6%80%A7%E5%92%8C%E6%95%99%E5%AD%A6%E7%90%86%E5%BF%B5/</guid><description>&lt;ul>
+&lt;li>重点围绕 &lt;mark>原始指针（Raw Pointers）与智能指针（Smart Pointers）&lt;/mark> 的长期争论，以及为什么坚持从底层原理开始教学&lt;/li>
+&lt;/ul>
+&lt;p>视频看过一遍了，全程没有讲到代码例子，所以这里用了ai总结这个视频&lt;/p>
+&lt;p>The Cherno 在本集中讨论了“安全编程”在 C++ 中的定义，重点围绕 原始指针（Raw Pointers）与智能指针（Smart Pointers） 的长期争论，以及他为什么坚持从底层原理开始教学。&lt;/p>
+&lt;p>时间线总结&lt;/p>
+&lt;h1 id="话题引入">话题引入&lt;a class="anchor" href="#%e8%af%9d%e9%a2%98%e5%bc%95%e5%85%a5">#&lt;/a>&lt;/h1>
+&lt;ul>
+&lt;li>讨论 C++ 社区中关于“现代 C++”与“安全性”的激烈争论。&lt;/li>
+&lt;li>两种极端观点：
+&lt;ul>
+&lt;li>现代派： 只应使用现代 C++，永远不碰原始指针。&lt;/li>
+&lt;li>传统派： 智能指针有性能开销，真男人就该手动管理内存。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h1 id="什么是-c-中的安全性">什么是 C++ 中的“安全性”？&lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af-c-%e4%b8%ad%e7%9a%84%e5%ae%89%e5%85%a8%e6%80%a7">#&lt;/a>&lt;/h1>
+&lt;ul>
+&lt;li>安全编程的核心目标是：&lt;mark>减少崩溃、内存泄漏和非法访问（Access Violations）&lt;/mark>。&lt;/li>
+&lt;li>从 C++11 开始，社区转向智能指针，主要是为了解决堆内存分配中的&lt;mark>人为错误&lt;/mark>。&lt;/li>
+&lt;/ul>
+&lt;h1 id="内存管理的两大痛点">内存管理的两大痛点&lt;a class="anchor" href="#%e5%86%85%e5%ad%98%e7%ae%a1%e7%90%86%e7%9a%84%e4%b8%a4%e5%a4%a7%e7%97%9b%e7%82%b9">#&lt;/a>&lt;/h1>
+&lt;ul>
+&lt;li>忘记&lt;mark>释放内存&lt;/mark>： 导致&lt;mark>内存泄漏&lt;/mark>，可能导致程序最终因内存不足而崩溃。&lt;/li>
+&lt;li>&lt;mark>所有权&lt;/mark>问题（Ownership）： 当一个指针在多个函数或类之间传递时，不清楚由谁负责销毁它。&lt;/li>
+&lt;/ul>
+&lt;h1 id="智能指针的本质">智能指针的本质&lt;a class="anchor" href="#%e6%99%ba%e8%83%bd%e6%8c%87%e9%92%88%e7%9a%84%e6%9c%ac%e8%b4%a8">#&lt;/a>&lt;/h1>
+&lt;ul>
+&lt;li>智能指针本质上只是对一两行代码的自动化：&lt;mark>自动调用 delete 或释放内存&lt;/mark>。&lt;/li>
+&lt;li>它们通过自动化来减少人为疏忽，提高代码的健壮性。&lt;/li>
+&lt;/ul>
+&lt;h1 id="他的立场你应该使用智能指针">他的立场：你应该使用智能指针&lt;a class="anchor" href="#%e4%bb%96%e7%9a%84%e7%ab%8b%e5%9c%ba%e4%bd%a0%e5%ba%94%e8%af%a5%e4%bd%bf%e7%94%a8%e6%99%ba%e8%83%bd%e6%8c%87%e9%92%88">#&lt;/a>&lt;/h1>
+&lt;ul>
+&lt;li>在实际的生产代码或大型框架中，100% 应该&lt;mark>使用智能指针&lt;/mark>。&lt;/li>
+&lt;li>不使用它们会极大地增加代码维护的难度和出错的风险。&lt;/li>
+&lt;/ul>
+&lt;h1 id="为什么他还在视频里用原始指针">为什么他还在视频里用原始指针？&lt;a class="anchor" href="#%e4%b8%ba%e4%bb%80%e4%b9%88%e4%bb%96%e8%bf%98%e5%9c%a8%e8%a7%86%e9%a2%91%e9%87%8c%e7%94%a8%e5%8e%9f%e5%a7%8b%e6%8c%87%e9%92%88">#&lt;/a>&lt;/h1>
+&lt;ul>
+&lt;li>简洁性： 在&lt;mark>简单&lt;/mark>的 Sandbox（沙盒）测试或只有 100 行左右的小样板代码中，原始指针写起来更快、读起来更直观。&lt;/li>
+&lt;li>环境区别： 学习阶段的小程序不需要像生产环境那样严谨地考虑所有权转移。&lt;/li>
+&lt;/ul>
+&lt;h1 id="教学责任与影响">教学责任与影响&lt;a class="anchor" href="#%e6%95%99%e5%ad%a6%e8%b4%a3%e4%bb%bb%e4%b8%8e%e5%bd%b1%e5%93%8d">#&lt;/a>&lt;/h1>
+&lt;ul>
+&lt;li>反思作为拥有大量订阅者的博主，&lt;mark>使用原始指针是否会给初学者带来不良示范（类似于红灯穿马路）&lt;/mark>。&lt;/li>
+&lt;li>&lt;mark>但他认为，如果不教原始指针，学生就无法真正理解 C++ 的工作原理。&lt;/mark>&lt;/li>
+&lt;/ul>
+&lt;h1 id="核心教学哲学理解底层非常重要">核心教学哲学：理解底层（非常重要）&lt;a class="anchor" href="#%e6%a0%b8%e5%bf%83%e6%95%99%e5%ad%a6%e5%93%b2%e5%ad%a6%e7%90%86%e8%a7%a3%e5%ba%95%e5%b1%82%e9%9d%9e%e5%b8%b8%e9%87%8d%e8%a6%81">#&lt;/a>&lt;/h1>
+&lt;ul>
+&lt;li>智能指针只是原始指针的封装（Wrapper）。&lt;/li>
+&lt;li>如果你不&lt;mark>理解原始指针和内存是如何运作&lt;/mark>的，你就无法成为一名优秀的 C++ 程序员，尤其是处理高性能或实时系统的开发。&lt;/li>
+&lt;li>==学习“旧东西”==是为了更好地掌握“新工具”。&lt;/li>
+&lt;/ul>
+&lt;h1 id="核心结论">核心结论&lt;a class="anchor" href="#%e6%a0%b8%e5%bf%83%e7%bb%93%e8%ae%ba">#&lt;/a>&lt;/h1>
+&lt;ul>
+&lt;li>在项目开发中： &lt;mark>推荐使用智能指针&lt;/mark>，为了安全和效率。&lt;/li>
+&lt;li>在&lt;mark>学习过程中： 必须掌握原始指针&lt;/mark>，为了理解底层和内存真相。&lt;/li>
+&lt;/ul>
+&lt;p>Cherno 的观点： &lt;mark>避开底层原理而只学“安全”的做法，无法培养出真正顶尖的开发者。&lt;/mark>&lt;/p></description></item><item><title>70条件断点与操作断点设置</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/70%E6%9D%A1%E4%BB%B6%E6%96%AD%E7%82%B9%E4%B8%8E%E6%93%8D%E4%BD%9C%E6%96%AD%E7%82%B9%E8%AE%BE%E7%BD%AE/</link><pubDate>Wed, 25 Feb 2026 18:43:34 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/70%E6%9D%A1%E4%BB%B6%E6%96%AD%E7%82%B9%E4%B8%8E%E6%93%8D%E4%BD%9C%E6%96%AD%E7%82%B9%E8%AE%BE%E7%BD%AE/</guid><description>&lt;ul>
 &lt;li>本节介绍visual studio 快速小技巧，也是一个适用于开发和调试的通用技巧，围绕断点展开&lt;/li>
 &lt;li>围绕条件展开，以及一些可应用于断点的操作
 &lt;ul>
@@ -12,7 +219,7 @@
 &lt;li>写if语句并（手动）设置断点 &lt;del>也可以直接&lt;code>debug break;&lt;/code>之类的编译器内部函数&lt;/del>&lt;/li>
 &lt;/ul>
 &lt;p>调试中发现问题的情况下，如果使用ide的调试断点功能，就能省去重编译、编写代码再调试运行&lt;/p>
-&lt;h1 id="添加action">添加Action&lt;a class="anchor" href="#%e6%b7%bb%e5%8a%a0action">#&lt;/a>&lt;/h1>
+&lt;h1 id="添加action和condition">添加Action和Condition&lt;a class="anchor" href="#%e6%b7%bb%e5%8a%a0action%e5%92%8ccondition">#&lt;/a>&lt;/h1>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#ifdef LY_EP70
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;iostream&amp;gt;&lt;/span>&lt;span style="color:#75715e">
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
@@ -27,12 +234,13 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cin.get();
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>;
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#endif&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>先添加断点，然后再点击Action，最后添加打印内容&lt;code>values of a,b is : {(float)a}, {(float)b}&lt;/code>&lt;/p>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#endif&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;ul>
+&lt;li>先添加断点，然后再点击Action，最后添加打印内容&lt;code>i is {i} ,values of a,b is : {(float)a}, {(float)b}&lt;/code>&lt;/li>
+&lt;li>然后设置Condition，设置为&lt;code>i == 3&lt;/code>，即只有在i == 3时才触发断点&lt;/li>
+&lt;/ul>
 &lt;p>&lt;img src="img/ly-20260227182641735.png" alt="" />&lt;/p>
-&lt;p>&lt;img src="img/ly-20260227183130371.png" alt="" />&lt;/p>
-&lt;p>这个&lt;code>contine code execution&lt;/code>如果勾上了，则调试时不会停止，会直接跳过该断点&lt;/p>
-&lt;p>如下图，打印了五次&lt;/p>
-&lt;p>&lt;img src="img/ly-20260227183301149.png" alt="" />&lt;/p></description></item><item><title>69类型转换</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/69%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2/</link><pubDate>Tue, 24 Feb 2026 16:59:48 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/69%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2/</guid><description>&lt;ul>
+&lt;p>&lt;img src="img/ly-20260301113433709.png" alt="" />&lt;/p>
+&lt;p>这个&lt;code>contine code execution&lt;/code>如果勾上了，则调试时不会停止，会直接跳过该断点&lt;/p></description></item><item><title>69类型转换</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/69%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2/</link><pubDate>Tue, 24 Feb 2026 16:59:48 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/69%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2/</guid><description>&lt;ul>
 &lt;li>类型转换（Type Casting）是在 C++ 强类型系统中进行类型间转换的过程。&lt;/li>
 &lt;li>cpp作为一种强类型语言，意味着有一个类型系统，且类型是强制规定的
 &lt;ul>
