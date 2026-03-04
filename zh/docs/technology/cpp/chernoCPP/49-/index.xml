@@ -1,4 +1,98 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>49 on 随记</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/</link><description>Recent content in 49 on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Wed, 04 Mar 2026 10:29:40 +0800</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/index.xml" rel="self" type="application/rss+xml"/><item><title>75结构化绑定(cpp17)</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/75%E7%BB%93%E6%9E%84%E5%8C%96%E7%BB%91%E5%AE%9Acpp17/</link><pubDate>Wed, 04 Mar 2026 10:29:40 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/75%E7%BB%93%E6%9E%84%E5%8C%96%E7%BB%91%E5%AE%9Acpp17/</guid><description>&lt;h1 id="核心概念">核心概念&lt;a class="anchor" href="#%e6%a0%b8%e5%bf%83%e6%a6%82%e5%bf%b5">#&lt;/a>&lt;/h1>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>49 on 随记</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/</link><description>Recent content in 49 on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Wed, 04 Mar 2026 19:48:33 +0800</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/index.xml" rel="self" type="application/rss+xml"/><item><title>77在单变量中存储多种类型数据</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/77%E5%9C%A8%E5%8D%95%E5%8F%98%E9%87%8F%E4%B8%AD%E5%AD%98%E5%82%A8%E5%A4%9A%E7%A7%8D%E7%B1%BB%E5%9E%8B%E6%95%B0%E6%8D%AE/</link><pubDate>Wed, 04 Mar 2026 19:48:33 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/77%E5%9C%A8%E5%8D%95%E5%8F%98%E9%87%8F%E4%B8%AD%E5%AD%98%E5%82%A8%E5%A4%9A%E7%A7%8D%E7%B1%BB%E5%9E%8B%E6%95%B0%E6%8D%AE/</guid><description/></item><item><title>76可选数据处理</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/76%E5%8F%AF%E9%80%89%E6%95%B0%E6%8D%AE%E5%A4%84%E7%90%86/</link><pubDate>Wed, 04 Mar 2026 13:25:37 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/76%E5%8F%AF%E9%80%89%E6%95%B0%E6%8D%AE%E5%A4%84%E7%90%86/</guid><description>&lt;h1 id="核心概念">核心概念&lt;a class="anchor" href="#%e6%a0%b8%e5%bf%83%e6%a6%82%e5%bf%b5">#&lt;/a>&lt;/h1>
+&lt;p>本集主要讨论 &lt;mark>C++17&lt;/mark> 引入的 &lt;code>std::optional&lt;/code>。它提供了一种优雅的方式来处理==“值可能存在，也可能不存在”==的情况，避免了使用魔术数字（如 &lt;code>-1&lt;/code>）、空字符串或布尔标志位等不直观的方法。&lt;/p>
+&lt;h1 id="1-传统处理方式的弊端">1. 传统处理方式的弊端&lt;a class="anchor" href="#1-%e4%bc%a0%e7%bb%9f%e5%a4%84%e7%90%86%e6%96%b9%e5%bc%8f%e7%9a%84%e5%bc%8a%e7%ab%af">#&lt;/a>&lt;/h1>
+&lt;p>在没有 &lt;code>std::optional&lt;/code> 之前，如果一个函数可能无法返回有效数据，程序员通常会：&lt;/p>
+&lt;ul>
+&lt;li>&lt;mark>返回特殊值&lt;/mark>：例如找不到文件时返回空字符串 &lt;code>&amp;quot;&amp;quot;&lt;/code>。但问题是，有时空字符串本身可能也是合法的返回结果，导致二义性。&lt;/li>
+&lt;li>&lt;mark>使用布尔标记&lt;/mark>：通过引用的方式传出数据，函数返回 &lt;code>bool&lt;/code> 表示是否成功。这种方式虽然可行，但代码写起来比较琐碎。
+&lt;ul>
+&lt;li>函数返回一个布尔值（true 或 false）来表示操作是否成功，而实际的数据通过“输出参数”（通常是引用或指针）来传递。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h1 id="2-stdoptional-的基本用法">2. std::optional 的基本用法&lt;a class="anchor" href="#2-stdoptional-%e7%9a%84%e5%9f%ba%e6%9c%ac%e7%94%a8%e6%b3%95">#&lt;/a>&lt;/h1>
+&lt;p>&lt;code>std::optional&lt;/code> 像是一个容器，它要么包含一个指定类型的值，要么为空（&lt;code>std::nullopt&lt;/code>）。&lt;/p>
+&lt;ul>
+&lt;li>&lt;mark>包含头文件&lt;/mark>：&lt;code>#include &amp;lt;optional&amp;gt;&lt;/code>&lt;/li>
+&lt;li>&lt;mark>读取文件示例&lt;/mark>：&lt;/li>
+&lt;/ul>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-C++" data-lang="C++">&lt;span style="display:flex;">&lt;span> std&lt;span style="color:#f92672">::&lt;/span>optional&lt;span style="color:#f92672">&amp;lt;&lt;/span>std&lt;span style="color:#f92672">::&lt;/span>string&lt;span style="color:#f92672">&amp;gt;&lt;/span> ReadFileAsString(&lt;span style="color:#66d9ef">const&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>string&lt;span style="color:#f92672">&amp;amp;&lt;/span> filepath) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> std&lt;span style="color:#f92672">::&lt;/span>ifstream stream(filepath);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span> (stream) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> std&lt;span style="color:#f92672">::&lt;/span>string result;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// 读取文件内容...
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#66d9ef">return&lt;/span> result;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">//return {};// ai提示return std::nullopt; // 显式表示没有值 [00:05:00]
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> }&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="完整代码">完整代码&lt;a class="anchor" href="#%e5%ae%8c%e6%95%b4%e4%bb%a3%e7%a0%81">#&lt;/a>&lt;/h2>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#ifdef LY_EP76
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;iostream&amp;gt;&lt;/span>&lt;span style="color:#75715e"> 
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;fstream&amp;gt;&lt;/span>&lt;span style="color:#75715e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#75715e">//C++17引入了std::optional类型，可以用来表示一个值可能存在也可能不存在的情况。它提供了一种更安全和更清晰的方式来处理函数返回值，避免了使用引用参数来传递成功与否的信息。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;optional&amp;gt;&lt;/span>&lt;span style="color:#75715e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;sstream&amp;gt;&lt;/span>&lt;span style="color:#75715e"> &lt;/span>&lt;span style="color:#75715e">//读取文件内容需要使用std::stringstream
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//方法1：通过引用参数返回成功与否
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//std::string ReadFileAsString(const std::string&amp;amp; filePath,
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//bool&amp;amp; outSuccess)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>std&lt;span style="color:#f92672">::&lt;/span>optional&lt;span style="color:#f92672">&amp;lt;&lt;/span>std&lt;span style="color:#f92672">::&lt;/span>string&lt;span style="color:#f92672">&amp;gt;&lt;/span> ReadFileAsString(&lt;span style="color:#66d9ef">const&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>string&lt;span style="color:#f92672">&amp;amp;&lt;/span> filePath)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>ifstream stream(filePath);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">if&lt;/span> (stream)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>stringstream result;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		result &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> stream.rdbuf();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//read file
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		stream.close();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">return&lt;/span> result.str();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	} 
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">return&lt;/span> {};
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//在内存中，std::optional&amp;lt;T&amp;gt; 通常包含两个主要部分：
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//1. 一块足够大的内存空间：用来存放类型为 T 的值（在你的例子中是 std::string）。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//2. 一个布尔标记（bool flag）：记录这个盒子现在是“满的”还是“空的”
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	std&lt;span style="color:#f92672">::&lt;/span>optional&lt;span style="color:#f92672">&amp;lt;&lt;/span>std&lt;span style="color:#f92672">::&lt;/span>string&lt;span style="color:#f92672">&amp;gt;&lt;/span> data &lt;span style="color:#f92672">=&lt;/span> ReadFileAsString(&lt;span style="color:#e6db74">&amp;#34;data.txt&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>optional&lt;span style="color:#f92672">&amp;lt;&lt;/span>std&lt;span style="color:#f92672">::&lt;/span>string&lt;span style="color:#f92672">&amp;gt;&lt;/span> data1 &lt;span style="color:#f92672">=&lt;/span> ReadFileAsString(&lt;span style="color:#e6db74">&amp;#34;data1.txt&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//如果是读取参数，那就是指定默认值
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//std::string value = data.value_or(&amp;#34;default value&amp;#34;);
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//或者if(data)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#66d9ef">if&lt;/span>(data.has_value())
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//数据读取
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		std&lt;span style="color:#f92672">::&lt;/span>string&lt;span style="color:#f92672">&amp;amp;&lt;/span> string &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#f92672">*&lt;/span>data;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;File content: &amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> data.value() &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;File content: &amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> string &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">else&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Failed to read file.&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">if&lt;/span> (data1.has_value())
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//数据读取
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		std&lt;span style="color:#f92672">::&lt;/span>string&lt;span style="color:#f92672">&amp;amp;&lt;/span> string &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#f92672">*&lt;/span>data1;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;File content: &amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> data1.value() &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;File content: &amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> string &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">else&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Failed to read file(data1.txt).&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cin.get();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>} 
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#endif&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h1 id="3-如何检查与获取值">3. 如何检查与获取值&lt;a class="anchor" href="#3-%e5%a6%82%e4%bd%95%e6%a3%80%e6%9f%a5%e4%b8%8e%e8%8e%b7%e5%8f%96%e5%80%bc">#&lt;/a>&lt;/h1>
+&lt;p>调用返回 &lt;code>std::optional&lt;/code> 的函数后，有几种处理方式：&lt;/p></description></item><item><title>75结构化绑定(cpp17)</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/75%E7%BB%93%E6%9E%84%E5%8C%96%E7%BB%91%E5%AE%9Acpp17/</link><pubDate>Wed, 04 Mar 2026 10:29:40 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/49-/75%E7%BB%93%E6%9E%84%E5%8C%96%E7%BB%91%E5%AE%9Acpp17/</guid><description>&lt;h1 id="核心概念">核心概念&lt;a class="anchor" href="#%e6%a0%b8%e5%bf%83%e6%a6%82%e5%bf%b5">#&lt;/a>&lt;/h1>
 &lt;p>结构化绑定是 &lt;mark>C++17&lt;/mark> 引入的一项新特性，旨在更优雅地处理&lt;mark>多返回值&lt;/mark>问题，尤其是处理 &lt;code>std::pair&lt;/code>、&lt;code>std::tuple&lt;/code> 或结构体时，能显著&lt;mark>简化代码&lt;/mark>并提高可读性。&lt;/p>
 &lt;h1 id="1-历史演进在没有结构化绑定之前">1. 历史演进：在没有结构化绑定之前&lt;a class="anchor" href="#1-%e5%8e%86%e5%8f%b2%e6%bc%94%e8%bf%9b%e5%9c%a8%e6%b2%a1%e6%9c%89%e7%bb%93%e6%9e%84%e5%8c%96%e7%bb%91%e5%ae%9a%e4%b9%8b%e5%89%8d">#&lt;/a>&lt;/h1>
 &lt;p>在 C++17 之前，处理 &lt;code>std::tuple&lt;/code> 或 &lt;code>std::pair&lt;/code> 非常繁琐：&lt;/p>
