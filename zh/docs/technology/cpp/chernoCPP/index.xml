@@ -1,1 +1,238 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>chernoCPP on 随记</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/</link><description>Recent content in chernoCPP on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate/><atom:link href="https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/index.xml" rel="self" type="application/rss+xml"/></channel></rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>chernoCPP on 随记</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/</link><description>Recent content in chernoCPP on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Fri, 06 Mar 2026 22:42:42 +0800</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/index.xml" rel="self" type="application/rss+xml"/><item><title>85左值与右值</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/81-/85%E5%B7%A6%E5%80%BC%E4%B8%8E%E5%8F%B3%E5%80%BC/</link><pubDate>Fri, 06 Mar 2026 22:42:42 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/81-/85%E5%B7%A6%E5%80%BC%E4%B8%8E%E5%8F%B3%E5%80%BC/</guid><description>&lt;h1 id="什么是左值和右值">什么是左值和右值？&lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e5%b7%a6%e5%80%bc%e5%92%8c%e5%8f%b3%e5%80%bc">#&lt;/a>&lt;/h1>
+&lt;ul>
+&lt;li>&lt;mark>核心定义&lt;/mark>：Cherno 用最简单的方式解释了两者。
+&lt;ul>
+&lt;li>&lt;mark>左值 (lvalue)&lt;/mark>：有存储地址、有名字的变量。你可以给它赋值，它通常存在于表达式的左侧。&lt;/li>
+&lt;li>&lt;mark>右值 (rvalue)&lt;/mark>：临时值，没有名字，通常在表达式结束后就销毁了（如字面量 &lt;code>10&lt;/code> 或临时函数返回值）。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>&lt;mark>直观判定法&lt;/mark>：如果你能取这个东西的地址（使用 &lt;code>&amp;amp;&lt;/code> 运算符），它通常就是左值。&lt;/li>
+&lt;/ul>
+&lt;h1 id="左值引用-lvalue-references">左值引用 (lvalue references)&lt;a class="anchor" href="#%e5%b7%a6%e5%80%bc%e5%bc%95%e7%94%a8-lvalue-references">#&lt;/a>&lt;/h1>
+&lt;ul>
+&lt;li>&lt;mark>回顾&lt;/mark>：这就是我们常用的 &lt;code>int&amp;amp; a = b;&lt;/code>。&lt;/li>
+&lt;li>&lt;mark>规则限制&lt;/mark>：左值引用&lt;mark>不能&lt;/mark>绑定到右值上。
+&lt;ul>
+&lt;li>&lt;code>int&amp;amp; a = 10;&lt;/code> 会报错，因为 &lt;code>10&lt;/code> 是右值。&lt;/li>
+&lt;li>&lt;mark>例外情况&lt;/mark>：&lt;code>const int&amp;amp; a = 10;&lt;/code> 是合法的。编译器会产生一个临时变量来存放 &lt;code>10&lt;/code>，然后让引用绑定它。这在函数参数传递中非常常见。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h1 id="右值引用-rvalue-references--">右值引用 (rvalue references) —— &lt;code>&amp;amp;&amp;amp;&lt;/code>&lt;a class="anchor" href="#%e5%8f%b3%e5%80%bc%e5%bc%95%e7%94%a8-rvalue-references--">#&lt;/a>&lt;/h1>
+&lt;ul>
+&lt;li>&lt;mark>新语法&lt;/mark>：C++11 引入了 &lt;code>int&amp;amp;&amp;amp;&lt;/code>。&lt;/li>
+&lt;li>&lt;mark>作用&lt;/mark>：它&lt;mark>专门&lt;/mark>用来绑定右值。
+&lt;ul>
+&lt;li>&lt;code>int&amp;amp;&amp;amp; a = 10;&lt;/code> 是合法的。&lt;/li>
+&lt;li>它允许我们“拦截”那些即将销毁的临时对象。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>&lt;mark>意义何在？&lt;/mark>：这是为了&lt;mark>性能优化&lt;/mark>。既然右值是临时的，我们与其拷贝它的数据，不如直接“偷”走它的资源（这就是移动语义的基础）。&lt;/li>
+&lt;/ul>
+&lt;h1 id="实际应用函数重载">实际应用：函数重载&lt;a class="anchor" href="#%e5%ae%9e%e9%99%85%e5%ba%94%e7%94%a8%e5%87%bd%e6%95%b0%e9%87%8d%e8%bd%bd">#&lt;/a>&lt;/h1>
+&lt;ul>
+&lt;li>&lt;mark>场景演示&lt;/mark>：Cherno 展示了如何通过重载同一函数名，分别处理左值和右值：&lt;/li>
+&lt;/ul>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">PrintName&lt;/span>(&lt;span style="color:#66d9ef">const&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>string&lt;span style="color:#f92672">&amp;amp;&lt;/span> name); &lt;span style="color:#75715e">// 接收左值和 const 右值
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">PrintName&lt;/span>(std&lt;span style="color:#f92672">::&lt;/span>string&lt;span style="color:#f92672">&amp;amp;&amp;amp;&lt;/span> name); &lt;span style="color:#75715e">// 专门接收右值（临时对象）
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;ul>
+&lt;li>
+&lt;p>解释&lt;/p>
+&lt;ul>
+&lt;li>如果你传左值 (std::string s)：它能接，因为 const&amp;amp; 兼容左值。&lt;/li>
+&lt;li>如果你传普通右值 (&amp;ldquo;Cherno&amp;rdquo;)：它能接，因为 C++ 特许 const&amp;amp; 绑定右值。&lt;/li>
+&lt;li>如果你传 const 右值：它也能接（这是它最“名副其实”的时候）。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;mark>总结&lt;/mark>：当你传入一个临时字符串时，编译器会优先调用右值版本。在这个版本里，你可以安全地移动数据而不需要进行昂贵的深拷贝。&lt;/p></description></item><item><title>84跟踪内存的分配与释放</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/81-/84%E8%B7%9F%E8%B8%AA%E5%86%85%E5%AD%98%E7%9A%84%E5%88%86%E9%85%8D%E4%B8%8E%E9%87%8A%E6%94%BE/</link><pubDate>Fri, 06 Mar 2026 17:08:25 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/81-/84%E8%B7%9F%E8%B8%AA%E5%86%85%E5%AD%98%E7%9A%84%E5%88%86%E9%85%8D%E4%B8%8E%E9%87%8A%E6%94%BE/</guid><description>&lt;h1 id="核心原理重载全局-new">核心原理：重载全局 &lt;code>new&lt;/code>&lt;a class="anchor" href="#%e6%a0%b8%e5%bf%83%e5%8e%9f%e7%90%86%e9%87%8d%e8%bd%bd%e5%85%a8%e5%b1%80-new">#&lt;/a>&lt;/h1>
+&lt;ul>
+&lt;li>&lt;mark>原理&lt;/mark>：在 C++ 中，当你写 &lt;code>new Object()&lt;/code> 时，它实际上调用了一个名为 &lt;code>operator new&lt;/code> 的全局函数。&lt;/li>
+&lt;li>&lt;mark>自定义拦截&lt;/mark>：你可以重写这个函数。编译器会优先使用你的自定义版本，而不是标准库提供的版本。&lt;/li>
+&lt;li>&lt;mark>代码演示&lt;/mark>：&lt;/li>
+&lt;/ul>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">void&lt;/span>&lt;span style="color:#f92672">*&lt;/span> &lt;span style="color:#66d9ef">operator&lt;/span> &lt;span style="color:#a6e22e">new&lt;/span>(size_t size) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Allocating &amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> size &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34; bytes&lt;/span>&lt;span style="color:#ae81ff">\n&lt;/span>&lt;span style="color:#e6db74">&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> malloc(size); &lt;span style="color:#75715e">// 最终还是要调用底层的内存分配
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>}&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h1 id="对应的-delete-重载">对应的 &lt;code>delete&lt;/code> 重载&lt;a class="anchor" href="#%e5%af%b9%e5%ba%94%e7%9a%84-delete-%e9%87%8d%e8%bd%bd">#&lt;/a>&lt;/h1>
+&lt;ul>
+&lt;li>&lt;mark>对称性&lt;/mark>：重载了 &lt;code>new&lt;/code> 就必须重载 &lt;code>delete&lt;/code>，否则可能会导致内存管理逻辑不一致。&lt;/li>
+&lt;li>&lt;mark>代码实现&lt;/mark>：&lt;/li>
+&lt;/ul>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#66d9ef">operator&lt;/span> &lt;span style="color:#a6e22e">delete&lt;/span>(&lt;span style="color:#66d9ef">void&lt;/span>&lt;span style="color:#f92672">*&lt;/span> memory, size_t size) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Freeing &amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> size &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34; bytes&lt;/span>&lt;span style="color:#ae81ff">\n&lt;/span>&lt;span style="color:#e6db74">&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> free(memory);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;ul>
+&lt;li>&lt;mark>注意&lt;/mark>：Cherno 提到现代 C++ 建议使用带 &lt;code>size&lt;/code> 参数的 &lt;code>delete&lt;/code> 版本，以便更精准地追踪。&lt;/li>
+&lt;/ul>
+&lt;h1 id="实战追踪总分配量-the-tracker">实战：追踪总分配量 (The Tracker)&lt;a class="anchor" href="#%e5%ae%9e%e6%88%98%e8%bf%bd%e8%b8%aa%e6%80%bb%e5%88%86%e9%85%8d%e9%87%8f-the-tracker">#&lt;/a>&lt;/h1>
+&lt;ul>
+&lt;li>&lt;mark>引入单例/全局状态&lt;/mark>：为了统计数据，Cherno 定义了一个简单的结构体来存储 &lt;code>TotalAllocated&lt;/code> 和 &lt;code>TotalFreed&lt;/code>。&lt;/li>
+&lt;li>&lt;mark>逻辑&lt;/mark>：在 &lt;code>new&lt;/code> 里面让计数器增加，在 &lt;code>delete&lt;/code> 里面减少。&lt;/li>
+&lt;li>&lt;mark>演示&lt;/mark>：通过创建一个 &lt;code>std::string&lt;/code> 或自己的 &lt;code>Entity&lt;/code> 类，观察控制台实时打印出的分配字节数。&lt;/li>
+&lt;/ul>
+&lt;h1 id="完整代码">完整代码&lt;a class="anchor" href="#%e5%ae%8c%e6%95%b4%e4%bb%a3%e7%a0%81">#&lt;/a>&lt;/h1>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#ifdef LY_EP84
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;iostream&amp;gt;&lt;/span>&lt;span style="color:#75715e"> 
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;memory&amp;gt;&lt;/span>&lt;span style="color:#75715e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">struct&lt;/span> &lt;span style="color:#a6e22e">AllocationMetrics&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">uint32_t&lt;/span> TotalAllocated &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">uint32_t&lt;/span> TotalFreed &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">uint32_t&lt;/span> &lt;span style="color:#a6e22e">CurrentUsage&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">return&lt;/span> TotalAllocated &lt;span style="color:#f92672">-&lt;/span> TotalFreed;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>};
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">static&lt;/span> AllocationMetrics s_AllocationMetrics;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//重写operator new 的全局函数，
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//链接器会转而链接这个函数
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">void&lt;/span>&lt;span style="color:#f92672">*&lt;/span> &lt;span style="color:#66d9ef">operator&lt;/span> &lt;span style="color:#a6e22e">new&lt;/span>(size_t size)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	s_AllocationMetrics.TotalAllocated &lt;span style="color:#f92672">+=&lt;/span> size;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Allocating &amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> size &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34; bytes&lt;/span>&lt;span style="color:#ae81ff">\n&lt;/span>&lt;span style="color:#e6db74">&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">return&lt;/span> malloc(size);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//重写特定函数签名来获取特定的释放大小的信息
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#66d9ef">operator&lt;/span> &lt;span style="color:#a6e22e">delete&lt;/span>(&lt;span style="color:#66d9ef">void&lt;/span>&lt;span style="color:#f92672">*&lt;/span> memory, size_t size)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	s_AllocationMetrics.TotalFreed &lt;span style="color:#f92672">+=&lt;/span> size;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Freeing &amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> size &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34; bytes&lt;/span>&lt;span style="color:#ae81ff">\n&lt;/span>&lt;span style="color:#e6db74">&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	free(memory);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">struct&lt;/span> &lt;span style="color:#a6e22e">Object&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">int&lt;/span> x, y, z;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>};
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/*
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">内存使用情况
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">*/&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">PrintMemoryUsage&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Memory Usage: &amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> s_AllocationMetrics.CurrentUsage() &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34; bytes.&lt;/span>&lt;span style="color:#ae81ff">\n&lt;/span>&lt;span style="color:#e6db74">&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	PrintMemoryUsage();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	Object&lt;span style="color:#f92672">*&lt;/span> obj &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> Object;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//正好12字节，在 C++ 中，类/结构体本身不包含任何运行时开销。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Size of Object: &amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#66d9ef">sizeof&lt;/span>(Object) &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	PrintMemoryUsage();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>string s &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Cherno&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	PrintMemoryUsage();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;=========&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//这行代码仍会分配12字节
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	std&lt;span style="color:#f92672">::&lt;/span>unique_ptr&lt;span style="color:#f92672">&amp;lt;&lt;/span>Object&lt;span style="color:#f92672">&amp;gt;&lt;/span> obj1 &lt;span style="color:#f92672">=&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>make_unique&lt;span style="color:#f92672">&amp;lt;&lt;/span>Object&lt;span style="color:#f92672">&amp;gt;&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	PrintMemoryUsage();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;**********&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>unique_ptr&lt;span style="color:#f92672">&amp;lt;&lt;/span>Object&lt;span style="color:#f92672">&amp;gt;&lt;/span> obj &lt;span style="color:#f92672">=&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			std&lt;span style="color:#f92672">::&lt;/span>make_unique&lt;span style="color:#f92672">&amp;lt;&lt;/span>Object&lt;span style="color:#f92672">&amp;gt;&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		PrintMemoryUsage();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	PrintMemoryUsage();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cin.get();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/*
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Memory Usage: 0 bytes.
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Allocating 12 bytes
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Size of Object: 12
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Memory Usage: 12 bytes.
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Allocating 8 bytes
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Memory Usage: 20 bytes.
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">=========
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Allocating 12 bytes
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Memory Usage: 32 bytes.
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">**********
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Allocating 12 bytes
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Memory Usage: 44 bytes.
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Freeing 12 bytes
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Memory Usage: 32 bytes.
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">*/&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#endif&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="new">new&lt;a class="anchor" href="#new">#&lt;/a>&lt;/h2>
+&lt;ul>
+&lt;li>设置断点在operator new函数里面的&lt;code>return malloc(size);&lt;/code>&lt;/li>
+&lt;li>（Debug模式下）第二次进入断点，即&lt;code>std::string s = &amp;quot;Cherno&amp;quot;;&lt;/code>后进去，调用栈如下（从下往上）&lt;/li>
+&lt;/ul>
+&lt;p>&lt;img src="img/ly-20260306220626154.png" alt="" />&lt;/p></description></item><item><title>82单例模式详解</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/81-/82%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F%E8%AF%A6%E8%A7%A3/</link><pubDate>Fri, 06 Mar 2026 13:40:48 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/81-/82%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F%E8%AF%A6%E8%A7%A3/</guid><description>&lt;p>&lt;mark>单例模式 (Singleton)&lt;/mark>。单例的核心思想是：&lt;mark>在整个应用程序的生命周期中，某个类只存在一个实例。&lt;/mark>&lt;/p>
+&lt;h1 id="什么是单例-the-concept">什么是单例？ (The Concept)&lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e5%8d%95%e4%be%8b-the-concept">#&lt;/a>&lt;/h1>
+&lt;ul>
+&lt;li>&lt;mark>核心定义&lt;/mark>：单例是只有&lt;mark>单一实例&lt;/mark>的类。&lt;/li>
+&lt;li>&lt;mark>应用场景&lt;/mark>：当你&lt;mark>需要一个全局访问点来管理某些资源&lt;/mark>时（如&lt;mark>随机数生成器、渲染器、数据库连接&lt;/mark>等）非常有用。&lt;/li>
+&lt;li>&lt;mark>争议性&lt;/mark>：单例本质上是“披着类外壳的全局变量”，在某些开发者眼中这被视为一种“反模式”，但 Cherno 认为在特定场景下它非常高效。 &lt;del>把类当做命名空间来调用某些函数&lt;/del>&lt;/li>
+&lt;li>如果你只有一个实例，你那实际有的就只是一组数据，以及一些配套功能&lt;/li>
+&lt;li>替代单例：属于某个命名空间的函数、全局变量、某个与源文件关联的静态变量、特定的C++源文件&lt;/li>
+&lt;li>单例的生命周期和应用程序的一样&lt;/li>
+&lt;/ul>
+&lt;h1 id="基础实现逻辑-basic-implementation">基础实现逻辑 (Basic Implementation)&lt;a class="anchor" href="#%e5%9f%ba%e7%a1%80%e5%ae%9e%e7%8e%b0%e9%80%bb%e8%be%91-basic-implementation">#&lt;/a>&lt;/h1>
+&lt;p>单例模式主要依靠以下三个步骤实现：&lt;/p>
+&lt;ol>
+&lt;li>&lt;mark>私有化构造函数&lt;/mark>：通过 &lt;code>private&lt;/code> 构造函数防止外部通过 &lt;code>new&lt;/code> 或直接声明来创建新实例。&lt;/li>
+&lt;li>&lt;mark>禁用拷贝构造&lt;/mark>：删除拷贝构造函数（&lt;code>ClassName(const ClassName&amp;amp;) = delete;&lt;/code>），确保无法通过复制来产生第二个实例。&lt;/li>
+&lt;li>&lt;mark>静态访问点&lt;/mark>：提供一个静态方法（通常命名为 &lt;code>Get()&lt;/code>），返回那个唯一的静态实例。&lt;/li>
+&lt;/ol>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#ifdef LY_EP82
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;iostream&amp;gt;&lt;/span>&lt;span style="color:#75715e"> 
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">Singleton&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span>&lt;span style="color:#f92672">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	Singleton(&lt;span style="color:#66d9ef">const&lt;/span> Singleton&lt;span style="color:#f92672">&amp;amp;&lt;/span>) &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">delete&lt;/span>;&lt;span style="color:#75715e">//禁止拷贝
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#66d9ef">static&lt;/span> Singleton&lt;span style="color:#f92672">&amp;amp;&lt;/span> Get()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">return&lt;/span> s_Instance;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">Function&lt;/span>() {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Function&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">private&lt;/span>&lt;span style="color:#f92672">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">float&lt;/span> m_Member &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">3.4f&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	Singleton() {}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">static&lt;/span> Singleton s_Instance;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>};
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//定义 
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//1. 在全局/静态内存区分配 sizeof(Singleton) 字节的空间。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//2. 在程序启动时，自动调用 Singleton 的构造函数来初始化这块空间。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//由于你使用了作用域解析符 Singleton::，编译器认为这行代码依然属于 Singleton 类的范畴
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>Singleton Singleton&lt;span style="color:#f92672">::&lt;/span>s_Instance;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//这种写法，调用了Singleton类的复制构造函数，
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//拷贝了所有成员，并创建了一个新的实例（违背单例本意）
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//类定义中Singleton(const Singleton&amp;amp;) = delete;//禁止拷贝
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//Singleton instance = Singleton::Get();
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">auto&lt;/span>&lt;span style="color:#f92672">&amp;amp;&lt;/span> instantce &lt;span style="color:#f92672">=&lt;/span> Singleton&lt;span style="color:#f92672">::&lt;/span>Get();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	Singleton&lt;span style="color:#f92672">::&lt;/span>Get().Function();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cin.get();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#endif&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h1 id="现代-c-的最佳实践-the-best-way">现代 C++ 的最佳实践 (The Best Way)&lt;a class="anchor" href="#%e7%8e%b0%e4%bb%a3-c-%e7%9a%84%e6%9c%80%e4%bd%b3%e5%ae%9e%e8%b7%b5-the-best-way">#&lt;/a>&lt;/h1>
+&lt;p>Cherno 演示了最简洁且&lt;mark>线程安全&lt;/mark>的单例写法（C++11 及更高版本）：&lt;/p></description></item></channel></rss>
