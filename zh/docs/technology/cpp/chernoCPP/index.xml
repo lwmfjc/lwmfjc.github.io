@@ -1,4 +1,702 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>chernoCPP on 随记</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/</link><description>Recent content in chernoCPP on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Sat, 07 Mar 2026 12:53:20 +0800</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/index.xml" rel="self" type="application/rss+xml"/><item><title>89移动语义</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/81-/89%E7%A7%BB%E5%8A%A8%E8%AF%AD%E4%B9%89/</link><pubDate>Sat, 07 Mar 2026 12:53:20 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/81-/89%E7%A7%BB%E5%8A%A8%E8%AF%AD%E4%B9%89/</guid><description>&lt;h1 id="为什么要引入移动语义">为什么要引入移动语义？&lt;a class="anchor" href="#%e4%b8%ba%e4%bb%80%e4%b9%88%e8%a6%81%e5%bc%95%e5%85%a5%e7%a7%bb%e5%8a%a8%e8%af%ad%e4%b9%89">#&lt;/a>&lt;/h1>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>chernoCPP on 随记</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/</link><description>Recent content in chernoCPP on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Sun, 08 Mar 2026 00:20:54 +0800</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/index.xml" rel="self" type="application/rss+xml"/><item><title>86类型转换运算符</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/81-/86%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2%E8%BF%90%E7%AE%97%E7%AC%A6/</link><pubDate>Sun, 08 Mar 2026 00:20:54 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/81-/86%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2%E8%BF%90%E7%AE%97%E7%AC%A6/</guid><description/></item><item><title>90stdmove与移动运算符</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/81-/90stdmove%E4%B8%8E%E7%A7%BB%E5%8A%A8%E8%BF%90%E7%AE%97%E7%AC%A6/</link><pubDate>Sat, 07 Mar 2026 16:53:59 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/81-/90stdmove%E4%B8%8E%E7%A7%BB%E5%8A%A8%E8%BF%90%E7%AE%97%E7%AC%A6/</guid><description>&lt;h1 id="stdmove-到底是什么">&lt;code>std::move&lt;/code> 到底是什么？&lt;a class="anchor" href="#stdmove-%e5%88%b0%e5%ba%95%e6%98%af%e4%bb%80%e4%b9%88">#&lt;/a>&lt;/h1>
+&lt;ul>
+&lt;li>&lt;mark>核心真相&lt;/mark>：&lt;code>std::move&lt;/code> &lt;mark>并不移动任何东西&lt;/mark>。它只是一个简单的类型转换（Casting）。&lt;/li>
+&lt;li>&lt;mark>底层逻辑&lt;/mark>：它把一个左值（Lvalue）强制转换为右值引用（Rvalue Reference）。它的作用仅仅是告诉编译器：“嘿，&lt;mark>我知道这个变量原本是个持久的对象，但现在我不再需要它了，请把它当成一个临时对象，允许别人‘偷’走它的资源&lt;/mark>。”&lt;/li>
+&lt;li>&lt;mark>代码本质&lt;/mark>：&lt;code>std::move(x)&lt;/code> 基本上等同于 &lt;code>static_cast&amp;lt;T&amp;amp;&amp;amp;&amp;gt;(x)&lt;/code>。&lt;/li>
+&lt;/ul>
+&lt;h1 id="移动赋值运算符-move-assignment-operator">移动赋值运算符 (Move Assignment Operator)&lt;a class="anchor" href="#%e7%a7%bb%e5%8a%a8%e8%b5%8b%e5%80%bc%e8%bf%90%e7%ae%97%e7%ac%a6-move-assignment-operator">#&lt;/a>&lt;/h1>
+&lt;ul>
+&lt;li>&lt;mark>场景引入&lt;/mark>：第 89 集讲的是构造新对象，而这一集讲的是&lt;mark>给已有对象重新赋值&lt;/mark>。&lt;/li>
+&lt;/ul>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span>String dest &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Hello&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//如果你只写了移动构造，没写移动赋值：编译器会“退而求其
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//次”，去调用拷贝赋值运算符 operator=(const String&amp;amp; other)。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>dest &lt;span style="color:#f92672">=&lt;/span> String(&lt;span style="color:#e6db74">&amp;#34;World&amp;#34;&lt;/span>); &lt;span style="color:#75715e">// 这里会涉及移动赋值
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;ul>
+&lt;li>
+&lt;p>&lt;mark>手写实现步骤&lt;/mark>：&lt;/p>
+&lt;ol>
+&lt;li>&lt;mark>清理旧资源&lt;/mark>：在接管别人的资源前，必须先 &lt;code>delete[] m_Data&lt;/code> 释放自己当前的内存（否则会内存泄漏）。&lt;/li>
+&lt;li>&lt;mark>接管资源&lt;/mark>：像移动构造函数一样，把对方的指针和大小拷过来。&lt;/li>
+&lt;li>&lt;mark>置空对方&lt;/mark>：将源对象的指针设为 &lt;code>nullptr&lt;/code>。&lt;/li>
+&lt;li>&lt;mark>返回自身&lt;/mark>：&lt;code>return *this;&lt;/code> 以支持链式赋值。&lt;/li>
+&lt;/ol>
+&lt;/li>
+&lt;/ul>
+&lt;h1 id="为什么-stdmove-是必需的">为什么 &lt;code>std::move&lt;/code> 是必需的？&lt;a class="anchor" href="#%e4%b8%ba%e4%bb%80%e4%b9%88-stdmove-%e6%98%af%e5%bf%85%e9%9c%80%e7%9a%84">#&lt;/a>&lt;/h1>
+&lt;ul>
+&lt;li>&lt;mark>实战演示&lt;/mark>：Cherno 展示了当你想&lt;mark>把一个已命名的变量移动到另一个地方&lt;/mark>时，必须显式使用 &lt;code>std::move&lt;/code>。&lt;/li>
+&lt;li>&lt;mark>原因&lt;/mark>：即使一个变量的类型是 &lt;code>String&amp;amp;&amp;amp;&lt;/code>，只要它有名字，它就是一个&lt;mark>左值&lt;/mark>。&lt;/li>
+&lt;li>&lt;mark>安全性&lt;/mark>：这种设计是为了防止你无意中移动了以后还要用到的数据。使用 &lt;code>std::move&lt;/code> 是一种显式的“主权放弃”。&lt;/li>
+&lt;/ul>
+&lt;h1 id="常见的错误用法与陷阱">常见的错误用法与陷阱&lt;a class="anchor" href="#%e5%b8%b8%e8%a7%81%e7%9a%84%e9%94%99%e8%af%af%e7%94%a8%e6%b3%95%e4%b8%8e%e9%99%b7%e9%98%b1">#&lt;/a>&lt;/h1>
+&lt;ul>
+&lt;li>&lt;mark>不要移动 &lt;code>const&lt;/code> 对象&lt;/mark>：如果你尝试 &lt;code>std::move&lt;/code> 一个 &lt;code>const&lt;/code> 对象，它会默默地退化回&lt;mark>拷贝&lt;/mark>。因为移动语义需要修改原对象（将其置空），而 &lt;code>const&lt;/code> 禁止修改。&lt;/li>
+&lt;li>&lt;mark>自赋值检查&lt;/mark>：在移动赋值运算符中，通常建议检查 &lt;code>if (this != &amp;amp;other)&lt;/code>，防止自己移动给自己导致资源被意外提前释放。&lt;/li>
+&lt;/ul>
+&lt;h1 id="例子1移动构造函数与移动赋值函数">(例子1)移动构造函数与移动赋值函数&lt;a class="anchor" href="#%e4%be%8b%e5%ad%901%e7%a7%bb%e5%8a%a8%e6%9e%84%e9%80%a0%e5%87%bd%e6%95%b0%e4%b8%8e%e7%a7%bb%e5%8a%a8%e8%b5%8b%e5%80%bc%e5%87%bd%e6%95%b0">#&lt;/a>&lt;/h1>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#ifdef LY_EP90
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//c++11才引入了右值引用
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;iostream&amp;gt;&lt;/span>&lt;span style="color:#75715e"> 
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;utility&amp;gt;&lt;/span>&lt;span style="color:#75715e"> &lt;/span>&lt;span style="color:#75715e">// std::move 在这个头文件里
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">String&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span>&lt;span style="color:#f92672">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	String() &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">default&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//构造函数
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	String(&lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#66d9ef">char&lt;/span>&lt;span style="color:#f92672">*&lt;/span> string)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		printf(&lt;span style="color:#e6db74">&amp;#34;Created!&lt;/span>&lt;span style="color:#ae81ff">\n&lt;/span>&lt;span style="color:#e6db74">&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//不包括\0
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		m_Size &lt;span style="color:#f92672">=&lt;/span> strlen(string);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		m_Data &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> &lt;span style="color:#66d9ef">char&lt;/span>[m_Size];
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		memcpy(m_Data, string, m_Size);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;String(const char* string)&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//复制构造函数
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	String(&lt;span style="color:#66d9ef">const&lt;/span> String&lt;span style="color:#f92672">&amp;amp;&lt;/span> other)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		printf(&lt;span style="color:#e6db74">&amp;#34;Copied!&lt;/span>&lt;span style="color:#ae81ff">\n&lt;/span>&lt;span style="color:#e6db74">&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//不包括\0
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		m_Size &lt;span style="color:#f92672">=&lt;/span> other.m_Size;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		m_Data &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> &lt;span style="color:#66d9ef">char&lt;/span>[m_Size];
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//在 C++ 中，访问控制（public/private）是基于“类（Class）”层面的，而不是基于“对象（Object）”层面的。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#75715e">//简单来说：只要是在 String 类的成员函数内部，你就可以访问任何 String 对象的私有成员。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		memcpy(m_Data, other.m_Data, m_Size);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;String(const String&amp;amp; other)&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//移动构造函数
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//接收一个右值引用参数，表示可以从一个将要被销毁的临时对象中“窃取”资源，而不是复制资源。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//如果手动定义了“移动构造函数”，编译器就不再为你自动生成“默认赋值运算符”了。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	String(String&lt;span style="color:#f92672">&amp;amp;&amp;amp;&lt;/span> other) &lt;span style="color:#66d9ef">noexcept&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		printf(&lt;span style="color:#e6db74">&amp;#34;Moved!&lt;/span>&lt;span style="color:#ae81ff">\n&lt;/span>&lt;span style="color:#e6db74">&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//不包括\0
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		m_Size &lt;span style="color:#f92672">=&lt;/span> other.m_Size;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		m_Data &lt;span style="color:#f92672">=&lt;/span> other.m_Data;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		other.m_Size &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>;&lt;span style="color:#75715e">//将原对象的大小置为0，表示它不再拥有资源
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//把被接管控制权的资源指针置空，防止原对象的析构函数删除已经被移动的资源
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		other.m_Data &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">nullptr&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;String(String&amp;amp;&amp;amp; other)&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#f92672">~&lt;/span>String()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">delete&lt;/span>[] m_Data;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		printf(&lt;span style="color:#e6db74">&amp;#34;Destroyed!&lt;/span>&lt;span style="color:#ae81ff">\n&lt;/span>&lt;span style="color:#e6db74">&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;~String()&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">// 移动赋值运算符
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	String&lt;span style="color:#f92672">&amp;amp;&lt;/span> &lt;span style="color:#66d9ef">operator&lt;/span>&lt;span style="color:#f92672">=&lt;/span>(String&lt;span style="color:#f92672">&amp;amp;&amp;amp;&lt;/span> other) &lt;span style="color:#66d9ef">noexcept&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		printf(&lt;span style="color:#e6db74">&amp;#34;Move Assigned!&lt;/span>&lt;span style="color:#ae81ff">\n&lt;/span>&lt;span style="color:#e6db74">&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">// 1. 自赋值检查 (防止自己移动给自己，如 a = std::move(a))
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#66d9ef">if&lt;/span> (&lt;span style="color:#66d9ef">this&lt;/span> &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#f92672">&amp;amp;&lt;/span>other)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#75715e">// 2. 释放旧资源 (dest 已经有内存了，必须先删掉，否则内存泄漏)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			&lt;span style="color:#66d9ef">delete&lt;/span>[] m_Data;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#75715e">// 3. 窃取资源
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			m_Size &lt;span style="color:#f92672">=&lt;/span> other.m_Size;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			m_Data &lt;span style="color:#f92672">=&lt;/span> other.m_Data;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#75715e">// 4. 将原对象置空 (让它变成空壳)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			other.m_Data &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">nullptr&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			other.m_Size &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#f92672">*&lt;/span>&lt;span style="color:#66d9ef">this&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//拷贝赋值运算符
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	String&lt;span style="color:#f92672">&amp;amp;&lt;/span> &lt;span style="color:#66d9ef">operator&lt;/span>&lt;span style="color:#f92672">=&lt;/span>(&lt;span style="color:#66d9ef">const&lt;/span> String&lt;span style="color:#f92672">&amp;amp;&lt;/span> other)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		printf(&lt;span style="color:#e6db74">&amp;#34;Copy Assigned!&lt;/span>&lt;span style="color:#ae81ff">\n&lt;/span>&lt;span style="color:#e6db74">&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">if&lt;/span> (&lt;span style="color:#66d9ef">this&lt;/span> &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#f92672">&amp;amp;&lt;/span>other)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#66d9ef">delete&lt;/span>[] m_Data;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			m_Size &lt;span style="color:#f92672">=&lt;/span> other.m_Size;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			m_Data &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> &lt;span style="color:#66d9ef">char&lt;/span>[m_Size]; &lt;span style="color:#75715e">// 必须申请新内存
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			memcpy(m_Data, other.m_Data, m_Size);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#f92672">*&lt;/span>&lt;span style="color:#66d9ef">this&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">Print&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">for&lt;/span> (&lt;span style="color:#66d9ef">uint32_t&lt;/span> i &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>; i &lt;span style="color:#f92672">&amp;lt;&lt;/span> m_Size; i&lt;span style="color:#f92672">++&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			printf(&lt;span style="color:#e6db74">&amp;#34;%c&amp;#34;&lt;/span>, m_Data[i]);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		printf(&lt;span style="color:#e6db74">&amp;#34;&lt;/span>&lt;span style="color:#ae81ff">\n&lt;/span>&lt;span style="color:#e6db74">&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">private&lt;/span>&lt;span style="color:#f92672">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">char&lt;/span>&lt;span style="color:#f92672">*&lt;/span> m_Data;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//这是一个通过 typedef 或 using 定义的类型，表示
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//无符号整型32位数。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">// int 在某些古老的 16 位系统上可能是 2 字节，在现代系统上通常是 4 字节，uint32_t 强制规定在任何符合标准的编译器上，它永远是 32 位（4 字节）
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#66d9ef">uint32_t&lt;/span> m_Size;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>};
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">Entity&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span>&lt;span style="color:#f92672">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	Entity(&lt;span style="color:#66d9ef">const&lt;/span> String&lt;span style="color:#f92672">&amp;amp;&lt;/span> name)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#f92672">:&lt;/span>m_Name(name)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Entity(const String&amp;amp; name)&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//Entity(String&amp;amp;&amp;amp; name)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//	//一旦右值引用有了名字，它在后续表达式中就变成了左值。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//	//编译器会想：“这个 name 虽然是引用进来的，但它现在是有名有姓的变量，为了安全起见，我必须调用 复制构造函数 来保护它。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//	:m_Name(name)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//{
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//	std::cout &amp;lt;&amp;lt; &amp;#34;Entity( String&amp;amp;&amp;amp; name)&amp;#34; &amp;lt;&amp;lt; std::endl;
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//}
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//接收一个临时对象作为参数，使用移动语义来构造 Entity 对象，避免不必要的复制，提高性能。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	Entity(String&lt;span style="color:#f92672">&amp;amp;&amp;amp;&lt;/span> name)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//强转为右值引用，告诉编译器：我知道 name 是一个左值，但我想把它当作一个将要被销毁的临时对象来处理，所以请调用 移动构造函数 来构造 m_Name。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#75715e">//:m_Name((String&amp;amp;&amp;amp;)name) //这种写法也行
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#f92672">:&lt;/span>m_Name(std&lt;span style="color:#f92672">::&lt;/span>move(name)) &lt;span style="color:#75715e">// 将左值 name 强行转回右值
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Entity( String&amp;amp;&amp;amp; name)&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">PrintName&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		m_Name.Print();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">private&lt;/span>&lt;span style="color:#f92672">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	String m_Name;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>};
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//这里将&amp;#34;Cherno&amp;#34;隐式调用构造函数构造了一个String
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//之后move给了Entity（Entity内部的m_Name接管了这个临时String指针指向的堆内存）
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	Entity entity(&lt;span style="color:#e6db74">&amp;#34;Cherno&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	entity.PrintName();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;===0==&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	String string &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Hello&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;===1==&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	String dest &lt;span style="color:#f92672">=&lt;/span> string;&lt;span style="color:#75715e">//这是复制
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;===2==&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	String dest1 &lt;span style="color:#f92672">=&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>move(string);&lt;span style="color:#75715e">//调用移动构造函数
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	dest1.Print();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;===3==&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//如果没写移动赋值,编译器会“退而求其次”，去调用拷贝赋值运算符 operator=(const String &amp;amp; other)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	dest &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#e6db74">&amp;#34;abc&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;===4==&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	 
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	dest &lt;span style="color:#f92672">=&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>move(string);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	dest.Print();&lt;span style="color:#75715e">//string已经被移动了，变成了空壳，所以dest打印出来是空的
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cin.get();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/*
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Created!
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">String(const char* string)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Moved!
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">String(String&amp;amp;&amp;amp; other)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Entity( String&amp;amp;&amp;amp; name)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Destroyed!
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">~String()
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Cherno
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">===0==
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Created!
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">String(const char* string)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">===1==
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Copied!
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">String(const String&amp;amp; other)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">===2==
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Moved!
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">String(String&amp;amp;&amp;amp; other)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Hello
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">===3==
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Created!
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">String(const char* string)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Move Assigned!
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Destroyed!
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">~String()
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">===4==
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Move Assigned!
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">*/&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#endif&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h1 id="例子2详细解释">(例子2)详细解释&lt;a class="anchor" href="#%e4%be%8b%e5%ad%902%e8%af%a6%e7%bb%86%e8%a7%a3%e9%87%8a">#&lt;/a>&lt;/h1>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#ifdef LY_EP90
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//c++11才引入了右值引用
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;iostream&amp;gt;&lt;/span>&lt;span style="color:#75715e"> 
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;utility&amp;gt;&lt;/span>&lt;span style="color:#75715e"> &lt;/span>&lt;span style="color:#75715e">// std::move 在这个头文件里
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">String&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span>&lt;span style="color:#f92672">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	String() &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">default&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//构造函数
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	String(&lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#66d9ef">char&lt;/span>&lt;span style="color:#f92672">*&lt;/span> string)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		printf(&lt;span style="color:#e6db74">&amp;#34;Created!&lt;/span>&lt;span style="color:#ae81ff">\n&lt;/span>&lt;span style="color:#e6db74">&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//不包括\0
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		m_Size &lt;span style="color:#f92672">=&lt;/span> strlen(string);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		m_Data &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> &lt;span style="color:#66d9ef">char&lt;/span>[m_Size];
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		memcpy(m_Data, string, m_Size);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;String(const char* string)&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//复制构造函数
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	String(&lt;span style="color:#66d9ef">const&lt;/span> String&lt;span style="color:#f92672">&amp;amp;&lt;/span> other)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		printf(&lt;span style="color:#e6db74">&amp;#34;Copied!&lt;/span>&lt;span style="color:#ae81ff">\n&lt;/span>&lt;span style="color:#e6db74">&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//不包括\0
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		m_Size &lt;span style="color:#f92672">=&lt;/span> other.m_Size;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		m_Data &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> &lt;span style="color:#66d9ef">char&lt;/span>[m_Size];
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//在 C++ 中，访问控制（public/private）是基于“类（Class）”层面的，而不是基于“对象（Object）”层面的。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#75715e">//简单来说：只要是在 String 类的成员函数内部，你就可以访问任何 String 对象的私有成员。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		memcpy(m_Data, other.m_Data, m_Size);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;String(const String&amp;amp; other)&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//移动构造函数
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//接收一个右值引用参数，表示可以从一个将要被销毁的临时对象中“窃取”资源，而不是复制资源。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//如果手动定义了“移动构造函数”，编译器就不再为你自动生成“默认赋值运算符”了。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	String(String&lt;span style="color:#f92672">&amp;amp;&amp;amp;&lt;/span> other) &lt;span style="color:#66d9ef">noexcept&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		printf(&lt;span style="color:#e6db74">&amp;#34;Moved!&lt;/span>&lt;span style="color:#ae81ff">\n&lt;/span>&lt;span style="color:#e6db74">&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//不包括\0
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		m_Size &lt;span style="color:#f92672">=&lt;/span> other.m_Size;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		m_Data &lt;span style="color:#f92672">=&lt;/span> other.m_Data;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		other.m_Size &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>;&lt;span style="color:#75715e">//将原对象的大小置为0，表示它不再拥有资源
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//把被接管控制权的资源指针置空，防止原对象的析构函数删除已经被移动的资源
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		other.m_Data &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">nullptr&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;String(String&amp;amp;&amp;amp; other)&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#f92672">~&lt;/span>String()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">delete&lt;/span>[] m_Data;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		printf(&lt;span style="color:#e6db74">&amp;#34;Destroyed!&lt;/span>&lt;span style="color:#ae81ff">\n&lt;/span>&lt;span style="color:#e6db74">&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;~String()&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">// 移动赋值运算符：将另一个对象，移入当前这个对象自身
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//语义契约（Semantic Contract）。	C++ 的设计哲学是：让自定义类型的行为表现得像内置类型（如 int）一样。标准做法始终是返回非 const 的 *this 引用
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	String&lt;span style="color:#f92672">&amp;amp;&lt;/span> &lt;span style="color:#66d9ef">operator&lt;/span>&lt;span style="color:#f92672">=&lt;/span>(String&lt;span style="color:#f92672">&amp;amp;&amp;amp;&lt;/span> other) &lt;span style="color:#66d9ef">noexcept&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		printf(&lt;span style="color:#e6db74">&amp;#34;Move Assigned!&lt;/span>&lt;span style="color:#ae81ff">\n&lt;/span>&lt;span style="color:#e6db74">&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">// 1. 自赋值检查 (防止自己移动给自己，如 a = std::move(a)，
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#75715e">// 因为如下是会释放旧资源的，所以移动给自己就什么都没有了)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#66d9ef">if&lt;/span> (&lt;span style="color:#66d9ef">this&lt;/span> &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#f92672">&amp;amp;&lt;/span>other)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#75715e">// 2. 释放旧资源 (dest[当前对象] 已经有内存了，必须先删掉，否则内存泄漏)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			&lt;span style="color:#66d9ef">delete&lt;/span>[] m_Data;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#75715e">// 3. 窃取资源
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			m_Size &lt;span style="color:#f92672">=&lt;/span> other.m_Size;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			m_Data &lt;span style="color:#f92672">=&lt;/span> other.m_Data;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#75715e">// 4. 将原对象置空 (让它变成空壳)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			other.m_Data &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">nullptr&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			other.m_Size &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//找到 this 指向的对象，返回它的引用（别名），
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#75715e">// 而不是创建一个新的副本
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#f92672">*&lt;/span>&lt;span style="color:#66d9ef">this&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//拷贝赋值运算符
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	String&lt;span style="color:#f92672">&amp;amp;&lt;/span> &lt;span style="color:#66d9ef">operator&lt;/span>&lt;span style="color:#f92672">=&lt;/span>(&lt;span style="color:#66d9ef">const&lt;/span> String&lt;span style="color:#f92672">&amp;amp;&lt;/span> other)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		printf(&lt;span style="color:#e6db74">&amp;#34;Copy Assigned!&lt;/span>&lt;span style="color:#ae81ff">\n&lt;/span>&lt;span style="color:#e6db74">&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">if&lt;/span> (&lt;span style="color:#66d9ef">this&lt;/span> &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#f92672">&amp;amp;&lt;/span>other)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#66d9ef">delete&lt;/span>[] m_Data;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			m_Size &lt;span style="color:#f92672">=&lt;/span> other.m_Size;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			m_Data &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> &lt;span style="color:#66d9ef">char&lt;/span>[m_Size]; &lt;span style="color:#75715e">// 必须申请新内存
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			memcpy(m_Data, other.m_Data, m_Size);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#f92672">*&lt;/span>&lt;span style="color:#66d9ef">this&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">Print&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">for&lt;/span> (&lt;span style="color:#66d9ef">uint32_t&lt;/span> i &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>; i &lt;span style="color:#f92672">&amp;lt;&lt;/span> m_Size; i&lt;span style="color:#f92672">++&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			printf(&lt;span style="color:#e6db74">&amp;#34;%c&amp;#34;&lt;/span>, m_Data[i]);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		printf(&lt;span style="color:#e6db74">&amp;#34;&lt;/span>&lt;span style="color:#ae81ff">\n&lt;/span>&lt;span style="color:#e6db74">&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">private&lt;/span>&lt;span style="color:#f92672">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">char&lt;/span>&lt;span style="color:#f92672">*&lt;/span> m_Data;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//这是一个通过 typedef 或 using 定义的类型，表示
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//无符号整型32位数。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">// int 在某些古老的 16 位系统上可能是 2 字节，在现代系统上通常是 4 字节，uint32_t 强制规定在任何符合标准的编译器上，它永远是 32 位（4 字节）
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#66d9ef">uint32_t&lt;/span> m_Size;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>};
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">Entity&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span>&lt;span style="color:#f92672">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	Entity(&lt;span style="color:#66d9ef">const&lt;/span> String&lt;span style="color:#f92672">&amp;amp;&lt;/span> name)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#f92672">:&lt;/span>m_Name(name)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Entity(const String&amp;amp; name)&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//Entity(String&amp;amp;&amp;amp; name)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//	//一旦右值引用有了名字，它在后续表达式中就变成了左值。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//	//编译器会想：“这个 name 虽然是引用进来的，但它现在是有名有姓的变量，为了安全起见，我必须调用 复制构造函数 来保护它。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//	:m_Name(name)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//{
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//	std::cout &amp;lt;&amp;lt; &amp;#34;Entity( String&amp;amp;&amp;amp; name)&amp;#34; &amp;lt;&amp;lt; std::endl;
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//}
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//接收一个临时对象作为参数，使用移动语义来构造 Entity 对象，避免不必要的复制，提高性能。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	Entity(String&lt;span style="color:#f92672">&amp;amp;&amp;amp;&lt;/span> name)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//强转为右值引用，告诉编译器：我知道 name 是一个左值，但我想把它当作一个将要被销毁的临时对象来处理，所以请调用 移动构造函数 来构造 m_Name。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#75715e">//:m_Name((String&amp;amp;&amp;amp;)name) //这种写法也行
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#f92672">:&lt;/span>m_Name(std&lt;span style="color:#f92672">::&lt;/span>move(name)) &lt;span style="color:#75715e">// 将左值 name 强行转回右值
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Entity( String&amp;amp;&amp;amp; name)&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">PrintName&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		m_Name.Print();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">private&lt;/span>&lt;span style="color:#f92672">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	String m_Name;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>};
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//临时对象经历了:Created! -&amp;gt; Moved! -&amp;gt; Destroyed!
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	Entity entity(&lt;span style="color:#e6db74">&amp;#34;Cherno&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//打印字符串
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	entity.PrintName();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;=====0=====&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//隐式调用构造函数String(const char* string)，Created! 
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	String string &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Hello&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;=====1=====&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//隐式调用(复制)构造函数， 本质上就是“通过复制一个已有的对象来创建一个新对象”，这就是所谓的“复制构造”。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	String dest &lt;span style="color:#f92672">=&lt;/span> string;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;=====2.1=====&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//使用接受字符串右值引用的构造函数，来构造一个String
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	String dest1 &lt;span style="color:#f92672">=&lt;/span> (String&lt;span style="color:#f92672">&amp;amp;&amp;amp;&lt;/span>)string;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;=====2.2=====&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	String dest2((String&lt;span style="color:#f92672">&amp;amp;&amp;amp;&lt;/span>)string);&lt;span style="color:#75715e">//这个string内部的指针已经被dest1接管了，所以dest2构造的时候，string已经是空壳了，所以dest2也是空的
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;=====2.3=====&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//这样写无需知道string是什么类型的
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//remove_reference_t&amp;lt;_Ty&amp;gt;&amp;amp;&amp;amp; move(_Ty&amp;amp;&amp;amp; _Arg) ，查看源码可知返回的是右值引用
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//这里是移动构造，而非移动赋值，因为dest3是第一次定义并使用
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	String dest3 &lt;span style="color:#f92672">=&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>move(string);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;=====3=====&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//当将一个变量(数值、表达式)赋给一个已有变量时，使用的是赋值
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//就像这里是移动赋值
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	dest &lt;span style="color:#f92672">=&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>move(string);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cin.get();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/*
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Created!
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">String(const char* string)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Moved!
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">String(String&amp;amp;&amp;amp; other)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Entity( String&amp;amp;&amp;amp; name)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Destroyed!
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">~String()
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Cherno
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">=====0=====
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Created!
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">String(const char* string)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">=====1=====
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Copied!
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">String(const String&amp;amp; other)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">=====2.1=====
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Moved!
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">String(String&amp;amp;&amp;amp; other)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">=====2.2=====
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Moved!
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">String(String&amp;amp;&amp;amp; other)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">=====2.3=====
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Moved!
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">String(String&amp;amp;&amp;amp; other)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">=====3=====
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Move Assigned!
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">*/&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#endif&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h1 id="例子3视频举的">(例子3)视频举的&lt;a class="anchor" href="#%e4%be%8b%e5%ad%903%e8%a7%86%e9%a2%91%e4%b8%be%e7%9a%84">#&lt;/a>&lt;/h1>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#ifdef LY_EP90
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//c++11才引入了右值引用
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;iostream&amp;gt;&lt;/span>&lt;span style="color:#75715e"> 
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;utility&amp;gt;&lt;/span>&lt;span style="color:#75715e"> &lt;/span>&lt;span style="color:#75715e">// std::move 在这个头文件里
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">String&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span>&lt;span style="color:#f92672">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	String() &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">default&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//构造函数
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	String(&lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#66d9ef">char&lt;/span>&lt;span style="color:#f92672">*&lt;/span> string)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		printf(&lt;span style="color:#e6db74">&amp;#34;Created!&lt;/span>&lt;span style="color:#ae81ff">\n&lt;/span>&lt;span style="color:#e6db74">&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//不包括\0
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		m_Size &lt;span style="color:#f92672">=&lt;/span> strlen(string);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		m_Data &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> &lt;span style="color:#66d9ef">char&lt;/span>[m_Size];
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		memcpy(m_Data, string, m_Size);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;String(const char* string)&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//复制构造函数
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	String(&lt;span style="color:#66d9ef">const&lt;/span> String&lt;span style="color:#f92672">&amp;amp;&lt;/span> other)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		printf(&lt;span style="color:#e6db74">&amp;#34;Copied!&lt;/span>&lt;span style="color:#ae81ff">\n&lt;/span>&lt;span style="color:#e6db74">&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//不包括\0
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		m_Size &lt;span style="color:#f92672">=&lt;/span> other.m_Size;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		m_Data &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> &lt;span style="color:#66d9ef">char&lt;/span>[m_Size];
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//在 C++ 中，访问控制（public/private）是基于“类（Class）”层面的，而不是基于“对象（Object）”层面的。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#75715e">//简单来说：只要是在 String 类的成员函数内部，你就可以访问任何 String 对象的私有成员。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		memcpy(m_Data, other.m_Data, m_Size);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;String(const String&amp;amp; other)&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//移动构造函数
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//接收一个右值引用参数，表示可以从一个将要被销毁的临时对象中“窃取”资源，而不是复制资源。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//如果手动定义了“移动构造函数”，编译器就不再为你自动生成“默认赋值运算符”了。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	String(String&lt;span style="color:#f92672">&amp;amp;&amp;amp;&lt;/span> other) &lt;span style="color:#66d9ef">noexcept&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		printf(&lt;span style="color:#e6db74">&amp;#34;Moved!&lt;/span>&lt;span style="color:#ae81ff">\n&lt;/span>&lt;span style="color:#e6db74">&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//不包括\0
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		m_Size &lt;span style="color:#f92672">=&lt;/span> other.m_Size;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		m_Data &lt;span style="color:#f92672">=&lt;/span> other.m_Data;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		other.m_Size &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>;&lt;span style="color:#75715e">//将原对象的大小置为0，表示它不再拥有资源
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//把被接管控制权的资源指针置空，防止原对象的析构函数删除已经被移动的资源
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		other.m_Data &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">nullptr&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;String(String&amp;amp;&amp;amp; other)&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#f92672">~&lt;/span>String()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">delete&lt;/span>[] m_Data;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		printf(&lt;span style="color:#e6db74">&amp;#34;Destroyed!&lt;/span>&lt;span style="color:#ae81ff">\n&lt;/span>&lt;span style="color:#e6db74">&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;~String()&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">// 移动赋值运算符：将另一个对象，移入当前这个对象自身
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//语义契约（Semantic Contract）。	C++ 的设计哲学是：让自定义类型的行为表现得像内置类型（如 int）一样。标准做法始终是返回非 const 的 *this 引用
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	String&lt;span style="color:#f92672">&amp;amp;&lt;/span> &lt;span style="color:#66d9ef">operator&lt;/span>&lt;span style="color:#f92672">=&lt;/span>(String&lt;span style="color:#f92672">&amp;amp;&amp;amp;&lt;/span> other) &lt;span style="color:#66d9ef">noexcept&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		printf(&lt;span style="color:#e6db74">&amp;#34;Move Assigned!&lt;/span>&lt;span style="color:#ae81ff">\n&lt;/span>&lt;span style="color:#e6db74">&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">// 1. 自赋值检查 (防止自己移动给自己，如 a = std::move(a)，
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#75715e">// 因为如下是会释放旧资源的，所以移动给自己就什么都没有了)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#66d9ef">if&lt;/span> (&lt;span style="color:#66d9ef">this&lt;/span> &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#f92672">&amp;amp;&lt;/span>other)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#75715e">// 2. 释放旧资源 (dest[当前对象] 已经有内存了，必须先删掉，否则内存泄漏)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			&lt;span style="color:#66d9ef">delete&lt;/span>[] m_Data;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#75715e">// 3. 窃取资源
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			m_Size &lt;span style="color:#f92672">=&lt;/span> other.m_Size;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			m_Data &lt;span style="color:#f92672">=&lt;/span> other.m_Data;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#75715e">// 4. 将原对象置空 (让它变成空壳)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			other.m_Data &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">nullptr&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			other.m_Size &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//找到 this 指向的对象，返回它的引用（别名），
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#75715e">// 而不是创建一个新的副本
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#f92672">*&lt;/span>&lt;span style="color:#66d9ef">this&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//拷贝赋值运算符
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	String&lt;span style="color:#f92672">&amp;amp;&lt;/span> &lt;span style="color:#66d9ef">operator&lt;/span>&lt;span style="color:#f92672">=&lt;/span>(&lt;span style="color:#66d9ef">const&lt;/span> String&lt;span style="color:#f92672">&amp;amp;&lt;/span> other)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		printf(&lt;span style="color:#e6db74">&amp;#34;Copy Assigned!&lt;/span>&lt;span style="color:#ae81ff">\n&lt;/span>&lt;span style="color:#e6db74">&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">if&lt;/span> (&lt;span style="color:#66d9ef">this&lt;/span> &lt;span style="color:#f92672">!=&lt;/span> &lt;span style="color:#f92672">&amp;amp;&lt;/span>other)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#66d9ef">delete&lt;/span>[] m_Data;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			m_Size &lt;span style="color:#f92672">=&lt;/span> other.m_Size;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			m_Data &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> &lt;span style="color:#66d9ef">char&lt;/span>[m_Size]; &lt;span style="color:#75715e">// 必须申请新内存
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			memcpy(m_Data, other.m_Data, m_Size);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#f92672">*&lt;/span>&lt;span style="color:#66d9ef">this&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">Print&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">for&lt;/span> (&lt;span style="color:#66d9ef">uint32_t&lt;/span> i &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>; i &lt;span style="color:#f92672">&amp;lt;&lt;/span> m_Size; i&lt;span style="color:#f92672">++&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			printf(&lt;span style="color:#e6db74">&amp;#34;%c&amp;#34;&lt;/span>, m_Data[i]);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		printf(&lt;span style="color:#e6db74">&amp;#34;&lt;/span>&lt;span style="color:#ae81ff">\n&lt;/span>&lt;span style="color:#e6db74">&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">private&lt;/span>&lt;span style="color:#f92672">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">char&lt;/span>&lt;span style="color:#f92672">*&lt;/span> m_Data;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//这是一个通过 typedef 或 using 定义的类型，表示
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//无符号整型32位数。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">// int 在某些古老的 16 位系统上可能是 2 字节，在现代系统上通常是 4 字节，uint32_t 强制规定在任何符合标准的编译器上，它永远是 32 位（4 字节）
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#66d9ef">uint32_t&lt;/span> m_Size;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>};
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">Entity&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span>&lt;span style="color:#f92672">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	Entity(&lt;span style="color:#66d9ef">const&lt;/span> String&lt;span style="color:#f92672">&amp;amp;&lt;/span> name)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#f92672">:&lt;/span>m_Name(name)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Entity(const String&amp;amp; name)&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//Entity(String&amp;amp;&amp;amp; name)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//	//一旦右值引用有了名字，它在后续表达式中就变成了左值。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//	//编译器会想：“这个 name 虽然是引用进来的，但它现在是有名有姓的变量，为了安全起见，我必须调用 复制构造函数 来保护它。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//	:m_Name(name)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//{
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//	std::cout &amp;lt;&amp;lt; &amp;#34;Entity( String&amp;amp;&amp;amp; name)&amp;#34; &amp;lt;&amp;lt; std::endl;
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//}
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//接收一个临时对象作为参数，使用移动语义来构造 Entity 对象，避免不必要的复制，提高性能。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	Entity(String&lt;span style="color:#f92672">&amp;amp;&amp;amp;&lt;/span> name)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//强转为右值引用，告诉编译器：我知道 name 是一个左值，但我想把它当作一个将要被销毁的临时对象来处理，所以请调用 移动构造函数 来构造 m_Name。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#75715e">//:m_Name((String&amp;amp;&amp;amp;)name) //这种写法也行
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#f92672">:&lt;/span>m_Name(std&lt;span style="color:#f92672">::&lt;/span>move(name)) &lt;span style="color:#75715e">// 将左值 name 强行转回右值
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Entity( String&amp;amp;&amp;amp; name)&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">PrintName&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		m_Name.Print();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">private&lt;/span>&lt;span style="color:#f92672">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	String m_Name;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>};
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{ 
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;=====0=====&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//使用String(const char* string)构造String对象，Created!
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		String apple &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Apple&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//使用默认构造函数构造String对象
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		String dest;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;=====1=====&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Apple: &amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		apple.Print();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Dest: &amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		dest.Print();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;=====1=====&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//使用移动赋值运算符将apple的资源移入dest，Move Assigned!
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#75715e">//相当于dest.operator=(std::move(apple));
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		dest &lt;span style="color:#f92672">=&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>move(apple);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;=====2=====&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Apple: &amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		apple.Print();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Dest: &amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		dest.Print();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;=====2=====&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//综上，没有任何复制就移动了整个字符数组的所有权，交换了两个
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#75715e">//变量
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cin.get();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/* 
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">=====0=====
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Created!
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">String(const char* string)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">=====1=====
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Apple: Apple
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Dest:
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">=====1=====
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Move Assigned!
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">=====2=====
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Apple:
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Dest: Apple
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">=====2=====
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Destroyed!
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">~String()
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Destroyed!
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">~String()
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">*/&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#endif&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h1 id="结尾--总结拷贝-vs-移动">结尾 | 总结：拷贝 vs 移动&lt;a class="anchor" href="#%e7%bb%93%e5%b0%be--%e6%80%bb%e7%bb%93%e6%8b%b7%e8%b4%9d-vs-%e7%a7%bb%e5%8a%a8">#&lt;/a>&lt;/h1>
+&lt;ul>
+&lt;li>&lt;mark>拷贝 (Copy)&lt;/mark>：两份独立的资源，安全但慢。&lt;/li>
+&lt;li>&lt;mark>移动 (Move)&lt;/mark>：一份资源的所有权转移，极快。&lt;/li>
+&lt;li>&lt;mark>金句&lt;/mark>：如果你希望你的 C++ 程序拥有极致性能，学会何时及如何使用 &lt;code>std::move&lt;/code> 是必修课。&lt;/li>
+&lt;li>当包含移动构造函数时，应该也包含移动赋值函数&lt;/li>
+&lt;/ul></description></item><item><title>89移动语义</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/81-/89%E7%A7%BB%E5%8A%A8%E8%AF%AD%E4%B9%89/</link><pubDate>Sat, 07 Mar 2026 12:53:20 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/81-/89%E7%A7%BB%E5%8A%A8%E8%AF%AD%E4%B9%89/</guid><description>&lt;h1 id="为什么要引入移动语义">为什么要引入移动语义？&lt;a class="anchor" href="#%e4%b8%ba%e4%bb%80%e4%b9%88%e8%a6%81%e5%bc%95%e5%85%a5%e7%a7%bb%e5%8a%a8%e8%af%ad%e4%b9%89">#&lt;/a>&lt;/h1>
 &lt;ul>
 &lt;li>
 &lt;p>&lt;mark>核心痛点&lt;/mark>：在 C++11 之前，将对象从一处转移到另一处通常只能通过“拷贝”。&lt;/p>
@@ -6,11 +704,11 @@
 &lt;li>向一个函数传递一个对象&lt;/li>
 &lt;li>从函数返回一个对象
 &lt;ul>
-&lt;li>如果有返回值优化RVO (Return Value Optimization)。编译器直接在调用者（Caller）的栈帧中构造该对象，而不是在函数内部构造再拷贝出来。结果：既没有拷贝构造，也没有移动构造，性能损耗为零。&lt;/li>
+&lt;li>如果有返回值优化&lt;mark>RVO (Return Value Optimization)&lt;/mark>。&lt;mark>编译器直接在调用者（Caller）的栈帧中构造该对象&lt;/mark>，而不是在函数内部构造再拷贝出来。结果：既没有拷贝构造，也没有移动构造，性能损耗为零。&lt;/li>
 &lt;li>当编译器因为逻辑复杂（例如根据条件返回不同的局部变量）而无法进行 RVO 时，移动语义就成了“二号救兵”。
 &lt;ul>
-&lt;li>旧时代 (C++11 之前)：如果 RVO 失效，必须调用拷贝构造函数，这涉及昂贵的深拷贝。&lt;/li>
-&lt;li>现代 C++ (C++11 之后)：编译器会尝试调用移动构造函数。1. 因为返回的对象是一个即将销毁的右值，它可以被“掠夺”。2. 你不需要手动写 return std::move(obj);，编译器会&lt;mark>自动处理局部变量的返回&lt;/mark>。&lt;/li>
+&lt;li>旧时代 (C++11 之前)：&lt;mark>如果 RVO 失效，必须调用拷贝构造函数&lt;/mark>，这涉及昂贵的深拷贝。&lt;/li>
+&lt;li>现代 C++ (C++11 之后)：编译器会&lt;mark>尝试调用移动构造函数&lt;/mark>。1. 因为返回的对象是一个即将销毁的右值，它可以被“掠夺”。2. 你不需要手动写 return std::move(obj);，编译器会&lt;mark>自动处理局部变量的返回&lt;/mark>。&lt;/li>
 &lt;/ul>
 &lt;/li>
 &lt;/ul>
@@ -34,7 +732,108 @@
 &lt;li>&lt;mark>实验代码&lt;/mark>：创建一个 &lt;code>Entity&lt;/code> 类，它拥有一个 &lt;code>String&lt;/code> 成员。当通过构造函数传入一个字符串字面量时，会发现控制台打印了 &lt;mark>“Created”&lt;/mark> 然后是 &lt;mark>“Copied”&lt;/mark>。&lt;/li>
 &lt;li>&lt;mark>问题分析&lt;/mark>：即便传入的是一个临时字符串（右值），&lt;code>Entity&lt;/code> 仍然会调用拷贝构造函数进行深拷贝。明明临时对象马上就要销毁了，我们却还要复制它，这很不科学。&lt;/li>
 &lt;/ul>
-&lt;h1 id="编写移动构造函数-move-constructor">编写移动构造函数 (Move Constructor)&lt;a class="anchor" href="#%e7%bc%96%e5%86%99%e7%a7%bb%e5%8a%a8%e6%9e%84%e9%80%a0%e5%87%bd%e6%95%b0-move-constructor">#&lt;/a>&lt;/h1>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#ifdef LY_EP89
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//c++11才引入了右值引用
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;iostream&amp;gt;&lt;/span>&lt;span style="color:#75715e"> 
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">String&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span>&lt;span style="color:#f92672">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	String() &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">default&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//构造函数
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	String(&lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#66d9ef">char&lt;/span>&lt;span style="color:#f92672">*&lt;/span> string)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		printf(&lt;span style="color:#e6db74">&amp;#34;Created!&lt;/span>&lt;span style="color:#ae81ff">\n&lt;/span>&lt;span style="color:#e6db74">&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//不包括\0
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		m_Size &lt;span style="color:#f92672">=&lt;/span> strlen(string);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		m_Data &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> &lt;span style="color:#66d9ef">char&lt;/span>[m_Size];
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		memcpy(m_Data, string, m_Size);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;String(const char* string)&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//复制构造函数
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	String(&lt;span style="color:#66d9ef">const&lt;/span> String&lt;span style="color:#f92672">&amp;amp;&lt;/span> other)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		printf(&lt;span style="color:#e6db74">&amp;#34;Copied!&lt;/span>&lt;span style="color:#ae81ff">\n&lt;/span>&lt;span style="color:#e6db74">&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//不包括\0
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		m_Size &lt;span style="color:#f92672">=&lt;/span> other.m_Size;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		m_Data &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> &lt;span style="color:#66d9ef">char&lt;/span>[m_Size];
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//在 C++ 中，访问控制（public/private）是基于“类（Class）”层面的，而不是基于“对象（Object）”层面的。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#75715e">//简单来说：只要是在 String 类的成员函数内部，你就可以访问任何 String 对象的私有成员。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		memcpy(m_Data, other.m_Data, m_Size);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;String(const String&amp;amp; other)&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	 
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#f92672">~&lt;/span>String()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">delete&lt;/span>[] m_Data;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		printf(&lt;span style="color:#e6db74">&amp;#34;Destroyed!&lt;/span>&lt;span style="color:#ae81ff">\n&lt;/span>&lt;span style="color:#e6db74">&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;~String()&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">Print&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">for&lt;/span> (&lt;span style="color:#66d9ef">uint32_t&lt;/span> i &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>; i &lt;span style="color:#f92672">&amp;lt;&lt;/span> m_Size; i&lt;span style="color:#f92672">++&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			printf(&lt;span style="color:#e6db74">&amp;#34;%c&amp;#34;&lt;/span>, m_Data[i]);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		printf(&lt;span style="color:#e6db74">&amp;#34;&lt;/span>&lt;span style="color:#ae81ff">\n&lt;/span>&lt;span style="color:#e6db74">&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">private&lt;/span>&lt;span style="color:#f92672">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">char&lt;/span>&lt;span style="color:#f92672">*&lt;/span> m_Data;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//这是一个通过 typedef 或 using 定义的类型，表示
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//无符号整型32位数。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">// int 在某些古老的 16 位系统上可能是 2 字节，在现代系统上通常是 4 字节，uint32_t 强制规定在任何符合标准的编译器上，它永远是 32 位（4 字节）
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#66d9ef">uint32_t&lt;/span> m_Size;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>};
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">Entity&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span>&lt;span style="color:#f92672">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	Entity(&lt;span style="color:#66d9ef">const&lt;/span> String&lt;span style="color:#f92672">&amp;amp;&lt;/span> name)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#f92672">:&lt;/span>m_Name(name)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Entity(const String&amp;amp; name)&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	} 
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">PrintName&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		m_Name.Print();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">private&lt;/span>&lt;span style="color:#f92672">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	String m_Name;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>};
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//隐式构造函数构造String对象，调用String(const char* string)构造函数
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//Entity entity(&amp;#34;Cherno&amp;#34;);
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//临时对象String(&amp;#34;Cherno&amp;#34;)的生命周期直到支持它的那个“完整表达式”计算完成为止，即该行代码分号结束时
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//!!现在main函数创建这个(临时)对象后，传(复制)给Entity构造函数的当参数使用，又马上销毁了这个临时对象(只留下复制的)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	Entity entity(String(&lt;span style="color:#e6db74">&amp;#34;Cherno&amp;#34;&lt;/span>));
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	entity.PrintName();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cin.get();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/*
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Created!
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">String(const char* string)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Copied!
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">String(const String&amp;amp; other)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Entity(const String&amp;amp; name)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Destroyed!
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">~String()
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Cherno
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">*/&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#endif&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h1 id="编写移动构造函数-move-constructor">编写移动构造函数 (Move Constructor)&lt;a class="anchor" href="#%e7%bc%96%e5%86%99%e7%a7%bb%e5%8a%a8%e6%9e%84%e9%80%a0%e5%87%bd%e6%95%b0-move-constructor">#&lt;/a>&lt;/h1>
 &lt;ul>
 &lt;li>&lt;mark>核心语法&lt;/mark>：使用右值引用 &lt;code>String(String&amp;amp;&amp;amp; other)&lt;/code>。注意要加上 &lt;code>noexcept&lt;/code> 关键字。&lt;/li>
 &lt;li>&lt;mark>实现逻辑（偷走资源）&lt;/mark>：
@@ -46,13 +845,166 @@
 &lt;li>&lt;mark>关键的一步（置空原对象）&lt;/mark>：必须将 &lt;code>other.m_Data&lt;/code> 设为 &lt;code>nullptr&lt;/code>，并将 &lt;code>other.m_Size&lt;/code> 设为 &lt;code>0&lt;/code>。&lt;/li>
 &lt;li>&lt;mark>原理&lt;/mark>：这把旧对象变成了一个“空壳”。当旧对象析构时，&lt;code>delete nullptr&lt;/code> 不会做任何事，从而保证了内存所有权的完美转移。&lt;/li>
 &lt;/ul>
-&lt;h1 id="激活移动语义stdmove">激活移动语义：&lt;code>std::move&lt;/code>&lt;a class="anchor" href="#%e6%bf%80%e6%b4%bb%e7%a7%bb%e5%8a%a8%e8%af%ad%e4%b9%89stdmove">#&lt;/a>&lt;/h1>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#ifdef LY_EP89
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//c++11才引入了右值引用
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;iostream&amp;gt;&lt;/span>&lt;span style="color:#75715e"> 
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;utility&amp;gt;&lt;/span>&lt;span style="color:#75715e"> &lt;/span>&lt;span style="color:#75715e">// std::move 在这个头文件里
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">String&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span>&lt;span style="color:#f92672">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	String() &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">default&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//构造函数
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	String(&lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#66d9ef">char&lt;/span>&lt;span style="color:#f92672">*&lt;/span> string)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		printf(&lt;span style="color:#e6db74">&amp;#34;Created!&lt;/span>&lt;span style="color:#ae81ff">\n&lt;/span>&lt;span style="color:#e6db74">&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//不包括\0
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		m_Size &lt;span style="color:#f92672">=&lt;/span> strlen(string);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		m_Data &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> &lt;span style="color:#66d9ef">char&lt;/span>[m_Size];
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		memcpy(m_Data, string, m_Size);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;String(const char* string)&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//复制构造函数
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	String(&lt;span style="color:#66d9ef">const&lt;/span> String&lt;span style="color:#f92672">&amp;amp;&lt;/span> other)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		printf(&lt;span style="color:#e6db74">&amp;#34;Copied!&lt;/span>&lt;span style="color:#ae81ff">\n&lt;/span>&lt;span style="color:#e6db74">&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//不包括\0
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		m_Size &lt;span style="color:#f92672">=&lt;/span> other.m_Size;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		m_Data &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> &lt;span style="color:#66d9ef">char&lt;/span>[m_Size];
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//在 C++ 中，访问控制（public/private）是基于“类（Class）”层面的，而不是基于“对象（Object）”层面的。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#75715e">//简单来说：只要是在 String 类的成员函数内部，你就可以访问任何 String 对象的私有成员。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		memcpy(m_Data, other.m_Data, m_Size);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;String(const String&amp;amp; other)&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//移动构造函数
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//接收一个右值引用参数，表示可以从一个将要被销毁的临时对象中“窃取”资源，而不是复制资源。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	String(String&lt;span style="color:#f92672">&amp;amp;&amp;amp;&lt;/span> other) &lt;span style="color:#66d9ef">noexcept&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		printf(&lt;span style="color:#e6db74">&amp;#34;Moved!&lt;/span>&lt;span style="color:#ae81ff">\n&lt;/span>&lt;span style="color:#e6db74">&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//不包括\0
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		m_Size &lt;span style="color:#f92672">=&lt;/span> other.m_Size;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		m_Data &lt;span style="color:#f92672">=&lt;/span> other.m_Data;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		other.m_Size &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>;&lt;span style="color:#75715e">//将原对象的大小置为0，表示它不再拥有资源
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//把被接管控制权的资源指针置空，防止原对象的析构函数删除已经被移动的资源
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		other.m_Data &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">nullptr&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;String(String&amp;amp;&amp;amp; other)&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#f92672">~&lt;/span>String()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">delete&lt;/span>[] m_Data;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		printf(&lt;span style="color:#e6db74">&amp;#34;Destroyed!&lt;/span>&lt;span style="color:#ae81ff">\n&lt;/span>&lt;span style="color:#e6db74">&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;~String()&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">Print&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">for&lt;/span> (&lt;span style="color:#66d9ef">uint32_t&lt;/span> i &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>; i &lt;span style="color:#f92672">&amp;lt;&lt;/span> m_Size; i&lt;span style="color:#f92672">++&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			printf(&lt;span style="color:#e6db74">&amp;#34;%c&amp;#34;&lt;/span>, m_Data[i]);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		printf(&lt;span style="color:#e6db74">&amp;#34;&lt;/span>&lt;span style="color:#ae81ff">\n&lt;/span>&lt;span style="color:#e6db74">&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">private&lt;/span>&lt;span style="color:#f92672">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">char&lt;/span>&lt;span style="color:#f92672">*&lt;/span> m_Data;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//这是一个通过 typedef 或 using 定义的类型，表示
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//无符号整型32位数。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">// int 在某些古老的 16 位系统上可能是 2 字节，在现代系统上通常是 4 字节，uint32_t 强制规定在任何符合标准的编译器上，它永远是 32 位（4 字节）
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#66d9ef">uint32_t&lt;/span> m_Size;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>};
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">Entity&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span>&lt;span style="color:#f92672">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	Entity(&lt;span style="color:#66d9ef">const&lt;/span> String&lt;span style="color:#f92672">&amp;amp;&lt;/span> name) 
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#f92672">:&lt;/span>m_Name(name)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Entity(const String&amp;amp; name)&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//Entity(String&amp;amp;&amp;amp; name)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//	//一旦右值引用有了名字，它在后续表达式中就变成了左值。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//	//编译器会想：“这个 name 虽然是引用进来的，但它现在是有名有姓的变量，为了安全起见，我必须调用 复制构造函数 来保护它。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//	:m_Name(name)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//{
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//	std::cout &amp;lt;&amp;lt; &amp;#34;Entity( String&amp;amp;&amp;amp; name)&amp;#34; &amp;lt;&amp;lt; std::endl;
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//}
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//接收一个临时对象作为参数，使用移动语义来构造 Entity 对象，避免不必要的复制，提高性能。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	Entity(String&lt;span style="color:#f92672">&amp;amp;&amp;amp;&lt;/span> name)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//强转为右值引用，告诉编译器：我知道 name 是一个左值，但我想把它当作一个将要被销毁的临时对象来处理，所以请调用 移动构造函数 来构造 m_Name。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#75715e">//:m_Name((String&amp;amp;&amp;amp;)name) //这种写法也行
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#f92672">:&lt;/span>m_Name(std&lt;span style="color:#f92672">::&lt;/span>move(name)) &lt;span style="color:#75715e">// 将左值 name 强行转回右值
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Entity( String&amp;amp;&amp;amp; name)&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">PrintName&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		m_Name.Print();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">private&lt;/span>&lt;span style="color:#f92672">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	String m_Name;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>};
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//隐式构造函数构造String对象，调用String(const char* string)构造函数
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//Entity entity(&amp;#34;Cherno&amp;#34;);
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//临时对象String(&amp;#34;Cherno&amp;#34;)的生命周期直到支持它的那个“完整表达式”计算完成为止，即该行代码分号结束时
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//!!现在main函数创建这个(临时)对象后，传(复制)给Entity构造函数的当参数使用，又马上销毁了这个临时对象(只留下复制的)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	Entity entity(String(&lt;span style="color:#e6db74">&amp;#34;Cherno&amp;#34;&lt;/span>));
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	entity.PrintName();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cin.get();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/*
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Created!
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">String(const char* string)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Moved!
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">String(String&amp;amp;&amp;amp; other)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Entity( String&amp;amp;&amp;amp; name)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Destroyed!
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">~String()
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Cherno
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">*/&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#endif&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h1 id="激活移动语义stdmove">激活移动语义：&lt;code>std::move&lt;/code>&lt;a class="anchor" href="#%e6%bf%80%e6%b4%bb%e7%a7%bb%e5%8a%a8%e8%af%ad%e4%b9%89stdmove">#&lt;/a>&lt;/h1>
 &lt;ul>
-&lt;li>&lt;mark>常见误区&lt;/mark>：即便写了移动构造函数，编译器在某些情况下（如成员变量赋值）可能仍会选择拷贝。&lt;/li>
+&lt;li>&lt;mark>常见误区&lt;/mark>：即便写了移动构造函数，编译器在==某些情况下（如成员变量赋值）==可能仍会选择拷贝。&lt;/li>
 &lt;li>&lt;mark>解决方法&lt;/mark>：在 &lt;code>Entity&lt;/code> 的构造函数中使用 &lt;code>m_Name(std::move(name))&lt;/code>。&lt;/li>
 &lt;li>&lt;mark>效果验证&lt;/mark>：再次运行程序，你会发现 &lt;mark>“Copied”&lt;/mark> 变成了 &lt;mark>“Moved”&lt;/mark>。这意味着没有发生新的内存分配，程序运行得更快了。&lt;/li>
 &lt;/ul>
-&lt;h1 id="结尾--总结与展望">结尾 | 总结与展望&lt;a class="anchor" href="#%e7%bb%93%e5%b0%be--%e6%80%bb%e7%bb%93%e4%b8%8e%e5%b1%95%e6%9c%9b">#&lt;/a>&lt;/h1>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#ifdef LY_EP89_
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//#include &amp;lt;utility&amp;gt; //不加的话，std::move编译报错
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//int a=std::move(3);
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#endif&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h1 id="结尾--总结与展望">结尾 | 总结与展望&lt;a class="anchor" href="#%e7%bb%93%e5%b0%be--%e6%80%bb%e7%bb%93%e4%b8%8e%e5%b1%95%e6%9c%9b">#&lt;/a>&lt;/h1>
 &lt;ul>
 &lt;li>&lt;mark>核心价值&lt;/mark>：移动语义让你在不损失代码可读性的前提下，极大地提升了处理大型对象和临时对象的性能。&lt;/li>
 &lt;/ul></description></item><item><title>85左值与右值</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/81-/85%E5%B7%A6%E5%80%BC%E4%B8%8E%E5%8F%B3%E5%80%BC/</link><pubDate>Fri, 06 Mar 2026 22:42:42 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/81-/85%E5%B7%A6%E5%80%BC%E4%B8%8E%E5%8F%B3%E5%80%BC/</guid><description>&lt;h1 id="什么是左值和右值">什么是左值和右值？&lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af%e5%b7%a6%e5%80%bc%e5%92%8c%e5%8f%b3%e5%80%bc">#&lt;/a>&lt;/h1>
