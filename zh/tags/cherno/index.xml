@@ -1,8 +1,528 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Cherno on 随记</title><link>https://lwmfjc.github.io/zh/tags/cherno/</link><description>Recent content in Cherno on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Tue, 10 Mar 2026 12:59:30 +0800</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/tags/cherno/index.xml" rel="self" type="application/rss+xml"/><item><title>94编写迭代器</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/81-/94%E7%BC%96%E5%86%99%E8%BF%AD%E4%BB%A3%E5%99%A8/</link><pubDate>Tue, 10 Mar 2026 12:59:30 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/81-/94%E7%BC%96%E5%86%99%E8%BF%AD%E4%BB%A3%E5%99%A8/</guid><description>&lt;ul>
-&lt;li>迭代器是用来遍历某种数据结构的容器的&lt;/li>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Cherno on 随记</title><link>https://lwmfjc.github.io/zh/tags/cherno/</link><description>Recent content in Cherno on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Wed, 11 Mar 2026 21:30:15 +0800</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/tags/cherno/index.xml" rel="self" type="application/rss+xml"/><item><title>105弱指针</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/81-/105%E5%BC%B1%E6%8C%87%E9%92%88/</link><pubDate>Wed, 11 Mar 2026 21:30:15 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/81-/105%E5%BC%B1%E6%8C%87%E9%92%88/</guid><description>&lt;h1 id="共享指针与唯一指针例子">共享指针与唯一指针例子&lt;a class="anchor" href="#%e5%85%b1%e4%ba%ab%e6%8c%87%e9%92%88%e4%b8%8e%e5%94%af%e4%b8%80%e6%8c%87%e9%92%88%e4%be%8b%e5%ad%90">#&lt;/a>&lt;/h1>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#ifdef LY_EP105
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;iostream&amp;gt;&lt;/span>&lt;span style="color:#75715e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;memory&amp;gt;&lt;/span>&lt;span style="color:#75715e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">Entity&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span>&lt;span style="color:#f92672">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	Entity() { std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Entity Created&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl; }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#f92672">~&lt;/span>Entity() { std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Entity Destroyed&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl; }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>};
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>() {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">// --- unique_ptr 示例 ---
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>unique_ptr&lt;span style="color:#f92672">&amp;lt;&lt;/span>Entity&lt;span style="color:#f92672">&amp;gt;&lt;/span> e1 &lt;span style="color:#f92672">=&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>make_unique&lt;span style="color:#f92672">&amp;lt;&lt;/span>Entity&lt;span style="color:#f92672">&amp;gt;&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">// std::unique_ptr&amp;lt;Entity&amp;gt; e2 = e1; // 错误！禁止复制
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		std&lt;span style="color:#f92672">::&lt;/span>unique_ptr&lt;span style="color:#f92672">&amp;lt;&lt;/span>Entity&lt;span style="color:#f92672">&amp;gt;&lt;/span> e2 &lt;span style="color:#f92672">=&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>move(e1); &lt;span style="color:#75715e">// 允许移动所有权，e1 现在为空
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	} &lt;span style="color:#75715e">// e2 离开作用域，Entity 在这里被销毁
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;-----------------&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">// --- shared_ptr 示例 ---
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		std&lt;span style="color:#f92672">::&lt;/span>shared_ptr&lt;span style="color:#f92672">&amp;lt;&lt;/span>Entity&lt;span style="color:#f92672">&amp;gt;&lt;/span> sharedOuter;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#75715e">//std::shared_ptr对象实例内部有一个引用计数，简单记录有多少个共享指针指向内部Entity对象的实例
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			std&lt;span style="color:#f92672">::&lt;/span>shared_ptr&lt;span style="color:#f92672">&amp;lt;&lt;/span>Entity&lt;span style="color:#f92672">&amp;gt;&lt;/span> sharedInner &lt;span style="color:#f92672">=&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>make_shared&lt;span style="color:#f92672">&amp;lt;&lt;/span>Entity&lt;span style="color:#f92672">&amp;gt;&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			sharedOuter &lt;span style="color:#f92672">=&lt;/span> sharedInner; &lt;span style="color:#75715e">// 允许复制（拷贝赋值函数），引用计数变为 2
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Inner scope ending1...&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			std&lt;span style="color:#f92672">::&lt;/span>shared_ptr&lt;span style="color:#f92672">&amp;lt;&lt;/span>Entity&lt;span style="color:#f92672">&amp;gt;&lt;/span> sharedInner1 &lt;span style="color:#f92672">=&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>move(sharedOuter);&lt;span style="color:#75715e">//这里把sharedInner的所有权移走了，计数减一，但是本身又导致计数加一，所以目前是2 
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Inner scope ending2...&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		} &lt;span style="color:#75715e">// sharedInner1 离开作用域，sharedOuter所有权被移走，所以没有任何共享指针指向Entity了， Entity 被销毁 
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Outer scope still holds Entity？&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	} &lt;span style="color:#75715e">//作用域结束，sharedOuter 离开作用域，Entity 最终在这里被销毁
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cin.get();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/*
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Entity Created
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Entity Destroyed
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">-----------------
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Entity Created
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Inner scope ending1...
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Inner scope ending2...
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Entity Destroyed
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">Outer scope still holds Entity？
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">*/&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#endif&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>共享指针、强引用，能防止对象销毁，也被称作具名引用。即他们对一个对象各自都拥有所有权&lt;/p></description></item><item><title>100cpp映射容器</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/81-/100cpp%E6%98%A0%E5%B0%84%E5%AE%B9%E5%99%A8/</link><pubDate>Wed, 11 Mar 2026 16:22:01 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/81-/100cpp%E6%98%A0%E5%B0%84%E5%AE%B9%E5%99%A8/</guid><description>&lt;h1 id="简介">简介&lt;a class="anchor" href="#%e7%ae%80%e4%bb%8b">#&lt;/a>&lt;/h1>
+&lt;h2 id="什么是-map">什么是 Map？&lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%98%af-map">#&lt;/a>&lt;/h2>
+&lt;ul>
+&lt;li>Map 是一种容器，用于存储&lt;mark>键值对&lt;/mark>。它允许你通过一个“键”（Key）来快速查找对应的“值”（Value）。&lt;/li>
+&lt;li>类比：就像一本字典，单词是键，定义是值。&lt;/li>
+&lt;/ul>
+&lt;h2 id="stdmap-vs-stdunordered_map">std::map vs std::unordered_map&lt;a class="anchor" href="#stdmap-vs-stdunordered_map">#&lt;/a>&lt;/h2>
+&lt;ul>
+&lt;li>std::map (&lt;mark>有序&lt;/mark>映射)：
+&lt;ul>
+&lt;li>底层结构：红黑树（一种自平衡二叉搜索树）。&lt;/li>
+&lt;li>特点：元素按键的顺序自动排序。&lt;/li>
+&lt;li>复杂度：&lt;mark>查找、插入、删除均为 O(logn)&lt;/mark>。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>std::unordered_map (无序映射)：
+&lt;ul>
+&lt;li>底层结构：哈希表（Hash Table）。&lt;/li>
+&lt;li>特点：&lt;mark>元素没有特定顺序&lt;/mark>。&lt;/li>
+&lt;li>复杂度：&lt;mark>平均情况下查找速度为 O(1)&lt;/mark>，通常比 &lt;code>std::map&lt;/code> 快，除非哈希冲突严重。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h2 id="代码演示基础用法">代码演示：基础用法&lt;a class="anchor" href="#%e4%bb%a3%e7%a0%81%e6%bc%94%e7%a4%ba%e5%9f%ba%e7%a1%80%e7%94%a8%e6%b3%95">#&lt;/a>&lt;/h2>
+&lt;ul>
+&lt;li>展示如何定义 &lt;code>std::map&amp;lt;std::string, CityRecord&amp;gt;&lt;/code>。&lt;/li>
+&lt;li>使用 &lt;code>operator[]&lt;/code> 进行赋值：&lt;code>map[&amp;quot;Berlin&amp;quot;] = CityRecord { ... };&lt;/code>。&lt;/li>
+&lt;li>注意：如果访问一个不存在的键，&lt;code>operator[]&lt;/code> 会自动创建一个默认构造的对象并插入。&lt;/li>
+&lt;/ul>
+&lt;h2 id="迭代与访问">迭代与访问&lt;a class="anchor" href="#%e8%bf%ad%e4%bb%a3%e4%b8%8e%e8%ae%bf%e9%97%ae">#&lt;/a>&lt;/h2>
+&lt;ul>
+&lt;li>演示如何使用 &lt;code>for (auto&amp;amp; [key, value] : map)&lt;/code>（C++17 结构化绑定）遍历 Map。&lt;/li>
+&lt;li>解释了老式迭代器用法：&lt;code>it-&amp;gt;first&lt;/code> 是键，&lt;code>it-&amp;gt;second&lt;/code> 是值。&lt;/li>
+&lt;/ul>
+&lt;h2 id="性能取舍与选择建议">性能取舍与选择建议&lt;a class="anchor" href="#%e6%80%a7%e8%83%bd%e5%8f%96%e8%88%8d%e4%b8%8e%e9%80%89%e6%8b%a9%e5%bb%ba%e8%ae%ae">#&lt;/a>&lt;/h2>
+&lt;ul>
+&lt;li>优先选择 &lt;code>std::unordered_map&lt;/code>：如果你只需要快速查找，不需要元素有序，那么无序映射通常性能更优。&lt;/li>
+&lt;li>选择 &lt;code>std::map&lt;/code> 的场景：当你需要遍历时保持特定顺序，或者需要使用类似 &lt;code>lower_bound&lt;/code> 的区间查找功能时。&lt;/li>
+&lt;/ul>
+&lt;h2 id="复杂键的处理">复杂键的处理&lt;a class="anchor" href="#%e5%a4%8d%e6%9d%82%e9%94%ae%e7%9a%84%e5%a4%84%e7%90%86">#&lt;/a>&lt;/h2>
+&lt;ul>
+&lt;li>讲解了如果使用自定义类作为键，&lt;code>std::map&lt;/code> 需要该类重载 &lt;code>&amp;lt;&lt;/code> 运算符，而 &lt;code>std::unordered_map&lt;/code> 则需要提供哈希函数。&lt;/li>
+&lt;/ul></description></item><item><title>102如何正确搭建cpp项目</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/81-/102%E5%A6%82%E4%BD%95%E6%AD%A3%E7%A1%AE%E6%90%AD%E5%BB%BAcpp%E9%A1%B9%E7%9B%AE/</link><pubDate>Wed, 11 Mar 2026 15:46:26 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/81-/102%E5%A6%82%E4%BD%95%E6%AD%A3%E7%A1%AE%E6%90%AD%E5%BB%BAcpp%E9%A1%B9%E7%9B%AE/</guid><description>&lt;h1 id="创建项目并克隆">创建项目并克隆&lt;a class="anchor" href="#%e5%88%9b%e5%bb%ba%e9%a1%b9%e7%9b%ae%e5%b9%b6%e5%85%8b%e9%9a%86">#&lt;/a>&lt;/h1>
+&lt;p>&lt;code>https://github.com/TheCherno/ProjectTemplate&lt;/code> ，到这个地址 UseThisTemplate -&amp;gt; CreateNewRepository&lt;/p>
+&lt;p>在本地windows克隆下来&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>git clone git@github.com:lwmfjc/ChernoTemplateProject.git&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>之后我把项目删掉.git文件夹后放到了另一个自己的备份gitRepository中&lt;/p>
+&lt;h1 id="使用">使用&lt;a class="anchor" href="#%e4%bd%bf%e7%94%a8">#&lt;/a>&lt;/h1>
+&lt;p>双击Setup-Windows.bat 运行&lt;/p>
+&lt;p>&lt;img src="img/ly-20260311155909650.png" alt="" />&lt;/p>
+&lt;p>在visual studio中，File-Open-Solution，选择 NewProject.sln&lt;/p>
+&lt;p>打开之后直接F5运行&lt;/p>
+&lt;p>&lt;img src="img/ly-20260311160204390.png" alt="" />&lt;/p>
+&lt;p>==这集先跳过，貌似有点不太常用 &lt;del>注：看到00:07:34&lt;/del> ==&lt;/p></description></item><item><title>95如何真正学好cpp</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/81-/95%E5%A6%82%E4%BD%95%E7%9C%9F%E6%AD%A3%E5%AD%A6%E5%A5%BDcpp/</link><pubDate>Wed, 11 Mar 2026 09:32:28 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/81-/95%E5%A6%82%E4%BD%95%E7%9C%9F%E6%AD%A3%E5%AD%A6%E5%A5%BDcpp/</guid><description>&lt;h1 id="核心问题学完基础后该做什么">核心问题：学完基础后该做什么？&lt;a class="anchor" href="#%e6%a0%b8%e5%bf%83%e9%97%ae%e9%a2%98%e5%ad%a6%e5%ae%8c%e5%9f%ba%e7%a1%80%e5%90%8e%e8%af%a5%e5%81%9a%e4%bb%80%e4%b9%88">#&lt;/a>&lt;/h1>
+&lt;ul>
+&lt;li>现状：许多人看完了视频、读完了教科书、甚至通过了大学考试，但依然觉得不会自由地编写代码，无法“流利”地使用 C++。&lt;/li>
+&lt;li>核心建议：沉浸在开源项目（Open Source Projects）中。&lt;/li>
+&lt;/ul>
+&lt;h1 id="真实世界的代码-vs-教科书">真实世界的代码 vs. 教科书&lt;a class="anchor" href="#%e7%9c%9f%e5%ae%9e%e4%b8%96%e7%95%8c%e7%9a%84%e4%bb%a3%e7%a0%81-vs-%e6%95%99%e7%a7%91%e4%b9%a6">#&lt;/a>&lt;/h1>
+&lt;ul>
+&lt;li>差异：教科书和作业里的代码（如实现一个 Vector 或 List）是教学性质的，而现实世界的代码规模更大、逻辑更复杂。&lt;/li>
+&lt;li>面试视角：雇主想看到的是你理解软件是如何构建的，以及你是否见过并能处理真实代码库中的复杂性。&lt;/li>
+&lt;/ul>
+&lt;h1 id="语言学习的类比">“语言学习”的类比&lt;a class="anchor" href="#%e8%af%ad%e8%a8%80%e5%ad%a6%e4%b9%a0%e7%9a%84%e7%b1%bb%e6%af%94">#&lt;/a>&lt;/h1>
+&lt;ul>
+&lt;li>学习环境：学习编程就像学外语（德语或日语）。只看语法书和做练习是不够的，你必须开始看电视、电影，甚至搬到那个国家居住。&lt;/li>
+&lt;li>编程沉浸：对于 C++，这意味着你需要阅读、运行并尝试修改别人的代码，让自己置身于那个语言环境中。&lt;/li>
+&lt;/ul>
+&lt;h1 id="如何开始选择你感兴趣的项目">如何开始？选择你感兴趣的项目&lt;a class="anchor" href="#%e5%a6%82%e4%bd%95%e5%bc%80%e5%a7%8b%e9%80%89%e6%8b%a9%e4%bd%a0%e6%84%9f%e5%85%b4%e8%b6%a3%e7%9a%84%e9%a1%b9%e7%9b%ae">#&lt;/a>&lt;/h1>
+&lt;ul>
+&lt;li>兴趣导向：
+&lt;ul>
+&lt;li>喜欢游戏？去 GitHub 找简单的开源游戏（如 Mario 克隆版或 80 年代街机游戏）。&lt;/li>
+&lt;li>喜欢引擎？研究 Unreal Engine、Godot 或 Cherno 自己的 Hazel 引擎。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>Bug 赏金计划 ：参与寻找 C++ 代码中的 bug，这不仅能锻炼能力，有时还能获得报酬。&lt;/li>
+&lt;/ul>
+&lt;h1 id="什么时候可以开始沉浸">什么时候可以开始“沉浸”？&lt;a class="anchor" href="#%e4%bb%80%e4%b9%88%e6%97%b6%e5%80%99%e5%8f%af%e4%bb%a5%e5%bc%80%e5%a7%8b%e6%b2%89%e6%b5%b8">#&lt;/a>&lt;/h1>
+&lt;p>结论：随时。 即使你觉得还太早，也不必担心。就像没学多少日语就去日本一样，虽然痛苦，但那是进步最快的方式。&lt;/p>
+&lt;h1 id="实战演示分析-opencv-源码">实战演示：分析 OpenCV 源码&lt;a class="anchor" href="#%e5%ae%9e%e6%88%98%e6%bc%94%e7%a4%ba%e5%88%86%e6%9e%90-opencv-%e6%ba%90%e7%a0%81">#&lt;/a>&lt;/h1>
+&lt;ul>
+&lt;li>流程：从 GitHub 克隆项目 -&amp;gt; 使用 CMake 生成 VS 工程 -&amp;gt; 编译并运行。&lt;/li>
+&lt;li>工具辅助（PVS-Studio） ：Cherno 演示了使用静态分析工具查看 OpenCV 源码中的潜在错误。&lt;/li>
+&lt;li>学习点 ：例如通过分析宏定义中的 if 语句冗余问题，你可以学到更深层的编码经验，这些是只看语法书学不到的。&lt;/li>
+&lt;/ul>
+&lt;h1 id="总结超越代码本身的收获">总结：超越代码本身的收获&lt;a class="anchor" href="#%e6%80%bb%e7%bb%93%e8%b6%85%e8%b6%8a%e4%bb%a3%e7%a0%81%e6%9c%ac%e8%ba%ab%e7%9a%84%e6%94%b6%e8%8e%b7">#&lt;/a>&lt;/h1>
+&lt;p>通过阅读开源项目，你不仅学会了写 C++，还学会了：&lt;/p></description></item><item><title>94编写迭代器</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/81-/94%E7%BC%96%E5%86%99%E8%BF%AD%E4%BB%A3%E5%99%A8/</link><pubDate>Tue, 10 Mar 2026 12:59:30 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/81-/94%E7%BC%96%E5%86%99%E8%BF%AD%E4%BB%A3%E5%99%A8/</guid><description>&lt;ul>
+&lt;li>迭代器是用来遍历&lt;mark>某种数据结构&lt;/mark>的容器的&lt;/li>
 &lt;li>迭代器统一了接口，所以通过同样的接口不同的实现来迭代不同的容器&lt;/li>
 &lt;li>迭代器：记录一个指针，然后遍历就像移动指针一样，直到末尾&lt;/li>
-&lt;/ul></description></item><item><title>92动态数组实现</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/81-/92%E5%8A%A8%E6%80%81%E6%95%B0%E7%BB%84%E5%AE%9E%E7%8E%B0/</link><pubDate>Mon, 09 Mar 2026 13:03:14 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/81-/92%E5%8A%A8%E6%80%81%E6%95%B0%E7%BB%84%E5%AE%9E%E7%8E%B0/</guid><description>&lt;p>涉及到了&lt;mark>手动内存管理&lt;/mark>、&lt;mark>堆分配&lt;/mark>以及&lt;mark>模板类&lt;/mark>的深层逻辑。&lt;/p>
+&lt;/ul>
+&lt;h1 id="vector类">Vector类&lt;a class="anchor" href="#vector%e7%b1%bb">#&lt;/a>&lt;/h1>
+&lt;p>为Vector添加部分代码&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">Vector&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span>&lt;span style="color:#f92672">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//Vector的值类型
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#66d9ef">using&lt;/span> ValueType &lt;span style="color:#f92672">=&lt;/span> T;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//public 类型别名 (using/typedef)：属于类（Class/Type）。它是一个“类型标签”，就像 Vector&amp;lt;int&amp;gt; 内部定义的一个子类型。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#66d9ef">using&lt;/span> Iterator &lt;span style="color:#f92672">=&lt;/span> VectorIterator&lt;span style="color:#f92672">&amp;lt;&lt;/span>Vector&lt;span style="color:#f92672">&amp;lt;&lt;/span>T&lt;span style="color:#f92672">&amp;gt;&amp;gt;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	Iterator &lt;span style="color:#a6e22e">begin&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">return&lt;/span> Iterator(m_Data);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	Iterator &lt;span style="color:#a6e22e">end&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">return&lt;/span> Iterator(m_Data &lt;span style="color:#f92672">+&lt;/span> m_Size);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Vector类完整代码&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#pragma once
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#ifdef LY_EP94
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;memory&amp;gt;&lt;/span>&lt;span style="color:#75715e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;iostream&amp;gt;&lt;/span>&lt;span style="color:#75715e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//为某种类型(Vector)写迭代器
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">template&lt;/span>&lt;span style="color:#f92672">&amp;lt;&lt;/span>&lt;span style="color:#66d9ef">typename&lt;/span> Vector&lt;span style="color:#f92672">&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">VectorIterator&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span>&lt;span style="color:#f92672">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//Vector的值的类型
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#66d9ef">using&lt;/span> ValueType &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">typename&lt;/span> Vector&lt;span style="color:#f92672">::&lt;/span>ValueType;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">using&lt;/span> PointerType &lt;span style="color:#f92672">=&lt;/span> ValueType&lt;span style="color:#f92672">*&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">using&lt;/span> ReferenceType &lt;span style="color:#f92672">=&lt;/span> ValueType&lt;span style="color:#f92672">&amp;amp;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	VectorIterator(PointerType ptr)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#f92672">:&lt;/span>m_Ptr(ptr)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//前缀运算符
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	VectorIterator&lt;span style="color:#f92672">&amp;amp;&lt;/span> &lt;span style="color:#66d9ef">operator&lt;/span>&lt;span style="color:#f92672">++&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		m_Ptr&lt;span style="color:#f92672">++&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#f92672">*&lt;/span>&lt;span style="color:#66d9ef">this&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//前缀运算符
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	VectorIterator&lt;span style="color:#f92672">&amp;amp;&lt;/span> &lt;span style="color:#66d9ef">operator&lt;/span>&lt;span style="color:#f92672">--&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		m_Ptr&lt;span style="color:#f92672">--&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#f92672">*&lt;/span>&lt;span style="color:#66d9ef">this&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//后缀运算符
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//编译器用来区分前缀和后缀的唯一手段，int
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//是语法占位符
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	VectorIterator&lt;span style="color:#f92672">&amp;amp;&lt;/span> &lt;span style="color:#66d9ef">operator&lt;/span>&lt;span style="color:#f92672">++&lt;/span>(&lt;span style="color:#66d9ef">int&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//这里是复制，由于成员只有一个指针，代价可以接受
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		VectorIterator iterator &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#f92672">*&lt;/span>&lt;span style="color:#66d9ef">this&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//前缀运算符
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#f92672">++&lt;/span>(&lt;span style="color:#f92672">*&lt;/span>&lt;span style="color:#66d9ef">this&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">return&lt;/span> iterator;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//后缀运算符
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	VectorIterator&lt;span style="color:#f92672">&amp;amp;&lt;/span> &lt;span style="color:#66d9ef">operator&lt;/span>&lt;span style="color:#f92672">--&lt;/span>(&lt;span style="color:#66d9ef">int&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//这里是复制，由于成员只有一个指针，代价可以接受
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		VectorIterator iterator &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#f92672">*&lt;/span>&lt;span style="color:#66d9ef">this&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//前缀运算符
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#f92672">--&lt;/span>(&lt;span style="color:#f92672">*&lt;/span>&lt;span style="color:#66d9ef">this&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">return&lt;/span> iterator;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	ReferenceType &lt;span style="color:#66d9ef">operator&lt;/span>[](&lt;span style="color:#66d9ef">int&lt;/span> index)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#f92672">*&lt;/span>(m_Ptr &lt;span style="color:#f92672">+&lt;/span> index);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//C++ 对 -&amp;gt; 有特殊处理。当你使用 it-&amp;gt;Method() 时，它会调用 it.operator-&amp;gt;() 得到 m_Ptr，然后再次对结果应用 -&amp;gt;。所以最终执行的是 m_Ptr-&amp;gt;Method()。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//所以这里需要返回一个指针
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	PointerType &lt;span style="color:#66d9ef">operator&lt;/span>&lt;span style="color:#f92672">-&amp;gt;&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">return&lt;/span> m_Ptr;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	ReferenceType &lt;span style="color:#66d9ef">operator&lt;/span>&lt;span style="color:#f92672">*&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#f92672">*&lt;/span>m_Ptr;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">bool&lt;/span> &lt;span style="color:#66d9ef">operator&lt;/span>&lt;span style="color:#f92672">==&lt;/span>(&lt;span style="color:#66d9ef">const&lt;/span> VectorIterator&lt;span style="color:#f92672">&amp;amp;&lt;/span> other) &lt;span style="color:#66d9ef">const&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">return&lt;/span> m_Ptr &lt;span style="color:#f92672">==&lt;/span> other.m_Ptr;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">bool&lt;/span> &lt;span style="color:#66d9ef">operator&lt;/span>&lt;span style="color:#f92672">!=&lt;/span>(&lt;span style="color:#66d9ef">const&lt;/span> VectorIterator&lt;span style="color:#f92672">&amp;amp;&lt;/span> other) &lt;span style="color:#66d9ef">const&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#f92672">!&lt;/span>(&lt;span style="color:#f92672">*&lt;/span>&lt;span style="color:#66d9ef">this&lt;/span> &lt;span style="color:#f92672">==&lt;/span> other);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">private&lt;/span>&lt;span style="color:#f92672">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	PointerType m_Ptr;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>};
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">template&lt;/span>&lt;span style="color:#f92672">&amp;lt;&lt;/span>&lt;span style="color:#66d9ef">typename&lt;/span> T&lt;span style="color:#f92672">&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">Vector&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span>&lt;span style="color:#f92672">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//Vector的值类型
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#66d9ef">using&lt;/span> ValueType &lt;span style="color:#f92672">=&lt;/span> T;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//public 类型别名 (using/typedef)：属于类（Class/Type）。它是一个“类型标签”，就像 Vector&amp;lt;int&amp;gt; 内部定义的一个子类型。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#66d9ef">using&lt;/span> Iterator &lt;span style="color:#f92672">=&lt;/span> VectorIterator&lt;span style="color:#f92672">&amp;lt;&lt;/span>Vector&lt;span style="color:#f92672">&amp;lt;&lt;/span>T&lt;span style="color:#f92672">&amp;gt;&amp;gt;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	Iterator &lt;span style="color:#a6e22e">begin&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">return&lt;/span> Iterator(m_Data);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	Iterator &lt;span style="color:#a6e22e">end&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">return&lt;/span> Iterator(m_Data &lt;span style="color:#f92672">+&lt;/span> m_Size);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span>&lt;span style="color:#f92672">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	Vector()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//allocate 2 elements
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		ReAlloc(&lt;span style="color:#ae81ff">2&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;====构造器中初始化容量2======&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">PushBack&lt;/span>(&lt;span style="color:#66d9ef">const&lt;/span> T&lt;span style="color:#f92672">&amp;amp;&lt;/span> value)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//如果当前数量量已经大于等于容量
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#66d9ef">if&lt;/span> (m_Size &lt;span style="color:#f92672">&amp;gt;=&lt;/span> m_Capacity)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#75715e">//如果增长，容量扩大为1.5倍
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			ReAlloc(m_Capacity &lt;span style="color:#f92672">+&lt;/span> m_Capacity &lt;span style="color:#f92672">/&lt;/span> &lt;span style="color:#ae81ff">2&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//m_Data[m_Size] 是一个已经存在的对象，所以
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#75715e">//这里调用的是拷贝赋值函数
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#75715e">//m_Data[m_Size] = value;
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">// new (&amp;amp;地址) 类型(参数)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#66d9ef">new&lt;/span>(&lt;span style="color:#f92672">&amp;amp;&lt;/span>m_Data[m_Size]) T(value);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		m_Size&lt;span style="color:#f92672">++&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;添加元素:&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> value &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;==================&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//1. PushBack的push右值引用的版本
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//2. value 的类型始终是 Vector3&amp;amp;&amp;amp;（右值引用），
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">// 但它在函数体内的表现（属性）是一个左值
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">PushBack&lt;/span>(T&lt;span style="color:#f92672">&amp;amp;&amp;amp;&lt;/span> value)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//如果当前数量量已经大于等于容量
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#66d9ef">if&lt;/span> (m_Size &lt;span style="color:#f92672">&amp;gt;=&lt;/span> m_Capacity)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#75715e">//如果增长，容量扩大为1.5倍
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			ReAlloc(m_Capacity &lt;span style="color:#f92672">+&lt;/span> m_Capacity &lt;span style="color:#f92672">/&lt;/span> &lt;span style="color:#ae81ff">2&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//1. m_Data[m_Size] 是一个已经存在的对象，所以
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#75715e">//这里调用的是移动赋值函数
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#75715e">//2. value 传入时是右值引用，但在函数内部它有了名
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#75715e">// 字，就变成了左值。为了触发移动赋值，
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#75715e">// 必须用 std::move 把它重新转回右值。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#75715e">//3. 如果没有移动赋值函数，会去调用拷贝赋值函数
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#75715e">//m_Data[m_Size] = std::move(value);
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">// 使用移动构造函数在原始内存上创建对象
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#66d9ef">new&lt;/span>(&lt;span style="color:#f92672">&amp;amp;&lt;/span>m_Data[m_Size]) T(std&lt;span style="color:#f92672">::&lt;/span>move(value));
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		m_Size&lt;span style="color:#f92672">++&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;添加元素:&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> value &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;==================&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//变长参数模板，三个点 ... 表示它可以接收
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">// 任意数量、任意类型的参数
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#66d9ef">template&lt;/span>&lt;span style="color:#f92672">&amp;lt;&lt;/span>&lt;span style="color:#66d9ef">typename&lt;/span>... Args&lt;span style="color:#f92672">&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//&amp;amp;&amp;amp; 配合模板参数 Args 使用时，不再仅仅是
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">// 右值引用，它被称为万能引用，既能接收左值
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">// ，也能接收右值
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	T&lt;span style="color:#f92672">&amp;amp;&lt;/span> EmplaceBack(Args&lt;span style="color:#f92672">&amp;amp;&amp;amp;&lt;/span>... args)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//如果当前数量量已经大于等于容量
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#66d9ef">if&lt;/span> (m_Size &lt;span style="color:#f92672">&amp;gt;=&lt;/span> m_Capacity)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#75715e">//如果增长，容量扩大为1.5倍
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			ReAlloc(m_Capacity &lt;span style="color:#f92672">+&lt;/span> m_Capacity &lt;span style="color:#f92672">/&lt;/span> &lt;span style="color:#ae81ff">2&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//1. 参数一旦有了名字 args，它在函数内部就会变成左值。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#75715e">//2. 解决：std::forward 的作用是：如果你传进来时是右值，
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#75715e">// 它就把它恢复成右值；如果你传进来时是左值，它就保持左
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#75715e">// 值。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#75715e">//3. T(std::forward&amp;lt;Args&amp;gt;(args)...)这个是右值，调用移动
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#75715e">// 赋值函数后，马上destroy了
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//m_Data[m_Size] = T(std::forward&amp;lt;Args&amp;gt;(args)...); 
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//使用placement new运算符，原地构造，就不会有对临时对象move以及destroy的操作了
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#66d9ef">new&lt;/span>(&lt;span style="color:#f92672">&amp;amp;&lt;/span>m_Data[m_Size]) T(std&lt;span style="color:#f92672">::&lt;/span>forward&lt;span style="color:#f92672">&amp;lt;&lt;/span>Args&lt;span style="color:#f92672">&amp;gt;&lt;/span>(args)...);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;添加元素:&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> m_Data[m_Size] &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;==================&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//1. 取值（Evaluate）：首先取出 m_Size 当前的值（比如现在是 0）。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#75715e">//2. 定位（Access）：利用这个旧值 0 找到 m_Data[0] 的引用，作为函数的返回值准备好。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#75715e">//3. 自增（Increment）：在这一行语句的逻辑完成，“返回”动作即将发生前（但还在函数体内），将 m_Size 的值加 1 变成 1。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#66d9ef">return&lt;/span> m_Data[m_Size&lt;span style="color:#f92672">++&lt;/span>];
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">PopBack&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">if&lt;/span> (m_Size &lt;span style="color:#f92672">&amp;gt;&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			m_Size&lt;span style="color:#f92672">--&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#75715e">//手动调用析构函数
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			m_Data[m_Size].&lt;span style="color:#f92672">~&lt;/span>T();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">Clear&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">for&lt;/span> (size_t i &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>; i &lt;span style="color:#f92672">&amp;lt;&lt;/span> m_Size; i&lt;span style="color:#f92672">++&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			m_Data[i].&lt;span style="color:#f92672">~&lt;/span>T();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		m_Size &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	T&lt;span style="color:#f92672">&amp;amp;&lt;/span> &lt;span style="color:#66d9ef">operator&lt;/span>[](size_t index)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">if&lt;/span> (index &lt;span style="color:#f92672">&amp;gt;=&lt;/span> m_Size)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#75715e">//assert
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">return&lt;/span> m_Data[index];
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">const&lt;/span> T&lt;span style="color:#f92672">&amp;amp;&lt;/span> &lt;span style="color:#66d9ef">operator&lt;/span>[](size_t index) &lt;span style="color:#66d9ef">const&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">if&lt;/span> (index &lt;span style="color:#f92672">&amp;gt;=&lt;/span> m_Size)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#75715e">//assert被设计为一种调试期工具,在发布版本会被去掉
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			&lt;span style="color:#75715e">//assert
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">return&lt;/span> m_Data[index];
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	size_t &lt;span style="color:#a6e22e">Size&lt;/span>() &lt;span style="color:#66d9ef">const&lt;/span> { &lt;span style="color:#66d9ef">return&lt;/span> m_Size; }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#f92672">~&lt;/span>Vector()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//会依次调用m_Data指向的所有对象的析构函数（
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#75715e">// 但是PopBack及Clear()已经调用过并已经释放了
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#75715e">// Vector3的m_MemoryBlock
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		Clear();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//		delete[] m_Data;
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#f92672">::&lt;/span>&lt;span style="color:#66d9ef">operator&lt;/span> &lt;span style="color:#66d9ef">delete&lt;/span>(m_Data, m_Capacity &lt;span style="color:#f92672">*&lt;/span> &lt;span style="color:#66d9ef">sizeof&lt;/span>(T));
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">private&lt;/span>&lt;span style="color:#f92672">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">void&lt;/span> ReAlloc(size_t newCapacity) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">// 1. allocate a new block of memory
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#75715e">// 2. copy/move old elements into new block
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#75715e">// 3. delete
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//1. 尽可能低层次的访问内存，而不是智能指针
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#75715e">//2. 在堆上申请了一块连续(物理连续)的内存空间
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#75715e">//3. 在堆上创建了 newCapacity 个对象，并调用了它们
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#75715e">//的默认构造函数。也就是说，此时内存里已经存在了一
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#75715e">//堆“空”的 Vector3 对象
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#75715e">//T* newBlock = new T[newCapacity];
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//分配原始字节内存，不调用任何构造函数
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		T&lt;span style="color:#f92672">*&lt;/span> newBlock &lt;span style="color:#f92672">=&lt;/span> (T&lt;span style="color:#f92672">*&lt;/span>)&lt;span style="color:#f92672">::&lt;/span>&lt;span style="color:#66d9ef">operator&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span>(newCapacity &lt;span style="color:#f92672">*&lt;/span> &lt;span style="color:#66d9ef">sizeof&lt;/span>(T));
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//如果新容量小于当前大小，即缩小容量
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#66d9ef">if&lt;/span> (newCapacity &lt;span style="color:#f92672">&amp;lt;&lt;/span> m_Size)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#75715e">// 当前大小设置为新容量大小
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			m_Size &lt;span style="color:#f92672">=&lt;/span> newCapacity;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;缩小容量--&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">else&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;增大容量--&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> m_Capacity &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;-&amp;gt;&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> newCapacity &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">for&lt;/span> (size_t i &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>; i &lt;span style="color:#f92672">&amp;lt;&lt;/span> m_Size; i&lt;span style="color:#f92672">++&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#75715e">//不会触发复制构造函数
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			&lt;span style="color:#75715e">//memcpy(newBlock, m_Data, i * sizeof(T);
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#75715e">//复制,会触发复制构造函数
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			&lt;span style="color:#75715e">//newBlock[i] = std::move(m_Data[i]);
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#75715e">// 在 newBlock 的位置上，“构造”一个新对象，其内容移动自旧对象
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			&lt;span style="color:#66d9ef">new&lt;/span>(&lt;span style="color:#f92672">&amp;amp;&lt;/span>newBlock[i]) T(std&lt;span style="color:#f92672">::&lt;/span>move(m_Data[i]));
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//手动释放原来的对象
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#66d9ef">for&lt;/span> (size_t i &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>; i &lt;span style="color:#f92672">&amp;lt;&lt;/span> m_Size; i&lt;span style="color:#f92672">++&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			m_Data[i].&lt;span style="color:#f92672">~&lt;/span>T();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//1. 逐一析构：编译器会根据该内存块记录的大小信息（通常存储在数组头部的隐藏偏移量中），从后往前（或从前往后，取决于实现）调用每一个 Vector3 对象的析构函数。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#75715e">//2. 释放内存：在所有对象的析构函数执行完毕后，才会一次性将整块堆内存归还给操作系统。
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#75715e">//delete[] m_Data;//释放原来指向的内存块
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#f92672">::&lt;/span>&lt;span style="color:#66d9ef">operator&lt;/span> &lt;span style="color:#66d9ef">delete&lt;/span>(m_Data, m_Capacity &lt;span style="color:#f92672">*&lt;/span> &lt;span style="color:#66d9ef">sizeof&lt;/span>(T));
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//delete m_Data;只会触发第一个元素的析构函数
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		m_Data &lt;span style="color:#f92672">=&lt;/span> newBlock;&lt;span style="color:#75715e">//指向新的那个内存块
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		m_Capacity &lt;span style="color:#f92672">=&lt;/span> newCapacity;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	T&lt;span style="color:#f92672">*&lt;/span> m_Data &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">nullptr&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//实际数组个数
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	size_t m_Size &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//可分配存储的元素个数
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	size_t m_Capacity &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>};
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#endif&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h1 id="main使用">Main使用&lt;a class="anchor" href="#main%e4%bd%bf%e7%94%a8">#&lt;/a>&lt;/h1>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#ifdef LY_EP94
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;iostream&amp;gt;&lt;/span>&lt;span style="color:#75715e"> 
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;vector&amp;gt;&lt;/span>&lt;span style="color:#75715e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;#34;94_01_vector.h&amp;#34;&lt;/span>&lt;span style="color:#75715e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{ 
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	Vector&lt;span style="color:#f92672">&amp;lt;&lt;/span>&lt;span style="color:#66d9ef">int&lt;/span>&lt;span style="color:#f92672">&amp;gt;&lt;/span> values;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	values.EmplaceBack(&lt;span style="color:#ae81ff">1&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	values.EmplaceBack(&lt;span style="color:#ae81ff">2&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	values.EmplaceBack(&lt;span style="color:#ae81ff">3&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	values.EmplaceBack(&lt;span style="color:#ae81ff">4&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	values.EmplaceBack(&lt;span style="color:#ae81ff">5&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Not using iterators:&lt;/span>&lt;span style="color:#ae81ff">\n&lt;/span>&lt;span style="color:#e6db74">&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">for&lt;/span> (&lt;span style="color:#66d9ef">int&lt;/span> i &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>; i &lt;span style="color:#f92672">&amp;lt;&lt;/span> values.Size(); i&lt;span style="color:#f92672">++&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> values[i] &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Range-based for loop&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">for&lt;/span> (&lt;span style="color:#66d9ef">int&lt;/span> value : values)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> value &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Iterator:&lt;/span>&lt;span style="color:#ae81ff">\n&lt;/span>&lt;span style="color:#e6db74">&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">for&lt;/span> (Vector&lt;span style="color:#f92672">&amp;lt;&lt;/span>&lt;span style="color:#66d9ef">int&lt;/span>&lt;span style="color:#f92672">&amp;gt;::&lt;/span>Iterator it &lt;span style="color:#f92672">=&lt;/span> values.begin();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		it &lt;span style="color:#f92672">!=&lt;/span> values.end(); it&lt;span style="color:#f92672">++&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		std&lt;span style="color:#f92672">::&lt;/span>cout &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#f92672">*&lt;/span>it &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> std&lt;span style="color:#f92672">::&lt;/span>endl;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	std&lt;span style="color:#f92672">::&lt;/span>cin.get();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#endif;&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item><item><title>92动态数组实现</title><link>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/81-/92%E5%8A%A8%E6%80%81%E6%95%B0%E7%BB%84%E5%AE%9E%E7%8E%B0/</link><pubDate>Mon, 09 Mar 2026 13:03:14 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/cpp/chernoCPP/81-/92%E5%8A%A8%E6%80%81%E6%95%B0%E7%BB%84%E5%AE%9E%E7%8E%B0/</guid><description>&lt;p>涉及到了&lt;mark>手动内存管理&lt;/mark>、&lt;mark>堆分配&lt;/mark>以及&lt;mark>模板类&lt;/mark>的深层逻辑。&lt;/p>
 &lt;h1 id="简要概述">简要概述&lt;a class="anchor" href="#%e7%ae%80%e8%a6%81%e6%a6%82%e8%bf%b0">#&lt;/a>&lt;/h1>
 &lt;ul>
 &lt;li>&lt;mark>核心目标：实现动态扩容&lt;/mark>
