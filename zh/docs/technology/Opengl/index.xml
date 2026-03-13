@@ -5,14 +5,14 @@
 &lt;p>本章及下一章的重点是&lt;mark>启动并运行 GLFW，确保它能正确创建 OpenGL 上下文，并显示一个简单的窗口&lt;/mark>供我们进行实验。本章将采用循序渐进的方式，讲解&lt;mark>如何获取、构建和链接 GLFW 库&lt;/mark>。截至本文撰写之时，我们将使用 Microsoft Visual Studio 2019 IDE（请注意，在更新的 Visual Studio 版本中，此过程相同）。如果您未使用 Visual Studio（或更早的版本），也无需担心，在大多数其他 IDE 中，此过程也类似。&lt;/p>
 &lt;h1 id="建造-glfw">建造 GLFW&lt;a class="anchor" href="#%e5%bb%ba%e9%80%a0-glfw">#&lt;/a>&lt;/h1>
 &lt;p>您可以从 GLFW 的网页 
-&lt;a target="_blank" href="http://www.glfw.org/download.html">下载&lt;/a>页面获取它。GLFW 已经提供了适用于 Visual Studio 2012 到 2019 的预编译二进制文件和头文件，但为了完整起见，我们将从源代码自行编译 GLFW。这样做是为了让您体验自行编译开源库的过程，因为并非所有库都有预编译的二进制文件。那么，让我们下载_源代码包_吧。&lt;/p>
+&lt;a target="_blank" href="http://www.glfw.org/download.html">下载&lt;/a>页面获取它。GLFW 已经提供了适用于 Visual Studio 2012 到 2019 的预编译二进制文件和头文件，但为了完整起见，&lt;mark>我们将从源代码自行编译 GLFW&lt;/mark>。这样做是为了让您体验自行编译开源库的过程，因为并非所有库都有预编译的二进制文件。那么，让我们下载_源代码包_吧。&lt;/p>
 &lt;p>我们将把所有库都构建成 64 位二进制文件，因此如果您使用的是预编译的二进制文件，请确保获取 64 位二进制文件。&lt;/p>
 &lt;p>下载完源代码包后，请解压缩并打开其内容。我们只需要其中的几个项目：&lt;/p>
 &lt;ul>
 &lt;li>编译后生成的库。&lt;/li>
-&lt;li>&lt;mark>包含&lt;/mark>文件夹。&lt;/li>
+&lt;li>&lt;code>include&lt;/code>文件夹。&lt;/li>
 &lt;/ul>
-&lt;p>从源代码编译库可以确保生成的库完美适配您的 CPU/操作系统，这是预编译二进制文件并不总是能提供的（有时，您的系统甚至没有可用的预编译二进制文件）。然而，向开源社区提供源代码的问题在于，并非所有人都使用相同的 IDE 或构建系统来开发应用程序，这意味着提供的项目/解决方案文件可能与其他人的配置不兼容。因此，其他人必须使用提供的 .c/.cpp 和 .h/.hpp 文件来配置自己的项目/解决方案，这非常繁琐。正是出于这些原因，才有了 CMake 这个工具。&lt;/p></description></item><item><title>01OpenGL</title><link>https://lwmfjc.github.io/zh/docs/technology/Opengl/learnopengl/01%E5%85%A5%E9%97%A8/01OpenGL/</link><pubDate>Fri, 13 Mar 2026 15:58:58 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Opengl/learnopengl/01%E5%85%A5%E9%97%A8/01OpenGL/</guid><description>&lt;p>在开始我们的探索之旅前，我们首先应该明确 OpenGL 究竟是什么。OpenGL 主要&lt;mark>被视为一个 API（应用程序编程接口）&lt;/mark>，它&lt;mark>提供了一系列可用于操作图形和图像的函数&lt;/mark>。然而，&lt;mark>OpenGL 本身并非 API，而仅仅是一个规范&lt;/mark>，由 
+&lt;p>&lt;mark>从源代码编译库可以确保生成的库完美适配您的 CPU/操作系统&lt;/mark>，这是预编译二进制文件并不总是能提供的（有时，您的系统甚至没有可用的预编译二进制文件）。然而，向开源社区提供源代码的问题在于，&lt;mark>并非所有人都使用相同的 IDE 或构建系统&lt;/mark>来开发应用程序，这意味着提供的项目/解决方案文件可能与其他人的配置不兼容。因此，&lt;mark>其他人必须使用提供的 .c/.cpp 和 .h/.hpp 文件来配置自己的项目/解决方案，这非常繁琐。正是出于这些原因，才有了 CMake 这个工具&lt;/mark>。&lt;/p></description></item><item><title>01OpenGL</title><link>https://lwmfjc.github.io/zh/docs/technology/Opengl/learnopengl/01%E5%85%A5%E9%97%A8/01OpenGL/</link><pubDate>Fri, 13 Mar 2026 15:58:58 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Opengl/learnopengl/01%E5%85%A5%E9%97%A8/01OpenGL/</guid><description>&lt;p>在开始我们的探索之旅前，我们首先应该明确 OpenGL 究竟是什么。OpenGL 主要&lt;mark>被视为一个 API（应用程序编程接口）&lt;/mark>，它&lt;mark>提供了一系列可用于操作图形和图像的函数&lt;/mark>。然而，&lt;mark>OpenGL 本身并非 API，而仅仅是一个规范&lt;/mark>，由 
 &lt;a target="_blank" href="http://www.khronos.org/">Khronos Group&lt;/a> 开发和维护。&lt;/p>
 &lt;p>&lt;img src="img/ly-20260313170752181.png" alt="" />&lt;/p>
 &lt;p>OpenGL 规范明确规定了每个函数的输出结果及其执行方式。开发者需要根据规范 &lt;em>实现&lt;/em> 这些函数，并找到相应的解决方案。由于 &lt;mark>OpenGL 规范并未提供具体的实现细节&lt;/mark>，因此&lt;mark>实际开发的 OpenGL 版本可以采用不同的实现方式&lt;/mark>，只要其&lt;mark>结果符合规范&lt;/mark>（从而对用户而言相同）即可。&lt;/p>
