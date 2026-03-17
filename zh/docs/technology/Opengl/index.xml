@@ -1,4 +1,23 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>随记</title><link>https://lwmfjc.github.io/zh/docs/technology/Opengl/</link><description>Recent content on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Mon, 16 Mar 2026 10:29:53 +0800</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/docs/technology/Opengl/index.xml" rel="self" type="application/rss+xml"/><item><title>06Textures</title><link>https://lwmfjc.github.io/zh/docs/technology/Opengl/learnopengl/01%E5%85%A5%E9%97%A8/06Textures/</link><pubDate>Mon, 16 Mar 2026 10:29:53 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Opengl/learnopengl/01%E5%85%A5%E9%97%A8/06Textures/</guid><description>&lt;h2 id="textures">Textures&lt;a class="anchor" href="#textures">#&lt;/a>&lt;/h2>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>随记</title><link>https://lwmfjc.github.io/zh/docs/technology/Opengl/</link><description>Recent content on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Tue, 17 Mar 2026 08:58:33 +0800</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/docs/technology/Opengl/index.xml" rel="self" type="application/rss+xml"/><item><title>07Transformations</title><link>https://lwmfjc.github.io/zh/docs/technology/Opengl/learnopengl/01%E5%85%A5%E9%97%A8/07Transformations/</link><pubDate>Tue, 17 Mar 2026 08:58:33 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Opengl/learnopengl/01%E5%85%A5%E9%97%A8/07Transformations/</guid><description>&lt;h2 id="转变">转变&lt;a class="anchor" href="#%e8%bd%ac%e5%8f%98">#&lt;/a>&lt;/h2>
+&lt;p>我们现在知道如何创建物体，给它们着色，或者用纹理赋予它们精细的外观，但它们仍然不够有趣，因为它们都是静态物体。我们可以尝试通过改变它们的顶点并在每一帧重新配置它们的缓冲区来让它们动起来，但这很麻烦，而且会消耗大量的处理能力。其实有更好的方法来变换物体，那就是使用（多个）矩阵对象。但这并不意味着我们要讨论功夫和庞大的数字人工世界。&lt;/p>
+&lt;p>矩阵是非常强大的数学结构，乍一看似乎令人生畏，但一旦你熟悉了它们，就会发现它们非常有用。在讨论矩阵时，我们需要稍微了解一些数学知识，对于数学基础较好的读者，我还会提供一些额外的阅读资源。&lt;/p>
+&lt;p>然而，要充分理解变换，我们首先需要深入研究向量，然后再讨论矩阵。本章的重点是为你提供一些我们后续会用到的基本数学知识。如果这些内容比较难懂，请尽量理解它们，并在需要时再回到本章复习相关概念。&lt;/p>
+&lt;h2 id="向量">向量&lt;a class="anchor" href="#%e5%90%91%e9%87%8f">#&lt;/a>&lt;/h2>
+&lt;p>从最基本的定义来看，向量就是方向，仅此而已。向量具有方向和大小（也称为强度或长度）。你可以把向量想象成藏宝图上的指示：“向左走10步，然后向北走3步，再向右走5步”；这里，“向左”是方向，“10步”是向量的大小。因此，藏宝图上的指示包含了3个向量。向量可以是任意维度，但我们通常处理的是2到4维的向量。二维向量表示平面上的一个方向（想想二维图形），三维向量可以表示三维空间中的任何方向。&lt;/p>
+&lt;p>下面你会看到三个向量，每个向量在二维图中用 &lt;code>(x,y)&lt;/code> 表示为箭头。由于二维（而非三维）表示向量更直观，你可以将这些二维向量视为 &lt;code>z&lt;/code> 坐标为 &lt;code>0&lt;/code> 的三维向量。由于向量表示方向，向量的原点不会改变其值。在下面的图中我们可以看到，向量 v¯ 和 w¯ 即使原点不同，它们的值也相等：&lt;/p>
+&lt;p>&lt;img src="https://learnopengl.com/img/getting-started/vectors.png" alt="" />&lt;/p>
+&lt;p>数学家在描述向量时，通常倾向于使用头顶带横线的字符符号，例如 v¯ 。此外，在公式中表示向量时，通常也采用以下方式：&lt;/p>
+&lt;p>v¯=(xyz)&lt;/p>
+&lt;p>由于向量被定义为方向，因此有时很难将其可视化为位置。如果我们想将向量可视化为位置，我们可以将方向向量的原点想象为 &lt;code>(0,0,0)&lt;/code> ，然后指向某个特定方向来确定该点，从而使其成为位置向量（我们也可以指定不同的原点，然后说：“该向量从该原点指向空间中的该点”）。位置向量 &lt;code>(3,5)&lt;/code> 则指向原点为 &lt;code>(0,0)&lt;/code> 的图上的 &lt;code>(3,5)&lt;/code> 点。因此，我们可以利用向量来描述二维和三维空间中的方向&lt;strong>和&lt;/strong>位置。&lt;/p>
+&lt;p>就像对普通数字一样，我们也可以对向量定义几种运算（其中一些你已经见过了）。&lt;/p>
+&lt;h2 id="标量向量运算">标量向量运算&lt;a class="anchor" href="#%e6%a0%87%e9%87%8f%e5%90%91%e9%87%8f%e8%bf%90%e7%ae%97">#&lt;/a>&lt;/h2>
+&lt;p>标量是一个数字。当对向量进行加/减/乘/除运算时，我们只需将向量的每个元素分别乘以或减去该标量即可。例如，加法运算如下所示：&lt;/p>
+$$
+\begin{pmatrix} \color{red}1 \\ \color{green}2 \\ \color{blue}3 \end{pmatrix} + x \rightarrow 
+\begin{pmatrix} \color{red}1 \\ \color{green}2 \\ \color{blue}3 \end{pmatrix} + 
+\begin{pmatrix} x \\ x \\ x \end{pmatrix} = 
+\begin{pmatrix} \color{red}1+x \\ \color{green}2+x \\ \color{blue}3+x \end{pmatrix}
+$$&lt;p>其中 + 可以是 + 、 − 、 ⋅ 或 ÷ ，其中 ⋅ 是乘法运算符。&lt;/p></description></item><item><title>06Textures</title><link>https://lwmfjc.github.io/zh/docs/technology/Opengl/learnopengl/01%E5%85%A5%E9%97%A8/06Textures/</link><pubDate>Mon, 16 Mar 2026 10:29:53 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Opengl/learnopengl/01%E5%85%A5%E9%97%A8/06Textures/</guid><description>&lt;h2 id="textures">Textures&lt;a class="anchor" href="#textures">#&lt;/a>&lt;/h2>
 &lt;p>我们了解到，为了增加物体的细节，我们可以&lt;mark>为每个顶点设置颜色，从而创建一些有趣的图像&lt;/mark>。然而，为了获得相当逼真的效果，我们需要大量的顶点才能指定多种颜色。这会带来相当大的额外开销，因为每个模型都需要更多的顶点，并且每个顶点都需要一个颜色属性。&lt;/p>
 &lt;p>&lt;mark>艺术家和程序员通常更喜欢使用纹理&lt;/mark>。纹理是一种二维图像（甚至还有一维和三维纹理），用于为物体添加细节；可以把纹理想象成&lt;mark>一张印有精美砖块图案（例如）的纸，将其整齐地折叠覆盖在你的三维房屋上，使房屋看起来像是有石头外墙一样&lt;/mark>。因为我们可以&lt;mark>在单个图像中添加大量细节，所以无需指定额外的顶点&lt;/mark>，就能使物体看起来极其精细。&lt;/p>
 &lt;blockquote class='book-hint '>
