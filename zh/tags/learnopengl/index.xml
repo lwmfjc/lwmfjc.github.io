@@ -1,45 +1,10 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Learnopengl on 随记</title><link>https://lwmfjc.github.io/zh/tags/learnopengl/</link><description>Recent content in Learnopengl on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Tue, 17 Mar 2026 08:58:33 +0800</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/tags/learnopengl/index.xml" rel="self" type="application/rss+xml"/><item><title>07Transformations</title><link>https://lwmfjc.github.io/zh/docs/technology/Opengl/learnopengl/01%E5%85%A5%E9%97%A8/07Transformations/</link><pubDate>Tue, 17 Mar 2026 08:58:33 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Opengl/learnopengl/01%E5%85%A5%E9%97%A8/07Transformations/</guid><description>&lt;p>其中 
- 
-
- 
- 
- 
- 
- 
- 
- &lt;span class="katex">&lt;math xmlns="http://www.w3.org/1998/Math/MathML">&lt;semantics>&lt;mrow>&lt;mi>y&lt;/mi>&lt;mo>=&lt;/mo>&lt;msup>&lt;mi>x&lt;/mi>&lt;mn>2&lt;/mn>&lt;/msup>&lt;/mrow>&lt;annotation encoding="application/x-tex">y=x^2&lt;/annotation>&lt;/semantics>&lt;/math>&lt;/span>
- 表示向量
- 
-
- 
- 
- 
- 
- 
- 
- &lt;span class="katex">&lt;math xmlns="http://www.w3.org/1998/Math/MathML">&lt;semantics>&lt;mrow>&lt;mover accent="true">&lt;mstyle mathcolor="red">&lt;mi>v&lt;/mi>&lt;/mstyle>&lt;mo>ˉ&lt;/mo>&lt;/mover>&lt;/mrow>&lt;annotation encoding="application/x-tex">\bar{\color{red}v}&lt;/annotation>&lt;/semantics>&lt;/math>&lt;/span>
- 的长度。通过在方程中添加 
- 
-
- 
- 
- 
- 
- 
- 
- &lt;span class="katex">&lt;math xmlns="http://www.w3.org/1998/Math/MathML">&lt;semantics>&lt;mrow>&lt;msup>&lt;mi>z&lt;/mi>&lt;mn>2&lt;/mn>&lt;/msup>&lt;/mrow>&lt;annotation encoding="application/x-tex">z^2&lt;/annotation>&lt;/semantics>&lt;/math>&lt;/span>
- ，可以很容易地将
- 
-
- 
- 
- 
- 
- 
- 
- &lt;span class="katex">&lt;math xmlns="http://www.w3.org/1998/Math/MathML">&lt;semantics>&lt;mrow>&lt;msup>&lt;mi>x&lt;/mi>&lt;mn>2&lt;/mn>&lt;/msup>&lt;/mrow>&lt;annotation encoding="application/x-tex">x^2&lt;/annotation>&lt;/semantics>&lt;/math>&lt;/span>
- 其扩展到 3D。&lt;/p>
-&lt;p>I will give you \$2 if you can solve &lt;/p>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Learnopengl on 随记</title><link>https://lwmfjc.github.io/zh/tags/learnopengl/</link><description>Recent content in Learnopengl on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Thu, 19 Mar 2026 08:01:16 +0800</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/tags/learnopengl/index.xml" rel="self" type="application/rss+xml"/><item><title>09Camera</title><link>https://lwmfjc.github.io/zh/docs/technology/Opengl/learnopengl/01%E5%85%A5%E9%97%A8/09Camera/</link><pubDate>Thu, 19 Mar 2026 08:01:16 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Opengl/learnopengl/01%E5%85%A5%E9%97%A8/09Camera/</guid><description>&lt;h1 id="camera">Camera&lt;a class="anchor" href="#camera">#&lt;/a>&lt;/h1>
+&lt;p>上一章我们讨论了视图矩阵以及如何利用视图矩阵在场景中移动（我们稍微向后移动了一下）。OpenGL 本身并不支持 &lt;em>摄像机&lt;/em> 的概念，但我们可以尝试通过&lt;mark>反向移动场景中的所有物体来模拟摄像机，从而产生&lt;em>移动&lt;/em>的错觉&lt;/mark>。&lt;/p>
+&lt;p>本章我们将讨论如何在 OpenGL 中设置摄像机。我们将介绍一种&lt;mark>飞行式摄像机&lt;/mark>，它允许您&lt;mark>在 3D 场景中自由移动&lt;/mark>。我们还&lt;mark>将讨论键盘和鼠标输入&lt;/mark>，最后介绍&lt;mark>自定义摄像机类&lt;/mark>。&lt;/p>
+&lt;h1 id="相机视图空间-cameraview-space">相机/视图空间 Camera/View space&lt;a class="anchor" href="#%e7%9b%b8%e6%9c%ba%e8%a7%86%e5%9b%be%e7%a9%ba%e9%97%b4-cameraview-space">#&lt;/a>&lt;/h1>
+&lt;p>当我们讨论相机/视图空间时，指的是从相机视角（即场景原点）观察到的所有顶点坐标：视图矩阵将所有&lt;mark>世界坐标&lt;/mark>转换为&lt;mark>相对于&lt;em>相机位置和方向&lt;/em>的视图坐标&lt;/mark>。要&lt;em>定义一个相机&lt;/em>，我们需要它在世界空间中的位置、它的朝向、一个指向右侧的向量和一个指向上方的向量。细心的读者可能会注意到，我们实际上要&lt;mark>创建一个以&lt;em>相机位置&lt;/em>为原点的、具有&lt;em>三个相互垂直的单位轴&lt;/em>的坐标系&lt;/mark>。 &lt;del>本章前面的目的，那转换成这个坐标系的目的又是什么呢？&amp;mdash;&amp;gt;(重要★★)：世界上所有的物体坐标都重新量一遍，量出它们==&lt;em>相对&lt;/em>于你&lt;em>眼睛&lt;/em>的&lt;em>距离和角度&lt;/em>==。&lt;/del>&lt;br>
+&lt;del>注意下面这个公式：&lt;/del>&lt;br>
+&lt;/p>
 
  
  
@@ -48,11 +13,159 @@
  
  &lt;div class="math-block" style="margin: 1rem 0; overflow-x: auto;">
  
- &lt;span class="katex">&lt;math xmlns="http://www.w3.org/1998/Math/MathML" display="block">&lt;semantics>&lt;mrow>&lt;mi>y&lt;/mi>&lt;mo>=&lt;/mo>&lt;msup>&lt;mi>x&lt;/mi>&lt;mn>2&lt;/mn>&lt;/msup>&lt;/mrow>&lt;annotation encoding="application/x-tex">y = x^2&lt;/annotation>&lt;/semantics>&lt;/math>&lt;/span>
+ &lt;span class="katex">&lt;math xmlns="http://www.w3.org/1998/Math/MathML" display="block">&lt;semantics>&lt;mtable rowspacing="0.16em" columnalign="center" columnspacing="1em">&lt;mtr>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="false">&lt;mrow>&lt;mi>L&lt;/mi>&lt;mi>o&lt;/mi>&lt;mi>o&lt;/mi>&lt;mi>k&lt;/mi>&lt;mi>A&lt;/mi>&lt;mi>t&lt;/mi>&lt;mo>=&lt;/mo>&lt;mrow>&lt;mo fence="true">[&lt;/mo>&lt;mtable rowspacing="0.16em" columnalign="center center center center" columnspacing="1em">&lt;mtr>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="false">&lt;mstyle mathcolor="red">&lt;msub>&lt;mi>R&lt;/mi>&lt;mi>x&lt;/mi>&lt;/msub>&lt;/mstyle>&lt;/mstyle>&lt;/mtd>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="false">&lt;mstyle mathcolor="red">&lt;msub>&lt;mi>R&lt;/mi>&lt;mi>y&lt;/mi>&lt;/msub>&lt;/mstyle>&lt;/mstyle>&lt;/mtd>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="false">&lt;mstyle mathcolor="red">&lt;msub>&lt;mi>R&lt;/mi>&lt;mi>z&lt;/mi>&lt;/msub>&lt;/mstyle>&lt;/mstyle>&lt;/mtd>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="false">&lt;mn>0&lt;/mn>&lt;/mstyle>&lt;/mtd>&lt;/mtr>&lt;mtr>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="false">&lt;mstyle mathcolor="green">&lt;msub>&lt;mi>U&lt;/mi>&lt;mi>x&lt;/mi>&lt;/msub>&lt;/mstyle>&lt;/mstyle>&lt;/mtd>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="false">&lt;mstyle mathcolor="green">&lt;msub>&lt;mi>U&lt;/mi>&lt;mi>y&lt;/mi>&lt;/msub>&lt;/mstyle>&lt;/mstyle>&lt;/mtd>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="false">&lt;mstyle mathcolor="green">&lt;msub>&lt;mi>U&lt;/mi>&lt;mi>z&lt;/mi>&lt;/msub>&lt;/mstyle>&lt;/mstyle>&lt;/mtd>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="false">&lt;mn>0&lt;/mn>&lt;/mstyle>&lt;/mtd>&lt;/mtr>&lt;mtr>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="false">&lt;mstyle mathcolor="blue">&lt;msub>&lt;mi>D&lt;/mi>&lt;mi>x&lt;/mi>&lt;/msub>&lt;/mstyle>&lt;/mstyle>&lt;/mtd>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="false">&lt;mstyle mathcolor="blue">&lt;msub>&lt;mi>D&lt;/mi>&lt;mi>y&lt;/mi>&lt;/msub>&lt;/mstyle>&lt;/mstyle>&lt;/mtd>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="false">&lt;mstyle mathcolor="blue">&lt;msub>&lt;mi>D&lt;/mi>&lt;mi>z&lt;/mi>&lt;/msub>&lt;/mstyle>&lt;/mstyle>&lt;/mtd>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="false">&lt;mn>0&lt;/mn>&lt;/mstyle>&lt;/mtd>&lt;/mtr>&lt;mtr>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="false">&lt;mn>0&lt;/mn>&lt;/mstyle>&lt;/mtd>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="false">&lt;mn>0&lt;/mn>&lt;/mstyle>&lt;/mtd>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="false">&lt;mn>0&lt;/mn>&lt;/mstyle>&lt;/mtd>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="false">&lt;mn>1&lt;/mn>&lt;/mstyle>&lt;/mtd>&lt;/mtr>&lt;/mtable>&lt;mo fence="true">]&lt;/mo>&lt;/mrow>&lt;mo>∗&lt;/mo>&lt;mrow>&lt;mo fence="true">[&lt;/mo>&lt;mtable rowspacing="0.16em" columnalign="center center center center" columnspacing="1em">&lt;mtr>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="false">&lt;mn>1&lt;/mn>&lt;/mstyle>&lt;/mtd>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="false">&lt;mn>0&lt;/mn>&lt;/mstyle>&lt;/mtd>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="false">&lt;mn>0&lt;/mn>&lt;/mstyle>&lt;/mtd>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="false">&lt;mrow>&lt;mo>−&lt;/mo>&lt;mstyle mathcolor="purple">&lt;msub>&lt;mi>P&lt;/mi>&lt;mi>x&lt;/mi>&lt;/msub>&lt;/mstyle>&lt;/mrow>&lt;/mstyle>&lt;/mtd>&lt;/mtr>&lt;mtr>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="false">&lt;mn>0&lt;/mn>&lt;/mstyle>&lt;/mtd>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="false">&lt;mn>1&lt;/mn>&lt;/mstyle>&lt;/mtd>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="false">&lt;mn>0&lt;/mn>&lt;/mstyle>&lt;/mtd>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="false">&lt;mrow>&lt;mo>−&lt;/mo>&lt;mstyle mathcolor="purple">&lt;msub>&lt;mi>P&lt;/mi>&lt;mi>y&lt;/mi>&lt;/msub>&lt;/mstyle>&lt;/mrow>&lt;/mstyle>&lt;/mtd>&lt;/mtr>&lt;mtr>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="false">&lt;mn>0&lt;/mn>&lt;/mstyle>&lt;/mtd>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="false">&lt;mn>0&lt;/mn>&lt;/mstyle>&lt;/mtd>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="false">&lt;mn>1&lt;/mn>&lt;/mstyle>&lt;/mtd>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="false">&lt;mrow>&lt;mo>−&lt;/mo>&lt;mstyle mathcolor="purple">&lt;msub>&lt;mi>P&lt;/mi>&lt;mi>z&lt;/mi>&lt;/msub>&lt;/mstyle>&lt;/mrow>&lt;/mstyle>&lt;/mtd>&lt;/mtr>&lt;mtr>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="false">&lt;mn>0&lt;/mn>&lt;/mstyle>&lt;/mtd>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="false">&lt;mn>0&lt;/mn>&lt;/mstyle>&lt;/mtd>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="false">&lt;mn>0&lt;/mn>&lt;/mstyle>&lt;/mtd>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="false">&lt;mn>1&lt;/mn>&lt;/mstyle>&lt;/mtd>&lt;/mtr>&lt;/mtable>&lt;mo fence="true">]&lt;/mo>&lt;/mrow>&lt;/mrow>&lt;/mstyle>&lt;/mtd>&lt;/mtr>&lt;/mtable>&lt;annotation encoding="application/x-tex">\begin{array}{c} LookAt = \begin{bmatrix} \color{red}{R_x} &amp;amp; \color{red}{R_y} &amp;amp; \color{red}{R_z} &amp;amp; 0 \\ \color{green}{U_x} &amp;amp; \color{green}{U_y} &amp;amp; \color{green}{U_z} &amp;amp; 0 \\ \color{blue}{D_x} &amp;amp; \color{blue}{D_y} &amp;amp; \color{blue}{D_z} &amp;amp; 0 \\ 0 &amp;amp; 0 &amp;amp; 0 &amp;amp; 1 \end{bmatrix} * \begin{bmatrix} 1 &amp;amp; 0 &amp;amp; 0 &amp;amp; -\color{purple}{P_x} \\ 0 &amp;amp; 1 &amp;amp; 0 &amp;amp; -\color{purple}{P_y} \\ 0 &amp;amp; 0 &amp;amp; 1 &amp;amp; -\color{purple}{P_z} \\ 0 &amp;amp; 0 &amp;amp; 0 &amp;amp; 1 \end{bmatrix} \end{array}&lt;/annotation>&lt;/semantics>&lt;/math>&lt;/span>
  
  &lt;/div>
-&lt;p>
-&lt;/p>
+&lt;p>左边这个矩阵，是用以观察点为原点的坐标系算出的三个点，来形成新坐标系。由于矩阵 乘法是先进行右边的换算，P表示cameraPos，所以就是说，先乘以右边矩阵，把世界坐标系的原点移到和cameraPos重叠；再乘以左边矩阵，得出在新坐标系下以cameraPos为原点，他的坐标该是多少（也就是换算成了原坐标系下的每个点，在新坐标系下与cameraPos的x,y,z的距离）&lt;/p></description></item><item><title>08Coordinate-Systems</title><link>https://lwmfjc.github.io/zh/docs/technology/Opengl/learnopengl/01%E5%85%A5%E9%97%A8/08Coordinate-Systems/</link><pubDate>Wed, 18 Mar 2026 16:01:39 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Opengl/learnopengl/01%E5%85%A5%E9%97%A8/08Coordinate-Systems/</guid><description>&lt;h1 id="坐标系-coordinate-systems">坐标系 Coordinate Systems&lt;a class="anchor" href="#%e5%9d%90%e6%a0%87%e7%b3%bb-coordinate-systems">#&lt;/a>&lt;/h1>
+&lt;p>上一章我们学习了如何利用变换矩阵来变换所有顶点，从而更好地使用矩阵。OpenGL 要求所有我们希望可见的顶点在每次&lt;mark>顶点着色器运行后&lt;/mark>都处于&lt;mark>归一化设备坐标系&lt;/mark>中。也就是说，每个顶点的 &lt;code>x&lt;/code> 、 &lt;code>y&lt;/code> 和 &lt;code>z&lt;/code> 坐标应该介于 &lt;code>-1.0&lt;/code> 和 &lt;code>1.0&lt;/code> 之间；超出此范围的坐标将不可见。通常的做法是，我们指定一个自定义范围（或空间）内的坐标，然后&lt;mark>在顶点着色器中将这些坐标变换为&lt;em>归一化设备坐标 (NDC)&lt;/em>&lt;/mark>。之后，这些 NDC 坐标会被传递给光栅化器，由光栅化器将其转换为屏幕上的二维坐标/像素。&lt;/p>
+&lt;blockquote class='book-hint '>
+&lt;p>顶点着色器：处理的是“点”（数学上的位置）。
+光栅化器：把“点”连接成“面”，并把这个“面”切碎成一个个对应屏幕像素的“小方块”（片段）。 &lt;del>确定哪些像素属于这个图形&lt;/del>
+片段着色器：给这些被选中的“小方块”涂上最终的颜色。&lt;/p>&lt;/blockquote>&lt;p>将坐标系转换为 NDC 坐标系通常是分步进行的，即先将对象的顶点转换到多个坐标系，最后再转换到 NDC &lt;em>坐标&lt;/em> 系。这样做的好处是，&lt;mark>某些操作/计算在某些坐标系中更容易进行&lt;/mark>，这一点很快就会显现出来。总共有 5 个对我们来说比较重要的坐标系：&lt;/p>
+&lt;ul>
+&lt;li>&lt;em>局部空间（或对象空间）&lt;/em> &lt;del>Local Space，也称物体空间&lt;/del>&lt;/li>
+&lt;li>&lt;em>世界空间&lt;/em> &lt;del>World Space，乘以 Model Matrix (模型矩阵)后得到。把所有物体放到同一个大地图里，有了各自的相对位置&lt;/del>&lt;/li>
+&lt;li>&lt;em>视野空间（或眼睛空间）&lt;/em> &lt;del>乘以 View Matrix (观察矩阵)后得到。状态： 以摄像机为原点(0,0,0)，看所有物体在哪里。类比： 摄影师扛起摄像机对准桌子。现在的坐标不再是“距离片场中心多远”，而是“距离镜头多远、在镜头画面的左边还是右边”&lt;/del>&lt;/li>
+&lt;li>&lt;em>裁剪空间&lt;/em> &lt;del>乘以 Projection Matrix (投影矩阵)后得到。状态： 决定哪些东西在镜头里，哪些在镜头外。类比： 摄影师决定用“广角镜头”还是“长焦镜头”。在这个空间里，超出镜头范围的物体（比如演员伸到画面外的手）会被直接剪掉。透视除法也发生在这个阶段之后。&lt;/del>&lt;/li>
+&lt;li>&lt;em>屏幕空间&lt;/em> &lt;del>Viewport Transform (视口变换)。状态： 将坐标映射到显示器的实际像素（如 
+ 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ &lt;span class="katex">&lt;math xmlns="http://www.w3.org/1998/Math/MathML">&lt;semantics>&lt;mrow>&lt;mn>1920&lt;/mn>&lt;mo>×&lt;/mo>&lt;mn>1080&lt;/mn>&lt;/mrow>&lt;annotation encoding="application/x-tex">1920 \times 1080&lt;/annotation>&lt;/semantics>&lt;/math>&lt;/span>
+ ）。类比： 电影最后投映在电影院的银幕上。&lt;em>原本的比例坐标变成了具体的像素点位置&lt;/em>&lt;/del>&lt;/li>
+&lt;/ul>
+&lt;p>这些都是顶点在最终变成片段之前会经历的不同状态。&lt;/p>
+&lt;p>你现在可能对空间或坐标系究竟是什么感到很困惑，所以我们首先会&lt;mark>以更宏观的方式解释它们&lt;/mark>，展示&lt;mark>整体情况&lt;/mark>以及&lt;mark>每个特定空间所代表的含义&lt;/mark>。&lt;/p>
+&lt;h1 id="全球概况-the-global-picture">全球概况 The global picture&lt;a class="anchor" href="#%e5%85%a8%e7%90%83%e6%a6%82%e5%86%b5-the-global-picture">#&lt;/a>&lt;/h1>
+&lt;p>为了将坐标从一个空间转换到另一个坐标空间，我们将使用几个变换矩阵，其中最重要的包括==&lt;em>模型矩阵&lt;/em>&lt;mark>、&lt;/mark>&lt;em>视图矩阵&lt;/em>&lt;mark>和&lt;/mark>&lt;em>投影矩阵&lt;/em>&lt;mark>。我们的顶点坐标首先在&lt;em>局部空间&lt;/em>中作为局部坐标出现，然后进一步转换为&lt;/mark>*世界坐标 &lt;del>World Coordinates&lt;/del> 、视图坐标 &lt;del>View Coordinates)&lt;/del> 、裁剪坐标 &lt;del>Clip Coordinates&lt;/del> ，最终转换为屏幕坐标 &lt;del>Screen Coordinates&lt;/del> *==。下图展示了这一过程，并说明了每个变换的作用：&lt;/p></description></item><item><title>07Transformations</title><link>https://lwmfjc.github.io/zh/docs/technology/Opengl/learnopengl/01%E5%85%A5%E9%97%A8/07Transformations/</link><pubDate>Tue, 17 Mar 2026 08:58:33 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Opengl/learnopengl/01%E5%85%A5%E9%97%A8/07Transformations/</guid><description>&lt;h1 id="转变-transformations">转变 Transformations&lt;a class="anchor" href="#%e8%bd%ac%e5%8f%98-transformations">#&lt;/a>&lt;/h1>
+&lt;p>我们现在知道如何创建物体，给它们着色，或者用纹理赋予它们精细的外观，但它们仍然不够有趣，因为它们都是静态物体。我们可以&lt;mark>尝试通过改变它们的顶点并在每一帧重新配置它们的缓冲区来让它们动起来&lt;/mark>，但这很麻烦，而且会消耗大量的处理能力。其实有更好的方法来变换物体，那就是&lt;mark>使用（多个）矩阵对象&lt;/mark>。但这并不意味着我们要讨论功夫和庞大的数字人工世界。&lt;/p>
+&lt;p>矩阵是非常强大的数学结构，乍一看似乎令人生畏，但一旦你熟悉了它们，就会发现它们非常有用。在讨论矩阵时，我们需要&lt;mark>稍微了解一些数学知识&lt;/mark>，对于数学基础较好的读者，我还会提供一些额外的阅读资源。&lt;/p>
+&lt;p>然而，要充分理解&lt;mark>变换&lt;/mark>，我们首先需要深入研究&lt;mark>向量&lt;/mark>，然后再讨论&lt;mark>矩阵&lt;/mark>。本章的重点是为你提供一些我们后续会用到的&lt;mark>基本数学知识&lt;/mark>。如果这些内容比较难懂，请&lt;mark>尽量理解&lt;/mark>它们，并在需要时再回到本章复习相关概念。&lt;/p>
+&lt;h1 id="向量-vectors">向量 Vectors&lt;a class="anchor" href="#%e5%90%91%e9%87%8f-vectors">#&lt;/a>&lt;/h1>
+&lt;p>从最基本的定义来看，&lt;mark>向量就是方向&lt;/mark>，仅此而已。&lt;mark>向量具有&lt;em>方向和大小&lt;/em>（也称为强度或长度）&lt;/mark>。你可以把向量想象成藏宝图上的指示：“向左走10步，然后向北走3步，再向右走5步”；这里，“向左”是方向，“10步”是向量的大小。因此，藏宝图上的指示包含了3个向量。向量可以是任意维度，但我们通常处理的是&lt;mark>2到4维的向量&lt;/mark>。&lt;mark>二维向量&lt;/mark>表示平面上的一个方向（想想二维图形），&lt;mark>三维向量&lt;/mark>可以表示&lt;mark>三维空间&lt;/mark>中的任何方向。&lt;/p>
+&lt;p>下面你会看到三个向量，每个向量在二维图中用 
+ 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ &lt;span class="katex">&lt;math xmlns="http://www.w3.org/1998/Math/MathML">&lt;semantics>&lt;mrow>&lt;mo stretchy="false">(&lt;/mo>&lt;mi>x&lt;/mi>&lt;mo separator="true">,&lt;/mo>&lt;mi>y&lt;/mi>&lt;mo stretchy="false">)&lt;/mo>&lt;/mrow>&lt;annotation encoding="application/x-tex">(x,y)&lt;/annotation>&lt;/semantics>&lt;/math>&lt;/span>
+ 表示为箭头。由于二维（而非三维）表示向量更直观，你可以将这些二维向量视为 
+ 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ &lt;span class="katex">&lt;math xmlns="http://www.w3.org/1998/Math/MathML">&lt;semantics>&lt;mrow>&lt;mi>z&lt;/mi>&lt;/mrow>&lt;annotation encoding="application/x-tex">z&lt;/annotation>&lt;/semantics>&lt;/math>&lt;/span>
+ 坐标为 
+ 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ &lt;span class="katex">&lt;math xmlns="http://www.w3.org/1998/Math/MathML">&lt;semantics>&lt;mrow>&lt;mn>0&lt;/mn>&lt;/mrow>&lt;annotation encoding="application/x-tex">0&lt;/annotation>&lt;/semantics>&lt;/math>&lt;/span>
+ 的三维向量。由于向量表示方向，向量的原点不会改变其值。在下面的图中我们可以看到，向量 
+ 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ &lt;span class="katex">&lt;math xmlns="http://www.w3.org/1998/Math/MathML">&lt;semantics>&lt;mrow>&lt;mstyle mathcolor="red">&lt;mover accent="true">&lt;mi>v&lt;/mi>&lt;mo>ˉ&lt;/mo>&lt;/mover>&lt;/mstyle>&lt;/mrow>&lt;annotation encoding="application/x-tex">\color{red}{\bar{v}}&lt;/annotation>&lt;/semantics>&lt;/math>&lt;/span>
+ 和 
+ 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ &lt;span class="katex">&lt;math xmlns="http://www.w3.org/1998/Math/MathML">&lt;semantics>&lt;mrow>&lt;mstyle mathcolor="blue">&lt;mover accent="true">&lt;mi>w&lt;/mi>&lt;mo>ˉ&lt;/mo>&lt;/mover>&lt;/mstyle>&lt;/mrow>&lt;annotation encoding="application/x-tex">\color{blue}{\bar{w}}&lt;/annotation>&lt;/semantics>&lt;/math>&lt;/span>
+ 即使原点不同，它们的值也相等：&lt;/p>
+&lt;p>&lt;img src="img/ly-20260317155945571.png" alt="" />&lt;/p>
+&lt;p>数学家在描述向量时，通常倾向于使用&lt;mark>头顶带横线的字符符号，例如 
+ 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ &lt;span class="katex">&lt;math xmlns="http://www.w3.org/1998/Math/MathML">&lt;semantics>&lt;mrow>&lt;mover accent="true">&lt;mi>v&lt;/mi>&lt;mo>ˉ&lt;/mo>&lt;/mover>&lt;/mrow>&lt;annotation encoding="application/x-tex">{\bar{v}}&lt;/annotation>&lt;/semantics>&lt;/math>&lt;/span>
+ &lt;/mark> 此外，在&lt;mark>公式中表示向量时，通常也采用以下方式&lt;/mark>：&lt;/p>
+
+ 
+ 
+ 
+ 
+ 
+ &lt;div class="math-block" style="margin: 1rem 0; overflow-x: auto;">
+ 
+ &lt;span class="katex">&lt;math xmlns="http://www.w3.org/1998/Math/MathML" display="block">&lt;semantics>&lt;mrow>&lt;mover accent="true">&lt;mi>v&lt;/mi>&lt;mo>ˉ&lt;/mo>&lt;/mover>&lt;mo>=&lt;/mo>&lt;mrow>&lt;mo fence="true">(&lt;/mo>&lt;mtable rowspacing="0.16em" columnalign="center" columnspacing="1em">&lt;mtr>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="false">&lt;mstyle mathcolor="red">&lt;mi>x&lt;/mi>&lt;/mstyle>&lt;/mstyle>&lt;/mtd>&lt;/mtr>&lt;mtr>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="false">&lt;mstyle mathcolor="green">&lt;mi>y&lt;/mi>&lt;/mstyle>&lt;/mstyle>&lt;/mtd>&lt;/mtr>&lt;mtr>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="false">&lt;mstyle mathcolor="blue">&lt;mi>z&lt;/mi>&lt;/mstyle>&lt;/mstyle>&lt;/mtd>&lt;/mtr>&lt;/mtable>&lt;mo fence="true">)&lt;/mo>&lt;/mrow>&lt;/mrow>&lt;annotation encoding="application/x-tex">\bar{v} = \begin{pmatrix} \color{red}x \\ \color{green}y \\ \color{blue}z \end{pmatrix}&lt;/annotation>&lt;/semantics>&lt;/math>&lt;/span>
+ 
+ &lt;/div>
+&lt;p>由于&lt;mark>向量被定义为方向，因此有时很难将其可视化为位置&lt;/mark>。如果我们想&lt;mark>将向量可视化为位置，我们可以将&lt;em>方向向量&lt;/em>的&lt;em>原点&lt;/em>想象为 
+ 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ &lt;span class="katex">&lt;math xmlns="http://www.w3.org/1998/Math/MathML">&lt;semantics>&lt;mrow>&lt;mo stretchy="false">(&lt;/mo>&lt;mn>0&lt;/mn>&lt;mo separator="true">,&lt;/mo>&lt;mn>0&lt;/mn>&lt;mo separator="true">,&lt;/mo>&lt;mn>0&lt;/mn>&lt;mo stretchy="false">)&lt;/mo>&lt;/mrow>&lt;annotation encoding="application/x-tex">(0,0,0)&lt;/annotation>&lt;/semantics>&lt;/math>&lt;/span>
+ &lt;/mark> ，然后&lt;mark>指向某个特定方向&lt;/mark>来确定该点，从而使其成为&lt;mark>位置向量&lt;/mark>（我们也可以指定不同的原点，然后说：“该向量从该原点指向空间中的该点”）。位置向量 
+ 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ &lt;span class="katex">&lt;math xmlns="http://www.w3.org/1998/Math/MathML">&lt;semantics>&lt;mrow>&lt;mo stretchy="false">(&lt;/mo>&lt;mn>3&lt;/mn>&lt;mo separator="true">,&lt;/mo>&lt;mn>5&lt;/mn>&lt;mo stretchy="false">)&lt;/mo>&lt;/mrow>&lt;annotation encoding="application/x-tex">(3,5)&lt;/annotation>&lt;/semantics>&lt;/math>&lt;/span>
+ 则指向原点为 
+ 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ &lt;span class="katex">&lt;math xmlns="http://www.w3.org/1998/Math/MathML">&lt;semantics>&lt;mrow>&lt;mo stretchy="false">(&lt;/mo>&lt;mn>0&lt;/mn>&lt;mo separator="true">,&lt;/mo>&lt;mn>0&lt;/mn>&lt;mo stretchy="false">)&lt;/mo>&lt;/mrow>&lt;annotation encoding="application/x-tex">(0,0)&lt;/annotation>&lt;/semantics>&lt;/math>&lt;/span>
+ 的图上的 
+ 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ &lt;span class="katex">&lt;math xmlns="http://www.w3.org/1998/Math/MathML">&lt;semantics>&lt;mrow>&lt;mo stretchy="false">(&lt;/mo>&lt;mn>3&lt;/mn>&lt;mo separator="true">,&lt;/mo>&lt;mn>5&lt;/mn>&lt;mo stretchy="false">)&lt;/mo>&lt;/mrow>&lt;annotation encoding="application/x-tex">(3,5)&lt;/annotation>&lt;/semantics>&lt;/math>&lt;/span>
+ 点。因此，我们可以&lt;mark>利用向量来描述二维和三维空间中的&lt;em>方向&lt;/em>和&lt;em>位置&lt;/em>&lt;/mark>。&lt;/p>
+&lt;p>就像对普通数字一样，我们也可以对向量定义几种运算（其中一些你已经见过了）。&lt;/p>
+&lt;h2 id="标量向量运算-scalar-vector-operations">标量向量运算 Scalar vector operations&lt;a class="anchor" href="#%e6%a0%87%e9%87%8f%e5%90%91%e9%87%8f%e8%bf%90%e7%ae%97-scalar-vector-operations">#&lt;/a>&lt;/h2>
+&lt;p>标量是一个数字。当对向量进行加/减/乘/除运算时，我们只需将向量的每个元素分别乘以或减去该标量即可。例如，加法运算如下所示：&lt;/p>
 
  
  
@@ -69,13 +182,7 @@
 &lt;/annotation>&lt;/semantics>&lt;/math>&lt;/span>
  
  &lt;/div>
-&lt;h2 id="转变">转变&lt;a class="anchor" href="#%e8%bd%ac%e5%8f%98">#&lt;/a>&lt;/h2>
-&lt;p>我们现在知道如何创建物体，给它们着色，或者用纹理赋予它们精细的外观，但它们仍然不够有趣，因为它们都是静态物体。我们可以尝试通过改变它们的顶点并在每一帧重新配置它们的缓冲区来让它们动起来，但这很麻烦，而且会消耗大量的处理能力。其实有更好的方法来变换物体，那就是使用（多个）矩阵对象。但这并不意味着我们要讨论功夫和庞大的数字人工世界。&lt;/p>
-&lt;p>矩阵是非常强大的数学结构，乍一看似乎令人生畏，但一旦你熟悉了它们，就会发现它们非常有用。在讨论矩阵时，我们需要稍微了解一些数学知识，对于数学基础较好的读者，我还会提供一些额外的阅读资源。&lt;/p>
-&lt;p>然而，要充分理解变换，我们首先需要深入研究向量，然后再讨论矩阵。本章的重点是为你提供一些我们后续会用到的基本数学知识。如果这些内容比较难懂，请尽量理解它们，并在需要时再回到本章复习相关概念。&lt;/p>
-&lt;h2 id="向量">向量&lt;a class="anchor" href="#%e5%90%91%e9%87%8f">#&lt;/a>&lt;/h2>
-&lt;p>从最基本的定义来看，向量就是方向，仅此而已。向量具有方向和大小（也称为强度或长度）。你可以把向量想象成藏宝图上的指示：“向左走10步，然后向北走3步，再向右走5步”；这里，“向左”是方向，“10步”是向量的大小。因此，藏宝图上的指示包含了3个向量。向量可以是任意维度，但我们通常处理的是2到4维的向量。二维向量表示平面上的一个方向（想想二维图形），三维向量可以表示三维空间中的任何方向。&lt;/p>
-&lt;p>下面你会看到三个向量，每个向量在二维图中用 &lt;code>(x,y)&lt;/code> 表示为箭头。由于二维（而非三维）表示向量更直观，你可以将这些二维向量视为 &lt;code>z&lt;/code> 坐标为 &lt;code>0&lt;/code> 的三维向量。由于向量表示方向，向量的原点不会改变其值。在下面的图中我们可以看到，向量 v¯ 和 w¯ 即使原点不同，它们的值也相等：&lt;/p></description></item><item><title>06Textures</title><link>https://lwmfjc.github.io/zh/docs/technology/Opengl/learnopengl/01%E5%85%A5%E9%97%A8/06Textures/</link><pubDate>Mon, 16 Mar 2026 10:29:53 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Opengl/learnopengl/01%E5%85%A5%E9%97%A8/06Textures/</guid><description>&lt;h2 id="textures">Textures&lt;a class="anchor" href="#textures">#&lt;/a>&lt;/h2>
+&lt;p>其中 + 可以是 + 、 − 、 ⋅ 或 ÷ ，其中 ⋅ 是乘法运算符。&lt;/p></description></item><item><title>06Textures</title><link>https://lwmfjc.github.io/zh/docs/technology/Opengl/learnopengl/01%E5%85%A5%E9%97%A8/06Textures/</link><pubDate>Mon, 16 Mar 2026 10:29:53 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Opengl/learnopengl/01%E5%85%A5%E9%97%A8/06Textures/</guid><description>&lt;h2 id="textures">Textures&lt;a class="anchor" href="#textures">#&lt;/a>&lt;/h2>
 &lt;p>我们了解到，为了增加物体的细节，我们可以&lt;mark>为每个顶点设置颜色，从而创建一些有趣的图像&lt;/mark>。然而，为了获得相当逼真的效果，我们需要大量的顶点才能指定多种颜色。这会带来相当大的额外开销，因为每个模型都需要更多的顶点，并且每个顶点都需要一个颜色属性。&lt;/p>
 &lt;p>&lt;mark>艺术家和程序员通常更喜欢使用纹理&lt;/mark>。纹理是一种二维图像（甚至还有一维和三维纹理），用于为物体添加细节；可以把纹理想象成&lt;mark>一张印有精美砖块图案（例如）的纸，将其整齐地折叠覆盖在你的三维房屋上，使房屋看起来像是有石头外墙一样&lt;/mark>。因为我们可以&lt;mark>在单个图像中添加大量细节，所以无需指定额外的顶点&lt;/mark>，就能使物体看起来极其精细。&lt;/p>
 &lt;blockquote class='book-hint '>
@@ -149,7 +256,7 @@
 &lt;h1 id="建造-glfw">建造 GLFW&lt;a class="anchor" href="#%e5%bb%ba%e9%80%a0-glfw">#&lt;/a>&lt;/h1>
 &lt;p>您可以从 GLFW 的网页 
 &lt;a target="_blank" href="http://www.glfw.org/download.html">下载&lt;/a>页面获取它。GLFW 已经提供了适用于 Visual Studio 2012 到 2019 的预编译二进制文件和头文件，但为了完整起见，&lt;mark>我们将从源代码自行编译 GLFW&lt;/mark>。这样做是为了让您体验自行编译开源库的过程，因为并非所有库都有预编译的二进制文件。那么，让我们下载_源代码包_吧。&lt;/p>
-&lt;p>我们将把所有库都构建成 64 位二进制文件，因此如果您使用的是预编译的二进制文件，请确保获取 64 位二进制文件。&lt;/p>
+&lt;p>我们将把所有库都构建成 64 位二进制文件，因此如果您使用的是预编译的二进制文件，请确保获取 64 位二进制文件。 &lt;del>我这里用的是32位的&lt;/del>&lt;/p>
 &lt;p>下载完源代码包后，请解压缩并打开其内容。我们只需要其中的几个项目：&lt;/p>
 &lt;ul>
 &lt;li>编译后生成的库。&lt;/li>
