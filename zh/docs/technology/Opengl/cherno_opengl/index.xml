@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>随记</title><link>https://lwmfjc.github.io/zh/docs/technology/Opengl/cherno_opengl/</link><description>Recent content on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Tue, 28 Apr 2026 22:49:11 +0800</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/docs/technology/Opengl/cherno_opengl/index.xml" rel="self" type="application/rss+xml"/><item><title>22关于ImGui</title><link>https://lwmfjc.github.io/zh/docs/technology/Opengl/cherno_opengl/22%E5%85%B3%E4%BA%8EImGui/</link><pubDate>Tue, 28 Apr 2026 22:49:11 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Opengl/cherno_opengl/22%E5%85%B3%E4%BA%8EImGui/</guid><description>&lt;p>第 22 集是 Cherno 系列中非常爽的一集，因为它让你告别了“硬编码”坐标的痛苦，转而使用&lt;mark>可视化 UI&lt;/mark> 来直接操控显卡里的数据。&lt;/p>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>随记</title><link>https://lwmfjc.github.io/zh/docs/technology/Opengl/cherno_opengl/</link><description>Recent content on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Tue, 05 May 2026 23:13:37 +0800</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/docs/technology/Opengl/cherno_opengl/index.xml" rel="self" type="application/rss+xml"/><item><title>23批量渲染对象</title><link>https://lwmfjc.github.io/zh/docs/technology/Opengl/cherno_opengl/23%E6%89%B9%E9%87%8F%E6%B8%B2%E6%9F%93%E5%AF%B9%E8%B1%A1/</link><pubDate>Tue, 05 May 2026 23:13:37 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Opengl/cherno_opengl/23%E6%89%B9%E9%87%8F%E6%B8%B2%E6%9F%93%E5%AF%B9%E8%B1%A1/</guid><description/></item><item><title>22关于ImGui</title><link>https://lwmfjc.github.io/zh/docs/technology/Opengl/cherno_opengl/22%E5%85%B3%E4%BA%8EImGui/</link><pubDate>Tue, 28 Apr 2026 22:49:11 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Opengl/cherno_opengl/22%E5%85%B3%E4%BA%8EImGui/</guid><description>&lt;p>第 22 集是 Cherno 系列中非常爽的一集，因为它让你告别了“硬编码”坐标的痛苦，转而使用&lt;mark>可视化 UI&lt;/mark> 来直接操控显卡里的数据。&lt;/p>
 &lt;h1 id="代码">代码&lt;a class="anchor" href="#%e4%bb%a3%e7%a0%81">#&lt;/a>&lt;/h1>
 &lt;p>
 &lt;a target="_blank" href="https://github.com/ocornut/imgui">https://github.com/ocornut/imgui&lt;/a> 下载1.6版本，和视频中保持一致&lt;/p>
@@ -10,6 +10,7 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;#34;imgui_1.60/imgui.h&amp;#34;&lt;/span>&lt;span style="color:#75715e">
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;#34;imgui_1.60/imgui_impl_glfw_gl3.h&amp;#34;&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="shader后的修改">shader后的修改&lt;a class="anchor" href="#shader%e5%90%8e%e7%9a%84%e4%bf%ae%e6%94%b9">#&lt;/a>&lt;/h2>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//=======imgui添加============
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#75715e">//imGui创建上下文
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#75715e">// Setup ImGui binding
@@ -36,6 +37,8 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#66d9ef">bool&lt;/span> show_another_window &lt;span style="color:#f92672">=&lt;/span> false;
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		ImVec4 clear_color &lt;span style="color:#f92672">=&lt;/span> ImVec4(&lt;span style="color:#ae81ff">0.45f&lt;/span>, &lt;span style="color:#ae81ff">0.55f&lt;/span>, &lt;span style="color:#ae81ff">0.60f&lt;/span>, &lt;span style="color:#ae81ff">1.00f&lt;/span>);
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		glm&lt;span style="color:#f92672">::&lt;/span>vec3 translation(&lt;span style="color:#ae81ff">200&lt;/span>, &lt;span style="color:#ae81ff">200&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">// 游戏/渲染主循环
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#66d9ef">while&lt;/span> (&lt;span style="color:#f92672">!&lt;/span>glfwWindowShouldClose(window))
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		{
@@ -56,7 +59,8 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			r &lt;span style="color:#f92672">+=&lt;/span> increment;
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#75715e">//绘图前重新绑定
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#75715e">//=======imgui添加============
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			&lt;span style="color:#75715e">//绘图前重新绑定
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			shader.Bind();
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#75715e">//在u_Color的位置上设置数值
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			shader.SetUniform4f(&lt;span style="color:#e6db74">&amp;#34;u_Color&amp;#34;&lt;/span>, r, &lt;span style="color:#ae81ff">0.3f&lt;/span>, &lt;span style="color:#ae81ff">0.0f&lt;/span>, &lt;span style="color:#ae81ff">1.0f&lt;/span>);
@@ -64,12 +68,15 @@
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			renderer.Draw(va, ib, shader);
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#75715e">//小窗口
-&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			&lt;span style="color:#75715e">//=======imgui添加============
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#75715e">//=======imgui添加============
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			&lt;span style="color:#75715e">//小窗口
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			{
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>				&lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">float&lt;/span> f &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">0.0f&lt;/span>;
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>				&lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">int&lt;/span> counter &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>;
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>				ImGui&lt;span style="color:#f92672">::&lt;/span>Text(&lt;span style="color:#e6db74">&amp;#34;Hello, world!&amp;#34;&lt;/span>); &lt;span style="color:#75715e">// Display some text (you can use a format string too)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>				&lt;span style="color:#75715e">//这里传入translation.x的地址，imgui会在这个地址上修改值
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>				&lt;span style="color:#75715e">//第一个参数是标签，表示在imgui界面上显示的名字，第二个参数是要修改的值的地址，后面是这个值的范围
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>				ImGui&lt;span style="color:#f92672">::&lt;/span>SliderFloat3(&lt;span style="color:#e6db74">&amp;#34;Translation&amp;#34;&lt;/span>, &lt;span style="color:#f92672">&amp;amp;&lt;/span>translation.x, &lt;span style="color:#ae81ff">0.0f&lt;/span>, &lt;span style="color:#ae81ff">960.0f&lt;/span>); &lt;span style="color:#75715e">// Edit 1 float using a slider from 0.0f to 1.0f 
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>				ImGui&lt;span style="color:#f92672">::&lt;/span>SliderFloat(&lt;span style="color:#e6db74">&amp;#34;float&amp;#34;&lt;/span>, &lt;span style="color:#f92672">&amp;amp;&lt;/span>f, &lt;span style="color:#ae81ff">0.0f&lt;/span>, &lt;span style="color:#ae81ff">1.0f&lt;/span>); &lt;span style="color:#75715e">// Edit 1 float using a slider from 0.0f to 1.0f 
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>				ImGui&lt;span style="color:#f92672">::&lt;/span>ColorEdit3(&lt;span style="color:#e6db74">&amp;#34;clear color&amp;#34;&lt;/span>, (&lt;span style="color:#66d9ef">float&lt;/span>&lt;span style="color:#f92672">*&lt;/span>)&lt;span style="color:#f92672">&amp;amp;&lt;/span>clear_color); &lt;span style="color:#75715e">// Edit 3 floats representing a color
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
@@ -84,11 +91,18 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>				ImGui&lt;span style="color:#f92672">::&lt;/span>Text(&lt;span style="color:#e6db74">&amp;#34;Application average %.3f ms/frame (%.1f FPS)&amp;#34;&lt;/span>, &lt;span style="color:#ae81ff">1000.0f&lt;/span> &lt;span style="color:#f92672">/&lt;/span> ImGui&lt;span style="color:#f92672">::&lt;/span>GetIO().Framerate, ImGui&lt;span style="color:#f92672">::&lt;/span>GetIO().Framerate);
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			}
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#75715e">//imgui:这里吧mvp相关代码移到while循环中
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			&lt;span style="color:#75715e">//向右向上移动200
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			glm&lt;span style="color:#f92672">::&lt;/span>mat4 model &lt;span style="color:#f92672">=&lt;/span> glm&lt;span style="color:#f92672">::&lt;/span>translate(glm&lt;span style="color:#f92672">::&lt;/span>mat4(&lt;span style="color:#ae81ff">1.0f&lt;/span>), translation);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			glm&lt;span style="color:#f92672">::&lt;/span>mat4 mvp &lt;span style="color:#f92672">=&lt;/span> proj &lt;span style="color:#f92672">*&lt;/span> view &lt;span style="color:#f92672">*&lt;/span> model;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			shader.SetUniformMat4f(&lt;span style="color:#e6db74">&amp;#34;u_MVP&amp;#34;&lt;/span>, mvp);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#75715e">//=======imgui添加============
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			ImGui&lt;span style="color:#f92672">::&lt;/span>Render();
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#75715e">//=======imgui添加============
-&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			ImGui_ImplGlfwGL3_RenderDrawData(ImGui&lt;span style="color:#f92672">::&lt;/span>GetDrawData());
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			ImGui_ImplGlfwGL3_RenderDrawData(ImGui&lt;span style="color:#f92672">::&lt;/span>GetDrawData());
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#75715e">// 交换前后缓冲区以刷新画面
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			glfwSwapBuffers(window);
@@ -100,7 +114,7 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//最后解绑vao
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#75715e">//glBindVertexArray(0);
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	}
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#75715e">//=======imgui添加============
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	ImGui_ImplGlfwGL3_Shutdown();
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
@@ -108,7 +122,7 @@
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//glfwTerminate会破坏Context，导致析构函数中的glGetError()
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	&lt;span style="color:#75715e">//返回一个OpenGL错误
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>	glfwTerminate();
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>;&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>按&lt;mark>程序生命周期的时间线&lt;/mark>，我们可以把 ImGui 的 &lt;em>&lt;mark>集成&lt;/mark>&lt;/em> 与运行分为以下阶段：&lt;/p></description></item><item><title>21关于模型视图投影矩阵</title><link>https://lwmfjc.github.io/zh/docs/technology/Opengl/cherno_opengl/21%E5%85%B3%E4%BA%8E%E6%A8%A1%E5%9E%8B%E8%A7%86%E5%9B%BE%E6%8A%95%E5%BD%B1%E7%9F%A9%E9%98%B5/</link><pubDate>Mon, 27 Apr 2026 22:05:18 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Opengl/cherno_opengl/21%E5%85%B3%E4%BA%8E%E6%A8%A1%E5%9E%8B%E8%A7%86%E5%9B%BE%E6%8A%95%E5%BD%B1%E7%9F%A9%E9%98%B5/</guid><description>&lt;p>第 21 集通常是 Cherno 教程中从“固定画面”转向“动态交互”的关键点，也是将 &lt;mark>M、V、P&lt;/mark> 三者真正融合进代码的时刻。&lt;/p>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>	&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>;&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;img src="img/ly-20260505220751808.png" alt="" />&lt;/p></description></item><item><title>21关于模型视图投影矩阵</title><link>https://lwmfjc.github.io/zh/docs/technology/Opengl/cherno_opengl/21%E5%85%B3%E4%BA%8E%E6%A8%A1%E5%9E%8B%E8%A7%86%E5%9B%BE%E6%8A%95%E5%BD%B1%E7%9F%A9%E9%98%B5/</link><pubDate>Mon, 27 Apr 2026 22:05:18 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Opengl/cherno_opengl/21%E5%85%B3%E4%BA%8E%E6%A8%A1%E5%9E%8B%E8%A7%86%E5%9B%BE%E6%8A%95%E5%BD%B1%E7%9F%A9%E9%98%B5/</guid><description>&lt;p>第 21 集通常是 Cherno 教程中从“固定画面”转向“动态交互”的关键点，也是将 &lt;mark>M、V、P&lt;/mark> 三者真正融合进代码的时刻。&lt;/p>
 &lt;p>按照&lt;mark>程序运行的时间线&lt;/mark>，我们可以把这套复杂的逻辑分为以下阶段：&lt;/p>
 &lt;h1 id="1-初始化阶段建立尺子-p">1. 初始化阶段：建立“尺子” (P)&lt;a class="anchor" href="#1-%e5%88%9d%e5%a7%8b%e5%8c%96%e9%98%b6%e6%ae%b5%e5%bb%ba%e7%ab%8b%e5%b0%ba%e5%ad%90-p">#&lt;/a>&lt;/h1>
 &lt;p>在程序启动时，你先定义了&lt;mark>投影矩阵 (Projection Matrix)&lt;/mark>。&lt;/p>
