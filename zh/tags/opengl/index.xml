@@ -1,4 +1,93 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Opengl on 随记</title><link>https://lwmfjc.github.io/zh/tags/opengl/</link><description>Recent content in Opengl on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Tue, 05 May 2026 23:13:37 +0800</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/tags/opengl/index.xml" rel="self" type="application/rss+xml"/><item><title>23批量渲染对象</title><link>https://lwmfjc.github.io/zh/docs/technology/Opengl/cherno_opengl/23%E6%89%B9%E9%87%8F%E6%B8%B2%E6%9F%93%E5%AF%B9%E8%B1%A1/</link><pubDate>Tue, 05 May 2026 23:13:37 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Opengl/cherno_opengl/23%E6%89%B9%E9%87%8F%E6%B8%B2%E6%9F%93%E5%AF%B9%E8%B1%A1/</guid><description/></item><item><title>22关于ImGui</title><link>https://lwmfjc.github.io/zh/docs/technology/Opengl/cherno_opengl/22%E5%85%B3%E4%BA%8EImGui/</link><pubDate>Tue, 28 Apr 2026 22:49:11 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Opengl/cherno_opengl/22%E5%85%B3%E4%BA%8EImGui/</guid><description>&lt;p>第 22 集是 Cherno 系列中非常爽的一集，因为它让你告别了“硬编码”坐标的痛苦，转而使用&lt;mark>可视化 UI&lt;/mark> 来直接操控显卡里的数据。&lt;/p>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Opengl on 随记</title><link>https://lwmfjc.github.io/zh/tags/opengl/</link><description>Recent content in Opengl on 随记</description><generator>Hugo</generator><language>zh</language><lastBuildDate>Tue, 05 May 2026 23:13:37 +0800</lastBuildDate><atom:link href="https://lwmfjc.github.io/zh/tags/opengl/index.xml" rel="self" type="application/rss+xml"/><item><title>23批量渲染对象</title><link>https://lwmfjc.github.io/zh/docs/technology/Opengl/cherno_opengl/23%E6%89%B9%E9%87%8F%E6%B8%B2%E6%9F%93%E5%AF%B9%E8%B1%A1/</link><pubDate>Tue, 05 May 2026 23:13:37 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Opengl/cherno_opengl/23%E6%89%B9%E9%87%8F%E6%B8%B2%E6%9F%93%E5%AF%B9%E8%B1%A1/</guid><description>&lt;p>核心内容是如何通过修改 &lt;mark>MVP（模型-视图-投影）矩阵&lt;/mark> 在不同位置多次绘制同一个物体，并初步探讨了性能优化的思路。&lt;/p>
+&lt;h1 id="第-23-集在-opengl-中渲染多个物体">第 23 集：在 OpenGL 中渲染多个物体&lt;a class="anchor" href="#%e7%ac%ac-23-%e9%9b%86%e5%9c%a8-opengl-%e4%b8%ad%e6%b8%b2%e6%9f%93%e5%a4%9a%e4%b8%aa%e7%89%a9%e4%bd%93">#&lt;/a>&lt;/h1>
+&lt;ul>
+&lt;li>
+&lt;p>&lt;mark>[00:00:00 - 01:25] 核心目标与现状回顾&lt;/mark>&lt;/p>
+&lt;ul>
+&lt;li>回顾之前只能在屏幕上渲染一个 Logo。&lt;/li>
+&lt;li>目标：在不同位置渲染两个或多个相同的物体。&lt;/li>
+&lt;li>解决 ImGui 鼠标位置偏移的小技巧：切换 GPU 驱动（由 Intel 切换至 Nvidia）解决了一些驱动层面的显示问题。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;mark>渲染原理深究：Shader、VAO 与 Draw Call&lt;/mark>&lt;/p>
+&lt;ul>
+&lt;li>&lt;mark>Shader (Program)：&lt;/mark> 告诉 GPU “如何”绘制数据，而不仅仅是光照。&lt;/li>
+&lt;li>&lt;mark>Vertex Array (VAO)：&lt;/mark> 包含实际的顶点数据（位置、纹理坐标等）。&lt;/li>
+&lt;li>&lt;mark>Index Buffer：&lt;/mark> 决定顶点的组合顺序。&lt;/li>
+&lt;li>&lt;mark>Draw Call：&lt;/mark> 调用 &lt;code>glDrawElements&lt;/code>，结合 Shader 和数据完成最终的光栅化。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;mark>如何改变物体位置？（两种方案）&lt;/mark>&lt;/p>
+&lt;ul>
+&lt;li>&lt;mark>方案 A（低效）：&lt;/mark> 为每个物体创建独立的顶点缓冲区（Vertex Buffer）。缺点：浪费显存，频繁切换 Buffer 速度慢。&lt;/li>
+&lt;li>&lt;mark>方案 B（推荐）：&lt;/mark> 保持顶点数据不变，但在每次绘制前修改 &lt;mark>Uniform 变量&lt;/mark>（即 Model 矩阵）。通过矩阵变换将同一组顶点映射到屏幕的不同位置。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;mark>顶点坐标的标准化归零&lt;/mark>&lt;/p>
+&lt;ul>
+&lt;li>为了方便平移，将顶点的原始坐标从 &lt;code>[100, 200]&lt;/code> 修改为以原点为中心的 &lt;code>[-50, 50]&lt;/code>。&lt;/li>
+&lt;li>这样做的好处是物体的 &lt;mark>Origin（原点）&lt;/mark> 位于其中心，应用平移矩阵时坐标计算更直观。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cpp" data-lang="cpp">&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">// 定义三角形的顶点坐标（CPU 内存）
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#66d9ef">float&lt;/span> positions[] &lt;span style="color:#f92672">=&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#f92672">-&lt;/span>&lt;span style="color:#ae81ff">50.0f&lt;/span>, &lt;span style="color:#f92672">-&lt;/span>&lt;span style="color:#ae81ff">50.0f&lt;/span>,&lt;span style="color:#ae81ff">0.0f&lt;/span>,&lt;span style="color:#ae81ff">0.0f&lt;/span>,&lt;span style="color:#75715e">//0
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			&lt;span style="color:#ae81ff">50.0f&lt;/span>, &lt;span style="color:#f92672">-&lt;/span>&lt;span style="color:#ae81ff">50.0f&lt;/span>,&lt;span style="color:#ae81ff">1.0f&lt;/span>,&lt;span style="color:#ae81ff">0.0f&lt;/span>,&lt;span style="color:#75715e">//1
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			&lt;span style="color:#ae81ff">50.0f&lt;/span>, &lt;span style="color:#ae81ff">50.0f&lt;/span>,&lt;span style="color:#ae81ff">1.0f&lt;/span>,&lt;span style="color:#ae81ff">1.0f&lt;/span>,&lt;span style="color:#75715e">//2
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#75715e">//0.5f, 0.5f,
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			&lt;span style="color:#f92672">-&lt;/span>&lt;span style="color:#ae81ff">50.0f&lt;/span>, &lt;span style="color:#ae81ff">50.0f&lt;/span>,&lt;span style="color:#ae81ff">0.0f&lt;/span>,&lt;span style="color:#ae81ff">1.0f&lt;/span>,&lt;span style="color:#75715e">//3
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			&lt;span style="color:#75715e">//-0.5f, -0.5f,
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		};
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//while之前的代码
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		glm&lt;span style="color:#f92672">::&lt;/span>vec3 translationA(&lt;span style="color:#ae81ff">200&lt;/span>, &lt;span style="color:#ae81ff">200&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		glm&lt;span style="color:#f92672">::&lt;/span>vec3 translationB(&lt;span style="color:#ae81ff">400&lt;/span>, &lt;span style="color:#ae81ff">200&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">//while代码块内的代码
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#66d9ef">if&lt;/span> (r &lt;span style="color:#f92672">&amp;gt;&lt;/span> &lt;span style="color:#ae81ff">1.0f&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>				increment &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#f92672">-&lt;/span>&lt;span style="color:#ae81ff">0.05f&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#66d9ef">else&lt;/span> &lt;span style="color:#a6e22e">if&lt;/span> (r &lt;span style="color:#f92672">&amp;lt;&lt;/span> &lt;span style="color:#ae81ff">0.0f&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>				increment &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">0.05f&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			r &lt;span style="color:#f92672">+=&lt;/span> increment;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#75715e">//绘图前重新绑定
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			shader.Bind();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>				&lt;span style="color:#75715e">//=======imgui添加============
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>				&lt;span style="color:#75715e">//imgui:这里吧mvp相关代码移到while循环中
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>				&lt;span style="color:#75715e">//向右向上移动200
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>				glm&lt;span style="color:#f92672">::&lt;/span>mat4 model &lt;span style="color:#f92672">=&lt;/span> glm&lt;span style="color:#f92672">::&lt;/span>translate(glm&lt;span style="color:#f92672">::&lt;/span>mat4(&lt;span style="color:#ae81ff">1.0f&lt;/span>), translationA);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>				glm&lt;span style="color:#f92672">::&lt;/span>mat4 mvp &lt;span style="color:#f92672">=&lt;/span> proj &lt;span style="color:#f92672">*&lt;/span> view &lt;span style="color:#f92672">*&lt;/span> model;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>				shader.SetUniformMat4f(&lt;span style="color:#e6db74">&amp;#34;u_MVP&amp;#34;&lt;/span>, mvp);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>				&lt;span style="color:#75715e">//=======imgui添加============
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>				&lt;span style="color:#75715e">//在u_Color的位置上设置数值
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>				&lt;span style="color:#75715e">//shader.SetUniform4f(&amp;#34;u_Color&amp;#34;, r, 0.3f, 0.0f, 1.0f);
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>				&lt;span style="color:#75715e">//========设置uniform========
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>				renderer.Draw(va, ib, shader);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>				&lt;span style="color:#75715e">//批量渲染对象
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>				glm&lt;span style="color:#f92672">::&lt;/span>mat4 model &lt;span style="color:#f92672">=&lt;/span> glm&lt;span style="color:#f92672">::&lt;/span>translate(glm&lt;span style="color:#f92672">::&lt;/span>mat4(&lt;span style="color:#ae81ff">1.0f&lt;/span>), translationB);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>				glm&lt;span style="color:#f92672">::&lt;/span>mat4 mvp &lt;span style="color:#f92672">=&lt;/span> proj &lt;span style="color:#f92672">*&lt;/span> view &lt;span style="color:#f92672">*&lt;/span> model;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>				shader.SetUniformMat4f(&lt;span style="color:#e6db74">&amp;#34;u_MVP&amp;#34;&lt;/span>, mvp);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>				renderer.Draw(va, ib, shader);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#75715e">//=======imgui添加============
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			&lt;span style="color:#75715e">//{}//小窗口前面的代码
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>				
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;img src="img/ly-20260506220636032.png" alt="" />&lt;/p></description></item><item><title>22关于ImGui</title><link>https://lwmfjc.github.io/zh/docs/technology/Opengl/cherno_opengl/22%E5%85%B3%E4%BA%8EImGui/</link><pubDate>Tue, 28 Apr 2026 22:49:11 +0800</pubDate><guid>https://lwmfjc.github.io/zh/docs/technology/Opengl/cherno_opengl/22%E5%85%B3%E4%BA%8EImGui/</guid><description>&lt;p>第 22 集是 Cherno 系列中非常爽的一集，因为它让你告别了“硬编码”坐标的痛苦，转而使用&lt;mark>可视化 UI&lt;/mark> 来直接操控显卡里的数据。&lt;/p>
 &lt;h1 id="代码">代码&lt;a class="anchor" href="#%e4%bb%a3%e7%a0%81">#&lt;/a>&lt;/h1>
 &lt;p>
 &lt;a target="_blank" href="https://github.com/ocornut/imgui">https://github.com/ocornut/imgui&lt;/a> 下载1.6版本，和视频中保持一致&lt;/p>
@@ -39,6 +128,7 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		glm&lt;span style="color:#f92672">::&lt;/span>vec3 translation(&lt;span style="color:#ae81ff">200&lt;/span>, &lt;span style="color:#ae81ff">200&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>);
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		&lt;span style="color:#75715e">// 游戏/渲染主循环
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>		&lt;span style="color:#66d9ef">while&lt;/span> (&lt;span style="color:#f92672">!&lt;/span>glfwWindowShouldClose(window))
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>		{
@@ -62,9 +152,17 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#75715e">//=======imgui添加============
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			&lt;span style="color:#75715e">//绘图前重新绑定
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			shader.Bind();
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#75715e">//在u_Color的位置上设置数值
-&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			shader.SetUniform4f(&lt;span style="color:#e6db74">&amp;#34;u_Color&amp;#34;&lt;/span>, r, &lt;span style="color:#ae81ff">0.3f&lt;/span>, &lt;span style="color:#ae81ff">0.0f&lt;/span>, &lt;span style="color:#ae81ff">1.0f&lt;/span>);
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#75715e">//========设置uniform========
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#75715e">//imgui:这里吧mvp相关代码移到while循环中
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			&lt;span style="color:#75715e">//向右向上移动200
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			glm&lt;span style="color:#f92672">::&lt;/span>mat4 model &lt;span style="color:#f92672">=&lt;/span> glm&lt;span style="color:#f92672">::&lt;/span>translate(glm&lt;span style="color:#f92672">::&lt;/span>mat4(&lt;span style="color:#ae81ff">1.0f&lt;/span>), translation);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			glm&lt;span style="color:#f92672">::&lt;/span>mat4 mvp &lt;span style="color:#f92672">=&lt;/span> proj &lt;span style="color:#f92672">*&lt;/span> view &lt;span style="color:#f92672">*&lt;/span> model;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			shader.SetUniformMat4f(&lt;span style="color:#e6db74">&amp;#34;u_MVP&amp;#34;&lt;/span>, mvp);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			&lt;span style="color:#75715e">//=======imgui添加============
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			&lt;span style="color:#75715e">//在u_Color的位置上设置数值
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			&lt;span style="color:#75715e">//shader.SetUniform4f(&amp;#34;u_Color&amp;#34;, r, 0.3f, 0.0f, 1.0f);
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>			&lt;span style="color:#75715e">//========设置uniform========
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>			renderer.Draw(va, ib, shader);
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
